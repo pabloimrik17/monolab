@@ -7,6 +7,23 @@
     "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
   },
   "nxCloudId": "67f985a4bdd1693cbb6398fa",
+  "targetDefaults": {
+    "dev": {
+      "dependsOn": [
+        "^dev"
+      ]
+    },
+    "build": {
+      "cache": true,
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "{projectRoot}/dist",
+        "{projectRoot}/tsconfig.tsbuildinfo"
+      ]
+    }
+  },
   "plugins": [
     {
       "plugin": "@nx/js/typescript",
