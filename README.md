@@ -1,6 +1,14 @@
 
 ![MonoLab](monolab-logo.png)
 
+[![CI](https://github.com/pabloimrik17/monolab/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/pabloimrik17/monolab/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Monorepo](https://img.shields.io/badge/Monorepo-Nx-blue)](https://nx.dev)
+[![Nx Cloud](https://img.shields.io/badge/Nx%20Cloud-Enabled-blue?logo=nx)](https://nx.app/)
+[![Node.js](https://img.shields.io/badge/Node.js-22.14.0-green?logo=node.js)](https://nodejs.org)
+[![pnpm](https://img.shields.io/badge/pnpm-10.8.0-orange?logo=pnpm)](https://pnpm.io/)
+[![Maintained with](https://img.shields.io/badge/Maintained%20with-❤️-red)](https://github.com/pabloimrik17/monolab)
+
 ## Development Setup
 
 ### Node.js Installation
