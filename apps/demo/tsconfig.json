@@ -3,7 +3,12 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" },
-    { "path": "../../packages/is-odd" },
-    { "path": "../../packages/is-even" }
+    {
+      "path" : "../../packages/is-odd",
+
+    },
+    {
+      "path" : "../../packages/is-even"
+    }
   ]
 }

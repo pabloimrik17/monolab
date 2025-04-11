@@ -9,9 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "is-even": "workspace:*",
-    "is-odd": "workspace:*",
-    "solid-js": "^1.9.5"
+    "solid-js": "^1.9.5",
+    "@monolab/is-odd": "workspace:*",
+    "@monolab/is-even": "workspace:*"
   },
   "devDependencies": {
     "typescript": "~5.7.2",

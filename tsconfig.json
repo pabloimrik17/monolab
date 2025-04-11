@@ -6,7 +6,10 @@
     "composite": true
   },
   "references": [
-    { "path": "./packages/is-odd" },
-    { "path": "./packages/is-even" }
+    {
+      "path": "packages/is-even",
+
+    },
+    {"path": "packages/is-odd"}
   ]
 }

@@ -2,8 +2,8 @@ import { createSignal } from 'solid-js'
 import solidLogo from './assets/solid.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import { isOdd } from 'is-odd'
-import { isEven } from 'is-even'
+import { isOdd } from '@monolab/is-odd'
+import { isEven } from '@monolab/is-even'
 
 function App() {
   const [count, setCount] = createSignal(0)

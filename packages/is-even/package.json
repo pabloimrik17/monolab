@@ -1,5 +1,5 @@
 {
-  "name": "is-even",
+  "name": "@monolab/is-even",
   "version": "1.0.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "is-odd": "workspace:*"
+    "@monolab/is-odd": "workspace:*"
   },
   "devDependencies": {
     "typescript": "~5.7.2"

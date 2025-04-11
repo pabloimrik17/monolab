@@ -35,10 +35,10 @@ importers:
 
   apps/demo:
     dependencies:
-      is-even:
+      '@monolab/is-even':
         specifier: workspace:*
         version: link:../../packages/is-even
-      is-odd:
+      '@monolab/is-odd':
         specifier: workspace:*
         version: link:../../packages/is-odd
       solid-js:
@@ -57,7 +57,7 @@ importers:
 
   packages/is-even:
     dependencies:
-      is-odd:
+      '@monolab/is-odd':
         specifier: workspace:*
         version: link:../is-odd
     devDependencies:
