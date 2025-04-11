@@ -330,3 +330,6 @@ sketch
 
 # Android studio 3.1+ serialized cache file
 
+# Nx
+.nx/cache
+.nx/workspace-data
