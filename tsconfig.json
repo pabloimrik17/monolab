@@ -2,5 +2,11 @@
   "extends": "./tsconfig.base.json",
   "compileOnSave": false,
   "files": [],
-  "references": []
+  "compilerOptions": {
+    "composite": true
+  },
+  "references": [
+    { "path": "./packages/is-odd" },
+    { "path": "./packages/is-even" }
+  ]
 }

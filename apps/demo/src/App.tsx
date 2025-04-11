@@ -2,6 +2,8 @@ import { createSignal } from 'solid-js'
 import solidLogo from './assets/solid.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import { isOdd } from 'is-odd'
+import { isEven } from 'is-even'
 
 function App() {
   const [count, setCount] = createSignal(0)
@@ -21,6 +23,9 @@ function App() {
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count()}
         </button>
+        <p>
+          The current count is {isOdd(count()) ? 'odd' : 'not odd'} and {isEven(count()) ? 'even' : 'not even'}
+        </p>
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>

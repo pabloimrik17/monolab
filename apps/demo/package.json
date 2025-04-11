@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "is-even": "workspace:*",
+    "is-odd": "workspace:*",
     "solid-js": "^1.9.5"
   },
   "devDependencies": {
