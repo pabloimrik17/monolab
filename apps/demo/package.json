@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "solid-js": "^1.9.5",
+    "solid-js": "1.9.5",
     "@monolab/is-odd": "workspace:*",
     "@monolab/is-even": "workspace:*"
   },
