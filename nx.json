@@ -23,14 +23,14 @@
         "{projectRoot}/tsconfig.tsbuildinfo"
       ]
     },
-    "lint:prettier": {
+    "lint:prettier:check": {
       "cache": true,
       "dependsOn": [
-        "^lint:prettier"
+        "^lint:lint:prettier:check"
       ],
       "inputs": [
         "default",
-        "{workspaceRoot}/.prettierrc.json",
+        "{workspaceRoot}/.prettierrc",
         "{workspaceRoot}/.prettierignore"
       ]
     }
