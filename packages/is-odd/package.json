@@ -12,6 +12,7 @@
   },
   "scripts": {
     "build": "tsc -b",
+    "lint:prettier": "prettier .",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

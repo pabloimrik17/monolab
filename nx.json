@@ -22,6 +22,17 @@
         "{projectRoot}/dist",
         "{projectRoot}/tsconfig.tsbuildinfo"
       ]
+    },
+    "lint:prettier": {
+      "cache": true,
+      "dependsOn": [
+        "^lint:prettier"
+      ],
+      "inputs": [
+        "default",
+        "{workspaceRoot}/.prettierrc.json",
+        "{workspaceRoot}/.prettierignore"
+      ]
     }
   },
   "plugins": [
