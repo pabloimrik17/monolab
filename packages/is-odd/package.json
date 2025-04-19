@@ -12,7 +12,9 @@
     "types": "./dist/index.d.ts",
     "scripts": {
         "build": "tsc -b",
-        "lint:prettier:check": "prettier . --check",
+        "lint:eslint":  "eslint .",
+        "lint:eslint:fix":  "eslint . --fix",
+        "lint:prettier": "prettier . --check",
         "lint:prettier:fix": "prettier . --write",
         "typecheck": "tsc --noEmit"
     },

@@ -23,10 +23,20 @@
         "{projectRoot}/tsconfig.tsbuildinfo"
       ]
     },
-    "lint:prettier:check": {
+    "lint:eslint": {
       "cache": true,
       "dependsOn": [
-        "^lint:prettier:check"
+        "^lint:eslint"
+      ],
+      "inputs": [
+        "default",
+        "{workspaceRoot}/eslint.config.js"
+      ]
+    },
+    "lint:prettier": {
+      "cache": true,
+      "dependsOn": [
+        "^lint:prettier"
       ],
       "inputs": [
         "default",
