@@ -4,5 +4,5 @@
  * @returns True if the number is odd, false otherwise
  */
 export function isOdd(value: number): boolean {
-  return value % 2 !== 0;
+    return value % 2 !== 0;
 }

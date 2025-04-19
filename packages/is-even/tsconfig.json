@@ -1,12 +1,10 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "declaration": true,
-  },
-  "include": ["src/**/*"],
-  "references": [
-    { "path": "../is-odd" }
-  ]
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "declaration": true
+    },
+    "include": ["src/**/*"],
+    "references": [{ "path": "../is-odd" }]
 }

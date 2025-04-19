@@ -1,4 +1,4 @@
-import { isOdd } from '@monolab/is-odd';
+import { isOdd } from "@monolab/is-odd";
 
 /**
  * Checks if a number is even.
@@ -6,5 +6,5 @@ import { isOdd } from '@monolab/is-odd';
  * @returns True if the number is even, false otherwise
  */
 export function isEven(value: number): boolean {
-  return !isOdd(value);
+    return !isOdd(value);
 }

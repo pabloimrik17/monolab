@@ -1,20 +1,22 @@
 {
-  "name": "@monolab/is-odd",
-  "version": "1.0.0",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+    "name": "@monolab/is-odd",
+    "version": "1.0.0",
+    "type": "module",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsc -b",
+        "lint:prettier:check": "prettier . --check",
+        "lint:prettier:fix": "prettier . --write",
+        "typecheck": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "typescript": "~5.7.2"
     }
-  },
-  "scripts": {
-    "build": "tsc -b",
-    "typecheck": "tsc --noEmit"
-  },
-  "devDependencies": {
-    "typescript": "~5.7.2"
-  }
 }
