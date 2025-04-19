@@ -7,6 +7,7 @@
 [![Nx Cloud](https://img.shields.io/badge/Nx%20Cloud-Enabled-blue?logo=nx)](https://nx.app/)
 [![Node.js](https://img.shields.io/badge/Node.js-22.14.0-green?logo=node.js)](https://nodejs.org)
 [![pnpm](https://img.shields.io/badge/pnpm-10.8.0-orange?logo=pnpm)](https://pnpm.io/)
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/pabloimrik17/monolab?utm_source=oss&utm_medium=github&utm_campaign=pabloimrik17%2Fmonolab&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 [![Maintained with](https://img.shields.io/badge/Maintained%20with-❤️-red)](https://github.com/pabloimrik17/monolab)
 
 ## Development Setup
