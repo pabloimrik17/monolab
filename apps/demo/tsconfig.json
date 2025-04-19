@@ -1,17 +1,17 @@
 {
-  "files": [],
-  "references": [
-    {
-      "path": "../../packages/is-even"
-    },
-    {
-      "path": "../../packages/is-odd"
-    },
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.node.json"
-    }
-  ]
+    "files": [],
+    "references": [
+        {
+            "path": "../../packages/is-even"
+        },
+        {
+            "path": "../../packages/is-odd"
+        },
+        {
+            "path": "./tsconfig.app.json"
+        },
+        {
+            "path": "./tsconfig.node.json"
+        }
+    ]
 }
