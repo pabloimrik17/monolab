@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint:prettier": "prettier .",
+    "lint:prettier:check": "prettier . --check",
+    "lint:prettier:fix": "prettier . --write",
     "preview": "vite preview"
   },
   "dependencies": {
