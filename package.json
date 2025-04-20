@@ -2,7 +2,9 @@
   "name": "@monolab/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "prepare": "husky"
+  },
   "type": "module",
   "private": true,
   "devDependencies": {

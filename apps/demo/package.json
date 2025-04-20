@@ -13,7 +13,6 @@
         "lint:knip:fix": "knip --fix",
         "lint:prettier": "prettier . --check",
         "lint:prettier:fix": "prettier . --write",
-        "prepare": "husky",
         "preview": "vite preview"
     },
     "dependencies": {
