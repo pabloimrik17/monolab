@@ -30,7 +30,7 @@
       ],
       "inputs": [
         "default",
-        "{workspaceRoot}/eslint.config.js"
+        "{workspaceRoot}/eslint.config.ts"
       ]
     },
     "lint:knip": {
