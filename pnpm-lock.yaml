@@ -29,6 +29,9 @@ importers:
       eslint-config-prettier:
         specifier: ^10.1.2
         version: 10.1.2(eslint@9.25.0(jiti@2.4.2))
+      husky:
+        specifier: ^9.1.7
+        version: 9.1.7
       knip:
         specifier: ^5.50.5
         version: 5.50.5(@types/node@22.14.1)(typescript@5.7.3)
@@ -1761,6 +1764,11 @@ packages:
 
   html-entities@2.3.3:
     resolution: {integrity: sha512-DV5Ln36z34NNTDgnz0EWGBLZENelNAtkiFA4kyNOG2tDI6Mz1uSWiq1wAKdyjnJwyDiDO7Fa2SO1CTxPXL8VxA==}
+
+  husky@9.1.7:
+    resolution: {integrity: sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
@@ -4305,6 +4313,8 @@ snapshots:
       lru-cache: 10.4.3
 
   html-entities@2.3.3: {}
+
+  husky@9.1.7: {}
 
   ieee754@1.2.1: {}
 
