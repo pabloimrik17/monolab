@@ -2,7 +2,9 @@
   "name": "@monolab/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "prepare": "husky"
+  },
   "type": "module",
   "private": true,
   "devDependencies": {
@@ -12,6 +14,9 @@
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
     "eslint": "^9.25.0",
+    "eslint-config-prettier": "^10.1.2",
+    "husky": "^9.1.7",
+    "knip": "^5.50.5",
     "lint-staged": "^15.5.1",
     "nx": "20.7.2",
     "prettier": "^2.6.2",

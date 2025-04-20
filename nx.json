@@ -30,7 +30,17 @@
       ],
       "inputs": [
         "default",
-        "{workspaceRoot}/eslint.config.js"
+        "{workspaceRoot}/eslint.config.ts"
+      ]
+    },
+    "lint:knip": {
+      "cache": true,
+      "dependsOn": [
+        "^lint:knip"
+      ],
+      "inputs": [
+        "default",
+        "{workspaceRoot}/knip.config.ts"
       ]
     },
     "lint:prettier": {
