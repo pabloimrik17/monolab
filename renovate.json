@@ -10,11 +10,6 @@
   "reviewers": ["pabloimrik17"],
   "labels": ["dependencies"],
   "dependencyDashboard": true,
-  "dependencyDashboardTitle": "📦 Dependency Dashboard",
-  "lockFileMaintenance": {
-    "enabled": true,
-    "schedule": ["before 5am on monday"]
-  },
   "prConcurrentLimit": 5,
   "prHourlyLimit": 2,
   "minimumReleaseAge": "7 days",
