@@ -47,17 +47,17 @@ jobs:
               run: nx sync:check
 
             - name: Check linters compability
-              run: pnpm exec nx affected -t lint:eslint:config-check
+              run: nx affected -t lint:eslint:config-check
 
             # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
-            - run: pnpm exec nx-cloud record -- echo Hello World
+            - run: nx-cloud record -- echo Hello World
 
             # Nx Affected runs only tasks affected by the changes in this PR/commit. Learn more: https://nx.dev/ci/features/affected
             - name: Linting
-              run: pnpm exec nx affected -t lint:eslint lint:knip lint:prettier
+              run: nx affected -t lint:eslint lint:knip lint:prettier
 
             - name: Test
-              run: pnpm exec nx affected -t test
+              run: nx affected -t test
 
             - name: Build
-              run: pnpm exec nx affected -t build
+              run: nx affected -t build
