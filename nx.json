@@ -15,6 +15,7 @@
         "build": {
             "cache": true,
             "dependsOn": ["^build"],
+            "inputs": [{ "runtime": "node --version" }, "default"],
             "outputs": [
                 "{projectRoot}/dist",
                 "{projectRoot}/tsconfig.tsbuildinfo"
@@ -23,7 +24,11 @@
         "lint:eslint": {
             "cache": true,
             "dependsOn": ["^build", "^lint:eslint"],
-            "inputs": ["default", "{workspaceRoot}/eslint.config.ts"],
+            "inputs": [
+                { "runtime": "node --version" },
+                "default",
+                "{workspaceRoot}/eslint.config.ts"
+            ],
             "outputs": [
                 "{workspaceRoot}/.eslintcache",
                 "{projectRoot}/.eslintcache"
@@ -32,12 +37,17 @@
         "lint:knip": {
             "cache": true,
             "dependsOn": ["^lint:knip"],
-            "inputs": ["default", "{workspaceRoot}/knip.config.ts"]
+            "inputs": [
+                { "runtime": "node --version" },
+                "default",
+                "{workspaceRoot}/knip.config.ts"
+            ]
         },
         "lint:prettier": {
             "cache": true,
             "dependsOn": ["^lint:prettier"],
             "inputs": [
+                { "runtime": "node --version" },
                 "default",
                 "{workspaceRoot}/.prettierrc",
                 "{workspaceRoot}/.prettierignore"
