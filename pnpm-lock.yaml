@@ -67,6 +67,9 @@ importers:
             typescript-eslint:
                 specifier: ^8.30.1
                 version: 8.30.1(eslint@9.25.0(jiti@2.4.2))(typescript@5.7.3)
+            validate-branch-name:
+                specifier: ^1.3.2
+                version: 1.3.2(typescript@5.7.3)
 
     apps/demo:
         dependencies:
@@ -2421,6 +2424,13 @@ packages:
             }
         engines: { node: ">=18" }
 
+    commander@8.3.0:
+        resolution:
+            {
+                integrity: sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==,
+            }
+        engines: { node: ">= 12" }
+
     compare-func@2.0.0:
         resolution:
             {
@@ -2484,6 +2494,18 @@ packages:
                 integrity: sha512-AdmX6xUzdNASswsFtmwSt7Vj8po9IuqXm0UXz7QKPuEUmPB4XyjGfaAr2PSuELMwkRMVH1EpIkX5bTZGRB3eCA==,
             }
         engines: { node: ">=10" }
+
+    cosmiconfig@8.3.6:
+        resolution:
+            {
+                integrity: sha512-kcZ6+W5QzcJ3P1Mt+83OUv/oHFqZHIx8DuxG6eZ5RGMERoLqp4BuGjhHLYGK+Kf5XVkQvqBSmAy/nGWN3qDgEA==,
+            }
+        engines: { node: ">=14" }
+        peerDependencies:
+            typescript: ">=4.9.5"
+        peerDependenciesMeta:
+            typescript:
+                optional: true
 
     cosmiconfig@9.0.0:
         resolution:
@@ -3056,6 +3078,13 @@ packages:
                 integrity: sha512-ZHG9a1gEhUMX1TvGrLdyWb9kDopCBbTnI8z4JgRMYxsijWipgjSEYoPWqBuIB0DnRnvqlQSEeVmzpeuPm7NdFQ==,
             }
 
+    git-local-info@1.0.1:
+        resolution:
+            {
+                integrity: sha512-QdCZytNlj9xHoyCXgqOOVYuxuq8Vo8fm3sDobpDrp59D4fa0wZ5f1huR49/qbxkzIdnJAA1tUIO68DkrvVa6Sg==,
+            }
+        engines: { node: ">= 4.0" }
+
     git-raw-commits@4.0.0:
         resolution:
             {
@@ -3211,6 +3240,12 @@ packages:
         resolution:
             {
                 integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==,
+            }
+
+    ini@1.3.8:
+        resolution:
+            {
+                integrity: sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==,
             }
 
     ini@4.1.1:
@@ -4607,6 +4642,13 @@ packages:
             {
                 integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==,
             }
+
+    validate-branch-name@1.3.2:
+        resolution:
+            {
+                integrity: sha512-oBh69R6LGw/uwkieCVOnDNYi4NEmFSXBeVSPAhyvcGExrS1vUWkkEju30DeEIknVgx0UjOK0WmJC9u6ex4aPRg==,
+            }
+        hasBin: true
 
     validate-html-nesting@1.2.2:
         resolution:
@@ -6392,6 +6434,8 @@ snapshots:
 
     commander@13.1.0: {}
 
+    commander@8.3.0: {}
+
     compare-func@2.0.0:
         dependencies:
             array-ify: 1.0.0
@@ -6434,6 +6478,15 @@ snapshots:
             parse-json: 5.2.0
             path-type: 4.0.0
             yaml: 1.10.2
+
+    cosmiconfig@8.3.6(typescript@5.7.3):
+        dependencies:
+            import-fresh: 3.3.1
+            js-yaml: 4.1.0
+            parse-json: 5.2.0
+            path-type: 4.0.0
+        optionalDependencies:
+            typescript: 5.7.3
 
     cosmiconfig@9.0.0(typescript@5.7.3):
         dependencies:
@@ -6784,6 +6837,10 @@ snapshots:
 
     git-hooks-list@3.2.0: {}
 
+    git-local-info@1.0.1:
+        dependencies:
+            ini: 1.3.8
+
     git-raw-commits@4.0.0:
         dependencies:
             dargs: 8.1.0
@@ -6848,6 +6905,8 @@ snapshots:
     imurmurhash@0.1.4: {}
 
     inherits@2.0.4: {}
+
+    ini@1.3.8: {}
 
     ini@4.1.1: {}
 
@@ -7613,6 +7672,14 @@ snapshots:
             punycode: 2.3.1
 
     util-deprecate@1.0.2: {}
+
+    validate-branch-name@1.3.2(typescript@5.7.3):
+        dependencies:
+            commander: 8.3.0
+            cosmiconfig: 8.3.6(typescript@5.7.3)
+            git-local-info: 1.0.1
+        transitivePeerDependencies:
+            - typescript
 
     validate-html-nesting@1.2.2: {}
 
