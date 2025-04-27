@@ -1,12 +1,13 @@
 {
     "$schema": "./node_modules/nx/schemas/nx-schema.json",
-    "defaultBase": "master",
+    "defaultBase": "main",
     "namedInputs": {
         "default": ["{projectRoot}/**/*", "sharedGlobals"],
         "production": ["default"],
         "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
     },
     "nxCloudId": "67f985a4bdd1693cbb6398fa",
+    "parallel": 10,
     "targetDefaults": {
         "dev": {
             "dependsOn": ["^dev"]
@@ -22,7 +23,11 @@
         "lint:eslint": {
             "cache": true,
             "dependsOn": ["^build", "^lint:eslint"],
-            "inputs": ["default", "{workspaceRoot}/eslint.config.ts"]
+            "inputs": ["default", "{workspaceRoot}/eslint.config.ts"],
+            "outputs": [
+                "{workspaceRoot}/.eslintcache",
+                "{projectRoot}/.eslintcache"
+            ]
         },
         "lint:knip": {
             "cache": true,
