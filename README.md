@@ -1,4 +1,3 @@
-
 ![MonoLab](monolab-logo.png)
 
 [![CI](https://github.com/pabloimrik17/monolab/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/pabloimrik17/monolab/actions/workflows/ci.yml)
@@ -49,3 +48,10 @@ pnpm --version
 ```
 
 The output should be `10.8.0`.
+
+### Nx Cloud setup
+
+```bash
+# Use your credentials
+nx login
+```
