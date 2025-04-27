@@ -46,22 +46,37 @@ jobs:
             - name: Check monorepo integrity
               run: nx sync:check
 
-            - name: Check linters compability
+            - name: Check linters compatibility (All)
+              if: github.event_name == 'push'
+              run: nx run-many -t lint:eslint:config-check
+
+            - name: Check linters compatibility (Affected)
               if: github.event_name == 'pull_request'
               run: nx affected -t lint:eslint:config-check
 
             # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
             - run: nx-cloud record -- echo Hello World
 
-            # Nx Affected runs only tasks affected by the changes in this PR/commit. Learn more: https://nx.dev/ci/features/affected
-            - name: Linting
+            - name: Linting (All)
+              if: github.event_name == 'push'
+              run: nx run-many -t lint:eslint lint:knip lint:prettier
+
+            - name: Linting (Affected)
               if: github.event_name == 'pull_request'
               run: nx affected -t lint:eslint lint:knip lint:prettier
 
-            - name: Test
+            - name: Test (All)
+              if: github.event_name == 'push'
+              run: nx run-many -t test
+
+            - name: Test (Affected)
               if: github.event_name == 'pull_request'
               run: nx affected -t test
 
-            - name: Build
+            - name: Build (All)
+              if: github.event_name == 'push'
+              run: nx run-many -t build
+
+            - name: Build (Affected)
               if: github.event_name == 'pull_request'
               run: nx affected -t build
