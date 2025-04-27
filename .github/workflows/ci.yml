@@ -47,6 +47,7 @@ jobs:
               run: nx sync:check
 
             - name: Check linters compability
+              if: github.event_name == 'pull_request'
               run: nx affected -t lint:eslint:config-check
 
             # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
@@ -54,10 +55,13 @@ jobs:
 
             # Nx Affected runs only tasks affected by the changes in this PR/commit. Learn more: https://nx.dev/ci/features/affected
             - name: Linting
+              if: github.event_name == 'pull_request'
               run: nx affected -t lint:eslint lint:knip lint:prettier
 
             - name: Test
+              if: github.event_name == 'pull_request'
               run: nx affected -t test
 
             - name: Build
+              if: github.event_name == 'pull_request'
               run: nx affected -t build
