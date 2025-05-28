@@ -9,17 +9,22 @@
     "nxCloudId": "67f985a4bdd1693cbb6398fa",
     "parallel": 10,
     "targetDefaults": {
-        "dev": {
-            "dependsOn": ["^dev"]
-        },
         "build": {
             "cache": true,
             "dependsOn": ["^build"],
             "inputs": [{ "runtime": "node --version" }, "default"],
             "outputs": [
                 "{projectRoot}/dist",
+                "{projectRoot}/tsconfig.lib.tsbuildinfo",
                 "{projectRoot}/tsconfig.tsbuildinfo"
             ]
+        },
+        "build:check-exports": {
+            "dependsOn": ["^build", "build", "^build:check-exports"]
+        },
+        "dev": {
+            "continuous": true,
+            "dependsOn": ["^dev"]
         },
         "lint:eslint": {
             "cache": true,
@@ -45,29 +50,58 @@
         },
         "lint:prettier": {
             "cache": true,
-            "dependsOn": ["^lint:prettier"],
+            "dependsOn": ["^lint:eslint", "^lint:prettier"],
             "inputs": [
                 { "runtime": "node --version" },
                 "default",
+                "{projectRoot}/.prettierignore",
                 "{workspaceRoot}/.prettierrc",
                 "{workspaceRoot}/.prettierignore"
             ]
+        },
+        "lint:publint": {
+            "cache": true,
+            "dependsOn": ["^build", "build", "^lint:publint"],
+            "inputs": [
+                { "runtime": "node --version" },
+                "{projectRoot}/package.json",
+                "{projectRoot}/dist"
+            ]
+        },
+        "test": {
+            "cache": true,
+            "dependsOn": ["^build", "^test"],
+            "inputs": [
+                { "runtime": "node --version" },
+                "default",
+                "{workspaceRoot}/vitest.config.ts",
+                "{projectRoot}/vitest.config.ts"
+            ],
+            "outputs": [
+                "{workspaceRoot}/coverage",
+                "{workspaceRoot}/html",
+                "{projectRoot}/coverage",
+                "{projectRoot}/html"
+            ]
+        },
+        "test:watch": {
+            "cache": true,
+            "continuous": true,
+            "dependsOn": ["^build", "^test:watch"],
+            "inputs": [
+                "default",
+                "{workspaceRoot}/vitest.config.ts",
+                "{projectRoot}/vitest.config.ts"
+            ],
+            "outputs": [
+                "{workspaceRoot}/coverage",
+                "{workspaceRoot}/html",
+                "{projectRoot}/coverage",
+                "{projectRoot}/html"
+            ]
         }
     },
-    "plugins": [
-        {
-            "plugin": "@nx/js/typescript",
-            "options": {
-                "typecheck": {
-                    "targetName": "typecheck"
-                },
-                "build": {
-                    "targetName": "build",
-                    "configName": "tsconfig.lib.json",
-                    "buildDepsName": "build-deps",
-                    "watchDepsName": "watch-deps"
-                }
-            }
-        }
-    ]
+    "sync": {
+        "applyChanges": true
+    }
 }
