@@ -12,7 +12,12 @@
         "build": {
             "cache": true,
             "dependsOn": ["^build"],
-            "inputs": [{ "runtime": "node --version" }, "default"],
+            "inputs": [
+                {
+                    "runtime": "node --version"
+                },
+                "default"
+            ],
             "outputs": [
                 "{projectRoot}/dist",
                 "{projectRoot}/tsconfig.lib.tsbuildinfo",
@@ -30,7 +35,9 @@
             "cache": true,
             "dependsOn": ["^build", "^lint:eslint"],
             "inputs": [
-                { "runtime": "node --version" },
+                {
+                    "runtime": "node --version"
+                },
                 "default",
                 "{workspaceRoot}/eslint.config.ts"
             ],
@@ -43,7 +50,9 @@
             "cache": true,
             "dependsOn": ["^lint:knip"],
             "inputs": [
-                { "runtime": "node --version" },
+                {
+                    "runtime": "node --version"
+                },
                 "default",
                 "{workspaceRoot}/knip.config.ts"
             ]
@@ -52,7 +61,9 @@
             "cache": true,
             "dependsOn": ["^lint:eslint", "^lint:prettier"],
             "inputs": [
-                { "runtime": "node --version" },
+                {
+                    "runtime": "node --version"
+                },
                 "default",
                 "{projectRoot}/.prettierignore",
                 "{workspaceRoot}/.prettierrc",
@@ -63,7 +74,9 @@
             "cache": true,
             "dependsOn": ["^build", "build", "^lint:publint"],
             "inputs": [
-                { "runtime": "node --version" },
+                {
+                    "runtime": "node --version"
+                },
                 "{projectRoot}/package.json",
                 "{projectRoot}/dist"
             ]
@@ -72,7 +85,9 @@
             "cache": true,
             "dependsOn": ["^build", "^test"],
             "inputs": [
-                { "runtime": "node --version" },
+                {
+                    "runtime": "node --version"
+                },
                 "default",
                 "{workspaceRoot}/vitest.config.ts",
                 "{projectRoot}/vitest.config.ts"
