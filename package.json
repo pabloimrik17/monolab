@@ -5,6 +5,9 @@
     "license": "MIT",
     "type": "module",
     "scripts": {
+        "demo:build": "nx run @monolab/demo:build",
+        "demo:dev": "nx run @monolab/demo:dev",
+        "demo:test": "nx run @monolab/demo:test",
         "prepare": "husky"
     },
     "devDependencies": {
