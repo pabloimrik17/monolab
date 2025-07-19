@@ -57,6 +57,15 @@
                 "{workspaceRoot}/knip.config.ts"
             ]
         },
+        "lint:markdownlint": {
+            "cache": true,
+            "dependsOn": ["^lint:markdownlint"],
+            "inputs": [
+                "default",
+                "{workspaceRoot}/.markdownlint*",
+                "{projectRoot}/.markdownlint*"
+            ]
+        },
         "lint:prettier": {
             "cache": true,
             "dependsOn": ["^lint:eslint", "^lint:prettier"],
@@ -79,6 +88,15 @@
                 },
                 "{projectRoot}/package.json",
                 "{projectRoot}/dist"
+            ]
+        },
+        "lint:stylelint": {
+            "cache": true,
+            "dependsOn": ["^lint:stylelint"],
+            "inputs": [
+                "default",
+                "{workspaceRoot}/.stylelintrc*",
+                "{projectRoot}/.stylelintrc*"
             ]
         },
         "test": {
