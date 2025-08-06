@@ -61,6 +61,9 @@
         "version": {
             "conventionalCommits": true,
             "preserveLocalDependencyProtocols": true
+        },
+        "changelog": {
+            "projectChangelogs": true
         }
     }
 }
