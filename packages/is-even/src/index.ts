@@ -8,3 +8,7 @@ import { isOdd } from "@monolab/is-odd";
 export function isEven(value: number): boolean {
     return !isOdd(value);
 }
+
+export function isNotEven(value: number): boolean {
+    return !isEven(value);
+}
