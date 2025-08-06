@@ -1,6 +1,6 @@
 {
     "name": "@monolab/is-even",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "type": "module",
     "exports": {
         ".": {
@@ -22,7 +22,7 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
-        "@monolab/is-odd": "workspace:*"
+        "@monolab/is-odd": "1.1.0"
     },
     "devDependencies": {
         "typescript": "~5.7.2"
