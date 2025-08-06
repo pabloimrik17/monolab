@@ -59,7 +59,8 @@
         "projects": ["packages/is-even", "packages/is-odd"],
         "projectsRelationship": "independent",
         "version": {
-            "conventionalCommits": true
+            "conventionalCommits": true,
+            "preserveLocalDependencyProtocols": true
         }
     }
 }
