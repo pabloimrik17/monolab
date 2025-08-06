@@ -14,7 +14,7 @@ module.exports = {
     //     `eslint --fix --max-warnings ${ESLINT_MAX_WARNINGS}`,
     //     // `prettier ${fileNames.join(" ")} --write --ignore-unknown`,
     // ],
-    "*.md": "markdownlint --fix",
+    // "*.md": "markdownlint --fix",
     "*.css": "stylelint --fix",
     "*.scss": "stylelint --fix",
 };
