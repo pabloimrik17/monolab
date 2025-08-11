@@ -16,5 +16,3 @@ export const coolReactFunction = (): "cool" => {
 export const maybeCoolFunction = (): "cool" | "notCool" => {
     return Math.random() > 0.5 ? "cool" : "notCool";
 };
-
-export const cool = "cool";
