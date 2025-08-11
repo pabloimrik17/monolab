@@ -9,7 +9,8 @@
     "nxCloudId": "67f985a4bdd1693cbb6398fa",
     "targetDefaults": {
         "dev": {
-            "dependsOn": ["^dev"]
+            "continuous": true,
+            "dependsOn": ["^build", "^dev"]
         },
         "build": {
             "cache": true,
@@ -56,7 +57,11 @@
         }
     ],
     "release": {
-        "projects": ["packages/is-even", "packages/is-odd"],
+        "projects": [
+            "packages/is-even",
+            "packages/is-odd",
+            "packages/react-clean"
+        ],
         "projectsRelationship": "independent",
         "version": {
             "conventionalCommits": true,
