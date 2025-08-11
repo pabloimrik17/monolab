@@ -5,6 +5,10 @@ on:
         types: [completed]
         branches: [main]
 
+permissions:
+    actions: read
+    contents: read
+
 jobs:
     check-changes:
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
