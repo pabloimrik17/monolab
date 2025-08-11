@@ -1,44 +1,33 @@
-name: Publish
-on:
-    workflow_run:
-        workflows: ["CI"]
-        types: [completed]
-        branches: [main]
+name: Publish React Clean
 
-permissions:
-    actions: read
-    contents: read
+on:
+    push:
+        branches: [main]
+        paths:
+            - "packages/react-clean/**"
 
 jobs:
-    check-changes:
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
-        runs-on: ubuntu-latest
-        outputs:
-            react-clean-changed: ${{ steps.changes.outputs.react-clean }}
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-              with:
-                  ref: ${{ github.event.workflow_run.head_sha }}
-                  fetch-depth: 2 # We need at least 2 commits to compare
-
-            - uses: dorny/paths-filter@v3
-              id: changes
-              with:
-                  base: HEAD~1
-                  filters: |
-                      react-clean:
-                        - 'packages/react-clean/**'
-
     publish:
-        needs: check-changes
-        if: ${{ needs.check-changes.outputs.react-clean-changed == 'true' }}
         runs-on: ubuntu-latest
         permissions:
             contents: read
             id-token: write
         steps:
             - uses: actions/checkout@v4
+
+            # Esperar a que el CI termine correctamente
+            - name: Wait for CI to complete
+              uses: fountainhead/action-wait-for-check@v1.2.0
+              id: wait-for-ci
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  checkName: CI
+                  ref: ${{ github.sha }}
+                  timeoutSeconds: 600
+                  intervalSeconds: 10
+
+            # Solo publicar si CI pasó
             - name: Publish package
+              if: steps.wait-for-ci.outputs.conclusion == 'success'
               working-directory: packages/react-clean
               run: npx jsr publish

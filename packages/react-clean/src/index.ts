@@ -20,3 +20,5 @@ export const maybeCoolFunction = (): "cool" | "notCool" => {
 export const soMaybeCoolFunction = (): "cool" | "notCool" => {
     return Math.random() > 0.25 ? "cool" : "notCool";
 };
+
+export const test = 12;
