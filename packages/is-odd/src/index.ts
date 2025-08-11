@@ -6,3 +6,7 @@
 export function isOdd(value: number): boolean {
     return value % 2 !== 0;
 }
+
+export function isNotOdd(value: number): boolean {
+    return !isOdd(value);
+}
