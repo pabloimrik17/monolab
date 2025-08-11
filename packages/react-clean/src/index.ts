@@ -4,7 +4,7 @@
  *
  * @returns {string} Returns the string "cool".
  */
-export const coolReactFunction = (): "cool" => {
+export const coolFunction = (): "cool" => {
     return "cool";
 };
 
@@ -16,5 +16,3 @@ export const coolReactFunction = (): "cool" => {
 export const maybeCoolFunction = (): "cool" | "notCool" => {
     return Math.random() > 0.5 ? "cool" : "notCool";
 };
-
-export const cool = "cool";
