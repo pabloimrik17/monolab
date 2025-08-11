@@ -1,3 +1,13 @@
+## 0.3.0 (2025-08-11)
+
+### 🚀 Features
+
+-   **@monolab/react-clean:** added soMaybeCoolFunction ([a7bbc99](https://github.com/pabloimrik17/monolab/commit/a7bbc99))
+
+### ❤️ Thank You
+
+-   Pablo F. Guerra @pabloimrik17
+
 ## 0.2.0 (2025-08-11)
 
 ### 🚀 Features
