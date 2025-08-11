@@ -21,7 +21,7 @@ jobs:
               id: wait-for-ci
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
-                  checkName: CI
+                  checkName: main
                   ref: ${{ github.sha }}
                   timeoutSeconds: 600
                   intervalSeconds: 10
