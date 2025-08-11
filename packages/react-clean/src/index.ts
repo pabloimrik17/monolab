@@ -16,3 +16,7 @@ export const coolFunction = (): "cool" => {
 export const maybeCoolFunction = (): "cool" | "notCool" => {
     return Math.random() > 0.5 ? "cool" : "notCool";
 };
+
+export const soMaybeCoolFunction = (): "cool" | "notCool" => {
+    return Math.random() > 0.25 ? "cool" : "notCool";
+};

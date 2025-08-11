@@ -16,12 +16,16 @@ jobs:
         outputs:
             react-clean-changed: ${{ steps.changes.outputs.react-clean }}
         steps:
-            - uses: actions/checkout@v4
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.event.workflow_run.head_sha }}
+                  fetch-depth: 2 # We need at least 2 commits to compare
+
             - uses: dorny/paths-filter@v3
               id: changes
               with:
-                  base: ${{ github.event.workflow_run.head_sha }}~1
-                  head: ${{ github.event.workflow_run.head_sha }}
+                  base: HEAD~1
                   filters: |
                       react-clean:
                         - 'packages/react-clean/**'
