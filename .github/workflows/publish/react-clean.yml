@@ -1,0 +1,33 @@
+name: Publish
+on:
+    workflow_run:
+        workflows: ["CI"]
+        types: [completed]
+        branches: [main]
+
+jobs:
+    check-changes:
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        runs-on: ubuntu-latest
+        outputs:
+            react-clean-changed: ${{ steps.changes.outputs.react-clean }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: dorny/paths-filter@v3
+              id: changes
+              with:
+                  filters: |
+                      react-clean:
+                        - 'packages/react-clean/**'
+
+    publish:
+        needs: check-changes
+        if: ${{ needs.check-changes.outputs.react-clean-changed == 'true' }}
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
+        steps:
+            - uses: actions/checkout@v4
+            - name: Publish package
+              run: npx jsr publish --dir packages/react-clean
