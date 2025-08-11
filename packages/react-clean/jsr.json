@@ -1,6 +1,6 @@
 {
     "name": "@monolab/react-clean",
-    "version": "0.1.0",
+    "version": "0.3.3",
     "license": "MIT",
     "exports": "./src/index.ts"
 }
