@@ -34,4 +34,5 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - name: Publish package
-              run: npx jsr publish --dir packages/react-clean
+              working-directory: packages/react-clean
+              run: npx jsr publish
