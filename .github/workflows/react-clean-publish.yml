@@ -20,6 +20,8 @@ jobs:
             - uses: dorny/paths-filter@v3
               id: changes
               with:
+                  base: ${{ github.event.workflow_run.head_sha }}~1
+                  head: ${{ github.event.workflow_run.head_sha }}
                   filters: |
                       react-clean:
                         - 'packages/react-clean/**'
