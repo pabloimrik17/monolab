@@ -1,3 +1,17 @@
+## 0.2.0 (2025-08-11)
+
+### 🚀 Features
+
+-   ⚠️ **@monolab/react-clean:** renamed functions, removed cool ([830e5d7](https://github.com/pabloimrik17/monolab/commit/830e5d7))
+
+### ⚠️ Breaking Changes
+
+-   ⚠️ **@monolab/react-clean:** renamed functions, removed cool ([830e5d7](https://github.com/pabloimrik17/monolab/commit/830e5d7))
+
+### ❤️ Thank You
+
+-   Pablo F. Guerra @pabloimrik17
+
 ## 0.1.0 (2025-08-11)
 
 ### 🚀 Features
