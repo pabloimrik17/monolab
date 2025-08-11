@@ -1,13 +1,16 @@
 {
-  "extends": "./tsconfig.base.json",
-  "compileOnSave": false,
-  "files": [],
-  "references": [
-    {
-      "path": "./packages/is-even"
-    },
-    {
-      "path": "./packages/is-odd"
-    }
-  ]
+    "extends": "./tsconfig.base.json",
+    "compileOnSave": false,
+    "files": [],
+    "references": [
+        {
+            "path": "./packages/is-even"
+        },
+        {
+            "path": "./packages/is-odd"
+        },
+        {
+            "path": "./packages/react-clean"
+        }
+    ]
 }
