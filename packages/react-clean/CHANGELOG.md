@@ -1,3 +1,13 @@
+## 0.3.1 (2025-08-11)
+
+### 🩹 Fixes
+
+-   **@monolab/is-odd:** test ([04938d7](https://github.com/pabloimrik17/monolab/commit/04938d7))
+
+### ❤️ Thank You
+
+-   Pablo F. Guerra @pabloimrik17
+
 ## 0.3.0 (2025-08-11)
 
 ### 🚀 Features
