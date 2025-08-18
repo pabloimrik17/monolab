@@ -124,8 +124,8 @@ importers:
                 specifier: ">=18.0.0"
                 version: 19.1.10
             react:
-                specifier: ">=18.0.0"
-                version: 19.1.1
+                specifier: ^18.0.0
+                version: 18.3.1
             tsdown:
                 specifier: 0.12.9
                 version: 0.12.9(@arethetypeswrong/core@0.18.2)(oxc-resolver@11.6.1)(typescript@5.7.3)
@@ -4183,6 +4183,13 @@ packages:
             }
         engines: { node: ">=18" }
 
+    loose-envify@1.4.0:
+        resolution:
+            {
+                integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==,
+            }
+        hasBin: true
+
     lru-cache@10.4.3:
         resolution:
             {
@@ -4724,10 +4731,10 @@ packages:
                 integrity: sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==,
             }
 
-    react@19.1.1:
+    react@18.3.1:
         resolution:
             {
-                integrity: sha512-w8nqGImo45dmMIfljjMwOGtbmC/mk4CMYhWIicdSflH91J9TyCyczcPFXJzrZ/ZXcgGRFeP6BU0BEJTw6tZdfQ==,
+                integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==,
             }
         engines: { node: ">=0.10.0" }
 
@@ -8122,6 +8129,10 @@ snapshots:
             strip-ansi: 7.1.0
             wrap-ansi: 9.0.0
 
+    loose-envify@1.4.0:
+        dependencies:
+            js-tokens: 4.0.0
+
     lru-cache@10.4.3: {}
 
     lru-cache@11.1.0: {}
@@ -8456,7 +8467,9 @@ snapshots:
 
     react-is@18.3.1: {}
 
-    react@19.1.1: {}
+    react@18.3.1:
+        dependencies:
+            loose-envify: 1.4.0
 
     readable-stream@3.6.2:
         dependencies:
