@@ -2,6 +2,7 @@
     "name": "@monolab/react-hooks",
     "version": "0.1.0",
     "private": false,
+    "sideEffects": false,
     "type": "module",
     "exports": {
         ".": {
