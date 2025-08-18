@@ -1,4 +1,4 @@
-name: Publish React Clean
+name: Publish React Hooks
 
 on:
     push:
