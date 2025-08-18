@@ -1,5 +1,5 @@
 import { useDidMount, useWillUnmount } from "@monolab/react-hooks";
-import { useState } from "react";
+import { useRef } from "react";
 import { BaseViewModel } from "./base.viewmodel.js";
 
 /**
@@ -18,15 +18,18 @@ import { BaseViewModel } from "./base.viewmodel.js";
 export const useViewModel = <T extends BaseViewModel>(
     viewModel: () => T
 ): T => {
-    const [instance] = useState<T>(() => viewModel());
+    const instanceRef = useRef<T | null>(null);
+    if (instanceRef.current === null) {
+        instanceRef.current = viewModel();
+    }
 
     useDidMount(async () => {
-        await instance.didMount();
+        await instanceRef.current!.didMount();
     });
 
     useWillUnmount(() => {
-        instance.willUnmount();
+        instanceRef.current!.willUnmount();
     });
 
-    return instance;
+    return instanceRef.current!;
 };
