@@ -1,12 +1,15 @@
 {
     "name": "@monolab/react-clean",
     "version": "0.3.3",
+    "private": false,
     "type": "module",
     "exports": {
         ".": {
+            "types": "./dist/index.d.ts",
             "import": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
     },
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
