@@ -9,7 +9,9 @@
         "jsr:sync-version": "node tools/sync-jsr-version.js",
         "prepare": "husky",
         "react-clean:release": "nx release --skip-publish --projects @monolab/react-clean && pnpm run jsr:sync-version",
-        "react-clean:release:dry": "nx release --skip-publish --dry-run --projects @monolab/react-clean"
+        "react-clean:release:dry": "nx release --skip-publish --dry-run --projects @monolab/react-clean",
+        "react-hooks:release": "nx release --skip-publish --projects @monolab/react-hooks && pnpm run jsr:sync-version",
+        "react-hooks:release:dry": "nx release --skip-publish --dry-run --projects @monolab/react-hooks"
     },
     "devDependencies": {
         "@commitlint/cli": "^19.8.0",
