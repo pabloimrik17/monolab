@@ -14,9 +14,12 @@ import { useEffect } from "react";
 export const useDidMount = (didMountFn: () => Promise<void> | void): void => {
     useEffect(() => {
         async function execute(): Promise<void> {
-            await didMountFn();
+            try {
+                await didMountFn();
+            } catch (err) {
+                console.error("[useDidMount] error", err);
+            }
         }
-
         void execute();
     }, []);
 };
