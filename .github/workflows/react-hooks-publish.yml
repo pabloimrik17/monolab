@@ -9,10 +9,14 @@ on:
 jobs:
     publish:
         runs-on: ubuntu-latest
-        permissions:
-            contents: read
-            id-token: write
-        steps:
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      checks: read
+    steps:
             - uses: actions/checkout@v4
 
             # Esperar a que el CI termine correctamente
