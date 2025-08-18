@@ -117,9 +117,6 @@ importers:
 
     packages/react-hooks:
         dependencies:
-            "@types/react":
-                specifier: ">=18.0.0"
-                version: 19.1.10
             react:
                 specifier: ">=18.0.0"
                 version: 19.1.1
@@ -127,6 +124,9 @@ importers:
             "@arethetypeswrong/cli":
                 specifier: 0.18.2
                 version: 0.18.2
+            "@types/react":
+                specifier: ">=18.0.0"
+                version: 19.1.10
             tsdown:
                 specifier: 0.12.9
                 version: 0.12.9(@arethetypeswrong/core@0.18.2)(oxc-resolver@11.6.1)(typescript@5.7.3)
