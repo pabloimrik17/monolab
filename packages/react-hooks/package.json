@@ -1,0 +1,43 @@
+{
+    "name": "@monolab/react-hooks",
+    "version": "0.1.0",
+    "private": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "pnpm run build:typecheck && pnpm run build:lib",
+        "build:check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
+        "build:lib": "tsdown",
+        "build:typecheck": "tsc --noEmit",
+        "lint:eslint": "eslint --cache --max-warnings 60 .",
+        "lint:eslint:config-check": "eslint-config-prettier src/index.tsx",
+        "lint:eslint:fix": "eslint --cache --max-warnings 60 --fix .",
+        "lint:knip": "knip --max-issues 100",
+        "lint:knip:fix": "knip --fix",
+        "lint:prettier": "prettier . --check",
+        "lint:prettier:fix": "prettier . --write"
+    },
+    "devDependencies": {
+        "@arethetypeswrong/cli": "0.18.2",
+        "tsdown": "0.12.9",
+        "typescript": "~5.7.2"
+    },
+    "peerDependencies": {
+        "@types/react": ">=18.0.0",
+        "react": ">=18.0.0"
+    },
+    "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad",
+    "engines": {
+        "node": "22.17.0",
+        "pnpm": "10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad"
+    }
+}
