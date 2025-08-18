@@ -1,5 +1,5 @@
 import { injectable } from "inversify";
-import type { Subscription } from "rxjs";
+import { Subscription } from "rxjs";
 
 /**
  * All view models should extend this
@@ -8,19 +8,18 @@ import type { Subscription } from "rxjs";
  */
 @injectable()
 export abstract class BaseViewModel {
-    private compositeSubscriptions: Subscription[] = [];
+    private composite: Subscription = new Subscription();
 
     /**
      * Adds one or more subscriptions to the composite subscription list.
      *
-     * @param {...Subscription[]} subscriptions - The subscriptions to be added.
+     * @param {...Subscription} subscriptions - The subscriptions to be added.
      * @return {void} This method does not return a value.
      */
     addSub(...subscriptions: Subscription[]): void {
-        this.compositeSubscriptions = [
-            ...this.compositeSubscriptions,
-            ...subscriptions,
-        ];
+        for (const sub of subscriptions) {
+            this.composite.add(sub);
+        }
     }
 
     /**
@@ -40,9 +39,7 @@ export abstract class BaseViewModel {
      * @return {void} This method does not return a value.
      */
     willUnmount(): void {
-        this.compositeSubscriptions.forEach((subscription) => {
-            subscription.unsubscribe();
-        });
-        this.compositeSubscriptions = [];
+        this.composite.unsubscribe();
+        this.composite = new Subscription();
     }
 }
