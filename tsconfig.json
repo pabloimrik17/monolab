@@ -11,6 +11,9 @@
         },
         {
             "path": "./packages/react-clean"
+        },
+        {
+            "path": "./packages/react-hooks"
         }
     ]
 }
