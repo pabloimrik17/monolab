@@ -1,0 +1,34 @@
+name: Publish React Hooks
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - "packages/react-hooks/**"
+
+jobs:
+    publish:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
+            checks: read
+        steps:
+            - uses: actions/checkout@v4
+
+            # Esperar a que el CI termine correctamente
+            - name: Wait for CI to complete
+              uses: fountainhead/action-wait-for-check@v1.2.0
+              id: wait-for-ci
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  checkName: main
+                  ref: ${{ github.sha }}
+                  timeoutSeconds: 600
+                  intervalSeconds: 10
+
+            # Solo publicar si CI pasó
+            - name: Publish package
+              if: steps.wait-for-ci.outputs.conclusion == 'success'
+              working-directory: packages/react-hooks
+              run: npx jsr publish
