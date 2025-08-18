@@ -1,3 +1,9 @@
+## 0.4.1 (2025-08-18)
+
+### 🧱 Updated Dependencies
+
+-   Updated @monolab/react-hooks to 0.1.2
+
 ## 0.4.0 (2025-08-18)
 
 ### 🚀 Features
