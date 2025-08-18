@@ -2,6 +2,7 @@
     "name": "@monolab/react-clean",
     "version": "0.4.0",
     "private": false,
+    "sideEffects": false,
     "type": "module",
     "exports": {
         ".": {
@@ -13,6 +14,13 @@
     },
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
+    "files": [
+        "dist",
+        "package.json",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE"
+    ],
     "scripts": {
         "build": "pnpm run build:typecheck && pnpm run build:lib",
         "build:check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
@@ -39,7 +47,6 @@
         "typescript": "~5.7.2"
     },
     "peerDependencies": {
-        "@types/react": ">=18.0.0",
         "inversify": ">=7.0.0",
         "react": ">=18.0.0",
         "rxjs": ">=7.0.0"
