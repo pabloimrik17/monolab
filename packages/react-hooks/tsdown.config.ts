@@ -17,4 +17,5 @@ export default defineConfig({
     clean: true,
     minify: false,
     target: "ES2023",
+    external: ["react"],
 });
