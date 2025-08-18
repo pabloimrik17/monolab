@@ -5,6 +5,13 @@ export default defineConfig({
     entry: ["src/index.ts"],
     format: ["esm"],
     outDir: "dist",
+    // Prevent bundling peer deps; rely on consumer to provide them.
+    external: [
+        /^react($|\/)/,
+        /^inversify($|\/)/,
+        /^rxjs($|\/)/,
+        /^@monolab\/react-hooks($|\/)/,
+    ],
     dts: {
         compilerOptions: {
             composite: false,
