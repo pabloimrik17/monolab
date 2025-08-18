@@ -1,0 +1,6 @@
+{
+    "name": "@monolab/react-hooks",
+    "version": "0.1.1",
+    "license": "MIT",
+    "exports": "./src/index.ts"
+}

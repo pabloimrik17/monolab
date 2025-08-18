@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 // Paquetes que tienen jsr.json
-const packagesWithJsr = ["packages/react-clean"];
+const packagesWithJsr = ["packages/react-clean", "packages/react-hooks"];
 
 packagesWithJsr.forEach((packagePath) => {
     const packageJsonPath = path.join(packagePath, "package.json");
@@ -19,7 +19,7 @@ packagesWithJsr.forEach((packagePath) => {
 
         fs.writeFileSync(jsrJsonPath, JSON.stringify(jsrJson, null, 4) + "\n");
         console.log(
-            `✅ Syn§ced version ${packageJson.version} to ${jsrJsonPath}`
+            `✅ Synced version ${packageJson.version} to ${jsrJsonPath}`
         );
     }
 });

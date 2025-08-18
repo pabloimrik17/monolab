@@ -60,7 +60,8 @@
         "projects": [
             "packages/is-even",
             "packages/is-odd",
-            "packages/react-clean"
+            "packages/react-clean",
+            "packages/react-hooks"
         ],
         "projectsRelationship": "independent",
         "version": {
