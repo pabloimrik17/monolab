@@ -1,3 +1,14 @@
+## 0.4.0 (2025-08-18)
+
+### 🚀 Features
+
+-   **@monolab/react-clean:** added lifecycles ([61abcdb](https://github.com/pabloimrik17/monolab/commit/61abcdb))
+-   **@monolab/react-clean:** added BaseViewModel and useViewModel ([790163f](https://github.com/pabloimrik17/monolab/commit/790163f))
+
+### ❤️ Thank You
+
+-   Pablo F. Guerra @pabloimrik17
+
 ## 0.3.3 (2025-08-11)
 
 ### 🩹 Fixes
