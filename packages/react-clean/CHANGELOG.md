@@ -1,3 +1,20 @@
+## 0.3.4 (2025-08-19)
+
+### 🩹 Fixes
+
+-   **@monolab/react-hooks:** package version ([fcb9515](https://github.com/pabloimrik17/monolab/commit/fcb9515))
+-   **@monolab/react-hooks:** package version ([ab5cf20](https://github.com/pabloimrik17/monolab/commit/ab5cf20))
+-   **@monolab/react-hooks:** package version ([a6a3344](https://github.com/pabloimrik17/monolab/commit/a6a3344))
+-   **@monolab/react-hooks:** package version ([4c2a9c4](https://github.com/pabloimrik17/monolab/commit/4c2a9c4))
+
+### 🧱 Updated Dependencies
+
+-   Updated @monolab/react-hooks to 0.1.2
+
+### ❤️ Thank You
+
+-   Pablo F. Guerra @pabloimrik17
+
 ## 0.4.1 (2025-08-18)
 
 ### 🧱 Updated Dependencies
