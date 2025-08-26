@@ -21,6 +21,9 @@
         "lint:prettier:fix": "prettier . --write",
         "typecheck": "tsc --noEmit"
     },
+    "dependencies": {
+        "tslib": "^2.3.0"
+    },
     "devDependencies": {
         "typescript": "5.9.2"
     },
