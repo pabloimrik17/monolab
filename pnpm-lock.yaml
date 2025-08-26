@@ -157,9 +157,6 @@ importers:
 
     packages/ts-configs:
         devDependencies:
-            "@arethetypeswrong/cli":
-                specifier: 0.18.2
-                version: 0.18.2
             typescript:
                 specifier: 5.9.2
                 version: 5.9.2

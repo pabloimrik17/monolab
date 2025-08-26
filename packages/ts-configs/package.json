@@ -16,9 +16,7 @@
         "LICENSE"
     ],
     "scripts": {
-        "build": "pnpm run build:typecheck && pnpm run build:lib",
-        "build:check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
-        "build:lib": "tsdown",
+        "build": "pnpm run build:typecheck",
         "build:typecheck": "tsc --noEmit",
         "lint:eslint": "eslint --cache --max-warnings 60 .",
         "lint:eslint:config-check": "eslint-config-prettier src/index.ts",
@@ -29,7 +27,6 @@
         "lint:prettier:fix": "prettier . --write"
     },
     "devDependencies": {
-        "@arethetypeswrong/cli": "0.18.2",
         "typescript": "5.9.2"
     },
     "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad",
