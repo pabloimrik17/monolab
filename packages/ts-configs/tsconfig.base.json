@@ -10,7 +10,6 @@
         "strict": true,
 
         /* Bundler & Platform */
-        "allowImportingTsExtensions": true,
         "isolatedModules": true,
         "moduleDetection": "force",
         "verbatimModuleSyntax": true,
@@ -21,10 +20,8 @@
         "noFallthroughCasesInSwitch": true,
         "noUncheckedIndexedAccess": true,
         "exactOptionalPropertyTypes": true,
-
-        /* Experimental / Decorators */
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true
+        "useUnknownInCatchVariables": true,
+        "noPropertyAccessFromIndexSignature": true
     },
     "exclude": ["node_modules", "dist"]
 }
