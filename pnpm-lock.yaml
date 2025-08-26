@@ -114,9 +114,6 @@ importers:
             "@monolab/react-hooks":
                 specifier: workspace:*
                 version: link:../react-hooks
-            "@monolab/ts-configs":
-                specifier: workspace:*
-                version: link:../ts-configs
         devDependencies:
             "@arethetypeswrong/cli":
                 specifier: 0.18.2
