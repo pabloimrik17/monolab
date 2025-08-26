@@ -1,0 +1,30 @@
+{
+    "compilerOptions": {
+        /* Base */
+        "target": "ES2023",
+        "lib": ["ES2024"],
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "strict": true,
+
+        /* Bundler & Platform */
+        "allowImportingTsExtensions": true,
+        "isolatedModules": true,
+        "moduleDetection": "force",
+        "verbatimModuleSyntax": true,
+
+        /* Strictness */
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true,
+        "noUncheckedIndexedAccess": true,
+        "exactOptionalPropertyTypes": true,
+
+        /* Experimental / Decorators */
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
+    },
+    "exclude": ["node_modules", "dist"]
+}
