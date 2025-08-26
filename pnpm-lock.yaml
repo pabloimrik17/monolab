@@ -98,12 +98,19 @@ importers:
             "@monolab/is-odd":
                 specifier: workspace:*
                 version: link:../is-odd
+            tslib:
+                specifier: ^2.3.0
+                version: 2.8.1
         devDependencies:
             typescript:
                 specifier: 5.9.2
                 version: 5.9.2
 
     packages/is-odd:
+        dependencies:
+            tslib:
+                specifier: ^2.3.0
+                version: 2.8.1
         devDependencies:
             typescript:
                 specifier: 5.9.2
@@ -114,6 +121,9 @@ importers:
             "@monolab/react-hooks":
                 specifier: workspace:*
                 version: link:../react-hooks
+            tslib:
+                specifier: ^2.3.0
+                version: 2.8.1
         devDependencies:
             "@arethetypeswrong/cli":
                 specifier: 0.18.2
@@ -138,6 +148,10 @@ importers:
                 version: 5.9.2
 
     packages/react-hooks:
+        dependencies:
+            tslib:
+                specifier: ^2.3.0
+                version: 2.8.1
         devDependencies:
             "@arethetypeswrong/cli":
                 specifier: 0.18.2
@@ -151,6 +165,12 @@ importers:
             tsdown:
                 specifier: 0.12.9
                 version: 0.12.9(@arethetypeswrong/core@0.18.2)(oxc-resolver@11.6.1)(typescript@5.9.2)
+            typescript:
+                specifier: 5.9.2
+                version: 5.9.2
+
+    packages/ts-configs:
+        devDependencies:
             typescript:
                 specifier: 5.9.2
                 version: 5.9.2

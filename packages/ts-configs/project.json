@@ -1,0 +1,8 @@
+{
+    "$schema": "https://json.schemastore.org/nx-project.json",
+    "name": "ts-configs",
+    "projectType": "library",
+    "tags": [],
+    "implicitDependencies": [],
+    "targets": {}
+}
