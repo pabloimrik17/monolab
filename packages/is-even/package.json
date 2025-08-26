@@ -22,7 +22,8 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
-        "@monolab/is-odd": "workspace:*"
+        "@monolab/is-odd": "workspace:*",
+        "tslib": "^2.3.0"
     },
     "devDependencies": {
         "typescript": "5.9.2"
