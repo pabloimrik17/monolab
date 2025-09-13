@@ -6,39 +6,120 @@
         "production": ["default"],
         "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
     },
+    "parallel": 10,
     "nxCloudId": "67f985a4bdd1693cbb6398fa",
     "targetDefaults": {
+        "build": {
+            "cache": true,
+            "dependsOn": ["^build"],
+            "inputs": ["default"],
+            "outputs": [
+                "{projectRoot}/dist",
+                "{projectRoot}/tsconfig.lib.tsbuildinfo",
+                "{projectRoot}/tsconfig.tsbuildinfo"
+            ]
+        },
+        "build:check-exports": {
+            "dependsOn": ["^build", "build", "^build:check-exports"]
+        },
         "dev": {
             "continuous": true,
             "dependsOn": ["^build", "^dev"]
         },
-        "build": {
-            "cache": true,
-            "dependsOn": ["^build"],
-            "outputs": [
-                "{projectRoot}/dist",
-                "{projectRoot}/tsconfig.tsbuildinfo"
+        "lint": {
+            "dependsOn": [
+                "^lint:eslint",
+                "^lint:knip",
+                "^lint:markdownlint",
+                "^lint:prettier",
+                "^lint:publint",
+                "^lint:stylelint"
             ]
         },
         "lint:eslint": {
             "cache": true,
-            "dependsOn": ["^lint:eslint"],
-            "inputs": ["default", "{workspaceRoot}/eslint.config.ts"]
+            "dependsOn": ["^build", "^lint:eslint"],
+            "inputs": ["default", "{workspaceRoot}/eslint.config.ts"],
+            "outputs": ["{projectRoot}/.eslintcache"]
+        },
+        "lint:eslint:fix": {
+            "cache": true,
+            "dependsOn": ["^build", "^lint:eslint:fix"],
+            "inputs": ["default", "{workspaceRoot}/eslint.config.ts"],
+            "outputs": ["{projectRoot}/.eslintcache"]
         },
         "lint:knip": {
             "cache": true,
             "dependsOn": ["^lint:knip"],
             "inputs": ["default", "{workspaceRoot}/knip.config.ts"]
         },
-        "lint:prettier": {
+        "lint:markdownlint": {
             "cache": true,
-            "dependsOn": ["^lint:prettier"],
+            "dependsOn": ["^lint:markdownlint"],
             "inputs": [
                 "default",
+                "{workspaceRoot}/.markdownlint*",
+                "{projectRoot}/.markdownlint*"
+            ]
+        },
+        "lint:prettier": {
+            "cache": true,
+            "dependsOn": ["^lint:eslint", "^lint:prettier"],
+            "inputs": [
+                "default",
+                "{projectRoot}/.prettierignore",
                 "{workspaceRoot}/.prettierrc",
                 "{workspaceRoot}/.prettierignore"
             ]
+        },
+        "lint:publint": {
+            "cache": true,
+            "dependsOn": ["^build", "build", "^lint:publint"],
+            "inputs": ["{projectRoot}/package.json", "{projectRoot}/dist"]
+        },
+        "lint:stylelint": {
+            "cache": true,
+            "dependsOn": ["^lint:stylelint"],
+            "inputs": [
+                "default",
+                "{workspaceRoot}/.stylelintrc*",
+                "{projectRoot}/.stylelintrc*"
+            ]
+        },
+        "test:unit": {
+            "cache": true,
+            "dependsOn": ["^build", "^test:unit"],
+            "inputs": [
+                "default",
+                "{workspaceRoot}/vitest.config.ts",
+                "{projectRoot}/vitest.config.ts"
+            ],
+            "outputs": [
+                "{workspaceRoot}/coverage",
+                "{workspaceRoot}/html",
+                "{projectRoot}/coverage",
+                "{projectRoot}/html"
+            ]
+        },
+        "test:unit:watch": {
+            "cache": true,
+            "continuous": true,
+            "dependsOn": ["^build", "^test:unit:watch"],
+            "inputs": [
+                "default",
+                "{workspaceRoot}/vitest.config.ts",
+                "{projectRoot}/vitest.config.ts"
+            ],
+            "outputs": [
+                "{workspaceRoot}/coverage",
+                "{workspaceRoot}/html",
+                "{projectRoot}/coverage",
+                "{projectRoot}/html"
+            ]
         }
+    },
+    "sync": {
+        "applyChanges": true
     },
     "plugins": [
         {
