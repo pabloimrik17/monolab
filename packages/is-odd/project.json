@@ -1,3 +1,6 @@
 {
-    "targets": {}
+    "name": "@monolab/is-odd",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/is-odd/src",
+    "projectType": "library"
 }

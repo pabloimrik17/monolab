@@ -1,3 +1,6 @@
 {
-    "targets": {}
+    "name": "@monolab/react-hooks",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/react-hooks/src",
+    "projectType": "library"
 }

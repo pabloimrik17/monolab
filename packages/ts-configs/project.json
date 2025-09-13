@@ -1,6 +1,6 @@
 {
     "$schema": "https://json.schemastore.org/nx-project.json",
-    "name": "ts-configs",
+    "name": "@monolab/ts-configs",
     "projectType": "library",
     "tags": [],
     "implicitDependencies": [],
