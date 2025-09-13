@@ -94,12 +94,7 @@
                 "{workspaceRoot}/vitest.config.ts",
                 "{projectRoot}/vitest.config.ts"
             ],
-            "outputs": [
-                "{workspaceRoot}/coverage",
-                "{workspaceRoot}/html",
-                "{projectRoot}/coverage",
-                "{projectRoot}/html"
-            ]
+            "outputs": ["{projectRoot}/coverage", "{projectRoot}/html"]
         },
         "test:unit:watch": {
             "cache": true,
@@ -110,12 +105,7 @@
                 "{workspaceRoot}/vitest.config.ts",
                 "{projectRoot}/vitest.config.ts"
             ],
-            "outputs": [
-                "{workspaceRoot}/coverage",
-                "{workspaceRoot}/html",
-                "{projectRoot}/coverage",
-                "{projectRoot}/html"
-            ]
+            "outputs": ["{projectRoot}/coverage", "{projectRoot}/html"]
         }
     },
     "sync": {
