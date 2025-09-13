@@ -1,40 +1,57 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended",
-    ":dependencyDashboard",
-    ":semanticCommits",
-    ":enableVulnerabilityAlertsWithLabel(security)"
-  ],
-  "timezone": "Europe/Madrid",
-  "reviewers": ["pabloimrik17"],
-  "labels": ["dependencies"],
-  "dependencyDashboard": true,
-  "prConcurrentLimit": 5,
-  "prHourlyLimit": 2,
-  "minimumReleaseAge": "7 days",
-  "packageRules": [
-    {
-      "matchUpdateTypes": ["patch"],
-      "schedule": ["on the first day of the month"]
-    },
-    {
-      "matchUpdateTypes": ["minor"],
-      "schedule": ["on the first day of the month every 2 months"]
-    },
-    {
-      "matchUpdateTypes": ["major"],
-      "schedule": ["on the first day of the month every 3 months"]
-    },
-    {
-      "description": "Pin dependencies except for certain packages",
-      "matchDepTypes": ["dependencies"],
-      "rangeStrategy": "pin"
-    },
-    {
-      "description": "Separate PRs for lockfile updates",
-      "matchFiles": ["pnpm-lock.yaml"],
-      "commitMessageSuffix": "[skip ci]"
-    }
-  ]
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:recommended",
+        ":dependencyDashboard",
+        ":semanticCommits",
+        ":enableVulnerabilityAlertsWithLabel(security)"
+    ],
+    "timezone": "Europe/Madrid",
+    "reviewers": ["pabloimrik17"],
+    "labels": ["dependencies"],
+    "baseBranches": ["develop"],
+    "dependencyDashboard": true,
+    "dependencyDashboardTitle": "📦 Dependency Dashboard",
+    "prConcurrentLimit": 10,
+    "prHourlyLimit": 2,
+    "minimumReleaseAge": "7 days",
+    "rangeStrategy": "pin",
+    "packageRules": [
+        {
+            "matchUpdateTypes": ["patch"],
+            "schedule": ["on the first day of the month"]
+        },
+        {
+            "matchUpdateTypes": ["minor"],
+            "schedule": ["on the first day of the month every 2 months"]
+        },
+        {
+            "matchUpdateTypes": ["major"],
+            "schedule": ["on the first day of the month every 3 months"]
+        },
+        {
+            "description": "Pin dependencies except for certain packages",
+            "matchDepTypes": ["dependencies"],
+            "rangeStrategy": "pin"
+        },
+        {
+            "description": "Disable pinning for expo packages",
+            "matchPackageNames": [
+                "expo-linking",
+                "expo-router",
+                "expo-updates"
+            ],
+            "matchUpdateTypes": ["pin"],
+            "enabled": false
+        },
+        {
+            "description": "Follow expo versioning",
+            "matchPackageNames": [
+                "expo-linking",
+                "expo-router",
+                "expo-updates"
+            ],
+            "rangeStrategy": "tilde"
+        }
+    ]
 }
