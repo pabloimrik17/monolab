@@ -10,7 +10,6 @@
     "reviewers": ["pabloimrik17"],
     "labels": ["dependencies"],
     "baseBranches": ["develop"],
-    "dependencyDashboard": true,
     "dependencyDashboardTitle": "📦 Dependency Dashboard",
     "prConcurrentLimit": 10,
     "prHourlyLimit": 2,
@@ -30,27 +29,8 @@
             "schedule": ["on the first day of the month every 3 months"]
         },
         {
-            "description": "Pin dependencies except for certain packages",
-            "matchDepTypes": ["dependencies"],
-            "rangeStrategy": "pin"
-        },
-        {
-            "description": "Disable pinning for expo packages",
-            "matchPackageNames": [
-                "expo-linking",
-                "expo-router",
-                "expo-updates"
-            ],
-            "matchUpdateTypes": ["pin"],
-            "enabled": false
-        },
-        {
-            "description": "Follow expo versioning",
-            "matchPackageNames": [
-                "expo-linking",
-                "expo-router",
-                "expo-updates"
-            ],
+            "description": "Seguir versionado de Expo con ~",
+            "matchPackagePatterns": ["^expo($|-)", "^@expo/"],
             "rangeStrategy": "tilde"
         }
     ]
