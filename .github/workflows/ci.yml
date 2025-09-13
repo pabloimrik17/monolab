@@ -79,33 +79,33 @@ jobs:
               run: pnpm exec nx sync:check
 
             - name: 🔍 Check exports from packages
-              run: pnpm exec nx run-many --no-cloud -t build:check-exports
+              run: pnpm exec nx run-many -t build:check-exports
 
             - name: 🔍 Check for format and lint configs are valid
-              run: pnpm exec nx run-many --no-cloud -t lint:eslint:config-check lint:stylelint:config-check:scss
+              run: pnpm exec nx run-many -t lint:eslint:config-check lint:stylelint:config-check:scss
 
             - name: 🔍 Execute lint checks for affected files (Affected)
-              run: pnpm exec nx affected --no-cloud -t lint:eslint lint:stylelint lint:markdownlint lint:prettier && pnpm run lint:knip
+              run: pnpm exec nx affected -t lint:eslint lint:stylelint lint:markdownlint lint:prettier && pnpm run lint:knip
               if: ${{ github.event_name == 'pull_request' }}
 
             - name: 🔍 Execute lint checks for all files (All)
-              run: pnpm exec nx run-many --no-cloud -t lint:publint lint:knip lint:eslint lint:stylelint lint:markdownlint lint:prettier
+              run: pnpm exec nx run-many -t lint:publint lint:knip lint:eslint lint:stylelint lint:markdownlint lint:prettier
               if: ${{ github.event_name == 'push' }}
 
             - name: 🧪 Execute test checks for affected files (Affected)
               # We disable the coverage threshold for PRs because affected will only run on the files
               # that have changed and the coverage will be lower than the threshold
-              run: pnpm exec nx affected --no-cloud -t test:unit -- --coverage.thresholds.0
+              run: pnpm exec nx affected -t test:unit -- --coverage.thresholds.0
               if: ${{ github.event_name == 'pull_request' }}
 
             - name: 🧪 Execute test checks for all files (All)
-              run: pnpm exec nx run-many --no-cloud -t test:unit
+              run: pnpm exec nx run-many -t test:unit
               if: ${{ github.event_name == 'push' }}
 
             - name: 🏗 Execute build checks for affected files (Affected)
-              run: pnpm exec nx affected --no-cloud -t build
+              run: pnpm exec nx affected -t build
               if: ${{ github.event_name == 'pull_request' }}
 
             - name: 🏗 Execute build checks for all files (All)
-              run: pnpm exec nx run-many --no-cloud -t build
+              run: pnpm exec nx run-many -t build
               if: ${{ github.event_name == 'push' }}
