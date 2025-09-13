@@ -4,9 +4,11 @@ on:
     push:
         branches:
             - main
+            - pre
             - develop
-    pull_request:
+    pull_request: {}
 
+# Needed for nx-set-shas when run on the main branch
 permissions:
     actions: read
     contents: read
@@ -17,24 +19,26 @@ jobs:
         env:
             NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
         steps:
-            - uses: actions/checkout@v4
+            - name: Checkout code
+              uses: actions/checkout@v4
               with:
+                  filter: tree:0
                   fetch-depth: 0
 
-            - uses: pnpm/action-setup@v4
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
               with:
                   version: 10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad
 
-            # Cache node_modules
-            - uses: actions/setup-node@v4
+            - name: Setup Nodejs
+              uses: actions/setup-node@v4
               with:
                   node-version: 22.17.0
+                  # Cache node_modules
                   cache: "pnpm"
 
-            - run: pnpm install --frozen-lockfile
-            - uses: nrwl/nx-set-shas@v4
-
-            - run: pnpm exec nx affected -t lint:eslint:config-check
+            - name: Set Nx SHA
+              uses: nrwl/nx-set-shas@v4
 
             # This enables task distribution via Nx Cloud
             # Run this command as early as possible, before dependencies are installed
@@ -42,10 +46,63 @@ jobs:
             - name: Start Nx Cloud CI Run
               run: pnpm dlx nx-cloud start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="build"
 
-            # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
-            - run: pnpm exec nx-cloud record -- echo Hello World
+            - name: Restore cached npm dependencies
+              id: cache-dependencies-restore
+              uses: actions/cache/restore@v4
+              with:
+                  path: |
+                      node_modules
+                      ~/.cache/Cypress # needed for the Cypress binary
+                  key: npm-dependencies-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      npm-dependencies-${{ runner.os }}-${{ github.ref_name }}-
+                      npm-dependencies-${{ runner.os }}-main-
+                      npm-dependencies-${{ runner.os }}-develop-
+                      npm-dependencies-${{ runner.os }}-
 
-            # Nx Affected runs only tasks affected by the changes in this PR/commit. Learn more: https://nx.dev/ci/features/affected
-            - run: pnpm exec nx affected -t lint:eslint lint:knip lint:prettier
-            - run: pnpm exec nx affected -t test
-            - run: pnpm exec nx affected -t build
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Cache npm dependencies
+              id: cache-dependencies-save
+              uses: actions/cache/save@v4
+              with:
+                  path: |
+                      node_modules
+                      ~/.cache/Cypress # needed for the Cypress binary
+                  key: ${{ steps.cache-dependencies-restore.outputs.cache-primary-key }}
+
+            - name: 🔍 Check monorepo integrity
+              run: pnpm exec nx sync:check
+
+            - name: 🔍 Check exports from packages
+              run: pnpm exec nx run-many -t build:check-exports
+
+            - name: 🔍 Check for format and lint configs are valid
+              run: pnpm exec nx run-many -t lint:eslint:config-check lint:stylelint:config-check:scss
+
+            - name: 🔍 Execute lint checks for affected files (Affected)
+              run: pnpm exec nx affected -t lint:eslint lint:stylelint lint:markdownlint lint:prettier && pnpm run lint:knip
+              if: ${{ github.event_name == 'pull_request' }}
+
+            - name: 🔍 Execute lint checks for all files (All)
+              run: pnpm exec nx run-many -t lint:publint lint:knip lint:eslint lint:stylelint lint:markdownlint lint:prettier
+              if: ${{ github.event_name == 'push' }}
+
+            - name: 🧪 Execute test checks for affected files (Affected)
+              # We disable the coverage threshold for PRs because affected will only run on the files
+              # that have changed and the coverage will be lower than the threshold
+              run: pnpm exec nx affected -t test:unit -- --coverage.thresholds.0
+              if: ${{ github.event_name == 'pull_request' }}
+
+            - name: 🧪 Execute test checks for all files (All)
+              run: pnpm exec nx run-many -t test:unit
+              if: ${{ github.event_name == 'push' }}
+
+            - name: 🏗 Execute build checks for affected files (Affected)
+              run: pnpm exec nx affected -t build
+              if: ${{ github.event_name == 'pull_request' }}
+
+            - name: 🏗 Execute build checks for all files (All)
+              run: pnpm exec nx run-many -t build
+              if: ${{ github.event_name == 'push' }}
