@@ -4,7 +4,13 @@
     "namedInputs": {
         "default": ["{projectRoot}/**/*", "sharedGlobals"],
         "production": ["default"],
-        "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
+        "sharedGlobals": [
+            "{workspaceRoot}/package.json",
+            "{workspaceRoot}/pnpm-lock.yaml",
+            "{workspaceRoot}/tsconfig.base.json",
+            "{workspaceRoot}/nx.json",
+            "{workspaceRoot}/.github/workflows/ci.yml"
+        ]
     },
     "parallel": 10,
     "nxCloudId": "67f985a4bdd1693cbb6398fa",
