@@ -1,2 +1,4 @@
+export NODE_OPTIONS="--experimental-strip-types"
+
 validate-branch-name
-lint-staged
+lint-staged --config lint-staged.config.ts
