@@ -31,8 +31,8 @@
         },
         {
             "description": "Seguir versionado de Expo con ~",
-            "matchPackagePatterns": ["^expo($|-)", "^@expo/"],
-            "rangeStrategy": "tilde"
+            "rangeStrategy": "tilde",
+            "matchPackageNames": ["/^expo($|-)/", "/^@expo//"]
         }
     ]
 }
