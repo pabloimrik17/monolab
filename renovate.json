@@ -9,7 +9,7 @@
     "timezone": "Europe/Madrid",
     "reviewers": ["pabloimrik17"],
     "labels": ["dependencies"],
-    "baseBranches": ["develop"],
+    "baseBranchPatterns": ["develop"],
     "dependencyDashboardTitle": "📦 Dependency Dashboard",
     "prConcurrentLimit": 10,
     "prHourlyLimit": 2,
