@@ -13,6 +13,7 @@
     "dependencyDashboardTitle": "📦 Dependency Dashboard",
     "prConcurrentLimit": 10,
     "prHourlyLimit": 2,
+    "configMigration": true,
     "minimumReleaseAge": "7 days",
     "rangeStrategy": "pin",
     "packageRules": [
