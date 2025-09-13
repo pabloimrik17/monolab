@@ -37,6 +37,15 @@ jobs:
                   # Cache node_modules
                   cache: "pnpm"
 
+            - name: Set Nx SHA
+              uses: nrwl/nx-set-shas@v4
+
+            # This enables task distribution via Nx Cloud
+            # Run this command as early as possible, before dependencies are installed
+            # Learn more at https://nx.dev/ci/reference/nx-cloud-cli#npx-nxcloud-startcirun
+            - name: Start Nx Cloud CI Run
+              run: pnpm dlx nx-cloud start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="build"
+
             - name: Restore cached npm dependencies
               id: cache-dependencies-restore
               uses: actions/cache/restore@v4
@@ -62,18 +71,6 @@ jobs:
                       node_modules
                       ~/.cache/Cypress # needed for the Cypress binary
                   key: ${{ steps.cache-dependencies-restore.outputs.cache-primary-key }}
-
-            - name: Set Nx SHA
-              uses: nrwl/nx-set-shas@v4
-
-            # This enables task distribution via Nx Cloud
-            # Run this command as early as possible, before dependencies are installed
-            # Learn more at https://nx.dev/ci/reference/nx-cloud-cli#npx-nxcloud-startcirun
-            - name: Start Nx Cloud CI Run
-              run: pnpm dlx nx-cloud start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="build"
-
-            # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
-            - run: pnpm exec nx-cloud record -- echo Hello World
 
             - name: 🔍 Check monorepo integrity
               run: pnpm exec nx sync:check
