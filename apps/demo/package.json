@@ -18,7 +18,7 @@
     "dependencies": {
         "@monolab/is-even": "workspace:*",
         "@monolab/is-odd": "workspace:*",
-        "solid-js": "1.9.5"
+        "solid-js": "1.9.9"
     },
     "devDependencies": {
         "typescript": "5.9.2",
