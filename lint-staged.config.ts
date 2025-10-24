@@ -5,9 +5,9 @@ const ESLINT_MAX_WARNINGS = 50;
 const KNIP_MAX_ISSUES = 70;
 
 function toRelativePaths(absoluteFilenames: string[]): string[] {
-    const workspaceRoot = process.cwd();
+    const workspaceRoot = process.env.NX_WORKSPACE_ROOT ?? process.cwd();
     return absoluteFilenames.map((filename) =>
-        relative(workspaceRoot, filename)
+        relative(workspaceRoot, filename).replace(/\\/g, "/")
     );
 }
 
