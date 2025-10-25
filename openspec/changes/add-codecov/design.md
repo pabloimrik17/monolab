@@ -47,22 +47,57 @@
 
 ### 2. Monorepo Coverage Strategy
 
-**Decision**: Upload all package coverage reports in a single Codecov upload step
+**Decision**: Upload all package coverage reports with Codecov flags for hybrid tracking (global + per-package)
 
 **Rationale**:
-- Nx generates separate coverage reports per package in `{projectRoot}/coverage/`
-- Codecov supports multiple coverage files via glob patterns
-- Simpler CI configuration with single upload step
-- Codecov automatically merges reports and provides per-package breakdown
+- MonoLab packages are published independently to JSR with independent versioning
+- Each package has its own consumers and quality requirements
+- Codecov flags provide BOTH global monorepo view AND individual package views
+- Single upload with automatic flag detection based on file paths
+- Enables both global badge and per-package badges simultaneously
+
+**Benefits of Flag Strategy**:
+1. **Global View**: Overall monorepo coverage percentage and trends
+2. **Package-Specific Views**: Individual coverage for react-hooks, react-clean, is-even, is-odd, ts-configs
+3. **Flexible Badges**: One global badge in root README + optional per-package badges
+4. **Smart PR Comments**: Codecov shows only flags affected by PR changes
+5. **Independent Thresholds**: Can set different coverage targets per package if needed
 
 **Implementation**:
 ```yaml
 - uses: codecov/codecov-action@v5
   with:
     files: ./packages/*/coverage/lcov.info,./apps/*/coverage/lcov.info
+    flags: react-hooks,react-clean,is-even,is-odd,ts-configs
+    # Codecov automatically associates files with flags based on paths in config
 ```
 
-### 3. Upload Timing
+**codecov.yaml configuration**:
+```yaml
+flags:
+  react-hooks:
+    paths:
+      - packages/react-hooks/
+  react-clean:
+    paths:
+      - packages/react-clean/
+  is-even:
+    paths:
+      - packages/is-even/
+  is-odd:
+    paths:
+      - packages/is-odd/
+  ts-configs:
+    paths:
+      - packages/ts-configs/
+```
+
+**Alternatives Considered**:
+- **Single consolidated report without flags**: Simpler but loses per-package visibility
+- **Separate Codecov projects per package**: Maximum separation but higher overhead, no global view
+- **Hybrid with flags** (chosen): Best of both worlds for independent packages in a monorepo
+
+### 3. Upload Timing and Affected Strategy
 
 **Decision**: Upload coverage only after all tests complete (both affected and full runs)
 
@@ -72,8 +107,46 @@
 - Aligns with existing CI workflow structure (test → build → deploy)
 
 **Strategy**:
-- PR runs: Upload affected package coverage
-- Main/develop/pre runs: Upload all package coverage
+- **PR runs**: Upload affected package coverage only
+- **Main/develop/pre runs**: Upload all package coverage
+
+**How Affected Coverage Works with Codecov Baselines**:
+
+When using Nx affected in PRs, only modified packages run tests and generate coverage. Codecov handles this intelligently:
+
+1. **Baseline Establishment** (main/develop/pre branches):
+   - Full coverage upload from all packages
+   - Codecov stores complete baseline: `react-hooks: 85%, react-clean: 78%, is-even: 100%, is-odd: 100%`
+   - This becomes the comparison reference for future PRs
+
+2. **PR with Affected** (pull requests):
+   - Only affected packages generate coverage (e.g., only react-hooks modified)
+   - Codecov upload contains partial data (only react-hooks)
+   - Codecov compares affected packages against their baseline
+   - Non-affected packages maintain their baseline coverage in reports
+
+3. **PR Comments and Status Checks**:
+   - Show updated coverage for affected packages: `react-hooks: 85% → 87% (+2%)`
+   - Non-affected packages reference baseline: `is-even: 100% (unchanged)`
+   - Global coverage recalculated using: affected packages (new) + non-affected (baseline)
+
+**Example Flow**:
+```
+Main baseline:
+  react-hooks: 85%
+  is-even: 100%
+  Global: 92.5%
+
+PR #42 (only modifies react-hooks):
+  Upload: react-hooks at 87%
+
+Codecov PR comment shows:
+  react-hooks: 85% → 87% (+2%) ✅
+  is-even: 100% (no change, uses baseline)
+  Global: 92.5% → 93% (+0.5%)
+```
+
+**Important**: First PR for a new package without main baseline will show incomplete global coverage until merged to main. This is acceptable as it establishes the initial baseline.
 
 ### 4. Token Management
 
@@ -102,27 +175,58 @@
 
 ### 6. Bundle Size Tracking
 
-**Decision**: Use Codecov's native bundle analysis with webpack-plugin integration
+**Decision**: Use Codecov's official Bundle Analysis product (https://about.codecov.io/product/feature/bundle-analysis/)
 
 **Rationale**:
-- Codecov provides dedicated bundle analysis feature (separate from coverage)
-- Automatically tracks size changes over time
-- Integrates with PR comments to show size deltas
-- No need for separate bundle analysis tools
+- Codecov provides dedicated Bundle Analysis as a separate product from coverage reporting
+- Native integration with JavaScript/TypeScript build tools
+- Automatically tracks bundle size changes over time
+- Integrates with PR comments to show size deltas and regressions
+- Provides detailed breakdown of what's in each bundle
+- No need for custom scripts or manual size calculation
 
-**Implementation**:
-```yaml
-# Run only on main branch to avoid noise
-- name: Upload bundle stats
-  if: github.ref == 'refs/heads/main'
-  uses: codecov/codecov-action@v5
-  with:
-    plugin: bundler
-```
+**Why Not Custom Script**:
+- Codecov Bundle Analysis provides more features than manual calculation
+- Automatic change detection and regression warnings
+- Historical trending and visualization built-in
+- Proper integration with Codecov dashboard
+- Better maintainability (no custom code to maintain)
+
+**Implementation Strategy**:
+1. **Setup Phase**:
+   - Follow Codecov Bundle Analysis documentation for JavaScript projects
+   - Install and configure bundler plugin/integration for tsdown (MonoLab's bundler)
+   - May require bundler-specific plugin or stats file generation
+
+2. **CI Integration**:
+   ```yaml
+   # Run only on main branch to avoid noise
+   - name: Upload bundle stats to Codecov
+     if: github.ref == 'refs/heads/main'
+     uses: codecov/codecov-action@v5
+     with:
+       # Configuration depends on Bundle Analysis setup
+       # May use plugin parameter or separate bundle stats file
+       fail_ci_if_error: false
+   ```
+
+3. **Per-Package Tracking**:
+   - Track each published package separately: react-hooks, react-clean, is-even, is-odd, ts-configs
+   - Each package has its own bundle stats file or plugin configuration
+   - Exclude demo app (not published to JSR)
 
 **Packages to Track**:
-- All packages published to JSR (react-hooks, react-clean, is-even, is-odd, ts-configs)
-- Exclude demo app (not published)
+- `@monolab/react-hooks` - React lifecycle hooks
+- `@monolab/react-clean` - MVVM library with Inversify
+- `@monolab/is-even` - Even number utility
+- `@monolab/is-odd` - Odd number utility
+- `@monolab/ts-configs` - Shared TypeScript configurations
+
+**Next Steps for Implementation**:
+- Research tsdown compatibility with Codecov Bundle Analysis
+- Determine if bundler plugin or stats file approach is better
+- Configure per-package bundle tracking
+- Test on main branch to verify upload works
 
 ### 7. Configuration File Location
 

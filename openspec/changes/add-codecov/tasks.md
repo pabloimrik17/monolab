@@ -17,12 +17,18 @@
 
 ### 1. Codecov Configuration File
 
-- [ ] **Create codecov.yaml at repository root**
+- [x] **Create codecov.yaml at repository root** ✅ COMPLETED
   - Define coverage thresholds (project: auto/5%, patch: 70%/5%)
   - Configure ignore patterns (test files, dist/, node_modules/, config files)
   - Set checks to informational mode initially
   - Enable inline annotations for PR diff view
-  - Configure per-package flags (react-hooks, react-clean, is-even, is-odd, ts-configs)
+  - Configure per-package flags with path associations:
+    - `react-hooks` flag → `packages/react-hooks/`
+    - `react-clean` flag → `packages/react-clean/`
+    - `is-even` flag → `packages/is-even/`
+    - `is-odd` flag → `packages/is-odd/`
+    - `ts-configs` flag → `packages/ts-configs/`
+  - Enable both global and per-flag coverage tracking
   - **Verify**: File exists at `/codecov.yaml`
 
 - [ ] **Validate codecov.yaml syntax**
@@ -32,18 +38,19 @@
 
 ### 2. CI Workflow Integration
 
-- [ ] **Add Codecov upload step to ci.yml (after PR tests)**
+- [x] **Add Codecov upload step to ci.yml (after PR tests)** ✅ COMPLETED
   - Add step after "Execute test checks for affected files (Affected)" (line ~96)
   - Use `codecov/codecov-action@v5`
   - Configure to upload files matching `./packages/*/coverage/lcov.info,./apps/*/coverage/lcov.info`
+  - Add flags parameter: `flags: react-hooks,react-clean,is-even,is-odd,ts-configs`
   - Set `fail_ci_if_error: false` for non-blocking uploads
   - Use `CODECOV_TOKEN` from secrets
   - Include `if: ${{ github.event_name == 'pull_request' }}` condition
   - **Verify**: YAML syntax is valid using `actionlint` or GitHub Actions syntax checker
 
-- [ ] **Add Codecov upload step to ci.yml (after main branch tests)**
+- [x] **Add Codecov upload step to ci.yml (after main branch tests)** ✅ COMPLETED
   - Add step after "Execute test checks for all files (All)" (line ~100)
-  - Use same configuration as PR upload step
+  - Use same configuration as PR upload step (including flags)
   - Include `if: ${{ github.event_name == 'push' }}` condition
   - **Verify**: YAML syntax is valid
 
@@ -52,35 +59,45 @@
   - Confirm lcov.info files are generated in expected locations
   - **Verify**: Run `pnpm exec nx affected -t test:unit -- --coverage` locally and check for `coverage/lcov.info` files
 
-### 3. Coverage Badge
+### 3. Coverage Badges
 
-- [ ] **Add Codecov badge to README.md**
+- [x] **Add global Codecov badge to root README.md** ✅ COMPLETED
   - Insert badge after CI badges (line ~3) and before License badge (line ~4)
   - Use format: `[![codecov](https://codecov.io/gh/pabloimrik17/monolab/branch/main/graph/badge.svg)](https://codecov.io/gh/pabloimrik17/monolab)`
+  - Shows aggregated coverage across all packages
   - Maintain consistent spacing with existing badges
   - **Verify**: Badge markdown is valid and renders correctly in preview
 
+- [ ] **(Optional) Add per-package badges to individual package READMEs**
+  - For each package with a README (e.g., `packages/react-hooks/README.md`):
+    - Add flag-specific badge: `[![react-hooks coverage](https://codecov.io/gh/pabloimrik17/monolab/branch/main/graph/badge.svg?flag=react-hooks)](https://codecov.io/gh/pabloimrik17/monolab?flag=react-hooks)`
+    - Replace `react-hooks` with appropriate package name in URL
+  - Shows package-specific coverage independent of other packages
+  - **Verify**: Each badge displays correct coverage for its package only
+
 ### 4. Bundle Size Tracking
 
-- [ ] **Create bundle size calculation script**
-  - Create script at `tools/scripts/calculate-bundle-sizes.sh`
-  - Script iterates over published packages (packages/react-hooks, packages/react-clean, packages/is-even, packages/is-odd, packages/ts-configs)
-  - For each package, calculate size of `dist/` directory (all .js, .d.ts, .d.ts.map files)
-  - Generate gzip-compressed size estimate
-  - Output size data in format compatible with Codecov bundle analysis
-  - **Verify**: Run script locally and confirm output contains size data for all packages
+**Note**: Using Codecov's official Bundle Analysis product (https://about.codecov.io/product/feature/bundle-analysis/)
 
-- [ ] **Make bundle size script executable**
-  - Run `chmod +x tools/scripts/calculate-bundle-sizes.sh`
-  - **Verify**: `ls -l tools/scripts/calculate-bundle-sizes.sh` shows execute permissions
+- [ ] **Setup Codecov Bundle Analysis integration**
+  - Follow Codecov Bundle Analysis setup guide for JavaScript/TypeScript projects
+  - Install required bundler plugin or integration for the build tool (tsdown/Vite)
+  - Configure bundle analysis to track published packages: react-hooks, react-clean, is-even, is-odd, ts-configs
+  - **Verify**: Bundle analysis configuration is properly set up
 
-- [ ] **Add bundle size reporting to ci.yml**
-  - Add step after "Execute build checks for all files (All)" (line ~108)
-  - Run bundle size calculation script
-  - Upload bundle stats to Codecov using `codecov/codecov-action@v5` with `plugin: bundler` (if supported) or custom format
+- [ ] **Add bundle stats upload to ci.yml**
+  - Add step after "Execute build checks for all files (All)" (line ~120)
+  - Use Codecov Bundle Analysis upload (may use `codecov/codecov-action@v5` with bundle stats file)
   - Include `if: ${{ github.ref == 'refs/heads/main' }}` condition (only on main branch)
   - Set `fail_ci_if_error: false`
+  - Upload bundle stats for each published package
   - **Verify**: YAML syntax is valid
+
+- [ ] **Test bundle analysis**
+  - Trigger CI on main branch
+  - Verify bundle stats are uploaded to Codecov
+  - Check Codecov dashboard for bundle analysis data
+  - **Verify**: Bundle sizes appear for each tracked package
 
 ## Testing & Validation
 

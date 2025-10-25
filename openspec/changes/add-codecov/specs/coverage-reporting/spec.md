@@ -13,6 +13,7 @@ The GitHub Actions CI workflow MUST automatically upload code coverage reports t
 **Then** the workflow uploads coverage reports from affected packages to Codecov
 **And** the upload includes only packages that were tested (affected)
 **And** the upload step uses the `CODECOV_TOKEN` secret for authentication
+**And** the upload includes flags for automatic package detection (react-hooks, react-clean, is-even, is-odd, ts-configs)
 
 #### Scenario: Upload coverage on main branch push
 
@@ -21,6 +22,8 @@ The GitHub Actions CI workflow MUST automatically upload code coverage reports t
 **Then** the workflow uploads coverage reports from all packages to Codecov
 **And** the upload includes coverage data from all packages in the monorepo
 **And** the upload step uses the `CODECOV_TOKEN` secret for authentication
+**And** the upload includes flags for automatic package detection (react-hooks, react-clean, is-even, is-odd, ts-configs)
+**And** Codecov associates coverage with appropriate flags based on file paths
 
 #### Scenario: Upload coverage on develop and pre branch push
 
@@ -28,6 +31,15 @@ The GitHub Actions CI workflow MUST automatically upload code coverage reports t
 **When** all tests complete with coverage enabled
 **Then** the workflow uploads coverage reports from all packages to Codecov
 **And** the upload reflects the branch name in Codecov dashboard
+
+#### Scenario: Flags enable per-package coverage tracking
+
+**Given** coverage reports are uploaded with flags
+**When** Codecov processes the upload
+**Then** each package's coverage is tracked separately by flag
+**And** global coverage aggregates all packages
+**And** coverage can be filtered by individual flags in the dashboard
+**And** PR comments show coverage changes per affected flag
 
 ---
 

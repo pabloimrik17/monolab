@@ -2,17 +2,18 @@
 
 ## ADDED Requirements
 
-### Requirement: CI workflow MUST report bundle sizes to Codecov
+### Requirement: CI workflow MUST use Codecov Bundle Analysis for bundle size tracking
 
-The GitHub Actions CI workflow MUST report package bundle sizes to Codecov for trend tracking.
+The GitHub Actions CI workflow MUST use Codecov's official Bundle Analysis product to track package bundle sizes and trends.
 
-#### Scenario: Bundle sizes reported on main branch push
+#### Scenario: Bundle stats uploaded on main branch push
 
 **Given** code is pushed to the main branch
 **When** the build completes successfully
-**Then** the workflow calculates the size of each package's `dist/` output
-**And** the workflow uploads bundle size data to Codecov
+**Then** the workflow generates bundle stats for each published package
+**And** the workflow uploads bundle stats to Codecov Bundle Analysis
 **And** Codecov records bundle sizes with commit metadata
+**And** the upload uses Codecov Bundle Analysis integration (plugin or stats file)
 
 #### Scenario: Bundle sizes are not reported on pull requests
 
@@ -25,22 +26,22 @@ The GitHub Actions CI workflow MUST report package bundle sizes to Codecov for t
 
 ### Requirement: Bundle sizes MUST be tracked per published package
 
-Each package published to JSR MUST have its bundle size tracked separately.
+Each package published to JSR MUST have its bundle size tracked separately using Codecov Bundle Analysis.
 
 #### Scenario: Track bundle size for library packages
 
 **Given** the monorepo contains published packages (react-hooks, react-clean, is-even, is-odd, ts-configs)
-**When** bundle sizes are calculated
-**Then** each package's `dist/` directory size is measured
-**And** each package is reported as a separate bundle to Codecov
+**When** bundle stats are generated and uploaded
+**Then** each package has its own bundle stats reported to Codecov
+**And** each package is tracked as a separate bundle in Codecov dashboard
 **And** package names are used as bundle identifiers
 
 #### Scenario: Exclude demo app from bundle tracking
 
 **Given** the monorepo contains a demo application
-**When** bundle sizes are calculated
-**Then** the demo app is excluded from bundle tracking
-**And** only published packages are measured
+**When** bundle stats are generated
+**Then** the demo app is excluded from Bundle Analysis configuration
+**And** only published packages are tracked
 **And** internal applications do not pollute bundle size metrics
 
 ---
@@ -67,66 +68,76 @@ Codecov dashboard MUST display bundle size trends over time.
 
 ---
 
-### Requirement: Bundle size calculation MUST include all distributable files
+### Requirement: Bundle Analysis MUST track all distributable files
 
-Bundle size MUST accurately reflect what consumers will download.
+Codecov Bundle Analysis MUST be configured to track all files that consumers download from published packages.
 
-#### Scenario: Include all JavaScript and TypeScript declaration files
+#### Scenario: Bundle stats include all distributable files
 
-**Given** a package builds to the `dist/` directory
-**When** bundle size is calculated
-**Then** it includes all `.js` files in `dist/`
-**And** it includes all `.d.ts` declaration files
-**And** it includes all `.d.ts.map` declaration map files
+**Given** a package builds to the `dist/` directory with `.js`, `.d.ts`, and `.d.ts.map` files
+**When** bundle stats are generated via Bundle Analysis
+**Then** the stats include all `.js` files in `dist/`
+**And** the stats include all `.d.ts` declaration files
+**And** the stats include all `.d.ts.map` declaration map files
+**And** the bundle size accurately reflects what consumers download
 
-#### Scenario: Exclude non-distributable files from calculation
+#### Scenario: Bundle Analysis respects package exports
 
-**Given** a package's `dist/` directory may contain temporary or metadata files
-**When** bundle size is calculated
-**Then** it excludes files not listed in `package.json` exports
-**And** it excludes source maps (`.js.map`) unless explicitly distributed
-**And** the size reflects only what users download via package managers
-
----
-
-### Requirement: Bundle size data MUST include compression estimates
-
-Bundle size reports MUST indicate both raw and compressed sizes.
-
-#### Scenario: Report gzipped bundle size
-
-**Given** a package's bundle size is calculated
-**When** the size is reported to Codecov
-**Then** it includes the raw file size
-**And** it includes an estimated gzip-compressed size
-**And** both sizes are visible in the Codecov dashboard
-
-#### Scenario: Gzip estimation is accurate
-
-**Given** bundle files are compressed using gzip
-**When** the gzipped size is estimated
-**Then** the estimate is within 5% of actual gzip compression
-**And** the compression ratio is consistent with JavaScript content
-**And** the estimate provides realistic size expectations for users
+**Given** a package's `dist/` directory contains various files
+**When** Bundle Analysis is configured
+**Then** it tracks files matching the `package.json` exports configuration
+**And** it accurately represents the actual package size as published
+**And** the size reflects what users download via package managers (JSR)
 
 ---
 
-### Requirement: Bundle size tracking MUST NOT slow down CI significantly
+### Requirement: Bundle Analysis data MUST include compression information
 
-Bundle size calculation and reporting MUST be efficient.
+Codecov Bundle Analysis MUST provide both raw and compressed bundle sizes.
 
-#### Scenario: Bundle size calculation completes quickly
+#### Scenario: Dashboard shows raw and compressed sizes
+
+**Given** bundle stats are uploaded to Codecov Bundle Analysis
+**When** a user views the bundle in Codecov dashboard
+**Then** the dashboard displays the raw file size
+**And** the dashboard displays the compressed (gzip) size
+**And** both raw and compressed sizes are tracked over time
+**And** size comparisons show both raw and compressed deltas
+
+#### Scenario: Compression data reflects real-world downloads
+
+**Given** Codecov Bundle Analysis tracks bundle sizes
+**When** compression data is displayed
+**Then** the compressed size represents what users actually download
+**And** the compression ratio is realistic for JavaScript/TypeScript content
+**And** the data provides accurate expectations for package consumers
+
+---
+
+### Requirement: Bundle Analysis integration MUST NOT slow down CI significantly
+
+Codecov Bundle Analysis integration MUST be efficient and not add significant overhead to CI runs.
+
+#### Scenario: Bundle stats generation completes quickly
 
 **Given** the CI workflow builds all packages
-**When** bundle sizes are calculated
-**Then** the calculation completes within 10 seconds for all packages
+**When** bundle stats are generated for Bundle Analysis
+**Then** the generation completes within 10 seconds for all packages
 **And** the overhead is acceptable for main branch pushes
 **And** CI latency does not increase noticeably
 
-#### Scenario: Bundle size upload is non-blocking
+#### Scenario: Bundle stats upload is non-blocking
 
-**Given** bundle sizes have been calculated
-**When** the upload to Codecov occurs
-**Then** the upload completes within 5 seconds
-**And** upload failures do not block the CI workflow
-**And** the workflow continues even if Codecov is unavailable
+**Given** bundle stats have been generated
+**When** the upload to Codecov Bundle Analysis occurs
+**Then** the upload completes within 10 seconds
+**And** upload failures do not block the CI workflow (fail_ci_if_error: false)
+**And** the workflow continues successfully even if Codecov is unavailable
+
+#### Scenario: Bundle Analysis only runs on main branch
+
+**Given** a commit is pushed to a branch
+**When** the CI workflow runs
+**Then** Bundle Analysis only executes on main branch pushes
+**And** PR builds skip Bundle Analysis to save time
+**And** CI performance on PRs is not affected by bundle tracking
