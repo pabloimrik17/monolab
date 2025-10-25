@@ -2,7 +2,7 @@
 
 ## Summary
 
-Integrate Codecov to provide comprehensive code coverage reporting, visualization, and quality gates for the MonoLab monorepo. This will enable:
+Integrate Codecov to provide comprehensive code coverage reporting, test analytics, visualization, and quality gates for the MonoLab monorepo. This will enable:
 
 - Automated coverage reporting from CI/CD pipeline with Codecov flags
 - Global coverage view + per-package coverage tracking (react-hooks, react-clean, is-even, is-odd, ts-configs)
@@ -10,6 +10,7 @@ Integrate Codecov to provide comprehensive code coverage reporting, visualizatio
 - Pull request coverage checks and comments (showing only affected packages)
 - Coverage trend tracking over time (global and per-package)
 - Bundle size monitoring for published packages (per-package tracking)
+- Test result analytics with failure tracking, flaky test detection, and performance metrics
 
 ## Motivation
 
@@ -21,6 +22,7 @@ Currently, the project generates coverage reports locally via Vitest, but lacks:
 4. **PR automation**: No automated coverage feedback on pull requests
 5. **Centralized reporting**: Coverage data is scattered across local builds and CI runs
 6. **Bundle monitoring**: No tracking of package size changes that could affect consumers
+7. **Test analytics**: No visibility into test failures, flaky tests, or test performance metrics across CI runs
 
 Adding Codecov with flags addresses these gaps by providing:
 - **Hybrid tracking**: Global monorepo view + individual package views
@@ -30,13 +32,14 @@ Adding Codecov with flags addresses these gaps by providing:
 
 ## Scope
 
-This change introduces five main capabilities:
+This change introduces six main capabilities:
 
 1. **Coverage Reporting** (`coverage-reporting`): Upload coverage reports from GitHub Actions to Codecov with flags for per-package tracking
 2. **Coverage Badges** (`coverage-badges`): Display global coverage badge in root README + optional per-package badges using flag parameters
 3. **Codecov Configuration** (`codecov-config`): Configure coverage thresholds, ignore patterns, flags with path associations, and reporting behavior
 4. **PR Coverage Checks** (`pr-coverage-checks`): Automated coverage analysis and status checks on pull requests (showing only affected packages)
 5. **Bundle Size Tracking** (`bundle-size-tracking`): Monitor and report individual package bundle sizes using Codecov's bundle analysis
+6. **Test Analytics** (`test-analytics`): Upload test results in JUnit XML format to track test failures, identify flaky tests, and monitor test performance metrics
 
 ### Flag-Based Strategy
 
@@ -73,3 +76,8 @@ Each package (react-hooks, react-clean, is-even, is-odd, ts-configs) will be tra
 - [ ] Codecov dashboard allows filtering by individual package flags
 - [ ] Bundle size changes tracked for each published package independently
 - [ ] Affected PRs show complete per-package coverage (not partial file coverage)
+- [ ] Test results successfully upload to Codecov Test Analytics with flags for per-package tracking
+- [ ] Failed tests display stack traces and error messages in Codecov dashboard
+- [ ] Flaky tests are detected and highlighted in Test Analytics
+- [ ] Test performance metrics (run duration, failure rates) visible in Codecov dashboard
+- [ ] Test result uploads occur even when tests fail (non-blocking CI)

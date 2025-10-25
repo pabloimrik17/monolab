@@ -31,7 +31,7 @@
   - Enable both global and per-flag coverage tracking
   - **Verify**: File exists at `/codecov.yaml`
 
-- [ ] **Validate codecov.yaml syntax**
+- [x] **Validate codecov.yaml syntax** ✅ COMPLETED
   - Run `curl -X POST --data-binary @codecov.yaml https://codecov.io/validate` (if available)
   - Or paste content into Codecov configuration validator in dashboard
   - **Verify**: Configuration passes validation with no errors
@@ -79,25 +79,80 @@
 
 **Note**: Using Codecov's official Bundle Analysis product (https://about.codecov.io/product/feature/bundle-analysis/)
 
-- [ ] **Setup Codecov Bundle Analysis integration**
-  - Follow Codecov Bundle Analysis setup guide for JavaScript/TypeScript projects
-  - Install required bundler plugin or integration for the build tool (tsdown/Vite)
-  - Configure bundle analysis to track published packages: react-hooks, react-clean, is-even, is-odd, ts-configs
-  - **Verify**: Bundle analysis configuration is properly set up
+- [x] **Setup Codecov Bundle Analysis integration** ✅ COMPLETED
+  - Installed @codecov/bundle-analyzer as workspace devDependency
+  - Using CLI-based approach with codecov-bundle-analyzer command
+  - Configured to track published packages: react-hooks, react-clean, is-even, is-odd, ts-configs
+  - **Verify**: @codecov/bundle-analyzer installed in package.json
 
-- [ ] **Add bundle stats upload to ci.yml**
-  - Add step after "Execute build checks for all files (All)" (line ~120)
-  - Use Codecov Bundle Analysis upload (may use `codecov/codecov-action@v5` with bundle stats file)
-  - Include `if: ${{ github.ref == 'refs/heads/main' }}` condition (only on main branch)
-  - Set `fail_ci_if_error: false`
-  - Upload bundle stats for each published package
+- [x] **Add bundle stats upload to ci.yml** ✅ COMPLETED
+  - Added step after "Execute build checks for all files (All)" (line ~130)
+  - Uses pnpm exec codecov-bundle-analyzer for each package
+  - Includes `if: ${{ github.ref == 'refs/heads/main' }}` condition (only on main branch)
+  - Set `continue-on-error: true` (non-blocking)
+  - Upload bundle stats for each published package in loop
   - **Verify**: YAML syntax is valid
 
-- [ ] **Test bundle analysis**
+- [ ] **Test bundle analysis** (Requires main branch push with CODECOV_TOKEN configured)
   - Trigger CI on main branch
   - Verify bundle stats are uploaded to Codecov
   - Check Codecov dashboard for bundle analysis data
   - **Verify**: Bundle sizes appear for each tracked package
+
+### 5. Test Analytics
+
+**Note**: Using Codecov Test Analytics (https://docs.codecov.com/docs/test-analytics)
+
+- [ ] **Configure Vitest JUnit reporter for all packages**
+  - Update each package's Vitest configuration to include JUnit reporter
+  - For each package in `packages/*/project.json`:
+    - Locate test target configuration
+    - Add JUnit reporter to reporters array: `["default", "junit"]`
+    - Configure outputFile to `test-results.junit.xml` in package root
+  - Ensure JUnit reporter runs alongside default reporter (multiple reporters)
+  - **Verify**: Run tests locally and confirm `test-results.junit.xml` files are generated
+
+- [ ] **Add test results upload to ci.yml (after PR tests)**
+  - Add step after "Upload coverage to Codecov (Affected)" (line ~107)
+  - Use `codecov/test-results-action@v1`
+  - Configure to upload files matching `./packages/*/test-results.junit.xml,./apps/*/test-results.junit.xml`
+  - Add flags parameter: `flags: react-hooks,react-clean,is-even,is-odd,ts-configs`
+  - Use `CODECOV_TOKEN` from secrets
+  - Include `if: ${{ !cancelled() }}` condition (runs even when tests fail)
+  - **Verify**: YAML syntax is valid
+
+- [ ] **Add test results upload to ci.yml (after main branch tests)**
+  - Add step after "Upload coverage to Codecov (All)" (line ~121)
+  - Use same configuration as PR upload step (including flags)
+  - Include `if: ${{ !cancelled() && github.event_name == 'push' }}` condition
+  - **Verify**: YAML syntax is valid
+
+- [ ] **Test analytics upload on a feature branch**
+  - Create test PR from feature branch
+  - Intentionally introduce a failing test to verify failure capture
+  - Push commit to trigger CI
+  - Wait for CI to complete (tests may fail, upload should still occur)
+  - Check CI logs for successful test results upload
+  - **Verify**: Upload logs show "Success" even with failing tests
+
+- [ ] **Verify test analytics appears in Codecov dashboard**
+  - View Codecov dashboard for the repository
+  - Navigate to Test Analytics section
+  - Confirm test results are displayed with pass/fail status
+  - Verify stack traces are available for failed tests
+  - **Verify**: Test Analytics dashboard shows test execution data
+
+- [ ] **Verify test analytics in PR comments**
+  - Check test PR for Codecov bot comment
+  - Confirm comment includes test failure information (if tests failed)
+  - Verify test performance metrics are displayed
+  - **Verify**: PR comment contains test analytics data
+
+- [ ] **Test flaky test detection** (Long-term verification)
+  - Monitor test runs over multiple CI executions
+  - Identify any tests that intermittently fail
+  - Verify Codecov marks these tests as flaky in dashboard
+  - **Verify**: Flaky test indicator appears in Test Analytics after multiple runs
 
 ## Testing & Validation
 
@@ -143,6 +198,7 @@
   - Add Codecov to "CI/CD & Publishing" section under "Tech Stack"
   - Document that coverage reports are uploaded to Codecov
   - Note that bundle sizes are tracked on main branch
+  - Document that test results are uploaded to Codecov Test Analytics
   - **Verify**: Changes are accurate and follow existing documentation style
 
 - [ ] **Add Codecov setup instructions to README (if needed)**
@@ -173,12 +229,15 @@
 - **Task 2.1, 2.2, 2.3** depend on **Task 1.1** (codecov.yaml must exist before CI changes)
 - **Task 3.1** can be done in parallel with CI changes
 - **Task 4.1, 4.2, 4.3** depend on successful build configuration (can be done in parallel with coverage tasks)
-- **All testing tasks (section 4)** depend on prerequisites and core implementation being complete
+- **Task 5.1** (Vitest JUnit configuration) can be done in parallel with other implementation tasks
+- **Task 5.2, 5.3** (Test Analytics CI integration) depend on **Task 5.1** (JUnit reporter must be configured first)
+- **All testing tasks (section "Testing & Validation")** depend on prerequisites and core implementation being complete
 - **Documentation tasks** can be done in parallel with implementation
 
 ## Parallelizable Work
 
 The following tasks can be executed in parallel:
-- **Configuration file creation** (Task 1.1) + **Badge addition** (Task 3.1)
+- **Configuration file creation** (Task 1.1) + **Badge addition** (Task 3.1) + **Vitest JUnit configuration** (Task 5.1)
 - **CI workflow modifications** (Tasks 2.1, 2.2) + **Bundle size script creation** (Tasks 4.1, 4.2)
+- **Test Analytics CI integration** (Tasks 5.2, 5.3) can be done after Task 5.1 completes
 - **Documentation updates** can be done anytime during or after implementation

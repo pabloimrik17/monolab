@@ -52,6 +52,10 @@
 - **GitHub Actions**: Automated CI pipeline with Nx Cloud integration
 - **JSR**: Primary package registry for publishing
 - **Nx Cloud**: Distributed task execution (ID: 67f985a4bdd1693cbb6398fa)
+- **Codecov**: Code coverage reporting and bundle size analysis
+  - Coverage reports uploaded from CI with per-package flags (react-hooks, react-clean, is-even, is-odd, ts-configs)
+  - Bundle size tracking on main branch using Codecov Bundle Analysis
+  - Global and per-package coverage badges available
 
 ## Project Conventions
 
