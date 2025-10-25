@@ -38,21 +38,15 @@
 
 ### 2. CI Workflow Integration
 
-- [x] **Add Codecov upload step to ci.yml (after PR tests)** ✅ COMPLETED
-  - Add step after "Execute test checks for affected files (Affected)" (line ~96)
+- [x] **Add Codecov upload step to ci.yml** ✅ COMPLETED
+  - Add single step after test execution (works for both PR and main branch)
   - Use `codecov/codecov-action@v5`
   - Configure to upload files matching `./packages/*/coverage/lcov.info,./apps/*/coverage/lcov.info`
   - Add flags parameter: `flags: react-hooks,react-clean,is-even,is-odd,ts-configs`
   - Set `fail_ci_if_error: false` for non-blocking uploads
   - Use `CODECOV_TOKEN` from secrets
-  - Include `if: ${{ github.event_name == 'pull_request' }}` condition
+  - No event condition needed (runs after any test execution)
   - **Verify**: YAML syntax is valid using `actionlint` or GitHub Actions syntax checker
-
-- [x] **Add Codecov upload step to ci.yml (after main branch tests)** ✅ COMPLETED
-  - Add step after "Execute test checks for all files (All)" (line ~100)
-  - Use same configuration as PR upload step (including flags)
-  - Include `if: ${{ github.event_name == 'push' }}` condition
-  - **Verify**: YAML syntax is valid
 
 - [ ] **Ensure coverage reports are generated before upload**
   - Confirm test commands include `--coverage` flag (already configured in existing CI)
@@ -112,19 +106,14 @@
   - Ensure JUnit reporter runs alongside default reporter (multiple reporters)
   - **Verify**: Run tests locally and confirm `test-results.junit.xml` files are generated
 
-- [ ] **Add test results upload to ci.yml (after PR tests)**
-  - Add step after "Upload coverage to Codecov (Affected)" (line ~107)
+- [x] **Add test results upload to ci.yml** ✅ COMPLETED
+  - Add single step after coverage upload (works for both PR and main branch)
   - Use `codecov/test-results-action@v1`
-  - Configure to upload files matching `./packages/*/test-results.junit.xml,./apps/*/test-results.junit.xml`
+  - Action automatically finds JUnit XML files matching pattern `*junit.xml`
   - Add flags parameter: `flags: react-hooks,react-clean,is-even,is-odd,ts-configs`
   - Use `CODECOV_TOKEN` from secrets
   - Include `if: ${{ !cancelled() }}` condition (runs even when tests fail)
-  - **Verify**: YAML syntax is valid
-
-- [ ] **Add test results upload to ci.yml (after main branch tests)**
-  - Add step after "Upload coverage to Codecov (All)" (line ~121)
-  - Use same configuration as PR upload step (including flags)
-  - Include `if: ${{ !cancelled() && github.event_name == 'push' }}` condition
+  - No event condition needed (runs after any test execution)
   - **Verify**: YAML syntax is valid
 
 - [ ] **Test analytics upload on a feature branch**

@@ -107,8 +107,9 @@ flags:
 - Aligns with existing CI workflow structure (test → build → deploy)
 
 **Strategy**:
-- **PR runs**: Upload affected package coverage only
-- **Main/develop/pre runs**: Upload all package coverage
+- **PR runs**: Run affected tests, then upload whatever coverage was generated
+- **Main/develop/pre runs**: Run all tests, then upload all package coverage
+- **Upload implementation**: Single upload step after tests (no need to duplicate for affected vs all)
 
 **How Affected Coverage Works with Codecov Baselines**:
 
@@ -401,18 +402,21 @@ coverage:
 - Failed tests must be captured to provide value (unlike coverage which is optional)
 
 **Strategy**:
-- **PR runs**: Upload affected package test results with flags
-- **Main/develop/pre runs**: Upload all package test results with flags
-- **Failure handling**: Non-blocking upload (`fail_ci_if_error: false` equivalent)
+- **PR runs**: Run affected tests, then upload whatever test results were generated
+- **Main/develop/pre runs**: Run all tests, then upload all test results
+- **Upload implementation**: Single upload step after tests with `!cancelled()` condition
+- **Failure handling**: Non-blocking upload (`fail_ci_if_error: false`)
 
-**Example**:
+**Implementation**:
 ```yaml
-- name: Upload test results to Codecov
-  if: ${{ !cancelled() }}
+# After test execution (affected or all)
+- name: 📊 Upload test results to Codecov
   uses: codecov/test-results-action@v1
+  if: ${{ !cancelled() }}
   with:
     token: ${{ secrets.CODECOV_TOKEN }}
     flags: react-hooks,react-clean,is-even,is-odd,ts-configs
+    fail_ci_if_error: false
 ```
 
 **Why `!cancelled()` instead of `always()`**:
@@ -454,15 +458,25 @@ coverage:
 
 1. **Test Execution** (existing):
    ```bash
-   pnpm exec nx affected -t test:unit -- --coverage
-   ```
-   Generates: `packages/*/coverage/lcov.info`
+   # PR: affected packages only
+   pnpm exec nx affected -t test:unit -- --coverage.thresholds.0
 
-2. **Codecov Upload** (new):
-   ```bash
-   codecov --file "packages/*/coverage/lcov.info"
+   # Main: all packages
+   pnpm exec nx run-many -t test:unit
    ```
-   Uploads all package coverage to Codecov
+   Generates: `packages/*/coverage/lcov.info` for affected or all packages
+
+2. **Codecov Upload** (new - single step for both scenarios):
+   ```yaml
+   - name: 📊 Upload coverage to Codecov
+     uses: codecov/codecov-action@v5
+     with:
+       files: ./packages/*/coverage/lcov.info,./apps/*/coverage/lcov.info
+       flags: react-hooks,react-clean,is-even,is-odd,ts-configs
+       token: ${{ secrets.CODECOV_TOKEN }}
+       fail_ci_if_error: false
+   ```
+   Uploads whatever coverage files exist (affected or all)
 
 3. **Codecov Processing**:
    - Merges coverage reports
@@ -486,22 +500,27 @@ coverage:
 
 ### Test Analytics Upload Flow
 
-1. **Test Execution with JUnit Reporter** (modified):
+1. **Test Execution with JUnit Reporter** (configured in `vitest.workspace.ts`):
    ```bash
-   pnpm exec nx affected -t test:unit -- --reporter=default --reporter=junit
-   ```
-   Generates: `packages/*/test-results.junit.xml`
+   # PR: affected packages only
+   pnpm exec nx affected -t test:unit -- --coverage.thresholds.0
 
-2. **Test Results Upload** (new):
+   # Main: all packages
+   pnpm exec nx run-many -t test:unit
+   ```
+   Generates: `packages/*/test-results.junit.xml` for affected or all packages
+
+2. **Test Results Upload** (new - single step for both scenarios):
    ```yaml
-   - name: Upload test results to Codecov
-     if: ${{ !cancelled() }}
+   - name: 📊 Upload test results to Codecov
      uses: codecov/test-results-action@v1
+     if: ${{ !cancelled() }}
      with:
        token: ${{ secrets.CODECOV_TOKEN }}
        flags: react-hooks,react-clean,is-even,is-odd,ts-configs
+       fail_ci_if_error: false
    ```
-   Uploads all package test results to Codecov Test Analytics
+   Uploads whatever test result files exist (affected or all), even if tests failed
 
 3. **Codecov Processing**:
    - Associates test results with package flags
