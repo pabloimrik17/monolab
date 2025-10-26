@@ -1,9 +1,18 @@
 packages:
-  - apps/*
-  - packages/*
+    - apps/*
+    - packages/*
+
+catalog:
+    "@testing-library/react": 16.3.0
+    "@testing-library/react-hooks": ^8.0.1
+    "@vitest/coverage-v8": ^4.0.3
+    "@vitest/ui": ^4.0.3
+    jsdom: 25.0.1
+    vite-tsconfig-paths: ^5.1.4
+    vitest: 4.0.3
 
 onlyBuiltDependencies:
-  - '@swc/core'
-  - esbuild
-  - nx
-  - oxc-resolver
+    - "@swc/core"
+    - esbuild
+    - nx
+    - oxc-resolver

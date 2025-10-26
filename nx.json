@@ -97,10 +97,14 @@
             "dependsOn": ["^build", "^test:unit"],
             "inputs": [
                 "default",
-                "{workspaceRoot}/vitest.config.ts",
+                "{workspaceRoot}/vitest.workspace.ts",
                 "{projectRoot}/vitest.config.ts"
             ],
-            "outputs": ["{projectRoot}/coverage", "{projectRoot}/html"]
+            "outputs": [
+                "{projectRoot}/coverage",
+                "{projectRoot}/html",
+                "{projectRoot}/test-results.junit.xml"
+            ]
         },
         "test:unit:watch": {
             "cache": true,

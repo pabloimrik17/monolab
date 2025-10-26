@@ -125,7 +125,6 @@ jobs:
               if: ${{ github.event_name == 'push' }}
 
             - name: 📦 Analyze and upload bundle sizes to Codecov
-              if: ${{ github.ref == 'refs/heads/main' }}
               continue-on-error: true
               env:
                   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -134,10 +133,9 @@ jobs:
                   for package in react-hooks react-clean is-even is-odd ts-configs; do
                     if [ -d "packages/$package/dist" ]; then
                       echo "Analyzing bundle for $package..."
-                      pnpm exec codecov-bundle-analyzer upload \
+                      pnpm exec codecov-bundle-analyzer packages/$package/dist \
                         --bundle-name="$package" \
-                        --upload-token="$CODECOV_TOKEN" \
-                        --dir="packages/$package/dist" || echo "Failed to upload $package bundle stats (non-blocking)"
+                        --upload-token="$CODECOV_TOKEN" || echo "Failed to upload $package bundle stats (non-blocking)"
                     else
                       echo "Skipping $package: dist directory not found"
                     fi
