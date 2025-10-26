@@ -12,15 +12,17 @@ The GitHub Actions CI workflow MUST use Codecov's official Bundle Analysis produ
 **When** the build completes successfully
 **Then** the workflow generates bundle stats for each published package
 **And** the workflow uploads bundle stats to Codecov Bundle Analysis
-**And** Codecov records bundle sizes with commit metadata
-**And** the upload uses Codecov Bundle Analysis integration (plugin or stats file)
+**And** Codecov records bundle sizes with commit metadata as baseline
+**And** the upload uses Codecov Bundle Analysis integration (CLI)
 
-#### Scenario: Bundle sizes are not reported on pull requests
+#### Scenario: Bundle sizes are reported on pull requests
 
 **Given** a pull request triggers the CI workflow
 **When** the build completes
-**Then** bundle size reporting is skipped to reduce noise
-**And** CI completes faster without bundle analysis overhead
+**Then** the workflow generates and uploads bundle stats for affected packages
+**And** Codecov compares PR bundle sizes against main branch baseline
+**And** Codecov posts PR comment showing bundle size deltas (e.g., "+800 B ⚠️")
+**And** developers can review size impact before merging
 
 ---
 
@@ -134,10 +136,11 @@ Codecov Bundle Analysis integration MUST be efficient and not add significant ov
 **And** upload failures do not block the CI workflow (fail_ci_if_error: false)
 **And** the workflow continues successfully even if Codecov is unavailable
 
-#### Scenario: Bundle Analysis only runs on main branch
+#### Scenario: Bundle Analysis runs on all builds
 
-**Given** a commit is pushed to a branch
-**When** the CI workflow runs
-**Then** Bundle Analysis only executes on main branch pushes
-**And** PR builds skip Bundle Analysis to save time
-**And** CI performance on PRs is not affected by bundle tracking
+**Given** a commit is pushed to any branch or a PR is created
+**When** the CI workflow runs and build completes
+**Then** Bundle Analysis executes after the build step
+**And** PR builds upload bundle stats to show size deltas in comments
+**And** Main branch uploads establish baselines for future comparisons
+**And** Upload failures are non-blocking (continue-on-error: true)

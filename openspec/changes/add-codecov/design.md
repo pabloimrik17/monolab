@@ -201,15 +201,21 @@ Codecov PR comment shows:
 
 2. **CI Integration**:
    ```yaml
-   # Run only on main branch to avoid noise
-   - name: Upload bundle stats to Codecov
-     if: github.ref == 'refs/heads/main'
-     uses: codecov/codecov-action@v5
-     with:
-       # Configuration depends on Bundle Analysis setup
-       # May use plugin parameter or separate bundle stats file
-       fail_ci_if_error: false
+   # Run on all branches (PRs + main/develop/pre) to show bundle size deltas
+   - name: Analyze and upload bundle sizes to Codecov
+     continue-on-error: true
+     run: |
+       for package in react-hooks react-clean is-even is-odd ts-configs; do
+         pnpm exec codecov-bundle-analyzer packages/$package/dist \
+           --bundle-name="$package" \
+           --upload-token="$CODECOV_TOKEN"
+       done
    ```
+
+   **Why run on all branches:**
+   - PRs: Show bundle size deltas in PR comments (e.g., "+800 B" warning)
+   - Main: Establish baseline for future comparisons
+   - Non-blocking: `continue-on-error: true` prevents CI failures
 
 3. **Per-Package Tracking**:
    - Track each published package separately: react-hooks, react-clean, is-even, is-odd, ts-configs
@@ -368,26 +374,42 @@ coverage:
 
 ### 10. Test Analytics: Vitest Reporter Configuration
 
-**Decision**: Configure Vitest with multiple reporters (default + JUnit) to output both human-readable console output and JUnit XML files
+**Decision**: Configure Vitest with per-package configs that include multiple reporters (default + JUnit)
 
 **Rationale**:
 - Multiple reporters can run simultaneously without conflicts
 - Default reporter provides immediate feedback during development
 - JUnit reporter generates XML files for Codecov upload
-- Both coverage and test result reporting can coexist
+- **Per-package configs essential**: Nx runs tests sequentially per package, but each spawns its own Vitest process. Without per-package configs, all packages would write to the same `./test-results.junit.xml` at workspace root, causing later packages to overwrite earlier results.
 
 **Implementation**:
 ```typescript
-// vitest.config.ts or project.json test configuration
-{
-  "reporters": ["default", "junit"],
-  "outputFile": {
-    "junit": "./test-results.junit.xml"
-  }
-}
+// packages/react-hooks/vitest.config.ts
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    reporters: ['default', 'junit'],
+    outputFile: {
+      junit: './test-results.junit.xml', // Writes to packages/react-hooks/
+    },
+    coverage: {
+      provider: 'v8',
+      reporter: ['lcov', 'text', 'json', 'html'],
+      reportsDirectory: './coverage',
+    },
+  },
+});
 ```
 
+**Result**: Each package writes to its own isolated file:
+- `packages/react-hooks/test-results.junit.xml`
+- `packages/react-clean/test-results.junit.xml`
+- `packages/is-even/test-results.junit.xml`
+- etc.
+
 **Alternatives Considered**:
+- Workspace-level config only: Would cause file overwrites (rejected)
 - CLI flags only: Would require modifying all test commands, less maintainable
 - JUnit reporter only: Would lose human-readable console output during development
 

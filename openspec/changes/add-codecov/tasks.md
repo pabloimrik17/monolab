@@ -80,31 +80,31 @@
   - **Verify**: @codecov/bundle-analyzer installed in package.json
 
 - [x] **Add bundle stats upload to ci.yml** ✅ COMPLETED
-  - Added step after "Execute build checks for all files (All)" (line ~130)
-  - Uses pnpm exec codecov-bundle-analyzer for each package
-  - Includes `if: ${{ github.ref == 'refs/heads/main' }}` condition (only on main branch)
+  - Added step after build execution (runs on all branches and PRs)
+  - Uses pnpm exec codecov-bundle-analyzer for each package with correct CLI syntax
+  - No branch condition (runs on PRs to show deltas, and main to establish baseline)
   - Set `continue-on-error: true` (non-blocking)
   - Upload bundle stats for each published package in loop
   - **Verify**: YAML syntax is valid
 
-- [ ] **Test bundle analysis** (Requires main branch push with CODECOV_TOKEN configured)
-  - Trigger CI on main branch
-  - Verify bundle stats are uploaded to Codecov
-  - Check Codecov dashboard for bundle analysis data
-  - **Verify**: Bundle sizes appear for each tracked package
+- [ ] **Test bundle analysis**
+  - Create test PR to verify bundle stats upload
+  - Verify bundle stats are uploaded to Codecov on PR build
+  - Check PR for Codecov comment showing bundle size deltas
+  - Merge PR and verify main branch baseline is established
+  - **Verify**: Bundle sizes appear for each tracked package in dashboard
 
 ### 5. Test Analytics
 
 **Note**: Using Codecov Test Analytics (https://docs.codecov.com/docs/test-analytics)
 
-- [ ] **Configure Vitest JUnit reporter for all packages**
-  - Update each package's Vitest configuration to include JUnit reporter
-  - For each package in `packages/*/project.json`:
-    - Locate test target configuration
-    - Add JUnit reporter to reporters array: `["default", "junit"]`
-    - Configure outputFile to `test-results.junit.xml` in package root
-  - Ensure JUnit reporter runs alongside default reporter (multiple reporters)
-  - **Verify**: Run tests locally and confirm `test-results.junit.xml` files are generated
+- [x] **Configure Vitest JUnit reporter for all packages** ✅ COMPLETED
+  - Created per-package `vitest.config.ts` files for isolated test output (5 packages)
+  - Created `vitest.workspace.ts` with auto-discovery pattern (`packages/*`)
+  - Each package has isolated JUnit output path to prevent file overwrites
+  - Configured reporters array: `["default", "junit"]` in each package config
+  - Created simple test files for each package to verify configuration
+  - **Verify**: Run tests locally and confirm per-package `test-results.junit.xml` files are generated
 
 - [x] **Add test results upload to ci.yml** ✅ COMPLETED
   - Add single step after coverage upload (works for both PR and main branch)
