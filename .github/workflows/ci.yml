@@ -92,11 +92,11 @@ jobs:
             - name: 🧪 Execute test checks for affected files (Affected)
               # We disable the coverage threshold for PRs because affected will only run on the files
               # that have changed and the coverage will be lower than the threshold
-              run: pnpm exec nx affected -t test:unit -- --coverage.thresholds.0
+              run: pnpm exec nx affected -t test:unit:coverage -- --coverage.thresholds.0
               if: ${{ github.event_name == 'pull_request' }}
 
             - name: 🧪 Execute test checks for all files (All)
-              run: pnpm exec nx run-many -t test:unit
+              run: pnpm exec nx run-many -t test:unit:coverage
               if: ${{ github.event_name == 'push' }}
 
             - name: 📊 Upload coverage to Codecov
@@ -112,6 +112,7 @@ jobs:
               uses: codecov/test-results-action@v1
               if: ${{ !cancelled() }}
               with:
+                  files: ./packages/*/test-results.junit.xml,./apps/*/test-results.junit.xml
                   token: ${{ secrets.CODECOV_TOKEN }}
                   flags: react-hooks,react-clean,is-even,is-odd,ts-configs
                   fail_ci_if_error: false
@@ -133,7 +134,7 @@ jobs:
                   for package in react-hooks react-clean is-even is-odd ts-configs; do
                     if [ -d "packages/$package/dist" ]; then
                       echo "Analyzing bundle for $package..."
-                      pnpm exec codecov-bundle-analyzer packages/$package/dist \
+                      pnpm exec bundle-analyzer packages/$package/dist \
                         --bundle-name="$package" \
                         --upload-token="$CODECOV_TOKEN" || echo "Failed to upload $package bundle stats (non-blocking)"
                     else

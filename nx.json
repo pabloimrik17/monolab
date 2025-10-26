@@ -101,6 +101,19 @@
                 "{projectRoot}/vitest.config.ts"
             ],
             "outputs": [
+                "{projectRoot}/html",
+                "{projectRoot}/test-results.junit.xml"
+            ]
+        },
+        "test:unit:coverage": {
+            "cache": true,
+            "dependsOn": ["^build", "^test:unit:coverage"],
+            "inputs": [
+                "default",
+                "{workspaceRoot}/vitest.workspace.ts",
+                "{projectRoot}/vitest.config.ts"
+            ],
+            "outputs": [
                 "{projectRoot}/coverage",
                 "{projectRoot}/html",
                 "{projectRoot}/test-results.junit.xml"

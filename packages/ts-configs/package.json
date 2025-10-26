@@ -26,6 +26,7 @@
         "lint:prettier": "prettier . --check",
         "lint:prettier:fix": "prettier . --write",
         "test:unit": "vitest run",
+        "test:unit:coverage": "vitest run --coverage",
         "test:unit:watch": "vitest"
     },
     "devDependencies": {
