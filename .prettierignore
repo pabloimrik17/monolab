@@ -6,3 +6,6 @@
 /openspec
 /.claude
 /.opencode
+
+# Ignore auto-generated changelog files
+**/CHANGELOG.md

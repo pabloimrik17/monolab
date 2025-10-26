@@ -9,3 +9,6 @@ coverage/
 # Ignore AI agent instruction files
 AGENTS.md
 CLAUDE.md
+
+# Ignore auto-generated changelog files
+**/CHANGELOG.md
