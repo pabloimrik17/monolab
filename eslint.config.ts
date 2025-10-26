@@ -12,6 +12,7 @@ export default tseslint.config(
             "openspec/**",
             ".claude/**",
             ".opencode/**",
+            "**/CHANGELOG.md",
         ],
     },
     eslint.configs.recommended,
