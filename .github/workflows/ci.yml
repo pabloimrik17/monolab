@@ -136,7 +136,7 @@ jobs:
                       echo "Analyzing bundle for $package..."
                       pnpm exec bundle-analyzer packages/$package/dist \
                         --bundle-name="$package" \
-                        --upload-token="$CODECOV_TOKEN" || echo "Failed to upload $package bundle stats (non-blocking)"
+                        --upload-token="$CODECOV_TOKEN"
                     else
                       echo "Skipping $package: dist directory not found"
                     fi
