@@ -1,0 +1,61 @@
+## ADDED Requirements
+
+### Requirement: Markdown Linting Integration
+
+The monorepo SHALL integrate markdownlint-cli into the pre-commit workflow via lint-staged to automatically lint all staged markdown files before commit.
+
+#### Scenario: Markdown files linted on commit
+
+- **WHEN** a developer commits changes containing staged `*.md` files
+- **THEN** markdownlint runs on those files via the lint-staged hook
+- **AND** the commit proceeds if no unfixable errors are found
+
+#### Scenario: Linting errors block commit
+
+- **WHEN** a markdown file has unfixable linting errors
+- **THEN** the pre-commit hook fails
+- **AND** the developer is shown the specific errors
+- **AND** the commit is blocked until errors are resolved
+
+### Requirement: Auto-fixing Capability
+
+The markdownlint integration SHALL automatically fix fixable markdown issues during the pre-commit hook execution.
+
+#### Scenario: Auto-fix applied on commit
+
+- **WHEN** a staged markdown file has fixable issues (e.g., trailing spaces, inconsistent list markers)
+- **THEN** markdownlint automatically fixes those issues
+- **AND** the fixed content is staged for commit
+- **AND** the commit proceeds successfully
+
+### Requirement: Directory Exclusion
+
+The markdownlint configuration SHALL support exclusion of specific directories via `.markdownlintignore` to prevent linting of generated, vendor, or AI-specific markdown files.
+
+#### Scenario: Ignored directories not linted
+
+- **WHEN** markdown files exist in excluded directories (openspec/, .claude/, .opencode/, node_modules/, dist/, coverage/)
+- **THEN** markdownlint does not process those files
+- **AND** no linting errors are reported for them
+
+#### Scenario: AI agent instruction files excluded
+
+- **WHEN** AI agent instruction files (AGENTS.md, CLAUDE.md) are modified
+- **THEN** markdownlint ignores them via `.markdownlintignore`
+- **AND** they are not subject to standard markdown formatting rules
+
+### Requirement: Configurable Rules
+
+The markdownlint integration SHALL support custom rule configuration via `.markdownlintrc` file, with sensible defaults if the configuration file is omitted.
+
+#### Scenario: Default rules applied
+
+- **WHEN** no `.markdownlintrc` file exists
+- **THEN** markdownlint uses its default rule set
+- **AND** all markdown files are linted according to markdownlint defaults
+
+#### Scenario: Custom rules applied
+
+- **WHEN** a `.markdownlintrc` file exists with custom rule configuration
+- **THEN** markdownlint applies those custom rules instead of defaults
+- **AND** all markdown files are linted according to the custom configuration
