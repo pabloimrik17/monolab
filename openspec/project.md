@@ -52,6 +52,11 @@
 - **GitHub Actions**: Automated CI pipeline with Nx Cloud integration
 - **JSR**: Primary package registry for publishing
 - **Nx Cloud**: Distributed task execution (ID: 67f985a4bdd1693cbb6398fa)
+- **Codecov**: Code coverage reporting, test analytics, and bundle size analysis
+  - Coverage reports uploaded from CI with per-package flags (react-hooks, react-clean, is-even, is-odd, ts-configs)
+  - Test results uploaded in JUnit XML format for test analytics (failure tracking, flaky test detection, performance metrics)
+  - Bundle size tracking on main branch using Codecov Bundle Analysis
+  - Global and per-package coverage badges available
 
 ## Project Conventions
 
@@ -110,12 +115,13 @@
 
 ### Testing Strategy
 
-**Framework**: Vitest with coverage enabled
+**Framework**: Vitest with coverage and JUnit XML reporting enabled
 
 **Test Execution**:
 - `test:unit`: Run all tests with coverage thresholds
 - `test:unit:watch`: Watch mode for development
 - Coverage output: `{projectRoot}/coverage` and `{projectRoot}/html`
+- Test results output: `{projectRoot}/test-results.junit.xml` (JUnit XML format for Codecov Test Analytics)
 
 **CI Testing Approach**:
 - **Pull Requests**: Run affected tests only, disable coverage thresholds
@@ -124,6 +130,14 @@
 **Coverage Requirements**:
 - Varies per package (configured in individual project.json files)
 - Coverage reports generated in multiple formats (html, json, lcov)
+
+**Test Analytics**:
+- Vitest configured with JUnit reporter (`vitest.workspace.ts`)
+- Test results uploaded to Codecov on every CI run (even when tests fail)
+- Per-package test tracking using same flags as coverage
+- Flaky test detection across multiple runs
+- Test performance metrics (duration, failure rates) tracked over time
+- 60-day data retention on Codecov
 
 **Current Status**: Test files not extensively present in source (test infrastructure configured but tests may be minimal)
 

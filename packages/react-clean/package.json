@@ -32,7 +32,10 @@
         "lint:knip": "knip --max-issues 100",
         "lint:knip:fix": "knip --fix",
         "lint:prettier": "prettier . --check",
-        "lint:prettier:fix": "prettier . --write"
+        "lint:prettier:fix": "prettier . --write",
+        "test:unit": "vitest run",
+        "test:unit:coverage": "vitest run --coverage",
+        "test:unit:watch": "vitest"
     },
     "dependencies": {
         "@monolab/react-hooks": "workspace:*",
@@ -40,12 +43,16 @@
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "0.18.2",
+        "@testing-library/react": "catalog:",
         "@types/react": "18.3.24",
         "inversify": "^7.0.0",
+        "jsdom": "catalog:",
         "react": "^18.0.0",
+        "react-dom": "^18.3.1",
         "rxjs": "^7.0.0",
         "tsdown": "0.12.9",
-        "typescript": "5.9.2"
+        "typescript": "5.9.2",
+        "vitest": "catalog:"
     },
     "peerDependencies": {
         "inversify": ">=7.0.0",

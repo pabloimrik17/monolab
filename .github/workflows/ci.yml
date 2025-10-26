@@ -92,12 +92,30 @@ jobs:
             - name: 🧪 Execute test checks for affected files (Affected)
               # We disable the coverage threshold for PRs because affected will only run on the files
               # that have changed and the coverage will be lower than the threshold
-              run: pnpm exec nx affected -t test:unit -- --coverage.thresholds.0
+              run: pnpm exec nx affected -t test:unit:coverage -- --coverage.thresholds.0
               if: ${{ github.event_name == 'pull_request' }}
 
             - name: 🧪 Execute test checks for all files (All)
-              run: pnpm exec nx run-many -t test:unit
+              run: pnpm exec nx run-many -t test:unit:coverage
               if: ${{ github.event_name == 'push' }}
+
+            - name: 📊 Upload coverage to Codecov
+              uses: codecov/codecov-action@v5
+              with:
+                  files: ./packages/*/coverage/lcov.info,./apps/*/coverage/lcov.info
+                  flags: react-hooks,react-clean,is-even,is-odd,ts-configs
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  fail_ci_if_error: false
+                  verbose: true
+
+            - name: 📊 Upload test results to Codecov
+              uses: codecov/test-results-action@v1
+              if: ${{ !cancelled() }}
+              with:
+                  files: ./packages/*/test-results.junit.xml,./apps/*/test-results.junit.xml
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  flags: react-hooks,react-clean,is-even,is-odd,ts-configs
+                  fail_ci_if_error: false
 
             - name: 🏗 Execute build checks for affected files (Affected)
               run: pnpm exec nx affected -t build
@@ -106,3 +124,20 @@ jobs:
             - name: 🏗 Execute build checks for all files (All)
               run: pnpm exec nx run-many -t build
               if: ${{ github.event_name == 'push' }}
+
+            - name: 📦 Analyze and upload bundle sizes to Codecov
+              continue-on-error: true
+              env:
+                  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+              run: |
+                  # Analyze each published package
+                  for package in react-hooks react-clean is-even is-odd ts-configs; do
+                    if [ -d "packages/$package/dist" ]; then
+                      echo "Analyzing bundle for $package..."
+                      pnpm exec bundle-analyzer packages/$package/dist \
+                        --bundle-name="$package" \
+                        --upload-token="$CODECOV_TOKEN"
+                    else
+                      echo "Skipping $package: dist directory not found"
+                    fi
+                  done

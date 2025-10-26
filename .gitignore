@@ -115,6 +115,13 @@ lib-cov
 coverage
 *.lcov
 
+# Test results (JUnit XML for CI/Codecov)
+*junit*.xml
+test-results*.xml
+
+# Vitest HTML reporter output
+html
+
 # nyc test coverage
 .nyc_output
 

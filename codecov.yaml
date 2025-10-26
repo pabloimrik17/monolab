@@ -1,0 +1,70 @@
+# Codecov Configuration for MonoLab Monorepo
+# Documentation: https://docs.codecov.com/docs/codecov-yaml
+
+# Coverage status checks
+coverage:
+    status:
+        # Project coverage (overall repository)
+        project:
+            default:
+                target: auto # Maintain current coverage level
+                threshold: 5% # Allow up to 5% coverage decrease
+                informational: true # Don't block PRs (informational only)
+
+        # Patch coverage (new/modified code in PRs)
+        patch:
+            default:
+                target: 70% # New code should have at least 70% coverage
+                threshold: 5% # Allow up to 5% below target
+                informational: true # Don't block PRs initially
+
+# Files and directories to ignore from coverage calculations
+ignore:
+    - "**/*.spec.ts"
+    - "**/*.test.ts"
+    - "**/*.spec.tsx"
+    - "**/*.test.tsx"
+    - "**/dist/"
+    - "**/node_modules/"
+    - "**/coverage/"
+    - "**/.nx/"
+    - "**/*.config.ts"
+    - "**/*.config.js"
+    - "**/*.config.cjs"
+    - "**/*.config.mjs"
+    - "**/vite.config.ts"
+    - "**/vitest.config.ts"
+    - "**/eslint.config.ts"
+
+# Enable inline annotations on pull requests
+comment:
+    layout: "header, diff, files, footer"
+    behavior: default # Update existing comment
+    require_changes: false # Always comment, even if no coverage changes
+
+# Per-package flags for independent tracking
+flags:
+    react-hooks:
+        paths:
+            - packages/react-hooks/
+        carryforward: true # Use previous coverage if not in current upload
+
+    react-clean:
+        paths:
+            - packages/react-clean/
+        carryforward: true
+
+    is-even:
+        paths:
+            - packages/is-even/
+        carryforward: true
+
+    is-odd:
+        paths:
+            - packages/is-odd/
+        carryforward: true
+
+    ts-configs:
+        paths:
+            - packages/ts-configs/
+        carryforward: true
