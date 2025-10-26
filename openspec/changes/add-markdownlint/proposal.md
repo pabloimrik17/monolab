@@ -1,10 +1,10 @@
 ## Why
 
-Markdown files are used throughout the monorepo for documentation (README.md, package docs, OpenSpec files, AI agent instructions). Inconsistent markdown formatting leads to poor readability, non-standard syntax, and potential rendering issues on GitHub and JSR. Adding markdownlint ensures all markdown follows consistent formatting rules and catches common syntax errors before they reach version control.
+Markdown files are used throughout the monorepo for documentation (README.md, package docs, OpenSpec files, AI agent instructions). Inconsistent Markdown formatting leads to poor readability, non-standard syntax, and potential rendering issues on GitHub and JSR. Adding markdownlint ensures all Markdown follows consistent formatting rules and catches common syntax errors before they reach version control.
 
 ## What Changes
 
-- Add `markdownlint-cli@0.44.0` package for markdown linting
+- Add `markdownlint-cli@0.44.0` package for Markdown linting
 - Integrate markdownlint into `lint-staged` pre-commit hooks with auto-fix enabled
 - Create `.markdownlintignore` to exclude generated/vendor directories and auto-generated CHANGELOGs
 - Configure markdownlint rules via `.markdownlintrc` with sensible defaults for documentation
@@ -22,5 +22,5 @@ Markdown files are used throughout the monorepo for documentation (README.md, pa
   - `.prettierignore` - adds CHANGELOG.md exclusion
   - `eslint.config.ts` - adds CHANGELOG.md to ignores array
   - `.husky/pre-commit` - indirectly affected (runs lint-staged)
-- **User impact**: All user-written markdown files will be automatically linted and fixed on commit; auto-generated CHANGELOGs are excluded
+- **User impact**: All user-written Markdown files will be automatically linted and fixed on commit; auto-generated CHANGELOGs are excluded
 - **Breaking changes**: None - only enforces formatting standards on manually-written files
