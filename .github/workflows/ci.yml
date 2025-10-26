@@ -99,6 +99,23 @@ jobs:
               run: pnpm exec nx run-many -t test:unit
               if: ${{ github.event_name == 'push' }}
 
+            - name: 📊 Upload coverage to Codecov
+              uses: codecov/codecov-action@v5
+              with:
+                  files: ./packages/*/coverage/lcov.info,./apps/*/coverage/lcov.info
+                  flags: react-hooks,react-clean,is-even,is-odd,ts-configs
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  fail_ci_if_error: false
+                  verbose: true
+
+            - name: 📊 Upload test results to Codecov
+              uses: codecov/test-results-action@v1
+              if: ${{ !cancelled() }}
+              with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  flags: react-hooks,react-clean,is-even,is-odd,ts-configs
+                  fail_ci_if_error: false
+
             - name: 🏗 Execute build checks for affected files (Affected)
               run: pnpm exec nx affected -t build
               if: ${{ github.event_name == 'pull_request' }}
@@ -106,3 +123,22 @@ jobs:
             - name: 🏗 Execute build checks for all files (All)
               run: pnpm exec nx run-many -t build
               if: ${{ github.event_name == 'push' }}
+
+            - name: 📦 Analyze and upload bundle sizes to Codecov
+              if: ${{ github.ref == 'refs/heads/main' }}
+              continue-on-error: true
+              env:
+                  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+              run: |
+                  # Analyze each published package
+                  for package in react-hooks react-clean is-even is-odd ts-configs; do
+                    if [ -d "packages/$package/dist" ]; then
+                      echo "Analyzing bundle for $package..."
+                      pnpm exec codecov-bundle-analyzer upload \
+                        --bundle-name="$package" \
+                        --upload-token="$CODECOV_TOKEN" \
+                        --dir="packages/$package/dist" || echo "Failed to upload $package bundle stats (non-blocking)"
+                    else
+                      echo "Skipping $package: dist directory not found"
+                    fi
+                  done
