@@ -99,23 +99,87 @@ jobs:
               run: pnpm exec nx run-many -t test:unit:coverage
               if: ${{ github.event_name == 'push' }}
 
-            - name: 📊 Upload coverage to Codecov
+            # Upload coverage per package with individual flags for isolated tracking
+            - name: 📊 Upload coverage to Codecov - react-hooks
               uses: codecov/codecov-action@v5
               with:
-                  files: ./packages/*/coverage/lcov.info,./apps/*/coverage/lcov.info
-                  flags: react-hooks,react-clean,is-even,is-odd,ts-configs
+                  files: ./packages/react-hooks/coverage/lcov.info
+                  flags: react-hooks
                   token: ${{ secrets.CODECOV_TOKEN }}
                   fail_ci_if_error: false
-                  verbose: true
 
-            - name: 📊 Upload test results to Codecov
+            - name: 📊 Upload coverage to Codecov - react-clean
+              uses: codecov/codecov-action@v5
+              with:
+                  files: ./packages/react-clean/coverage/lcov.info
+                  flags: react-clean
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  fail_ci_if_error: false
+
+            - name: 📊 Upload coverage to Codecov - is-even
+              uses: codecov/codecov-action@v5
+              with:
+                  files: ./packages/is-even/coverage/lcov.info
+                  flags: is-even
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  fail_ci_if_error: false
+
+            - name: 📊 Upload coverage to Codecov - is-odd
+              uses: codecov/codecov-action@v5
+              with:
+                  files: ./packages/is-odd/coverage/lcov.info
+                  flags: is-odd
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  fail_ci_if_error: false
+
+            - name: 📊 Upload coverage to Codecov - ts-configs
+              uses: codecov/codecov-action@v5
+              with:
+                  files: ./packages/ts-configs/coverage/lcov.info
+                  flags: ts-configs
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  fail_ci_if_error: false
+
+            # Upload test results per package with individual flags
+            - name: 📊 Upload test results to Codecov - react-hooks
               uses: codecov/test-results-action@v1
               if: ${{ !cancelled() }}
               with:
-                  files: ./packages/*/test-results.junit.xml,./apps/*/test-results.junit.xml
+                  files: ./packages/react-hooks/test-results.junit.xml
                   token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: react-hooks,react-clean,is-even,is-odd,ts-configs
-                  fail_ci_if_error: false
+                  flags: react-hooks
+
+            - name: 📊 Upload test results to Codecov - react-clean
+              uses: codecov/test-results-action@v1
+              if: ${{ !cancelled() }}
+              with:
+                  files: ./packages/react-clean/test-results.junit.xml
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  flags: react-clean
+
+            - name: 📊 Upload test results to Codecov - is-even
+              uses: codecov/test-results-action@v1
+              if: ${{ !cancelled() }}
+              with:
+                  files: ./packages/is-even/test-results.junit.xml
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  flags: is-even
+
+            - name: 📊 Upload test results to Codecov - is-odd
+              uses: codecov/test-results-action@v1
+              if: ${{ !cancelled() }}
+              with:
+                  files: ./packages/is-odd/test-results.junit.xml
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  flags: is-odd
+
+            - name: 📊 Upload test results to Codecov - ts-configs
+              uses: codecov/test-results-action@v1
+              if: ${{ !cancelled() }}
+              with:
+                  files: ./packages/ts-configs/test-results.junit.xml
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  flags: ts-configs
 
             - name: 🏗 Execute build checks for affected files (Affected)
               run: pnpm exec nx affected -t build
