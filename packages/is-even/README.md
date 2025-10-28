@@ -1,7 +1,7 @@
 # @monolab/is-even
 
-[![is-even coverage](https://codecov.io/gh/pabloimrik17/monolab/branch/develop/graph/badge.svg?flag=is-even)](https://codecov.io/gh/pabloimrik17/monolab?flag=is-even)
-[![is-even bundle](https://codecov.io/gh/pabloimrik17/monolab/branch/develop/graph/bundle/is-even/badge.svg)](https://codecov.io/gh/pabloimrik17/monolab/bundle/is-even)
+[![is-even coverage](https://codecov.io/gh/pabloimrik17/monolab/badge.svg?flag=is-even)](https://codecov.io/gh/pabloimrik17/monolab?flag=is-even)
+[![is-even bundle](https://codecov.io/gh/pabloimrik17/monolab/graph/bundle/is-even/badge.svg)](https://codecov.io/gh/pabloimrik17/monolab/bundle/is-even)
 
 Simple utility to check if a number is even.
 

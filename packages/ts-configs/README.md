@@ -1,7 +1,7 @@
 # @monolab/ts-configs
 
-[![ts-configs coverage](https://codecov.io/gh/pabloimrik17/monolab/branch/develop/graph/badge.svg?flag=ts-configs)](https://codecov.io/gh/pabloimrik17/monolab?flag=ts-configs)
-[![ts-configs bundle](https://codecov.io/gh/pabloimrik17/monolab/branch/develop/graph/bundle/ts-configs/badge.svg)](https://codecov.io/gh/pabloimrik17/monolab/bundle/ts-configs)
+[![ts-configs coverage](https://codecov.io/gh/pabloimrik17/monolab/badge.svg?flag=ts-configs)](https://codecov.io/gh/pabloimrik17/monolab?flag=ts-configs)
+[![ts-configs bundle](https://codecov.io/gh/pabloimrik17/monolab/graph/bundle/ts-configs/badge.svg)](https://codecov.io/gh/pabloimrik17/monolab/bundle/ts-configs)
 
 Shared TypeScript configuration for MonoLab packages.
 
