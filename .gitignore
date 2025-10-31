@@ -345,3 +345,6 @@ sketch
 .github/instructions/nx.instructions.md
 /.claude/settings.local.json
 /.mcp.json
+
+# Git worktrees
+.worktrees/
