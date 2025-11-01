@@ -4,9 +4,7 @@
         "module": "preserve",
         "moduleResolution": "bundler",
         "outDir": "./dist",
-        "rootDir": "./src",
-        "declaration": true
+        "rootDir": "./src"
     },
-    "include": ["src/**/*"],
-    "references": [{ "path": "../is-odd" }]
+    "include": ["src/**/*"]
 }
