@@ -40,7 +40,7 @@
         "jsdom": "catalog:",
         "react": "^18.0.0",
         "react-dom": "^18.3.1",
-        "tsdown": "0.12.9",
+        "tsdown": "0.15.9",
         "typescript": "5.9.3",
         "vitest": "catalog:"
     },
