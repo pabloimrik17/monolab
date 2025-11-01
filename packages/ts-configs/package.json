@@ -6,10 +6,12 @@
     "type": "module",
     "exports": {
         "./tsconfig.base.json": "./tsconfig.base.json",
+        "./tsconfig.web.base.json": "./tsconfig.web.base.json",
         "./package.json": "./package.json"
     },
     "files": [
         "tsconfig.base.json",
+        "tsconfig.web.base.json",
         "package.json",
         "README.md",
         "CHANGELOG.md",
