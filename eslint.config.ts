@@ -9,6 +9,7 @@ export default tseslint.config(
             "**/node_modules/**",
             "**/coverage/**",
             "**/html/**",
+            "**/reports/**",
             "openspec/**",
             ".claude/**",
             ".opencode/**",

@@ -15,7 +15,7 @@ pnpm add @monolab/ts-configs
 
 ## Configuration Hierarchy
 
-```
+```text
 tsconfig.base.json (platform-agnostic foundation)
 ├── tsconfig.web-base.json (coming soon)
 │   ├── tsconfig.web-lib.json (coming soon)
