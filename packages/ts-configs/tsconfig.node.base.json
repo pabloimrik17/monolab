@@ -1,26 +1,19 @@
 {
-    "extends": "./packages/ts-configs/tsconfig.base.json",
+    "extends": "./tsconfig.base.json",
     "compilerOptions": {
         /* Node.js Environment */
-        "target": "ES2022",
-        "lib": ["ES2022"],
         "types": ["node"],
 
         /* Module Configuration */
         "module": "ESNext",
         "moduleResolution": "bundler",
-        "resolveJsonModule": true,
 
         /* Interop & Compatibility */
-        "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
 
         /* Build Output */
         "declaration": true,
         "declarationMap": true,
-        "sourceMap": true,
-
-        /* Performance */
-        "skipLibCheck": true
+        "sourceMap": true
     }
 }
