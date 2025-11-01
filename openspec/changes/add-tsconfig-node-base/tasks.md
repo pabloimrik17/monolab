@@ -1,11 +1,11 @@
 # Implementation Tasks
 
 ## 1. Create Configuration File
-- [x] 1.1 Create `tsconfig.node.base.json` in project root
-- [x] 1.2 Set target to ES2022 or later for modern Node.js
-- [x] 1.3 Configure lib to include ES2022 features (no DOM)
-- [x] 1.4 Set module to ESNext for ESM support
-- [x] 1.5 Set moduleResolution to bundler
+- [x] 1.1 Create `tsconfig.node.base.json` in `packages/ts-configs/` directory
+- [x] 1.2 Extend from base config (inherits target ES2022 and lib ES2024)
+- [x] 1.3 Add Node.js types (excludes DOM)
+- [x] 1.4 Set module to NodeNext for proper Node.js ESM/CJS support
+- [x] 1.5 Remove moduleResolution (auto-configured by NodeNext)
 - [x] 1.6 Exclude JSX settings (not needed for Node.js)
 
 ## 2. Configure Compiler Options

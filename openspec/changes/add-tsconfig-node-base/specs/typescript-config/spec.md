@@ -11,10 +11,10 @@ The monorepo SHALL provide a base TypeScript configuration file (`tsconfig.node.
 - **AND** the target is set to a modern ES version compatible with Node.js 22.17.0
 - **AND** the lib includes modern ES features without browser-specific APIs
 
-#### Scenario: ESM module support
+#### Scenario: Node.js module support
 - **WHEN** a Node.js project extends from `tsconfig.node.base.json`
-- **THEN** the module system is set to ESNext for ESM support
-- **AND** moduleResolution is set to "bundler" for compatibility with modern tools
+- **THEN** the module system is set to NodeNext for proper Node.js ESM/CJS handling
+- **AND** moduleResolution is automatically configured by TypeScript for Node.js compatibility
 
 #### Scenario: No JSX configuration
 - **WHEN** a Node.js project extends from `tsconfig.node.base.json`

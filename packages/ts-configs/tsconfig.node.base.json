@@ -5,8 +5,7 @@
         "types": ["node"],
 
         /* Module Configuration */
-        "module": "ESNext",
-        "moduleResolution": "bundler",
+        "module": "NodeNext",
 
         /* Interop & Compatibility */
         "allowSyntheticDefaultImports": true,
