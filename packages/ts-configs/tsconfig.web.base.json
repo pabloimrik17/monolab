@@ -1,5 +1,5 @@
 {
-    "extends": "./packages/ts-configs/tsconfig.base.json",
+    "extends": "./tsconfig.base.json",
     "compilerOptions": {
         /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
          * Web Platform Configuration
