@@ -19,7 +19,7 @@ The monorepo SHALL provide a TypeScript configuration file (`tsconfig.node.app.j
 #### Scenario: Debugging support
 - **WHEN** developing a Node.js application
 - **THEN** source maps are enabled for debugging
-- **AND** the output is compatible with Node.js 22.17.0 runtime
+- **AND** the output is compatible with Node.js 22.21.0 runtime
 
 #### Scenario: Compatible with Hono APIs
 - **WHEN** a Hono API project uses this configuration
