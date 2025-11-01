@@ -61,5 +61,12 @@
     "engines": {
         "node": "22.21.0",
         "pnpm": "10.19.0"
+    },
+    "devEngines": {
+        "runtime": {
+            "name": "node",
+            "version": "22.21.0",
+            "onFail": "download"
+        }
     }
 }

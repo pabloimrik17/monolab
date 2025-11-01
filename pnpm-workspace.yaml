@@ -16,3 +16,5 @@ onlyBuiltDependencies:
     - esbuild
     - nx
     - oxc-resolver
+
+minimumReleaseAge: 1440
