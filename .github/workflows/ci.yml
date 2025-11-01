@@ -89,14 +89,22 @@ jobs:
               run: pnpm exec nx run-many -t lint:publint lint:knip lint:eslint lint:stylelint lint:markdownlint lint:prettier
               if: ${{ github.event_name == 'push' }}
 
-            - name: 🧪 Execute test checks for affected files (Affected)
+            - name: 🧪 Execute unit test checks for affected files (Affected)
               # We disable the coverage threshold for PRs because affected will only run on the files
               # that have changed and the coverage will be lower than the threshold
               run: pnpm exec nx affected -t test:unit:coverage -- --coverage.thresholds.0
               if: ${{ github.event_name == 'pull_request' }}
 
-            - name: 🧪 Execute test checks for all files (All)
+            - name: 🧪 Execute unit test checks for all files (All)
               run: pnpm exec nx run-many -t test:unit:coverage
+              if: ${{ github.event_name == 'push' }}
+
+            - name: 🔍 Execute type test checks for affected files (Affected)
+              run: pnpm exec nx affected -t test:types
+              if: ${{ github.event_name == 'pull_request' }}
+
+            - name: 🔍 Execute type test checks for all files (All)
+              run: pnpm exec nx run-many -t test:types
               if: ${{ github.event_name == 'push' }}
 
             # Upload coverage per package with individual flags for isolated tracking

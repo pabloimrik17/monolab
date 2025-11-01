@@ -83,7 +83,7 @@ The system SHALL provide interactive visual test debugging through Vitest UI mod
 
 ### Requirement: Type Testing
 
-The system SHALL validate TypeScript types at compile-time using @vitest/expect-type to prevent type regressions.
+The system SHALL validate TypeScript types at compile-time using Vitest's built-in expectTypeOf to prevent type regressions.
 
 #### Scenario: Type test file discovery
 

@@ -2,10 +2,9 @@
 
 ## 1. Dependencies and Setup
 
-- [ ] 1.1 Install type testing dependency: `pnpm add -D @vitest/expect-type -w`
-- [ ] 1.2 Install browser testing dependencies: `pnpm add -D @vitest/browser vitest-browser-react playwright -w`
-- [ ] 1.3 Verify @vitest/ui already installed (should be present in catalog)
-- [ ] 1.4 Run Playwright install: `pnpm exec playwright install chromium`
+- [ ] 1.1 Install browser testing dependencies: `pnpm add -D @vitest/browser vitest-browser-react playwright -w`
+- [ ] 1.2 Verify @vitest/ui already installed (should be present in catalog)
+- [ ] 1.3 Run Playwright install: `pnpm exec playwright install chromium`
 
 ## 2. Workspace Configuration
 
@@ -114,15 +113,11 @@
 
 ## 7. CI/CD Pipeline Updates
 
-- [ ] 7.1 Update `.github/workflows/ci.yml` to rename test commands from `test` to `test:unit`
-- [ ] 7.2 Add test:types step to CI workflow
-- [ ] 7.3 Implement sharding strategy with matrix: `shard: [1, 2, 3]`
-- [ ] 7.4 Update test:unit step to use `--shard=${{ matrix.shard }}/3`
-- [ ] 7.5 Update test:types step to use `--shard=${{ matrix.shard }}/3`
-- [ ] 7.6 Update Codecov upload to include shard flag: `shard-${{ matrix.shard }}`
-- [ ] 7.7 Set `fail_ci_if_error: false` for Codecov uploads
-- [ ] 7.8 Validate CI runs successfully on feature branch
-- [ ] 7.9 Verify Codecov merges coverage from all shards correctly
+- [ ] 7.1 Add test:types step to CI workflow (affected and all variants)
+- [ ] 7.2 Validate CI runs successfully on feature branch
+- [ ] 7.3 Verify type tests execute in CI
+
+**Note:** Vitest sharding (tasks 7.3-7.6 in original plan) is NOT implemented because Nx Cloud already distributes tasks across 3 agents. Sharding configuration is documented in design.md as alternative if Nx Cloud is removed in future.
 
 ## 8. Documentation
 

@@ -99,28 +99,44 @@ export default defineProject({
 
 **File convention:** `*.browser.test.tsx` for browser-specific tests
 
-### 4. CI Sharding Strategy
+### 4. CI Distribution Strategy
 
-**Decision:** Use 3-shard matrix with `--shard` flag in GitHub Actions.
+**Decision:** Use Nx Cloud distribution (already configured with 3 agents).
 
 **Rationale:**
-- Reduces CI time ~3x for test suite
-- Codecov automatically merges coverage from all shards (no config needed)
-- Easy to scale (adjust matrix size as test suite grows)
+- Already distributes tasks across 3 linux-medium-js agents
+- Handles all Nx targets (build, test, lint) not just tests
+- Automatic caching and task distribution
+- No additional configuration needed
 
-**Configuration:**
+**Current setup:**
+```yaml
+- run: pnpm dlx nx-cloud start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="build"
+```
+
+**Alternative: Vitest Sharding (documented for future use)**
+
+If Nx Cloud is removed in the future, Vitest native sharding can be used:
+
 ```yaml
 strategy:
   matrix:
     shard: [1, 2, 3]
 steps:
-  - run: nx affected --target=test:unit --shard=${{ matrix.shard }}/3
+  - run: nx affected --target=test:unit -- --shard=${{ matrix.shard }}/3
 ```
 
-**Coverage handling:**
+**Benefits of Vitest sharding:**
+- Reduces CI time ~3x for test suite
+- Codecov automatically merges coverage from all shards
+- Easy to scale (adjust matrix size as test suite grows)
+
+**Coverage handling with sharding:**
 - Each shard uploads partial coverage with flag: `shard-${{ matrix.shard }}`
 - Codecov merges all reports automatically
 - No manual merge step needed
+
+**Current approach:** Use Nx Cloud distribution (more comprehensive than Vitest-only sharding)
 
 ### 5. Test Command Naming
 

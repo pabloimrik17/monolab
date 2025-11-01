@@ -33,6 +33,13 @@
         "lint:knip:fix": "knip --fix",
         "lint:prettier": "prettier . --check",
         "lint:prettier:fix": "prettier . --write",
+        "test:browser": "vitest run **/*.browser.test.{ts,tsx} --browser.enabled=true",
+        "test:browser:watch": "vitest **/*.browser.test.{ts,tsx} --browser.enabled=true",
+        "test:integration": "vitest run **/*.integration.ts",
+        "test:integration:watch": "vitest **/*.integration.ts",
+        "test:types": "vitest --typecheck.enabled --run",
+        "test:types:watch": "vitest --typecheck.enabled",
+        "test:ui": "vitest --ui",
         "test:unit": "vitest run",
         "test:unit:coverage": "vitest run --coverage",
         "test:unit:watch": "vitest"

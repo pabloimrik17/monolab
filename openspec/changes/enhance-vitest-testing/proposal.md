@@ -16,10 +16,10 @@ The project currently uses Vitest for unit testing with basic configuration (cov
 - **Test project organization**: Define separate Vitest projects (unit, integration, browser) with distinct file patterns, coverage thresholds, and configurations
 - **Standardized naming**: Rename test scripts from generic names to explicit `test:unit`, `test:integration`, `test:types`, etc.
 - **UI Mode**: Enable @vitest/ui for interactive visual test debugging
-- **Type Testing**: Add @vitest/expect-type for compile-time type validation
+- **Type Testing**: Use Vitest's built-in expectTypeOf for compile-time type validation
 - **Browser Mode**: Implement real browser testing with Playwright for React packages
 - **Concurrent Testing**: Configure maxConcurrency for parallel test execution within files
-- **CI Sharding**: Distribute tests across multiple CI jobs to reduce total execution time
+- **CI Optimization**: Continue using Nx Cloud distribution (already configured with 3 agents); document Vitest sharding as alternative for future if Nx Cloud is removed
 - **Automatic Cleanup**: Enable clearMocks, restoreMocks, unstubEnvs, unstubGlobals flags in workspace config
 - **Shared Configuration**: Centralize common settings in vitest.workspace.ts with extends inheritance
 
@@ -31,11 +31,11 @@ The project currently uses Vitest for unit testing with basic configuration (cov
   - Each package: `vitest.config.ts` (migrate from defineConfig to defineProject), `package.json` (scripts)
   - React packages: Add browser test support with @vitest/browser and vitest-browser-react
   - CI: `.github/workflows/ci.yml` (add sharding strategy, update script names)
-- **Dependencies**: @vitest/expect-type, @vitest/browser, vitest-browser-react, playwright
+- **Dependencies**: @vitest/browser, vitest-browser-react, playwright
 - **File conventions**:
   - `*.test.ts` → Unit tests
   - `*.integration.ts` → Integration tests
   - `*.test-d.ts` → Type tests
   - `*.browser.test.tsx` → Browser tests (React packages only)
 - **Coverage**: Separate coverage reports per test type (unit, integration, browser)
-- **Performance**: CI sharding expected to reduce test time by ~3x with 3 parallel jobs
+- **Performance**: Continue leveraging existing Nx Cloud distribution across 3 agents

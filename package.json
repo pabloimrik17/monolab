@@ -20,7 +20,19 @@
         "react-clean:release": "nx release --skip-publish --projects @monolab/react-clean && pnpm run jsr:sync-version",
         "react-clean:release:dry": "nx release --skip-publish --dry-run --projects @monolab/react-clean",
         "react-hooks:release": "nx release --skip-publish --projects @monolab/react-hooks && pnpm run jsr:sync-version",
-        "react-hooks:release:dry": "nx release --skip-publish --dry-run --projects @monolab/react-hooks"
+        "react-hooks:release:dry": "nx release --skip-publish --dry-run --projects @monolab/react-hooks",
+        "test:browser": "nx run-many --target=test:browser",
+        "test:browser:affected": "nx affected --target=test:browser",
+        "test:integration": "nx run-many --target=test:integration",
+        "test:integration:affected": "nx affected --target=test:integration",
+        "test:integration:watch": "nx run-many --target=test:integration:watch",
+        "test:types": "nx run-many --target=test:types",
+        "test:types:affected": "nx affected --target=test:types",
+        "test:types:watch": "nx run-many --target=test:types:watch",
+        "test:ui": "vitest --ui",
+        "test:unit": "nx run-many --target=test:unit",
+        "test:unit:affected": "nx affected --target=test:unit",
+        "test:unit:watch": "nx run-many --target=test:unit:watch"
     },
     "devDependencies": {
         "@codecov/bundle-analyzer": "^1.9.1",
@@ -33,6 +45,7 @@
         "@swc/core": "~1.5.7",
         "@swc/helpers": "~0.5.11",
         "@types/node": "^22.10.5",
+        "@vitest/browser": "^4.0.6",
         "@vitest/coverage-v8": "catalog:",
         "@vitest/ui": "catalog:",
         "eslint": "^9.25.0",
@@ -42,6 +55,7 @@
         "lint-staged": "16.1.5",
         "markdownlint-cli": "^0.44.0",
         "nx": "21.3.11",
+        "playwright": "^1.56.1",
         "prettier": "^2.6.2",
         "prettier-plugin-organize-imports": "^4.1.0",
         "prettier-plugin-packagejson": "^2.5.10",
@@ -52,7 +66,8 @@
         "typescript-eslint": "^8.30.1",
         "validate-branch-name": "^1.3.2",
         "vite-tsconfig-paths": "catalog:",
-        "vitest": "catalog:"
+        "vitest": "catalog:",
+        "vitest-browser-react": "^2.0.2"
     },
     "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad",
     "engines": {

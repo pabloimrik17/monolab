@@ -1,7 +1,7 @@
 import { resolve } from "node:path";
-import { defineConfig } from "vitest/config";
+import { defineProject } from "vitest/config";
 
-export default defineConfig({
+export default defineProject({
     resolve: {
         alias: {
             "@monolab/react-hooks": resolve(
@@ -11,6 +11,7 @@ export default defineConfig({
         },
     },
     test: {
+        extends: true,
         reporters: ["default", "junit"],
         outputFile: {
             junit: "./test-results.junit.xml",
@@ -22,5 +23,9 @@ export default defineConfig({
         },
         environment: "jsdom",
         setupFiles: ["./vitest.setup.ts"],
+    },
+    typecheck: {
+        enabled: true,
+        include: ["**/*.test-d.ts"],
     },
 });
