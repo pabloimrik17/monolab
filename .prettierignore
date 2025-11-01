@@ -9,3 +9,6 @@
 
 # Ignore auto-generated changelog files
 **/CHANGELOG.md
+
+# Stryker mutation testing reports
+**/reports/

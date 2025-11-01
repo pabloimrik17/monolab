@@ -348,3 +348,7 @@ sketch
 
 # Git worktrees
 .worktrees/
+
+# Stryker mutation testing reports
+**/reports/
+.stryker-tmp/
