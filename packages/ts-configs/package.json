@@ -25,8 +25,6 @@
         "lint:knip:fix": "knip --fix",
         "lint:prettier": "prettier . --check",
         "lint:prettier:fix": "prettier . --write",
-        "test:mutation": "stryker run",
-        "test:mutation:report": "open reports/mutation/index.html",
         "test:unit": "vitest run",
         "test:unit:coverage": "vitest run --coverage",
         "test:unit:watch": "vitest"

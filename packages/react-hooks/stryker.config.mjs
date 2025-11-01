@@ -1,7 +1,7 @@
-import type { PartialStrykerOptions } from "@stryker-mutator/api/core";
-import baseConfig from "../../stryker.config.base.js";
+import baseConfig from "../../stryker.config.base.mjs";
 
-const config: PartialStrykerOptions = {
+/** @type {import('@stryker-mutator/api/core').PartialStrykerOptions} */
+const config = {
     ...baseConfig,
     mutate: [
         "src/**/*.ts",
@@ -13,8 +13,8 @@ const config: PartialStrykerOptions = {
     ],
     thresholds: {
         high: 80,
-        low: 65,
-        break: 60,
+        low: 70,
+        break: 70,
     },
     dashboard: {
         ...baseConfig.dashboard,

@@ -1,11 +1,14 @@
-import type { PartialStrykerOptions } from "@stryker-mutator/api/core";
-
-const config: PartialStrykerOptions = {
+/** @type {import('@stryker-mutator/api/core').PartialStrykerOptions} */
+const config = {
     packageManager: "pnpm",
-    testRunner: "vitest",
-    coverageAnalysis: "perTest",
+    testRunner: "command",
+    commandRunner: {
+        command: "pnpm run test:unit",
+    },
+    coverageAnalysis: "off",
     incremental: true,
     incrementalFile: "reports/stryker-incremental.json",
+    inPlace: true,
     reporters: ["html", "json", "clear-text", "progress"],
     htmlReporter: {
         fileName: "reports/mutation/index.html",
