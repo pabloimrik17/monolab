@@ -36,7 +36,7 @@
     "devDependencies": {
         "@arethetypeswrong/cli": "0.18.2",
         "@testing-library/react": "catalog:",
-        "@types/react": "18.3.24",
+        "@types/react": "18.3.26",
         "jsdom": "catalog:",
         "react": "^18.0.0",
         "react-dom": "^18.3.1",
