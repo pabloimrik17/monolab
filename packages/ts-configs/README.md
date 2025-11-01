@@ -16,216 +16,181 @@ pnpm add @monolab/ts-configs
 ## Configuration Hierarchy
 
 ```
-tsconfig.base.json (foundation)
-├── tsconfig.web-base.json (future - web platform)
-│   ├── tsconfig.web-lib.json (future - web libraries)
-│   └── tsconfig.web-app.json (future - web applications)
-└── tsconfig.node-base.json (future - Node.js platform)
-    ├── tsconfig.node-lib.json (future - Node.js libraries)
-    └── tsconfig.node-app.json (future - Node.js applications)
+tsconfig.base.json (platform-agnostic foundation)
+├── tsconfig.web-base.json (coming soon)
+│   ├── tsconfig.web-lib.json (coming soon)
+│   └── tsconfig.web-app.json (coming soon)
+└── tsconfig.node-base.json (coming soon)
+    ├── tsconfig.node-lib.json (coming soon)
+    └── tsconfig.node-app.json (coming soon)
 ```
 
 ## Available Configurations
 
-### `tsconfig.base.json` (Current)
+### `tsconfig.base.json`
 
-**Purpose:** Platform-agnostic foundation with maximum type safety and performance optimizations.
+**Platform-agnostic foundation config** with maximum type safety and performance optimizations.
 
-**What it provides:**
-- **Language & Target:** ES2022 compilation target with ES2024 API types
-- **Maximum Strictness:** 15+ strict compiler options to catch errors at compile time
-- **ESM Interop:** Modern module interoperability and isolation
-- **Performance:** Incremental compilation and composite project support
+**Includes:**
 
-**What it doesn't include:**
-- Module settings (`module`, `moduleResolution`) - delegated to platform configs
-- Platform runtime APIs (DOM, Node.js) - delegated to platform configs
-- Build output settings (declaration files, outDir, sourceMap) - delegated to usage configs
+-   ✅ **Language & Target**: ES2022 output, ES2024 API types
+-   ✅ **Maximum Strictness**: 15+ strict compiler flags
+-   ✅ **ESM Interop**: Modern module handling with bundler compatibility
+-   ✅ **Performance**: Incremental compilation and project references support
 
-**When to use:**
-- As a foundation for future platform-specific configs
-- During transition period, can be extended directly (add `module` and `moduleResolution` to your project config)
+**Does NOT include:**
 
-**Example usage:**
+-   ❌ Platform-specific module settings (module, moduleResolution)
+-   ❌ Runtime library types (DOM, Node APIs)
+-   ❌ Build output configuration (declaration, outDir, etc.)
+
+**Usage:**
 
 ```json
 {
-  "extends": "@monolab/ts-configs/tsconfig.base.json",
-  "compilerOptions": {
-    "module": "preserve",
-    "moduleResolution": "bundler",
-    "lib": ["ES2024", "DOM"],
-    "outDir": "./dist",
-    "rootDir": "./src"
-  },
-  "include": ["src/**/*"]
+    "extends": "@monolab/ts-configs/tsconfig.base.json",
+    "compilerOptions": {
+        // Add platform-specific settings here
+        "module": "preserve", // or "NodeNext" for Node.js
+        "moduleResolution": "bundler" // or omit for Node.js
+    }
 }
 ```
 
 ### Platform Configs (Coming Soon)
 
-**`tsconfig.web-base.json`** - For browser/bundler environments
-- Adds: `module: "preserve"`, `moduleResolution: "bundler"`, `lib: ["DOM"]`
+Platform-specific configs will extend the base config and add appropriate module settings:
 
-**`tsconfig.node-base.json`** - For Node.js environments
-- Adds: `module: "NodeNext"`, `moduleResolution: "NodeNext"`
-
-### Usage Configs (Coming Soon)
-
-**`tsconfig.web-lib.json`** / **`tsconfig.node-lib.json`** - For libraries
-- Adds: `declaration: true`, `declarationMap: true`
-
-**`tsconfig.web-app.json`** / **`tsconfig.node-app.json`** - For applications
-- Adds: `noEmit: true` (or appropriate outDir settings)
-
-## Configuration Groups
-
-The base configuration is organized into 4 logical groups:
-
-### Group 1: Language & Target (5 options)
-- Target ES2022 for runtime compatibility
-- ES2024 lib for modern API types
-- Allow JS and JSON imports
-- Force module detection
-
-### Group 2: Strictness (12 flags)
-- `strict: true` (enables 7 sub-flags)
-- Additional strict checks:
-  - `noUnusedLocals`, `noUnusedParameters`
-  - `noFallthroughCasesInSwitch`
-  - `noUncheckedIndexedAccess`
-  - `exactOptionalPropertyTypes`
-  - `useUnknownInCatchVariables`
-  - `noPropertyAccessFromIndexSignature`
-  - `noImplicitOverride`
-  - `noImplicitReturns`
-  - `allowUnreachableCode: false`
-  - `allowUnusedLabels: false`
-
-### Group 3: ESM Interop & Isolation (4 options)
-- ESM/CJS interoperability
-- Isolated module compilation
-- Verbatim module syntax
-- Consistent casing in file names
-
-### Group 4: Performance (3 options)
-- Incremental compilation
-- Composite project references
-- Skip lib checks for faster builds
+-   **`tsconfig.web-base.json`**: Base for web projects (adds `module: "preserve"`, `moduleResolution: "bundler"`, `lib: ["ES2024", "DOM"]`)
+-   **`tsconfig.node-base.json`**: Base for Node.js projects (adds `module: "NodeNext"`)
+-   **`tsconfig.web-lib.json`**: For web libraries (adds `declaration: true`)
+-   **`tsconfig.web-app.json`**: For web applications (adds `noEmit: true`)
+-   **`tsconfig.node-lib.json`**: For Node.js libraries
+-   **`tsconfig.node-app.json`**: For Node.js applications
 
 ## Migration Guide
 
 ### For Existing Projects
 
-If you're currently extending the old base config, you have two options:
+If your project currently extends the old base config, you'll need to add platform-specific settings:
 
-#### Option 1: Add Platform Settings (Quick Fix)
-
-```json
-{
-  "extends": "@monolab/ts-configs/tsconfig.base.json",
-  "compilerOptions": {
-    "module": "preserve",
-    "moduleResolution": "bundler"
-  }
-}
-```
-
-#### Option 2: Temporarily Override Strict Flags
-
-If the new strict flags cause compilation errors:
+**Before:**
 
 ```json
 {
-  "extends": "@monolab/ts-configs/tsconfig.base.json",
-  "compilerOptions": {
-    "module": "preserve",
-    "moduleResolution": "bundler",
-    "noImplicitReturns": false,
-    "noImplicitOverride": false
-  }
+    "extends": "@monolab/ts-configs/tsconfig.base.json"
 }
 ```
 
-Then gradually fix the issues and remove the overrides.
+**After (for web projects with bundlers):**
 
-### Common Migration Issues
-
-**`noImplicitReturns`** - Functions must return a value in all code paths
-
-```typescript
-// ❌ Error: Not all code paths return a value
-function getValue(x: number): string {
-  if (x > 0) {
-    return "positive";
-  }
-  // Missing return for other cases
-}
-
-// ✅ Fixed
-function getValue(x: number): string {
-  if (x > 0) {
-    return "positive";
-  }
-  return "non-positive";
+```json
+{
+    "extends": "@monolab/ts-configs/tsconfig.base.json",
+    "compilerOptions": {
+        "module": "preserve",
+        "moduleResolution": "bundler"
+    }
 }
 ```
 
-**`noImplicitOverride`** - Must use `override` keyword when overriding methods
+**After (for Node.js projects):**
 
-```typescript
-class Base {
-  greet() {}
-}
-
-// ❌ Error: This member must have an 'override' modifier
-class Derived extends Base {
-  greet() {}
-}
-
-// ✅ Fixed
-class Derived extends Base {
-  override greet() {}
+```json
+{
+    "extends": "@monolab/ts-configs/tsconfig.base.json",
+    "compilerOptions": {
+        "module": "NodeNext"
+    }
 }
 ```
 
-**`allowUnreachableCode: false`** - Detects dead code
+### Handling New Strict Flags
 
-```typescript
-// ❌ Error: Unreachable code detected
-function example() {
-  return true;
-  console.log("never runs");
-}
+The updated base config includes additional strictness flags that may cause compilation errors:
 
-// ✅ Fixed - remove or restructure
-function example() {
-  return true;
+-   `noImplicitReturns`: All code paths must return a value
+-   `noImplicitOverride`: Use `override` keyword when overriding methods
+-   `allowUnreachableCode: false`: No unreachable code allowed
+-   `allowUnusedLabels: false`: No unused labels allowed
+
+**Temporary override during migration:**
+
+```json
+{
+    "extends": "@monolab/ts-configs/tsconfig.base.json",
+    "compilerOptions": {
+        // Temporarily disable while fixing issues
+        "noImplicitReturns": false,
+        "noImplicitOverride": false
+    }
 }
 ```
 
-## Benefits
+## Configuration Details
 
-### Type Safety
-- Catches more errors at compile time
-- Prevents common runtime bugs
-- Better IDE autocompletion and error checking
+### Group 1: Language & Target
 
-### Performance
-- Faster incremental builds
-- Better monorepo caching with composite projects
-- Optimized type checking with skipLibCheck
+```json
+{
+    "target": "ES2022", // Stable runtime target (2 versions back)
+    "lib": ["ES2024"], // Modern API types (penultimate version)
+    "allowJs": true, // Allow JavaScript files
+    "resolveJsonModule": true, // Import JSON files with types
+    "moduleDetection": "force" // All files are modules
+}
+```
 
-### Maintainability
-- Clear separation between base and platform configs
-- Explicit is better than implicit
-- Easier to reason about configuration inheritance
+### Group 2: Strictness
+
+Maximum type safety with 15+ strict compiler options:
+
+-   `strict: true` (enables 8 core strict flags)
+-   `noUnusedLocals`, `noUnusedParameters`
+-   `noFallthroughCasesInSwitch`
+-   `noUncheckedIndexedAccess` (array access returns `T | undefined`)
+-   `exactOptionalPropertyTypes` (respects `?` vs `| undefined`)
+-   `useUnknownInCatchVariables` (catch errors are `unknown`)
+-   `noPropertyAccessFromIndexSignature` (use bracket notation for index signatures)
+-   `noImplicitOverride` (require `override` keyword)
+-   `noImplicitReturns` (all code paths must return)
+-   `allowUnreachableCode: false`
+-   `allowUnusedLabels: false`
+
+### Group 3: ESM Interop & Isolation
+
+```json
+{
+    "esModuleInterop": true, // Better CommonJS/ESM interop
+    "isolatedModules": true, // Each file can be compiled independently
+    "verbatimModuleSyntax": true, // Preserve import/export syntax
+    "forceConsistentCasingInFileNames": true // Catch case sensitivity issues
+}
+```
+
+### Group 4: Performance
+
+```json
+{
+    "incremental": true, // Cache compilation info for faster rebuilds
+    "composite": true, // Enable project references for monorepo
+    "skipLibCheck": true // Skip type checking in .d.ts files
+}
+```
+
+## Best Practices
+
+1. **Use the base config as foundation**: Extend it rather than copying options
+2. **Add platform-specific settings**: Don't rely on TypeScript defaults
+3. **Don't override strict flags**: Fix the issues instead (long-term benefit)
+4. **Enable project references**: Use `composite: true` advantage in monorepos
+5. **Wait for platform configs**: Once available, migrate to `tsconfig.web-base.json` or `tsconfig.node-base.json`
 
 ## References
 
-- [Total TypeScript TSConfig Cheat Sheet](https://www.totaltypescript.com/tsconfig-cheat-sheet)
-- [TypeScript Compiler Options](https://www.typescriptlang.org/tsconfig)
-- OpenSpec proposal: `openspec/changes/define-base-tsconfig/`
+-   [Total TypeScript TSConfig Cheat Sheet](https://www.totaltypescript.com/tsconfig-cheat-sheet)
+-   [TypeScript Compiler Options](https://www.typescriptlang.org/tsconfig)
+-   OpenSpec Proposal: `openspec/changes/define-base-tsconfig/`
 
 ## License
 

@@ -1,10 +1,10 @@
 {
-  "singleAttributePerLine": true,
-  "useTabs": false,
-  "tabWidth": 4,
-  "overrides": [{ "files": ".nvmrc", "options": { "parser": "yaml" } }],
-  "plugins": [
-    "prettier-plugin-packagejson",
-    "prettier-plugin-organize-imports"
-  ]
+    "singleAttributePerLine": true,
+    "useTabs": false,
+    "tabWidth": 4,
+    "overrides": [{ "files": ".nvmrc", "options": { "parser": "yaml" } }],
+    "plugins": [
+        "prettier-plugin-packagejson",
+        "prettier-plugin-organize-imports"
+    ]
 }

@@ -1,13 +1,23 @@
 {
     "compilerOptions": {
-        /* Group 1: Language & Target */
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Group 1: Language & Target
+         * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Defines the ECMAScript version and language features available.
+         * Target ES2022 for runtime compatibility, lib ES2024 for modern APIs.
+         */
         "target": "ES2022",
         "lib": ["ES2024"],
         "allowJs": true,
         "resolveJsonModule": true,
         "moduleDetection": "force",
 
-        /* Group 2: Strictness */
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Group 2: Strictness
+         * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Maximum type safety: enables all strict checks and additional
+         * strictness flags to catch errors at compile time.
+         */
         "strict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
@@ -21,13 +31,23 @@
         "allowUnreachableCode": false,
         "allowUnusedLabels": false,
 
-        /* Group 3: ESM Interop & Isolation */
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Group 3: ESM Interop & Isolation
+         * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Ensures proper ESM module behavior, bundler compatibility, and
+         * consistent cross-platform file handling.
+         */
         "esModuleInterop": true,
         "isolatedModules": true,
         "verbatimModuleSyntax": true,
         "forceConsistentCasingInFileNames": true,
 
-        /* Group 4: Performance */
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Group 4: Performance
+         * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Optimizes build performance with incremental compilation and
+         * project references support for monorepo architecture.
+         */
         "incremental": true,
         "composite": true,
         "skipLibCheck": true
