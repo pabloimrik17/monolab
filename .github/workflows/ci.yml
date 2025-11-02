@@ -28,12 +28,12 @@ jobs:
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
               with:
-                  version: 10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad
+                  version: 10.19.0
 
             - name: Setup Nodejs
               uses: actions/setup-node@v4
               with:
-                  node-version: 22.17.0
+                  node-version: 22.21.0
                   # Cache node_modules
                   cache: "pnpm"
 
@@ -71,6 +71,17 @@ jobs:
                       node_modules
                       ~/.cache/Cypress # needed for the Cypress binary
                   key: ${{ steps.cache-dependencies-restore.outputs.cache-primary-key }}
+
+            - name: Restore Stryker incremental cache
+              id: cache-stryker-restore
+              uses: actions/cache/restore@v4
+              with:
+                  path: packages/*/reports/stryker-incremental.json
+                  key: stryker-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      stryker-${{ runner.os }}-${{ github.ref_name }}-
+                      stryker-${{ runner.os }}-develop-
+                      stryker-${{ runner.os }}-
 
             - name: 🔍 Check monorepo integrity
               run: pnpm exec nx sync:check
@@ -196,6 +207,28 @@ jobs:
             - name: 🏗 Execute build checks for all files (All)
               run: pnpm exec nx run-many -t build
               if: ${{ github.event_name == 'push' }}
+
+            - name: 🧬 Execute mutation testing (All)
+              run: pnpm exec nx run-many -t test:mutation
+              if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
+              env:
+                  STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
+
+            - name: Cache Stryker incremental results
+              id: cache-stryker-save
+              uses: actions/cache/save@v4
+              if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
+              with:
+                  path: packages/*/reports/stryker-incremental.json
+                  key: ${{ steps.cache-stryker-restore.outputs.cache-primary-key }}
+
+            - name: 📊 Upload mutation reports as artifacts
+              uses: actions/upload-artifact@v4
+              if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
+              with:
+                  name: mutation-reports
+                  path: packages/*/reports/mutation
+                  retention-days: 30
 
             - name: 📦 Analyze and upload bundle sizes to Codecov
               continue-on-error: true

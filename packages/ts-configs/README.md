@@ -15,7 +15,7 @@ pnpm add @monolab/ts-configs
 
 ## Configuration Hierarchy
 
-```
+```text
 tsconfig.base.json (platform-agnostic foundation)
 ├── tsconfig.web-base.json (coming soon)
 │   ├── tsconfig.web-lib.json (coming soon)
@@ -34,7 +34,7 @@ tsconfig.base.json (platform-agnostic foundation)
 **Includes:**
 
 -   ✅ **Language & Target**: ES2022 output, ES2024 API types
--   ✅ **Maximum Strictness**: 15+ strict compiler flags
+-   ✅ **Maximum Strictness**: 18 strict flags (12 compiler options)
 -   ✅ **ESM Interop**: Modern module handling with bundler compatibility
 -   ✅ **Performance**: Incremental compilation and project references support
 
@@ -143,19 +143,23 @@ The updated base config includes additional strictness flags that may cause comp
 
 ### Group 2: Strictness
 
-Maximum type safety with 15+ strict compiler options:
+Maximum type safety with 18 active strict flags (12 compiler options):
 
--   `strict: true` (enables 8 core strict flags)
--   `noUnusedLocals`, `noUnusedParameters`
--   `noFallthroughCasesInSwitch`
--   `noUncheckedIndexedAccess` (array access returns `T | undefined`)
--   `exactOptionalPropertyTypes` (respects `?` vs `| undefined`)
--   `useUnknownInCatchVariables` (catch errors are `unknown`)
--   `noPropertyAccessFromIndexSignature` (use bracket notation for index signatures)
--   `noImplicitOverride` (require `override` keyword)
--   `noImplicitReturns` (all code paths must return)
--   `allowUnreachableCode: false`
--   `allowUnusedLabels: false`
+-   `strict: true` (enables 7 built-in strict flags)
+    -   `noImplicitAny`, `noImplicitThis`, `strictNullChecks`
+    -   `strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`
+    -   `alwaysStrict`
+-   11 additional strict checks:
+    -   `noUnusedLocals`, `noUnusedParameters`
+    -   `noFallthroughCasesInSwitch`
+    -   `noUncheckedIndexedAccess` (array access returns `T | undefined`)
+    -   `exactOptionalPropertyTypes` (respects `?` vs `| undefined`)
+    -   `useUnknownInCatchVariables` (catch errors are `unknown`)
+    -   `noPropertyAccessFromIndexSignature` (use bracket notation for index signatures)
+    -   `noImplicitOverride` (require `override` keyword)
+    -   `noImplicitReturns` (all code paths must return)
+    -   `allowUnreachableCode: false`
+    -   `allowUnusedLabels: false`
 
 ### Group 3: ESM Interop & Isolation
 

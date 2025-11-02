@@ -11,7 +11,7 @@
 - [ ] 2.1 Configure incremental compilation for faster rebuilds
 - [ ] 2.2 Set sourceMap to true for debugging
 - [ ] 2.3 Configure outDir if needed for build output
-- [ ] 2.4 Ensure compatibility with Node.js 22.17.0
+- [ ] 2.4 Ensure compatibility with Node.js 22.21.0
 
 ## 3. Validation
 - [ ] 3.1 Validate JSON syntax

@@ -129,6 +129,23 @@
                 "{projectRoot}/vitest.config.ts"
             ],
             "outputs": ["{projectRoot}/coverage", "{projectRoot}/html"]
+        },
+        "test:mutation": {
+            "cache": true,
+            "dependsOn": ["^build", "build"],
+            "inputs": [
+                "default",
+                "{workspaceRoot}/stryker.config.base.ts",
+                "{projectRoot}/stryker.config.ts",
+                "{projectRoot}/reports/stryker-incremental.json"
+            ],
+            "outputs": [
+                "{projectRoot}/reports/mutation",
+                "{projectRoot}/reports/stryker-incremental.json"
+            ]
+        },
+        "test:mutation:report": {
+            "cache": false
         }
     },
     "sync": {
