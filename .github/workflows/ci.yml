@@ -265,11 +265,11 @@ jobs:
               env:
                   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
                   IS_PR: ${{ github.event_name == 'pull_request' }}
-                  AFFECTED_REACT_HOOKS: ${{ steps.affected-codecov.outputs.react-hooks }}
-                  AFFECTED_REACT_CLEAN: ${{ steps.affected-codecov.outputs.react-clean }}
-                  AFFECTED_IS_EVEN: ${{ steps.affected-codecov.outputs.is-even }}
-                  AFFECTED_IS_ODD: ${{ steps.affected-codecov.outputs.is-odd }}
-                  AFFECTED_TS_CONFIGS: ${{ steps.affected-codecov.outputs.ts-configs }}
+                  AFFECTED_REACT_HOOKS: ${{ steps.affected-codecov.outputs.react-hooks || 'false' }}
+                  AFFECTED_REACT_CLEAN: ${{ steps.affected-codecov.outputs.react-clean || 'false' }}
+                  AFFECTED_IS_EVEN: ${{ steps.affected-codecov.outputs.is-even || 'false' }}
+                  AFFECTED_IS_ODD: ${{ steps.affected-codecov.outputs.is-odd || 'false' }}
+                  AFFECTED_TS_CONFIGS: ${{ steps.affected-codecov.outputs.ts-configs || 'false' }}
               run: |
                   # Map package names to affected status for conditional uploads
                   declare -A affected=(
@@ -296,6 +296,7 @@ jobs:
                     fi
 
                     if [[ "$should_upload" == "true" ]]; then
+                      # Bundle analysis checks for directory (not file) because dist/ contains multiple bundle files
                       if [ -d "packages/$package/dist" ]; then
                         echo "📦 Analyzing bundle for $package..."
                         pnpm exec bundle-analyzer packages/$package/dist \
