@@ -182,11 +182,12 @@ jobs:
                     if [[ "$should_upload" == "true" ]]; then
                       if [[ -f "$coverage_file" ]]; then
                         echo "📊 Uploading coverage for $package..."
-                        npx codecov@latest upload-process \
-                          --file="$coverage_file" \
-                          --flag="$package" \
-                          --token="$CODECOV_TOKEN" \
-                          --fail-on-error=false
+                        npx @codecov/cli@latest upload-process \
+                          --file "$coverage_file" \
+                          --flag "$package" \
+                          --disable-search \
+                          --token "$CODECOV_TOKEN" \
+                          --fail-on-error false
                         ((uploaded++))
                       else
                         echo "⚠️  Coverage file not found for $package: $coverage_file"
@@ -242,11 +243,11 @@ jobs:
                     if [[ "$should_upload" == "true" ]]; then
                       if [[ -f "$test_results_file" ]]; then
                         echo "📊 Uploading test results for $package..."
-                        npx codecov@latest upload-test-results \
-                          --file="$test_results_file" \
-                          --flag="$package" \
-                          --token="$CODECOV_TOKEN" \
-                          --fail-on-error=false
+                        npx @codecov/test-results-action@latest \
+                          --file "$test_results_file" \
+                          --flag "$package" \
+                          --token "$CODECOV_TOKEN" \
+                          --disable-search
                         ((uploaded++))
                       else
                         echo "⚠️  Test results file not found for $package: $test_results_file"
