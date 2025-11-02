@@ -45,6 +45,7 @@ jobs:
             # Run this command as early as possible, before dependencies are installed
             # Learn more at https://nx.dev/ci/reference/nx-cloud-cli#npx-nxcloud-startcirun
             - name: Start Nx Cloud CI Run
+              if: ${{ vars.NX_NO_CLOUD != 'true' }}
               run: pnpm dlx nx-cloud start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="build"
 
             - name: Restore cached npm dependencies
