@@ -12,7 +12,9 @@ function TestComponent({ onMount }: { onMount: () => void }) {
         onMount();
     });
 
-    return <div data-testid="status">{mounted ? "mounted" : "not-mounted"}</div>;
+    return (
+        <div data-testid="status">{mounted ? "mounted" : "not-mounted"}</div>
+    );
 }
 
 test("useDidMount executes callback once after mount in real browser", () => {
