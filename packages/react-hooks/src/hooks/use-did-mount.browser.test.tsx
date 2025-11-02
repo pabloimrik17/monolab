@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import { useState } from "react";
 import { expect, test } from "vitest";
 import { useDidMount } from "./use-did-mount.hook.js";
@@ -42,10 +42,17 @@ test("useDidMount with async callback in browser", async () => {
         resolved = true;
     };
 
-    render(<TestComponent onMount={asyncOnMount} />);
+    const { getByTestId } = render(<TestComponent onMount={asyncOnMount} />);
 
-    // Wait for async operation
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    // Wait for async callback to complete
+    await waitFor(
+        () => {
+            expect(resolved).toBe(true);
+        },
+        { timeout: 100 }
+    );
 
-    expect(resolved).toBe(true);
+    // Verify component mounted and browser environment
+    expect(getByTestId("status").textContent).toBe("mounted");
+    expect(typeof window).toBe("object");
 });
