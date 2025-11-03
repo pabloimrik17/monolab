@@ -105,15 +105,16 @@ export default defineConfig({
 **Provider:** @vitest/browser-playwright with Chromium
 - Most reliable for CI (headless mode)
 - Official Vitest browser provider for Playwright
-- Requires @vitejs/plugin-react for proper JSX transform (avoids explicit React imports)
+- Requires @vitejs/plugin-react-swc for proper JSX transform and decorator support
 - Alternatives (WebdriverIO, preview) less mature or CI-unsuitable
 
 **File convention:** `*.browser.test.tsx` for browser-specific tests
 
 **React JSX Support:**
-- Add @vitejs/plugin-react to vitest.config.ts in React packages
+- Add @vitejs/plugin-react-swc to vitest.config.ts in React packages
 - Enables new JSX transform (no explicit React import needed)
-- Recommended by Vitest team for browser testing
+- Includes `tsDecorators: true` option for inversify decorator support
+- Requires `experimentalDecorators` and `emitDecoratorMetadata` in tsconfig.json
 
 ### 4. CI Distribution Strategy
 
@@ -217,10 +218,11 @@ steps:
 4. Install Playwright browsers (`playwright install chromium`)
 
 **Phase 2: React Package Setup**
-1. Install @vitejs/plugin-react
-2. Add plugin to vitest.config.ts in react-hooks and react-clean
-3. Install @vitest/browser-playwright
+1. Install @vitejs/plugin-react-swc and vitest-browser-react
+2. Add plugin with tsDecorators support to vitest.config.ts in react-hooks and react-clean
+3. Install @vitest/browser-playwright and playwright
 4. Configure browser testing in React package configs
+5. Add experimentalDecorators and emitDecoratorMetadata to tsconfig.json
 
 **Phase 3: Script Standardization**
 1. Update test:browser scripts to use --browser.enabled flag

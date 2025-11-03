@@ -18,7 +18,7 @@ The project currently uses Vitest for unit testing with basic configuration (cov
 - **UI Mode**: Enable @vitest/ui for interactive visual test debugging
 - **Type Testing**: Use Vitest's built-in expectTypeOf for compile-time type validation
 - **Browser Mode**: Implement real browser testing with @vitest/browser-playwright for React packages
-- **React JSX Support**: Add @vitejs/plugin-react for proper JSX transform without explicit React imports
+- **React JSX Support**: Add @vitejs/plugin-react-swc with tsDecorators support for proper JSX transform and decorator handling
 - **Concurrent Testing**: Configure maxConcurrency for parallel test execution within files
 - **CI Optimization**: Continue using Nx Cloud distribution (already configured with 3 agents)
 - **Automatic Cleanup**: Enable clearMocks, restoreMocks, unstubEnvs, unstubGlobals flags in root config
@@ -28,13 +28,12 @@ The project currently uses Vitest for unit testing with basic configuration (cov
 
 - **Affected specs**: New `vitest-testing` capability
 - **Affected code**:
-  - Root: `vitest.config.ts` (replaces vitest.workspace.ts), `pnpm-workspace.yaml` (vitest 4.0.6), `package.json` (add @vitejs/plugin-react)
-  - Each package: `vitest.config.ts` (add @vitejs/plugin-react, browser config), `package.json` (updated test:browser scripts)
-  - React packages: Add browser test support with @vitest/browser-playwright
-  - Browser test files: Remove explicit React imports (handled by @vitejs/plugin-react)
+  - Root: `vitest.config.ts` (replaces vitest.workspace.ts), `pnpm-workspace.yaml` (vitest 4.0.6), `package.json` (add @vitejs/plugin-react-swc)
+  - React packages: `vitest.config.ts` (add @vitejs/plugin-react-swc with tsDecorators, browser config), `package.json` (updated test scripts), `tsconfig.json` (add experimentalDecorators)
+  - Browser test files: Remove explicit React imports (handled by @vitejs/plugin-react-swc)
 - **Dependencies**:
   - Updated: vitest 4.0.3 → 4.0.6, @vitest/coverage-v8, @vitest/ui
-  - Added: @vitest/browser-playwright, @vitejs/plugin-react, playwright (with chromium browser)
+  - Added: @vitest/browser-playwright, @vitejs/plugin-react-swc, playwright (with chromium browser), vitest-browser-react
 - **File conventions**:
   - `*.{test,spec}.{ts,tsx}` → Unit tests (jsdom)
   - `*.integration.ts` → Integration tests (jsdom)
