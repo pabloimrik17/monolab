@@ -197,6 +197,7 @@ jobs:
                   files: ./packages/react-hooks/test-results.junit.xml
                   token: ${{ secrets.CODECOV_TOKEN }}
                   flags: react-hooks
+                  fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - react-clean
               uses: codecov/test-results-action@v1
@@ -205,6 +206,7 @@ jobs:
                   files: ./packages/react-clean/test-results.junit.xml
                   token: ${{ secrets.CODECOV_TOKEN }}
                   flags: react-clean
+                  fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - is-even
               uses: codecov/test-results-action@v1
@@ -213,6 +215,7 @@ jobs:
                   files: ./packages/is-even/test-results.junit.xml
                   token: ${{ secrets.CODECOV_TOKEN }}
                   flags: is-even
+                  fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - is-odd
               uses: codecov/test-results-action@v1
@@ -221,6 +224,7 @@ jobs:
                   files: ./packages/is-odd/test-results.junit.xml
                   token: ${{ secrets.CODECOV_TOKEN }}
                   flags: is-odd
+                  fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - ts-configs
               uses: codecov/test-results-action@v1
@@ -229,6 +233,7 @@ jobs:
                   files: ./packages/ts-configs/test-results.junit.xml
                   token: ${{ secrets.CODECOV_TOKEN }}
                   flags: ts-configs
+                  fail_ci_if_error: false
 
             - name: 🏗 Execute build checks for affected files (Affected)
               run: pnpm exec nx affected -t build
