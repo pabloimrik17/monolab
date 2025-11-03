@@ -6,9 +6,21 @@
         "outDir": "./dist",
         "rootDir": "./src",
         "declaration": true,
-        "composite": true
+        "composite": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
     },
     "include": ["src/**/*"],
+    "exclude": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.test-d.ts",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/*.browser.test.ts",
+        "**/*.browser.test.tsx",
+        "**/*.integration.ts"
+    ],
     "references": [
         {
             "path": "../react-hooks"

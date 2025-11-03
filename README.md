@@ -61,6 +61,128 @@ pnpm --version
 
 The output should be `10.19.0`.
 
+## Testing
+
+This project uses Vitest for testing with separate test types organized by purpose.
+
+### Test Types
+
+**Unit Tests** (`*.test.ts`, `*.test.tsx`)
+- Fast, isolated tests for individual functions/components
+- Run with: `pnpm run test:unit` or `pnpm run test:unit:affected`
+- Watch mode: `pnpm run test:unit:watch`
+
+**Integration Tests** (`*.integration.ts`)
+- Tests for module interactions and integration points
+- Run with: `pnpm run test:integration` or `pnpm run test:integration:affected`
+- Watch mode: `pnpm run test:integration:watch`
+
+**Type Tests** (`*.test-d.ts`)
+- Compile-time TypeScript type validation using `expectTypeOf`
+- Prevents type regressions without runtime execution
+- Run with: `pnpm run test:types` or `pnpm run test:types:affected`
+- Watch mode: `pnpm run test:types:watch`
+
+**Browser Tests** (`*.browser.test.ts`, `*.browser.test.tsx`) - React packages only
+- Real browser testing with Playwright (Chromium)
+- Tests actual DOM behavior, not jsdom simulation
+- Run with: `pnpm run test:browser` or `pnpm run test:browser:affected`
+- Watch mode: `pnpm run test:browser:watch`
+
+### Interactive UI Mode
+
+Launch Vitest UI for visual test debugging:
+
+```bash
+pnpm run test:ui
+```
+
+Access the UI at `http://localhost:51204/__vitest__/`
+
+### Running Tests
+
+**All tests across monorepo:**
+
+```bash
+pnpm run test:unit           # All unit tests
+pnpm run test:integration    # All integration tests
+pnpm run test:types          # All type tests
+pnpm run test:browser        # All browser tests (React packages)
+```
+
+**Affected tests only (based on git changes):**
+
+```bash
+pnpm run test:unit:affected
+pnpm run test:integration:affected
+pnpm run test:types:affected
+pnpm run test:browser:affected
+```
+
+**Per-package tests:**
+
+```bash
+pnpm --filter @monolab/is-odd run test:unit
+pnpm --filter @monolab/react-hooks run test:browser
+```
+
+### Writing Tests
+
+**Unit Test Example:**
+
+```typescript
+// src/utils/is-odd.test.ts
+import { expect, test } from "vitest";
+import { isOdd } from "./is-odd.js";
+
+test("returns true for odd numbers", () => {
+    expect(isOdd(3)).toBe(true);
+});
+```
+
+**Type Test Example:**
+
+```typescript
+// src/utils/is-odd.test-d.ts
+import { expectTypeOf } from "vitest";
+import { isOdd } from "./is-odd.js";
+
+expectTypeOf(isOdd).parameter(0).toBeNumber();
+expectTypeOf(isOdd).returns.toBeBoolean();
+
+// @ts-expect-error - should not accept string
+isOdd("3");
+```
+
+**Browser Test Example (React):**
+
+```typescript
+// src/hooks/use-did-mount.browser.test.tsx
+import { render } from "@testing-library/react";
+import { expect, test } from "vitest";
+
+test("hook executes in real browser", () => {
+    const { getByTestId } = render(<TestComponent />);
+    expect(getByTestId("status")).toBeDefined();
+    // Verify actual browser environment
+    expect(typeof window).toBe("object");
+});
+```
+
+### Configuration
+
+- **Workspace config**: `vitest.workspace.ts` (shared settings)
+- **Package configs**: `packages/*/vitest.config.ts` (per-package overrides)
+- **Shared settings**: `clearMocks`, `restoreMocks`, `unstubEnvs`,
+  `unstubGlobals`, `maxConcurrency: 10`
+
+### CI Testing
+
+Tests run automatically in CI via Nx Cloud distribution:
+- Pull Requests: Affected tests only (coverage thresholds disabled)
+- Main/Develop: All tests with full coverage enforcement
+- Distributed across 3 agents for optimal performance
+
 ## Quality & Testing
 
 ### Mutation Testing

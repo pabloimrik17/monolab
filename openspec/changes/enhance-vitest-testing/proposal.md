@@ -13,29 +13,31 @@ The project currently uses Vitest for unit testing with basic configuration (cov
 
 ## What Changes
 
-- **Test project organization**: Define separate Vitest projects (unit, integration, browser) with distinct file patterns, coverage thresholds, and configurations
-- **Standardized naming**: Rename test scripts from generic names to explicit `test:unit`, `test:integration`, `test:types`, etc.
+- **Vitest v4 Migration**: Migrate from deprecated vitest.workspace.ts to vitest.config.ts with projects auto-discovery
+- **Standardized naming**: Rename test scripts from generic names to explicit `test:unit`, `test:integration`, `test:types`, `test:browser`
 - **UI Mode**: Enable @vitest/ui for interactive visual test debugging
-- **Type Testing**: Add @vitest/expect-type for compile-time type validation
-- **Browser Mode**: Implement real browser testing with Playwright for React packages
+- **Type Testing**: Use Vitest's built-in expectTypeOf for compile-time type validation
+- **Browser Mode**: Implement real browser testing with @vitest/browser-playwright for React packages
+- **React JSX Support**: Add @vitejs/plugin-react-swc with tsDecorators support for proper JSX transform and decorator handling
 - **Concurrent Testing**: Configure maxConcurrency for parallel test execution within files
-- **CI Sharding**: Distribute tests across multiple CI jobs to reduce total execution time
-- **Automatic Cleanup**: Enable clearMocks, restoreMocks, unstubEnvs, unstubGlobals flags in workspace config
-- **Shared Configuration**: Centralize common settings in vitest.workspace.ts with extends inheritance
+- **CI Optimization**: Continue using Nx Cloud distribution (already configured with 3 agents)
+- **Automatic Cleanup**: Enable clearMocks, restoreMocks, unstubEnvs, unstubGlobals flags in root config
+- **Shared Configuration**: Centralize common settings in root vitest.config.ts, inherited by package configs
 
 ## Impact
 
 - **Affected specs**: New `vitest-testing` capability
 - **Affected code**:
-  - Root: `vitest.workspace.ts`, `package.json` (scripts)
-  - Each package: `vitest.config.ts` (migrate from defineConfig to defineProject), `package.json` (scripts)
-  - React packages: Add browser test support with @vitest/browser and vitest-browser-react
-  - CI: `.github/workflows/ci.yml` (add sharding strategy, update script names)
-- **Dependencies**: @vitest/expect-type, @vitest/browser, vitest-browser-react, playwright
+  - Root: `vitest.config.ts` (replaces vitest.workspace.ts), `pnpm-workspace.yaml` (vitest 4.0.6), `package.json` (add @vitejs/plugin-react-swc)
+  - React packages: `vitest.config.ts` (add @vitejs/plugin-react-swc with tsDecorators, browser config), `package.json` (updated test scripts), `tsconfig.json` (add experimentalDecorators)
+  - Browser test files: Remove explicit React imports (handled by @vitejs/plugin-react-swc)
+- **Dependencies**:
+  - Updated: vitest 4.0.3 → 4.0.6, @vitest/coverage-v8, @vitest/ui
+  - Added: @vitest/browser-playwright, @vitejs/plugin-react-swc, playwright (with chromium browser), vitest-browser-react
 - **File conventions**:
-  - `*.test.ts` → Unit tests
-  - `*.integration.ts` → Integration tests
+  - `*.{test,spec}.{ts,tsx}` → Unit tests (jsdom)
+  - `*.integration.ts` → Integration tests (jsdom)
   - `*.test-d.ts` → Type tests
-  - `*.browser.test.tsx` → Browser tests (React packages only)
-- **Coverage**: Separate coverage reports per test type (unit, integration, browser)
-- **Performance**: CI sharding expected to reduce test time by ~3x with 3 parallel jobs
+  - `*.browser.test.tsx` → Browser tests (Playwright chromium, React packages only)
+- **Browser tests**: Enabled via CLI flag `--browser.enabled=true` for browser-specific tests
+- **Performance**: Continue leveraging existing Nx Cloud distribution across 3 agents
