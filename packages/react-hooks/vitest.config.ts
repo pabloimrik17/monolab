@@ -34,7 +34,6 @@ export default defineConfig({
                     browser: "chromium",
                 },
             ],
-            fileParallelism: false,
         },
     },
 });
