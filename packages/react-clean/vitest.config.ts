@@ -1,10 +1,10 @@
-import react from "@vitejs/plugin-react";
+import react from "@vitejs/plugin-react-swc";
 import { playwright } from "@vitest/browser-playwright";
 import { resolve } from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    plugins: [react()],
+    plugins: [react({ tsDecorators: true })],
     resolve: {
         alias: {
             "@monolab/react-hooks": resolve(
