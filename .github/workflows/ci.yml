@@ -80,6 +80,17 @@ jobs:
                       ~/.cache/Cypress # needed for the Cypress binary
                   key: ${{ steps.cache-dependencies-restore.outputs.cache-primary-key }}
 
+            - name: Restore Nx cache
+              id: cache-nx-restore
+              if: ${{ env.NX_NO_CLOUD == 'true' }}
+              uses: actions/cache/restore@v4
+              with:
+                  path: .nx/cache
+                  key: nx-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('nx.json') }}
+                  restore-keys: |
+                      nx-${{ runner.os }}-${{ github.ref_name }}-
+                      nx-${{ runner.os }}-
+
             - name: Restore Stryker incremental cache
               id: cache-stryker-restore
               uses: actions/cache/restore@v4
@@ -235,13 +246,8 @@ jobs:
                   flags: ts-configs
                   fail_ci_if_error: false
 
-            - name: 🏗 Execute build checks for affected files (Affected)
-              run: pnpm exec nx affected -t build
-              if: ${{ github.event_name == 'pull_request' }}
-
-            - name: 🏗 Execute build checks for all files (All)
+            - name: 🏗 Execute build checks
               run: pnpm exec nx run-many -t build
-              if: ${{ github.event_name == 'push' }}
 
             - name: 🧬 Execute mutation testing (All)
               run: pnpm exec nx run-many -t test:mutation
@@ -269,52 +275,24 @@ jobs:
               continue-on-error: true
               env:
                   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-                  IS_PR: ${{ github.event_name == 'pull_request' }}
-                  AFFECTED_REACT_HOOKS: ${{ steps.affected-codecov.outputs.react-hooks || 'false' }}
-                  AFFECTED_REACT_CLEAN: ${{ steps.affected-codecov.outputs.react-clean || 'false' }}
-                  AFFECTED_IS_EVEN: ${{ steps.affected-codecov.outputs.is-even || 'false' }}
-                  AFFECTED_IS_ODD: ${{ steps.affected-codecov.outputs.is-odd || 'false' }}
-                  AFFECTED_TS_CONFIGS: ${{ steps.affected-codecov.outputs.ts-configs || 'false' }}
               run: |
-                  # Map package names to affected status for conditional uploads
-                  declare -A affected=(
-                    ["react-hooks"]="$AFFECTED_REACT_HOOKS"
-                    ["react-clean"]="$AFFECTED_REACT_CLEAN"
-                    ["is-even"]="$AFFECTED_IS_EVEN"
-                    ["is-odd"]="$AFFECTED_IS_ODD"
-                    ["ts-configs"]="$AFFECTED_TS_CONFIGS"
-                  )
-
-                  uploaded=0
-                  skipped=0
-
                   # Analyze each published package
+                  # Nx cache ensures only affected packages are actually rebuilt
                   for package in react-hooks react-clean is-even is-odd ts-configs; do
-                    # Determine if we should upload this package
-                    should_upload=false
-                    if [[ "$IS_PR" != "true" ]]; then
-                      # Push to main/develop/pre: always upload all packages to establish baseline
-                      should_upload=true
-                    elif [[ "${affected[$package]}" == "true" ]]; then
-                      # PR with affected package: upload
-                      should_upload=true
-                    fi
-
-                    if [[ "$should_upload" == "true" ]]; then
-                      # Bundle analysis checks for directory (not file) because dist/ contains multiple bundle files
-                      if [ -d "packages/$package/dist" ]; then
-                        echo "📦 Analyzing bundle for $package..."
-                        pnpm exec bundle-analyzer packages/$package/dist \
-                          --bundle-name="$package" \
-                          --upload-token="$CODECOV_TOKEN"
-                        ((uploaded++))
-                      else
-                        echo "⚠️  Skipping $package: dist directory not found"
-                      fi
+                    if [ -d "packages/$package/dist" ]; then
+                      echo "📦 Analyzing bundle for $package..."
+                      pnpm exec bundle-analyzer packages/$package/dist \
+                        --bundle-name="$package" \
+                        --upload-token="$CODECOV_TOKEN"
                     else
-                      echo "⏭️  Skipping $package (not affected)"
-                      ((skipped++))
+                      echo "⚠️  Skipping $package: dist directory not found"
                     fi
                   done
 
-                  echo "✅ Bundle analysis complete: $uploaded uploaded, $skipped skipped"
+            - name: Cache Nx results
+              id: cache-nx-save
+              if: ${{ env.NX_NO_CLOUD == 'true' }}
+              uses: actions/cache/save@v4
+              with:
+                  path: .nx/cache
+                  key: ${{ steps.cache-nx-restore.outputs.cache-primary-key }}
