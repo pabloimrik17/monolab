@@ -64,7 +64,6 @@ jobs:
                   key: npm-dependencies-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}
                   restore-keys: |
                       npm-dependencies-${{ runner.os }}-${{ github.ref_name }}-
-                      npm-dependencies-${{ runner.os }}-main-
                       npm-dependencies-${{ runner.os }}-develop-
                       npm-dependencies-${{ runner.os }}-
 
@@ -89,6 +88,7 @@ jobs:
                   key: nx-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('nx.json') }}
                   restore-keys: |
                       nx-${{ runner.os }}-${{ github.ref_name }}-
+                      nx-${{ runner.os }}-develop-
                       nx-${{ runner.os }}-
 
             - name: Restore Stryker incremental cache
