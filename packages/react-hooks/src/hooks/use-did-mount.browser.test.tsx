@@ -1,7 +1,13 @@
 import { render, waitFor } from "@testing-library/react";
 import { useState } from "react";
-import { expect, test } from "vitest";
+import { beforeAll, expect, test } from "vitest";
 import { useDidMount } from "./use-did-mount.hook.js";
+
+// Verify browser environment is properly configured
+beforeAll(() => {
+    expect(typeof window).toBe("object");
+    expect(typeof document).toBe("object");
+});
 
 // Component using useDidMount hook
 function TestComponent({ onMount }: { onMount: () => void }) {
@@ -29,10 +35,6 @@ test("useDidMount executes callback once after mount in real browser", () => {
     const element = getByTestId("status");
     expect(element.textContent).toBe("mounted");
     expect(callCount).toBe(1);
-
-    // Verify we're running in actual browser (window exists)
-    expect(typeof window).toBe("object");
-    expect(typeof document).toBe("object");
 });
 
 test("useDidMount with async callback in browser", async () => {
@@ -52,7 +54,6 @@ test("useDidMount with async callback in browser", async () => {
         { timeout: 100 }
     );
 
-    // Verify component mounted and browser environment
+    // Verify component mounted
     expect(getByTestId("status").textContent).toBe("mounted");
-    expect(typeof window).toBe("object");
 });

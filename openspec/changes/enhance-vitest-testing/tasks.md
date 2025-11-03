@@ -117,7 +117,7 @@
 - [ ] 7.2 Validate CI runs successfully on feature branch
 - [ ] 7.3 Verify type tests execute in CI
 
-**Note:** Vitest sharding (tasks 7.3-7.6 in original plan) is NOT implemented because Nx Cloud already distributes tasks across 3 agents. Sharding configuration is documented in design.md as alternative if Nx Cloud is removed in future.
+**Note:** Vitest sharding (tasks 7.3-7.6 in original plan) is NOT implemented because Nx Cloud already distributes tasks across 3 agents. Sharding configuration is documented in design.md as alternative if Nx Cloud is removed in the future.
 
 ## 8. Documentation
 
