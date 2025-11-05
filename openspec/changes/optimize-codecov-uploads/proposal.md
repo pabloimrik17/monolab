@@ -34,7 +34,7 @@ Nx already calculates affected packages for test execution (`nx affected -t test
 - Build: Uses `nx run-many` (Nx cache ensures only affected packages rebuild)
 
 **Affected Files**:
-- `.github/workflows/ci.yml` - Complete refactor of Codecov upload section (lines 114-240)
+- `.github/workflows/ci.yml` - Complete refactor of Codecov upload section, Nx cache additions, and build step consolidation (lines 82-306)
 
 **Breaking Changes**: None - this is a pure CI optimization with no user-facing changes
 

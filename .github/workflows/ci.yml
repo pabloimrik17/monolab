@@ -255,6 +255,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 🏗 Execute build checks
+              # Builds all packages; Nx cache optimizes by skipping rebuild of non-affected packages
               run: pnpm exec nx run-many -t build
 
             - name: 🧬 Execute mutation testing (All)
@@ -285,7 +286,7 @@ jobs:
                   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
               run: |
                   # Analyze each published package
-                  # Nx cache ensures only affected packages are actually rebuilt
+                  # Note: nx run-many with Nx cache avoids redundant rebuilds of non-affected packages
                   for package in react-hooks react-clean is-even is-odd ts-configs; do
                     if [ -d "packages/$package/dist" ]; then
                       echo "📦 Analyzing bundle for $package..."
