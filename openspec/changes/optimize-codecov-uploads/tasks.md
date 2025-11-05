@@ -2,77 +2,102 @@
 
 ## 1. Add Affected Detection Step
 
-- [ ] 1.1 Add detection step after test execution (after line ~111 in ci.yml)
-- [ ] 1.2 Configure step to only run on PRs (`if: ${{ github.event_name == 'pull_request' }}`)
-- [ ] 1.3 Call `pnpm exec nx show projects --affected` once and store in variable
-- [ ] 1.4 Loop through packages (react-hooks, react-clean, is-even, is-odd, ts-configs) and generate boolean outputs
-- [ ] 1.5 Use grep to check if `@monolab/<package>` is in affected list
-- [ ] 1.6 Export outputs to `$GITHUB_OUTPUT` with format `<package>=true|false`
-- [ ] 1.7 Assign step ID `affected-codecov` for later reference
+- [x] 1.1 Add detection step after test execution (after line ~111 in ci.yml)
+- [x] 1.2 Configure step to only run on PRs (`if: ${{ github.event_name == 'pull_request' }}`)
+- [x] 1.3 Call `pnpm exec nx show projects --affected` once and store in variable
+- [x] 1.4 Loop through packages (react-hooks, react-clean, is-even, is-odd, ts-configs) and generate boolean outputs
+- [x] 1.5 Use grep to check if `@monolab/<package>` is in affected list
+- [x] 1.6 Export outputs to `$GITHUB_OUTPUT` with format `<package>=true|false`
+- [x] 1.7 Assign step ID `affected-codecov` for later reference
 
-## 2. Consolidate Coverage Uploads
+## 2. Add Conditional Coverage Uploads
 
-- [ ] 2.1 Remove 5 individual `codecov/codecov-action` steps (lines 114-152)
-- [ ] 2.2 Create single upload script step with name "📊 Upload coverage to Codecov (affected packages)"
-- [ ] 2.3 Add `if: ${{ !cancelled() }}` condition to run even if tests fail
-- [ ] 2.4 Pass affected detection outputs as environment variables (AFFECTED_REACT_HOOKS, etc.)
-- [ ] 2.5 Create bash associative array mapping package names to affected status
-- [ ] 2.6 Loop through all 5 packages
-- [ ] 2.7 Add conditional logic: skip if PR and not affected, always upload if push to main/develop/pre
-- [ ] 2.8 Check if coverage file exists before upload attempt
-- [ ] 2.9 Use codecov CLI (`npx codecov@latest upload-process`) instead of GitHub Action
-- [ ] 2.10 Add clear logging with emoji indicators (📊 for upload, ⏭️ for skip, ⚠️ for warnings)
-- [ ] 2.11 Count uploads vs skips and log summary at end
-- [ ] 2.12 Use `--fail-on-error=false` for non-blocking uploads
+- [x] 2.1 Keep 5 individual `codecov/codecov-action@v5` steps (one per package)
+- [x] 2.2 Add `if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.<package> == 'true') }}` to each step
+- [x] 2.3 Condition evaluates to: always upload on push to main/develop/pre, only affected packages on PRs
+- [x] 2.4 Reference step outputs from affected-codecov detection step
+- [x] 2.5 Keep individual `flags` per package for Codecov tracking
+- [x] 2.6 Keep `fail_ci_if_error: false` for non-blocking uploads
+- [x] 2.7 Keep `token: ${{ secrets.CODECOV_TOKEN }}` for authentication
+- [x] 2.8 Each step uploads its own lcov.info file from packages/<package>/coverage/
 
-## 3. Consolidate Test Results Uploads
+## 3. Add Conditional Test Results Uploads
 
-- [ ] 3.1 Remove 5 individual `codecov/test-results-action` steps (lines 155-193)
-- [ ] 3.2 Create single upload script step with name "📊 Upload test results to Codecov (affected packages)"
-- [ ] 3.3 Add `if: ${{ !cancelled() }}` condition (critical for capturing test failures)
-- [ ] 3.4 Pass same affected detection outputs as environment variables
-- [ ] 3.5 Create bash associative array (same pattern as coverage)
-- [ ] 3.6 Loop through all 5 packages with same conditional logic
-- [ ] 3.7 Check if test results file exists (`test-results.junit.xml`)
-- [ ] 3.8 Use codecov test-results CLI (`npx codecov@latest upload-test-results`)
-- [ ] 3.9 Add same logging pattern as coverage script
-- [ ] 3.10 Count and log summary
+- [x] 3.1 Keep 5 individual `codecov/test-results-action@v1` steps (one per package)
+- [x] 3.2 Add `if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.<package> == 'true') }}` to each step
+- [x] 3.3 Condition evaluates to: always upload on push to main/develop/pre, only affected packages on PRs
+- [x] 3.4 `!cancelled()` is critical for capturing test failures in Test Analytics
+- [x] 3.5 Reference step outputs from affected-codecov detection step
+- [x] 3.6 Keep individual `flags` per package for Codecov tracking
+- [x] 3.7 Keep `fail_ci_if_error: false` for non-blocking uploads
+- [x] 3.8 Keep `token: ${{ secrets.CODECOV_TOKEN }}` for authentication
+- [x] 3.9 Each step uploads its own test-results.junit.xml file from packages/<package>/
 
-## 4. Refactor Bundle Size Upload
+## 4. Simplify Bundle Size Upload
 
-- [ ] 4.1 Update existing bundle size step (lines 225-240) to use affected detection
-- [ ] 4.2 Add same environment variables for affected outputs
-- [ ] 4.3 Create associative array in existing bash script
-- [ ] 4.4 Add conditional check before each package analysis: skip if PR and not affected
-- [ ] 4.5 Keep existing `dist` directory check
-- [ ] 4.6 Add skip logging for non-affected packages
-- [ ] 4.7 Maintain push-to-main behavior (always upload all)
-- [ ] 4.8 Keep `continue-on-error: true` for non-blocking behavior
+- [x] 4.1 Remove all conditional logic from bundle size step
+- [x] 4.2 Always upload bundle analysis for all packages (both PRs and push to main/develop/pre)
+- [x] 4.3 Change build step from `nx affected -t build` to `nx run-many -t build`
+- [x] 4.4 This ensures all dist/ directories exist for bundle analysis
+- [x] 4.5 Nx cache ensures only affected packages are actually rebuilt (+1s overhead)
+- [x] 4.6 Prevents "-100% (removed)" false positives for non-affected packages
+- [x] 4.7 Keep existing `dist` directory check for safety
+- [x] 4.8 Keep `continue-on-error: true` for non-blocking behavior
+- [x] 4.9 Add comment explaining Nx cache optimization
 
-## 5. Testing & Validation
+## 5. Add Nx Cache Artifact
 
-- [ ] 5.1 Create test PR that modifies only one package (e.g., react-hooks)
-- [ ] 5.2 Verify detection step outputs show only that package as affected
-- [ ] 5.3 Verify coverage upload logs show 1 upload, 4 skips
-- [ ] 5.4 Verify test results upload logs show 1 upload, 4 skips
-- [ ] 5.5 Verify bundle size logs show 1 upload, 4 skips
-- [ ] 5.6 Check Codecov PR comment shows affected package delta + non-affected "no change"
-- [ ] 5.7 Verify carryforward works for non-affected packages
-- [ ] 5.8 Verify no "100% increase" false positives for bundle sizes
-- [ ] 5.9 Create test PR modifying shared dependency to verify multiple packages affected
-- [ ] 5.10 Push to main and verify all 5 packages upload (baseline establishment)
-- [ ] 5.11 Verify workflow completes 75-150s faster on single-package PRs
+- [x] 5.1 Add "Restore Nx cache" step after npm dependencies cache (after line ~80)
+- [x] 5.2 Condition step with `if: ${{ env.NX_NO_CLOUD == 'true' }}`
+- [x] 5.3 Use `actions/cache/restore@v4` to restore `.nx/cache` directory
+- [x] 5.4 Create cache key: `nx-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('nx.json') }}`
+- [x] 5.5 Add restore-keys for fallback: ref_name → develop → OS
+- [x] 5.6 Assign step ID `cache-nx-restore` for later reference
+- [x] 5.7 Add "Cache Nx results" step at end of workflow (after bundle analysis)
+- [x] 5.8 Condition with same `if: ${{ env.NX_NO_CLOUD == 'true' }}`
+- [x] 5.9 Use `actions/cache/save@v4` with same path and primary key from restore step
+- [x] 5.10 This optimizes CI performance when monthly Nx Cloud limit is reached
 
-## 6. Documentation
+## 6. Align Cache Keys to Coherent Pattern
 
-- [ ] 6.1 Add inline comments to detection step explaining its purpose
-- [ ] 6.2 Add comment to consolidated scripts explaining conditional logic
-- [ ] 6.3 Update openspec/project.md to document new upload strategy
-- [ ] 6.4 Add note about updating scripts when adding new packages
+- [x] 6.1 Review all cache restore-keys across workflow (npm, Nx, Stryker)
+- [x] 6.2 Remove `main-` from npm dependencies restore-keys (redundant when on main)
+- [x] 6.3 Remove `main-` from Nx cache restore-keys
+- [x] 6.4 Standardize all caches to 3-level pattern: `<prefix>-${{ runner.os }}-${{ github.ref_name }}-` → `<prefix>-${{ runner.os }}-develop-` → `<prefix>-${{ runner.os }}-`
+- [x] 6.5 Keep Stryker cache pattern as reference (it already uses correct pattern)
+- [x] 6.6 This ensures feature branches benefit from develop cache while avoiding redundant main fallback
 
-## 7. Cleanup
+## 7. Testing & Validation
 
-- [ ] 7.1 Verify no orphaned code from removed steps
-- [ ] 7.2 Ensure proper step ordering (detection → tests → uploads → build)
-- [ ] 7.3 Run `openspec validate optimize-codecov-uploads --strict` and fix any issues
-- [ ] 7.4 Mark all tasks complete before archiving change
+- [ ] 7.1 Create test PR that modifies only one package (e.g., react-hooks)
+- [ ] 7.2 Verify detection step outputs show only that package as affected
+- [ ] 7.3 Verify coverage upload shows 1 step executed, 4 skipped (via GitHub Actions conditionals)
+- [ ] 7.4 Verify test results upload shows 1 step executed, 4 skipped
+- [ ] 7.5 Verify bundle size analysis uploads all 5 packages (no skips)
+- [ ] 7.6 Check Codecov PR comment shows affected package delta + non-affected "no change"
+- [ ] 7.7 Verify carryforward works for non-affected packages
+- [ ] 7.8 Verify no "-100% (removed)" false positives for bundle sizes
+- [ ] 7.9 Create test PR modifying shared dependency to verify multiple packages affected
+- [ ] 7.10 Push to main and verify all 5 packages upload (baseline establishment)
+- [ ] 7.11 Verify workflow completes ~110-120s faster on single-package PRs
+- [ ] 7.12 Verify Nx cache restore/save works when NX_NO_CLOUD=true
+
+## 8. Documentation
+
+- [x] 8.1 Add inline comments to detection step explaining its purpose
+- [x] 8.2 Add comment to bundle analysis explaining Nx cache optimization
+- [x] 8.3 Add comment explaining coverage/test-results conditional upload strategy
+- [x] 8.4 Update proposal.md to reflect final implementation (GitHub Actions vs bash scripts)
+- [x] 8.5 Document bundle analysis simplification (always upload all)
+- [x] 8.6 Document Nx cache artifact addition for NX_NO_CLOUD scenario
+- [x] 8.7 Document cache keys alignment to 3-level pattern
+- [x] 8.8 Add note about updating conditionals when adding new packages
+
+## 9. Cleanup
+
+- [x] 9.1 Verify no orphaned code from removed steps
+- [x] 9.2 Ensure proper step ordering (detection → tests → coverage uploads → test-results uploads → build → bundle analysis)
+- [x] 9.3 Verify all cache steps are properly positioned (restore early, save late)
+- [x] 9.4 Run `openspec validate optimize-codecov-uploads --strict` and fix any issues
+- [x] 9.5 Update tasks.md to reflect actual implementation approach
+- [x] 9.6 Mark all implementation tasks complete before creating PR
