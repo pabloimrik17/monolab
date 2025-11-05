@@ -5,11 +5,12 @@
 MonoLab currently uses Vitest with basic workspace configuration across 5 packages (is-odd, is-even, react-hooks, react-clean, ts-configs). Each package has its own vitest.config.ts with coverage and JUnit reporting. Tests run via Nx targets, integrated with Codecov for coverage tracking and test analytics.
 
 **Current state:**
-- Vitest 4.0.3 with @vitest/coverage-v8 and @vitest/ui installed
-- vitest.workspace.ts auto-discovers package configs
-- Tests use `*.spec.ts` naming convention
+- Vitest 4.0.6 with @vitest/coverage-v8 and @vitest/ui installed
+- vitest.config.ts with projects feature auto-discovers package configs (migrated from deprecated vitest.workspace.ts)
+- Tests use `*.spec.ts` and `*.test.ts` naming conventions
 - Coverage reports per package with thresholds
 - CI runs tests with `nx affected --target=test:unit`
+- React packages use @vitejs/plugin-react for JSX transform
 
 **Constraints:**
 - Must maintain Codecov integration (flags, JUnit XML, coverage merge)
@@ -36,40 +37,49 @@ MonoLab currently uses Vitest with basic workspace configuration across 5 packag
 
 ### 1. Test Project Architecture
 
-**Decision:** Use Vitest's `test.projects` feature to define test types within each package config.
+**Decision:** Use root vitest.config.ts with `projects: ["packages/*"]` for auto-discovery. Each package maintains its own simple config without nested projects.
 
 **Rationale:**
+- Vitest v4 deprecated vitest.workspace.ts in favor of projects in root config
 - Single config file per package (simpler than multiple config files)
-- Different file patterns per type: `*.test.ts` (unit), `*.integration.ts`, `*.test-d.ts`
-- Independent coverage thresholds per test type
-- Run specific types with `--project` flag
+- File patterns include all test types: `**/*.{test,spec}.{ts,tsx}`, `**/*.browser.test.{ts,tsx}`, `**/*.integration.ts`
+- Browser tests enabled via CLI flag `--browser.enabled=true` for specific runs
+- Coverage and reporters configured per package
 
 **Alternatives considered:**
-- Multiple config files (vitest.unit.config.ts, vitest.integration.config.ts): More files to maintain
-- Global projects in workspace: Less flexibility per package
+- Nested projects within package configs: Too complex, conflicts with root projects discovery
+- Multiple config files (vitest.unit.config.ts, vitest.browser.config.ts): More files to maintain
 
 **Implementation:**
 ```typescript
-// packages/*/vitest.config.ts
-export default defineProject({
+// vitest.config.ts (root)
+export default defineConfig({
   test: {
-    extends: true,
-    projects: [
-      { name: "unit", test: { include: ["**/*.test.ts"] } },
-      { name: "integration", test: { include: ["**/*.integration.ts"] } },
-    ],
+    projects: ["packages/*"],
+    clearMocks: true,
+    restoreMocks: true,
+    // ... shared config
+  },
+});
+
+// packages/*/vitest.config.ts
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    include: ["**/*.{test,spec}.{ts,tsx}", "**/*.browser.test.{ts,tsx}", "**/*.integration.ts"],
+    browser: { enabled: false, provider: playwright(...) },
   },
 });
 ```
 
 ### 2. Shared Configuration Strategy
 
-**Decision:** Centralize cleanup and concurrency settings in vitest.workspace.ts with `extends: true`.
+**Decision:** Centralize cleanup and concurrency settings in root vitest.config.ts. Package configs inherit these automatically.
 
 **Rationale:**
 - DRY: No repetition of clearMocks, restoreMocks across packages
 - Consistency: All packages use same cleanup behavior
-- Override possible: Packages can override if needed
+- Automatic inheritance: No need for explicit extends flag in Vitest v4
 
 **Configuration:**
 - `clearMocks: true` - Clear mock history before each test
@@ -92,35 +102,58 @@ export default defineProject({
 - Utilities (is-odd, is-even) work identically in Node vs browser
 - Browser tests slower, reserve for where value exists
 
-**Provider:** Playwright with Chromium
+**Provider:** @vitest/browser-playwright with Chromium
 - Most reliable for CI (headless mode)
-- Good React support via vitest-browser-react
+- Official Vitest browser provider for Playwright
+- Requires @vitejs/plugin-react-swc for proper JSX transform and decorator support
 - Alternatives (WebdriverIO, preview) less mature or CI-unsuitable
 
 **File convention:** `*.browser.test.tsx` for browser-specific tests
 
-### 4. CI Sharding Strategy
+**React JSX Support:**
+- Add @vitejs/plugin-react-swc to vitest.config.ts in React packages
+- Enables new JSX transform (no explicit React import needed)
+- Includes `tsDecorators: true` option for inversify decorator support
+- Requires `experimentalDecorators` and `emitDecoratorMetadata` in tsconfig.json
 
-**Decision:** Use 3-shard matrix with `--shard` flag in GitHub Actions.
+### 4. CI Distribution Strategy
+
+**Decision:** Use Nx Cloud distribution (already configured with 3 agents).
 
 **Rationale:**
-- Reduces CI time ~3x for test suite
-- Codecov automatically merges coverage from all shards (no config needed)
-- Easy to scale (adjust matrix size as test suite grows)
+- Already distributes tasks across 3 linux-medium-js agents
+- Handles all Nx targets (build, test, lint) not just tests
+- Automatic caching and task distribution
+- No additional configuration needed
 
-**Configuration:**
+**Current setup:**
+```yaml
+- run: pnpm dlx nx-cloud start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="build"
+```
+
+**Alternative: Vitest Sharding (documented for future use)**
+
+If Nx Cloud is removed in the future, Vitest native sharding can be used:
+
 ```yaml
 strategy:
   matrix:
     shard: [1, 2, 3]
 steps:
-  - run: nx affected --target=test:unit --shard=${{ matrix.shard }}/3
+  - run: nx affected --target=test:unit -- --shard=${{ matrix.shard }}/3
 ```
 
-**Coverage handling:**
+**Benefits of Vitest sharding:**
+- Reduces CI time ~3x for test suite
+- Codecov automatically merges coverage from all shards
+- Easy to scale (adjust matrix size as test suite grows)
+
+**Coverage handling with sharding:**
 - Each shard uploads partial coverage with flag: `shard-${{ matrix.shard }}`
 - Codecov merges all reports automatically
 - No manual merge step needed
+
+**Current approach:** Use Nx Cloud distribution (more comprehensive than Vitest-only sharding)
 
 ### 5. Test Command Naming
 
@@ -135,12 +168,15 @@ steps:
 **Structure:**
 ```json
 {
-  "test:unit": "vitest run --project unit",
-  "test:unit:watch": "vitest watch --project unit",
+  "test:unit": "vitest run",
+  "test:unit:watch": "vitest",
   "test:types": "vitest --typecheck --run",
-  "test:browser": "vitest run --project browser"
+  "test:browser": "vitest run --browser.enabled=true src/**/*.browser.test.tsx",
+  "test:browser:watch": "vitest --browser.enabled=true src/**/*.browser.test.tsx"
 }
 ```
+
+**Note:** Browser tests use `--browser.enabled=true` flag instead of `--project` to enable Playwright for specific test files.
 
 ### 6. Type Testing Strategy
 
@@ -176,31 +212,32 @@ steps:
 ## Migration Plan
 
 **Phase 1: Core Infrastructure**
-1. Update vitest.workspace.ts with shared config
-2. Migrate all package configs from defineConfig to defineProject
-3. Add extends: true to inherit shared settings
+1. Migrate vitest.workspace.ts to vitest.config.ts with projects discovery
+2. Update Vitest to v4.0.6 across all packages
+3. Add shared config (clearMocks, restoreMocks, etc.) to root config
+4. Install Playwright browsers (`playwright install chromium`)
 
-**Phase 2: Script Standardization**
-1. Rename scripts in all package.json files
-2. Update Nx project.json targets (if needed)
-3. Update CI workflow with new script names
-4. Update root package.json scripts
+**Phase 2: React Package Setup**
+1. Install @vitejs/plugin-react-swc and vitest-browser-react
+2. Add plugin with tsDecorators support to vitest.config.ts in react-hooks and react-clean
+3. Install @vitest/browser-playwright and playwright
+4. Configure browser testing in React package configs
+5. Add experimentalDecorators and emitDecoratorMetadata to tsconfig.json
 
-**Phase 3: Test Projects**
-1. Add unit and integration projects to each package config
-2. Keep existing tests as unit tests (no file rename needed yet)
-3. Validate with --project unit flag
+**Phase 3: Script Standardization**
+1. Update test:browser scripts to use --browser.enabled flag
+2. Ensure test:unit, test:integration scripts are consistent
+3. Update root package.json scripts if needed
 
-**Phase 4: Advanced Features**
-1. Install type testing dependencies
-2. Add type test examples to critical packages
-3. Install browser testing dependencies (React packages only)
-4. Add browser test examples
+**Phase 4: Browser Tests**
+1. Create browser test examples (*.browser.test.tsx)
+2. Verify tests run in Playwright (look for chromium tag in output)
+3. Confirm no explicit React imports needed (JSX transform working)
 
-**Phase 5: CI Optimization**
-1. Implement sharding in GitHub Actions
-2. Validate coverage merge in Codecov
-3. Monitor CI time improvements
+**Phase 5: Type Testing**
+1. Add type tests with expectTypeOf (*.test-d.ts)
+2. Create utility type exports (e.g., StrictOmit)
+3. Validate type tests catch type regressions
 
 **Rollback:** Each phase is independent. Can rollback by reverting specific commits.
 
