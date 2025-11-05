@@ -13,3 +13,8 @@ Node.js libraries (utility packages, CLI tools) in the monorepo need a specializ
 - Affected specs: typescript-config (MODIFIED)
 - Affected code: Root `tsconfig.node.lib.json` (new file)
 - Depends on: MON-118 (tsconfig.node.base.json must exist first)
+
+## Linear Issue
+- Issue ID: MON-32
+- Issue URL: https://linear.app/monolab/issue/MON-32/tsconfig-node-lib
+- Branch Name: feature/mon-32-tsconfig-node-lib

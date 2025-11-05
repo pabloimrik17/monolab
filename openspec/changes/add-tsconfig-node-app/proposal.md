@@ -13,3 +13,8 @@ Node.js applications (including Hono APIs and CLI tools) need a specialized Type
 - Affected specs: typescript-config (MODIFIED)
 - Affected code: Root `tsconfig.node.app.json` (new file)
 - Depends on: MON-118 (tsconfig.node.base.json must exist first)
+
+## Linear Issue
+- Issue ID: MON-30
+- Issue URL: https://linear.app/monolab/issue/MON-30/tsconfig-node-app
+- Branch Name: feature/mon-30-tsconfig-node-app

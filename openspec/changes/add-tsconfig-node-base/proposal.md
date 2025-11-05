@@ -13,3 +13,8 @@ The monorepo needs a shared base TypeScript configuration for Node.js environmen
 - Affected specs: typescript-config (MODIFIED)
 - Affected code: `packages/ts-configs/tsconfig.node.base.json` (new file)
 - This becomes the foundation for MON-30 (node apps) and MON-32 (node libs)
+
+## Linear Issue
+- Issue ID: MON-118
+- Issue URL: https://linear.app/monolab/issue/MON-118/add-tsconfig-node-base
+- Branch Name: feature/mon-118-add-tsconfig-node-base
