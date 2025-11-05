@@ -84,7 +84,7 @@ jobs:
               if: ${{ env.NX_NO_CLOUD == 'true' }}
               uses: actions/cache/restore@v4
               with:
-                  path: .nx/cache
+                  path: .nx
                   key: nx-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('nx.json') }}
                   restore-keys: |
                       nx-${{ runner.os }}-${{ github.ref_name }}-
@@ -303,5 +303,5 @@ jobs:
               if: ${{ env.NX_NO_CLOUD == 'true' }}
               uses: actions/cache/save@v4
               with:
-                  path: .nx/cache
+                  path: .nx
                   key: ${{ steps.cache-nx-restore.outputs.cache-primary-key }}
