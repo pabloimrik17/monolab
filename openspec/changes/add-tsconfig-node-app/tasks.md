@@ -19,6 +19,12 @@
 - [x] 3.3 Verify compilation works correctly
 - [x] 3.4 Check that build output is appropriate for Node.js runtime
 
-## 4. Documentation
-- [ ] 4.1 Update Linear issue MON-30 with completion status
-- [ ] 4.2 Document usage in README or project docs
+## 4. Package Configuration
+- [x] 4.1 Add tsconfig.node.app.json to package.json exports
+- [x] 4.2 Add tsconfig.node.app.json to package.json files array
+- [x] 4.3 Add tsconfig.node.base.json to package.json exports (dependency)
+- [x] 4.4 Add tsconfig.node.base.json to package.json files array (dependency)
+
+## 5. Documentation
+- [ ] 5.1 Update Linear issue MON-30 with completion status
+- [ ] 5.2 Document usage in README or project docs
