@@ -5,7 +5,6 @@
         "declarationMap": false,
         "noEmit": false,
         "incremental": true,
-        "sourceMap": true,
-        "outDir": "./dist"
+        "sourceMap": true
     }
 }

@@ -10,7 +10,7 @@
 ## 2. Configure Application-Specific Options
 - [x] 2.1 Configure incremental compilation for faster rebuilds
 - [x] 2.2 Set sourceMap to true for debugging
-- [x] 2.3 Configure outDir if needed for build output
+- [x] 2.3 Remove outDir to allow each consuming project to specify its own (relative paths resolve to config location, not consuming project)
 - [x] 2.4 Ensure compatibility with Node.js 22.21.0
 
 ## 3. Validation
