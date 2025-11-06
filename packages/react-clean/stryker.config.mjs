@@ -10,6 +10,7 @@ const config = {
         "!src/**/*.spec.tsx",
         "!src/**/*.test.ts",
         "!src/**/*.test.tsx",
+        "!src/**/*.test-d.ts",
     ],
     thresholds: {
         high: 90,
