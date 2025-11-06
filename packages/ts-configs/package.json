@@ -7,11 +7,13 @@
     "exports": {
         "./tsconfig.base.json": "./tsconfig.base.json",
         "./tsconfig.web.base.json": "./tsconfig.web.base.json",
+        "./tsconfig.web.lib.json": "./tsconfig.web.lib.json",
         "./package.json": "./package.json"
     },
     "files": [
         "tsconfig.base.json",
         "tsconfig.web.base.json",
+        "tsconfig.web.lib.json",
         "package.json",
         "README.md",
         "CHANGELOG.md",
