@@ -13,3 +13,8 @@ Web applications in the monorepo need a specialized TypeScript configuration tha
 - Affected specs: typescript-config (MODIFIED)
 - Affected code: Root `tsconfig.web.app.json` (new file)
 - Depends on: MON-117 (tsconfig.web.base.json must exist first)
+
+## Linear Issue
+- Issue ID: MON-29
+- Issue URL: https://linear.app/monolab/issue/MON-29/tsconfig-web-app
+- Branch Name: feature/mon-29-tsconfig-web-app
