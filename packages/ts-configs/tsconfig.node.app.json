@@ -1,0 +1,10 @@
+{
+    "extends": "./tsconfig.node.base.json",
+    "compilerOptions": {
+        "declaration": false,
+        "declarationMap": false,
+        "noEmit": false,
+        "incremental": true,
+        "sourceMap": true
+    }
+}
