@@ -2,8 +2,8 @@
 
 ## 1. Create Configuration File
 - [x] 1.1 Verify `tsconfig.node.base.json` exists (MON-118 dependency)
-- [x] 1.2 Create `tsconfig.node.app.json` in project root
-- [x] 1.3 Extend from `./packages/ts-configs/tsconfig.node.base.json`
+- [x] 1.2 Create `tsconfig.node.app.json` in `packages/ts-configs/` directory
+- [x] 1.3 Extend from `./tsconfig.node.base.json`
 - [x] 1.4 Disable declaration file generation (apps don't need .d.ts files)
 - [x] 1.5 Set noEmit to false (apps need to emit output)
 
