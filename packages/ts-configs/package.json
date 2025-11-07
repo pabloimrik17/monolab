@@ -9,6 +9,7 @@
         "./tsconfig.node.base.json": "./tsconfig.node.base.json",
         "./tsconfig.node.app.json": "./tsconfig.node.app.json",
         "./tsconfig.web.base.json": "./tsconfig.web.base.json",
+        "./tsconfig.web.app.json": "./tsconfig.web.app.json",
         "./package.json": "./package.json"
     },
     "files": [
@@ -16,6 +17,7 @@
         "tsconfig.node.base.json",
         "tsconfig.node.app.json",
         "tsconfig.web.base.json",
+        "tsconfig.web.app.json",
         "package.json",
         "README.md",
         "CHANGELOG.md",
