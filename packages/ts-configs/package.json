@@ -11,6 +11,7 @@
         "./tsconfig.node.lib.json": "./tsconfig.node.lib.json",
         "./tsconfig.web.base.json": "./tsconfig.web.base.json",
         "./tsconfig.web.app.json": "./tsconfig.web.app.json",
+        "./tsconfig.web.lib.json": "./tsconfig.web.lib.json",
         "./package.json": "./package.json"
     },
     "files": [
@@ -20,6 +21,7 @@
         "tsconfig.node.lib.json",
         "tsconfig.web.base.json",
         "tsconfig.web.app.json",
+        "tsconfig.web.lib.json",
         "package.json",
         "README.md",
         "CHANGELOG.md",

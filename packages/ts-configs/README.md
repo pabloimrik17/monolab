@@ -18,7 +18,7 @@ pnpm add @monolab/ts-configs
 ```text
 tsconfig.base.json (platform-agnostic foundation)
 ├── tsconfig.web.base.json ✅
-│   ├── tsconfig.web.lib.json (coming soon)
+│   ├── tsconfig.web.lib.json ✅
 │   └── tsconfig.web.app.json ✅
 └── tsconfig.node.base.json (coming soon)
     ├── tsconfig.node.lib.json (coming soon)
@@ -107,12 +107,45 @@ tsconfig.base.json (platform-agnostic foundation)
 }
 ```
 
+### `tsconfig.web.lib.json`
+
+**Configuration for web libraries** that will be published to npm/JSR. Optimized for React components and reusable web packages.
+
+**Extends:** `tsconfig.web.base.json`
+
+**Adds:**
+
+-   ✅ **Type Declarations**: `declaration: true`, `declarationMap: true` for consumers
+-   ✅ **Source Maps**: `sourceMap: true` for debugging published packages
+-   ✅ **Composite Builds**: Inherits `composite: true` for project references
+-   ✅ **Tree-Shaking**: Inherits `module: "preserve"` for optimal bundling
+
+**Usage:**
+
+```json
+{
+    "extends": "@monolab/ts-configs/tsconfig.web.lib.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src"
+    },
+    "include": ["src/**/*"],
+    "exclude": ["**/*.test.*", "**/*.spec.*"]
+}
+```
+
+**Perfect for:**
+
+-   React component libraries
+-   Shared UI components
+-   Web utilities and hooks
+-   JSR-published packages
+
 ### Platform Configs (Coming Soon)
 
 Additional platform-specific configs in development:
 
 -   **`tsconfig.node.base.json`**: Base for Node.js projects (adds `module: "NodeNext"`)
--   **`tsconfig.web.lib.json`**: For web libraries (adds `declaration: true`)
 -   **`tsconfig.node.lib.json`**: For Node.js libraries
 -   **`tsconfig.node.app.json`**: For Node.js applications
 
@@ -143,7 +176,7 @@ If your project currently extends the base config, migrate to the appropriate pl
 }
 ```
 
-**After (for web libraries - coming soon):**
+**After (for web libraries):**
 
 ```json
 {

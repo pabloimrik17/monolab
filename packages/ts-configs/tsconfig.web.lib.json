@@ -1,0 +1,19 @@
+{
+    "extends": "./tsconfig.web.base.json",
+    "compilerOptions": {
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Web Library Configuration
+         * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Extends the web base config with library-specific settings for
+         * type declarations and bundler-friendly output. Optimized for
+         * publishing reusable web components and libraries.
+         */
+
+        /* Type Declarations */
+        "declaration": true,
+        "declarationMap": true,
+
+        /* Source Maps for Debugging */
+        "sourceMap": true
+    }
+}
