@@ -17,3 +17,8 @@ Web libraries (like React components) in the monorepo need a specialized TypeScr
   - `packages/ts-configs/package.json` (updated exports and files)
   - `packages/ts-configs/README.md` (updated documentation)
 - Depends on: MON-117 (tsconfig.web.base.json must exist first)
+
+## Linear Issue
+- Issue ID: MON-31
+- Issue URL: https://linear.app/monolab/issue/MON-31/tsconfig-web-lib
+- Branch Name: feature/mon-31-tsconfig-web-lib

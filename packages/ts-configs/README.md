@@ -17,10 +17,10 @@ pnpm add @monolab/ts-configs
 
 ```text
 tsconfig.base.json (platform-agnostic foundation)
-├── tsconfig.web.base.json
+├── tsconfig.web.base.json ✅
 │   ├── tsconfig.web.lib.json ✅
-│   └── tsconfig.web.app.json (coming soon)
-└── tsconfig.node.base.json
+│   └── tsconfig.web.app.json ✅
+└── tsconfig.node.base.json (coming soon)
     ├── tsconfig.node.lib.json (coming soon)
     └── tsconfig.node.app.json (coming soon)
 ```
@@ -59,13 +59,15 @@ tsconfig.base.json (platform-agnostic foundation)
 
 ### `tsconfig.web.base.json`
 
-**Web platform base config** extending the foundation config with browser-specific settings.
+**Base configuration for web/browser projects** with modern bundler support and DOM types.
 
-**Adds to base config:**
+**Extends:** `tsconfig.base.json`
+
+**Adds:**
 
 -   ✅ **Browser Environment**: `lib: ["ES2024", "DOM", "DOM.Iterable"]`
--   ✅ **Modern Bundler Support**: `module: "preserve"`, `moduleResolution: "bundler"`
--   ✅ **React JSX**: `jsx: "react-jsx"`
+-   ✅ **Module System**: `module: "preserve"`, `moduleResolution: "bundler"`
+-   ✅ **React JSX**: `jsx: "react-jsx"` for React projects
 
 **Usage:**
 
@@ -73,19 +75,47 @@ tsconfig.base.json (platform-agnostic foundation)
 {
     "extends": "@monolab/ts-configs/tsconfig.web.base.json",
     "compilerOptions": {
-        "outDir": "./dist",
-        "rootDir": "./src"
+        // Override JSX for SolidJS projects
+        "jsx": "preserve",
+        "jsxImportSource": "solid-js"
     }
+}
+```
+
+### `tsconfig.web.app.json`
+
+**Configuration for web applications** (not libraries). Optimized for bundled, executable apps.
+
+**Extends:** `tsconfig.web.base.json`
+
+**Adds:**
+
+-   ✅ **No Declaration Files**: `declaration: false`, `declarationMap: false` (apps don't need .d.ts)
+-   ✅ **Output Settings**: `noEmit: false`, `sourceMap: true` for debugging
+-   ✅ **Performance**: `incremental: true` for faster rebuilds
+-   ✅ **Mixed Codebases**: `allowJs: true` for JS/TS projects
+
+**Usage:**
+
+```json
+{
+    "extends": "@monolab/ts-configs/tsconfig.web.app.json",
+    "compilerOptions": {
+        // Add app-specific overrides here
+    },
+    "include": ["src"]
 }
 ```
 
 ### `tsconfig.web.lib.json`
 
-**Web library config** for publishable React components and web libraries.
+**Configuration for web libraries** that will be published to npm/JSR. Optimized for React components and reusable web packages.
 
-**Adds to web.base config:**
+**Extends:** `tsconfig.web.base.json`
 
--   ✅ **Type Declarations**: `declaration: true`, `declarationMap: true`
+**Adds:**
+
+-   ✅ **Type Declarations**: `declaration: true`, `declarationMap: true` for consumers
 -   ✅ **Source Maps**: `sourceMap: true` for debugging published packages
 -   ✅ **Composite Builds**: Inherits `composite: true` for project references
 -   ✅ **Tree-Shaking**: Inherits `module: "preserve"` for optimal bundling
@@ -113,9 +143,8 @@ tsconfig.base.json (platform-agnostic foundation)
 
 ### Platform Configs (Coming Soon)
 
-Additional platform-specific configs:
+Additional platform-specific configs in development:
 
--   **`tsconfig.web.app.json`**: For web applications (adds `noEmit: true`)
 -   **`tsconfig.node.base.json`**: Base for Node.js projects (adds `module: "NodeNext"`)
 -   **`tsconfig.node.lib.json`**: For Node.js libraries
 -   **`tsconfig.node.app.json`**: For Node.js applications
@@ -124,24 +153,16 @@ Additional platform-specific configs:
 
 ### For Existing Projects
 
-If your project currently extends the old base config, you'll need to add platform-specific settings:
+If your project currently extends the base config, migrate to the appropriate platform-specific config:
 
 **Before:**
 
 ```json
 {
-    "extends": "@monolab/ts-configs/tsconfig.base.json"
-}
-```
-
-**After (for web libraries):**
-
-```json
-{
-    "extends": "@monolab/ts-configs/tsconfig.web.lib.json",
+    "extends": "@monolab/ts-configs/tsconfig.base.json",
     "compilerOptions": {
-        "outDir": "./dist",
-        "rootDir": "./src"
+        "module": "preserve",
+        "moduleResolution": "bundler"
     }
 }
 ```
@@ -150,19 +171,25 @@ If your project currently extends the old base config, you'll need to add platfo
 
 ```json
 {
-    "extends": "@monolab/ts-configs/tsconfig.web.base.json",
-    "compilerOptions": {
-        "outDir": "./dist",
-        "rootDir": "./src"
-    }
+    "extends": "@monolab/ts-configs/tsconfig.web.app.json",
+    "include": ["src"]
 }
 ```
 
-**After (for Node.js projects):**
+**After (for web libraries):**
 
 ```json
 {
-    "extends": "@monolab/ts-configs/tsconfig.base.json",
+    "extends": "@monolab/ts-configs/tsconfig.web.lib.json",
+    "include": ["src"]
+}
+```
+
+**For Node.js projects (coming soon):**
+
+```json
+{
+    "extends": "@monolab/ts-configs/tsconfig.node.base.json",
     "compilerOptions": {
         "module": "NodeNext"
     }
@@ -248,11 +275,11 @@ Maximum type safety with 18 active strict flags (12 compiler options):
 
 ## Best Practices
 
-1. **Use platform-specific configs**: Prefer `tsconfig.web.lib.json` over `tsconfig.base.json` for web libraries
-2. **Don't override strict flags**: Fix the issues instead (long-term benefit)
-3. **Enable project references**: The configs include `composite: true` for monorepo support
-4. **Add project-specific settings**: Only set `outDir`, `rootDir`, and excludes in your project config
-5. **Migrate to platform configs**: Use `tsconfig.web.base.json` or `tsconfig.node.base.json` instead of base config
+1. **Use platform-specific configs**: Use `tsconfig.web.app.json` for web apps, `tsconfig.web.base.json` for web libraries (when available)
+2. **Extend, don't copy**: Always extend configs rather than copying options
+3. **Don't override strict flags**: Fix the issues instead (long-term benefit)
+4. **Enable project references**: Use `composite: true` advantage in monorepos
+5. **Leverage incremental compilation**: The configs enable this for faster rebuilds
 
 ## References
 

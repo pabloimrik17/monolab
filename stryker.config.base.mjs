@@ -5,6 +5,15 @@ const config = {
     commandRunner: {
         command: "pnpm run test:unit",
     },
+    ignorePatterns: [
+        "target/**",
+        "project/**",
+        ".metals/**",
+        ".bloop/**",
+        ".idea/**",
+        // Ignore type test
+        "packages/**/src/**/*.test-d.ts",
+    ],
     coverageAnalysis: "off",
     incremental: true,
     incrementalFile: "reports/stryker-incremental.json",

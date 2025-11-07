@@ -6,13 +6,19 @@
     "type": "module",
     "exports": {
         "./tsconfig.base.json": "./tsconfig.base.json",
+        "./tsconfig.node.base.json": "./tsconfig.node.base.json",
+        "./tsconfig.node.app.json": "./tsconfig.node.app.json",
         "./tsconfig.web.base.json": "./tsconfig.web.base.json",
+        "./tsconfig.web.app.json": "./tsconfig.web.app.json",
         "./tsconfig.web.lib.json": "./tsconfig.web.lib.json",
         "./package.json": "./package.json"
     },
     "files": [
         "tsconfig.base.json",
+        "tsconfig.node.base.json",
+        "tsconfig.node.app.json",
         "tsconfig.web.base.json",
+        "tsconfig.web.app.json",
         "tsconfig.web.lib.json",
         "package.json",
         "README.md",
