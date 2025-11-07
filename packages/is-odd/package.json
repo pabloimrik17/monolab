@@ -1,6 +1,6 @@
 {
     "name": "@monolab/is-odd",
-    "version": "2.0.0",
+    "version": "0.1.0",
     "type": "module",
     "exports": {
         ".": {
@@ -42,5 +42,9 @@
     "engines": {
         "node": "22.21.0",
         "pnpm": "10.19.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
     }
 }

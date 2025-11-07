@@ -1,0 +1,7 @@
+{
+    "packages/is-even": "0.1.0",
+    "packages/is-odd": "0.1.0",
+    "packages/react-clean": "0.1.0",
+    "packages/react-hooks": "0.1.0",
+    "packages/ts-configs": "0.1.0"
+}

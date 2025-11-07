@@ -1,9 +1,9 @@
 {
-    "name": "@monolab/react-clean",
+    "name": "@monolab/is-even",
     "version": "0.1.0",
     "license": "MIT",
     "exports": "./src/index.ts",
     "imports": {
-        "@monolab/react-hooks": "jsr:@monolab/react-hooks@^0.1.0"
+        "@monolab/is-odd": "jsr:@monolab/is-odd@^0.1.0"
     }
 }

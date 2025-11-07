@@ -1,0 +1,90 @@
+name: Publish Packages
+
+on:
+    pull_request:
+        types: [closed]
+        branches:
+            - main
+
+permissions:
+    contents: read
+    id-token: write
+
+jobs:
+    publish:
+        runs-on: ubuntu-latest
+        if: >-
+            github.event.pull_request.merged == true &&
+            contains(github.event.pull_request.labels.*.name, 'autorelease: tagged')
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.19.0
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "22.21.0"
+                  cache: "pnpm"
+                  registry-url: "https://registry.npmjs.org"
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Get released packages
+              id: released-packages
+              run: |
+                  # Parse PR body to find released packages
+                  PACKAGES=$(echo '${{ github.event.pull_request.body }}' | grep -oP '@monolab/[a-z-]+' | sort -u | tr '\n' ' ')
+                  echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
+                  echo "Released packages: $PACKAGES"
+
+            - name: Build and publish packages
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  NPM_CONFIG_PROVENANCE: true
+              run: |
+                  # Get list of packages from PR body
+                  PACKAGES="${{ steps.released-packages.outputs.packages }}"
+
+                  for PACKAGE_NAME in $PACKAGES; do
+                    # Extract package directory name (e.g., @monolab/is-even -> is-even)
+                    PKG_DIR=$(echo $PACKAGE_NAME | sed 's/@monolab\///')
+                    PKG_PATH="packages/$PKG_DIR"
+
+                    if [ ! -d "$PKG_PATH" ]; then
+                      echo "Package directory $PKG_PATH not found, skipping..."
+                      continue
+                    fi
+
+                    echo "Processing package: $PACKAGE_NAME"
+
+                    # Build the package using Nx
+                    echo "Building $PACKAGE_NAME..."
+                    pnpm nx run $PKG_DIR:build
+
+                    # Publish to npm with provenance
+                    echo "Publishing $PACKAGE_NAME to npm..."
+                    cd $PKG_PATH
+                    npm publish --access public --provenance
+
+                    # Publish to JSR
+                    echo "Publishing $PACKAGE_NAME to JSR..."
+                    npx jsr publish --allow-dirty
+
+                    cd ../..
+
+                    echo "Successfully published $PACKAGE_NAME"
+                  done
+
+            - name: Summary
+              if: success()
+              run: |
+                  echo "✅ All packages published successfully!" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "Published packages:" >> $GITHUB_STEP_SUMMARY
+                  echo "${{ steps.released-packages.outputs.packages }}" >> $GITHUB_STEP_SUMMARY

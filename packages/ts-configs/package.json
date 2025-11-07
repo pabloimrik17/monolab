@@ -1,6 +1,6 @@
 {
     "name": "@monolab/ts-configs",
-    "version": "0.3.4",
+    "version": "0.1.0",
     "private": false,
     "sideEffects": false,
     "type": "module",
@@ -54,5 +54,9 @@
     "engines": {
         "node": "22.21.0",
         "pnpm": "10.19.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
     }
 }

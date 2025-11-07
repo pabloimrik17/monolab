@@ -13,7 +13,7 @@
         ]
     },
     "parallel": 10,
-    "nxCloudId": "67f985a4bdd1693cbb6398fa",
+
     "targetDefaults": {
         "build": {
             "cache": true,
@@ -166,23 +166,5 @@
                 }
             }
         }
-    ],
-    "release": {
-        "projects": [
-            "packages/is-even",
-            "packages/is-odd",
-            "packages/react-clean",
-            "packages/react-hooks"
-        ],
-        "projectsRelationship": "independent",
-        "version": {
-            "conventionalCommits": true,
-            "preserveLocalDependencyProtocols": true
-        },
-        "changelog": {
-            "projectChangelogs": {
-                "createRelease": "github"
-            }
-        }
-    }
+    ]
 }
