@@ -8,6 +8,7 @@
         "./tsconfig.base.json": "./tsconfig.base.json",
         "./tsconfig.node.base.json": "./tsconfig.node.base.json",
         "./tsconfig.node.app.json": "./tsconfig.node.app.json",
+        "./tsconfig.node.lib.json": "./tsconfig.node.lib.json",
         "./tsconfig.web.base.json": "./tsconfig.web.base.json",
         "./tsconfig.web.app.json": "./tsconfig.web.app.json",
         "./package.json": "./package.json"
@@ -16,6 +17,7 @@
         "tsconfig.base.json",
         "tsconfig.node.base.json",
         "tsconfig.node.app.json",
+        "tsconfig.node.lib.json",
         "tsconfig.web.base.json",
         "tsconfig.web.app.json",
         "package.json",

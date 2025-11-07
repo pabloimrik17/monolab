@@ -2,20 +2,16 @@
     "extends": "./tsconfig.node.base.json",
     "compilerOptions": {
         /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-         * Node.js Application Configuration
+         * Node.js Library Configuration
          * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-         * Extends the Node.js base config with application-specific settings
-         * optimized for executable Node.js apps (CLI tools, APIs, services).
+         * Extends the Node.js base config with library-specific settings
+         * optimized for publishable packages (JSR, npm).
          *
-         * Individual applications should set their own outDir and rootDir
+         * Individual libraries should set their own outDir and rootDir
          * in their project-specific tsconfig.json files.
          */
 
-        /* Build Output */
-        "declaration": false,
-        "declarationMap": false,
-        "noEmit": false,
-        "incremental": true,
-        "sourceMap": true
+        /* TypeScript Project References */
+        "composite": true
     }
 }
