@@ -115,6 +115,13 @@ lib-cov
 coverage
 *.lcov
 
+# Test results (JUnit XML for CI/Codecov)
+*junit*.xml
+test-results*.xml
+
+# Vitest HTML reporter output
+html
+
 # nyc test coverage
 .nyc_output
 
@@ -336,3 +343,12 @@ sketch
 .nx/workspace-data
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+/.claude/settings.local.json
+/.mcp.json
+
+# Git worktrees
+.worktrees/
+
+# Stryker mutation testing reports
+**/reports/
+.stryker-tmp/

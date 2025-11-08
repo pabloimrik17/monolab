@@ -1,0 +1,6 @@
+{
+    "name": "@monolab/ts-configs",
+    "version": "0.3.4",
+    "license": "MIT",
+    "exports": "./src/index.ts"
+}

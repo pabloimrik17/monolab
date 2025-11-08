@@ -1,0 +1,21 @@
+{
+    "extends": "./tsconfig.base.json",
+    "compilerOptions": {
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Web Platform Configuration
+         * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Extends the platform-agnostic base with browser/web-specific settings.
+         * Optimized for modern bundlers and DOM environments.
+         */
+
+        /* Browser Environment */
+        "lib": ["ES2024", "DOM", "DOM.Iterable"],
+
+        /* Module System for Bundlers */
+        "module": "preserve",
+        "moduleResolution": "bundler",
+
+        /* React JSX Support */
+        "jsx": "react-jsx"
+    }
+}

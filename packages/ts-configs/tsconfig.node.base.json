@@ -1,0 +1,18 @@
+{
+    "extends": "./tsconfig.base.json",
+    "compilerOptions": {
+        /* Node.js Environment */
+        "types": ["node"],
+
+        /* Module Configuration */
+        "module": "NodeNext",
+
+        /* Interop & Compatibility */
+        "allowSyntheticDefaultImports": true,
+
+        /* Build Output */
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "extends": "./tsconfig.node.base.json",
+    "compilerOptions": {
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Node.js Library Configuration
+         * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Extends the Node.js base config with library-specific settings
+         * optimized for publishable packages (JSR, npm).
+         *
+         * Individual libraries should set their own outDir and rootDir
+         * in their project-specific tsconfig.json files.
+         */
+
+        /* TypeScript Project References */
+        "composite": true
+    }
+}

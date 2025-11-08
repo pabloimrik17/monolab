@@ -1,0 +1,142 @@
+# Codecov Configuration for MonoLab Monorepo
+# Documentation: https://docs.codecov.com/docs/codecov-yaml
+
+# Coverage status checks
+coverage:
+    status:
+        # Project coverage (overall repository)
+        project:
+            default:
+                target: auto # Maintain current coverage level
+                threshold: 2% # Allow up to 2% coverage decrease (strict but reasonable)
+                informational: false # Block PRs if coverage drops significantly
+
+            # Per-package project coverage checks
+            react-hooks:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - react-hooks
+
+            react-clean:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - react-clean
+
+            is-even:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - is-even
+
+            is-odd:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - is-odd
+
+            ts-configs:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - ts-configs
+
+        # Patch coverage (new/modified code in PRs)
+        patch:
+            default:
+                target: 50% # New code should have at least 50% coverage (low bar for initial setup)
+                threshold: 10% # Allow up to 10% below target (40% minimum)
+                informational: false # Block PRs with very low coverage on new code
+
+            # Per-package patch coverage checks
+            react-hooks:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - react-hooks
+
+            react-clean:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - react-clean
+
+            is-even:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - is-even
+
+            is-odd:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - is-odd
+
+            ts-configs:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - ts-configs
+
+# Files and directories to ignore from coverage calculations
+ignore:
+    - "**/*.spec.ts"
+    - "**/*.test.ts"
+    - "**/*.spec.tsx"
+    - "**/*.test.tsx"
+    - "**/dist/"
+    - "**/node_modules/"
+    - "**/coverage/"
+    - "**/.nx/"
+    - "**/*.config.ts"
+    - "**/*.config.js"
+    - "**/*.config.cjs"
+    - "**/*.config.mjs"
+    - "**/vite.config.ts"
+    - "**/vitest.config.ts"
+    - "**/eslint.config.ts"
+
+# Enable inline annotations on pull requests
+comment:
+    layout: "header, diff, flags,  files, footer"
+    behavior: default # Update existing comment
+    require_changes: false # Always comment, even if no coverage changes
+
+# Per-package flags for independent tracking
+flags:
+    react-hooks:
+        paths:
+            - packages/react-hooks/
+        carryforward: true # Use previous coverage if not in current upload
+
+    react-clean:
+        paths:
+            - packages/react-clean/
+        carryforward: true
+
+    is-even:
+        paths:
+            - packages/is-even/
+        carryforward: true
+
+    is-odd:
+        paths:
+            - packages/is-odd/
+        carryforward: true
+
+    ts-configs:
+        paths:
+            - packages/ts-configs/
+        carryforward: true

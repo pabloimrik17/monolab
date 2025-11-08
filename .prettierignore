@@ -3,3 +3,12 @@
 /coverage
 /.nx/cache
 /.nx/workspace-data
+/openspec
+/.claude
+/.opencode
+
+# Ignore auto-generated changelog files
+**/CHANGELOG.md
+
+# Stryker mutation testing reports
+**/reports/

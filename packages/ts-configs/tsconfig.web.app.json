@@ -1,0 +1,25 @@
+{
+    "extends": "./tsconfig.web.base.json",
+    "compilerOptions": {
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Web Application Configuration
+         * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Extends web base with application-specific settings.
+         * Optimized for bundled, executable web apps (not libraries).
+         */
+
+        /* No Declaration Files for Apps */
+        "declaration": false,
+        "declarationMap": false,
+
+        /* Output Settings */
+        "noEmit": false,
+        "sourceMap": true,
+
+        /* Performance Optimizations */
+        "incremental": true,
+
+        /* Mixed Codebase Support */
+        "allowJs": true
+    }
+}

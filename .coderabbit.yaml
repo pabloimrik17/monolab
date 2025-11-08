@@ -1,2 +1,7 @@
 language: en-US
 early_access: true
+reviews:
+    auto_review:
+        base_branches:
+            - main
+            - develop

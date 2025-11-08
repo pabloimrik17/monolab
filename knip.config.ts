@@ -14,8 +14,4 @@ export default {
     paths: {
         "*.svg?react": ["node_modules/vite-plugin-svgr/client.d.ts"], // Ajusta la ruta según sea necesario
     },
-
-    eslint: {
-        entry: "eslint.config.ts",
-    },
 } satisfies KnipConfig;

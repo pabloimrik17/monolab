@@ -4,8 +4,11 @@ on:
     push:
         branches:
             - main
-    pull_request:
+            - pre
+            - develop
+    pull_request: {}
 
+# Needed for nx-set-shas when run on the main branch
 permissions:
     actions: read
     contents: read
@@ -15,36 +18,290 @@ jobs:
         runs-on: ubuntu-latest
         env:
             NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+            # Set to 'true' to disable Nx Cloud when monthly limit is reached
+            NX_NO_CLOUD: ${{ vars.NX_NO_CLOUD }}
         steps:
-            - uses: actions/checkout@v4
+            - name: Checkout code
+              uses: actions/checkout@v4
               with:
+                  filter: tree:0
                   fetch-depth: 0
 
-            - uses: pnpm/action-setup@v4
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
               with:
-                  version: 10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad
+                  version: 10.19.0
 
-            # Cache node_modules
-            - uses: actions/setup-node@v4
+            - name: Setup Nodejs
+              uses: actions/setup-node@v4
               with:
-                  node-version: 22.17.0
+                  node-version: 22.21.0
+                  # Cache node_modules
                   cache: "pnpm"
 
-            - run: pnpm install --frozen-lockfile
-            - uses: nrwl/nx-set-shas@v4
+            - name: Set Nx SHA
+              uses: nrwl/nx-set-shas@v4
 
-            - run: pnpm exec nx affected -t lint:eslint:config-check
+            - name: Debug Nx Cloud variable
+              run: |
+                  echo "NX_NO_CLOUD variable: '${{ vars.NX_NO_CLOUD }}'"
+                  echo "NX_NO_CLOUD env: '${{ env.NX_NO_CLOUD }}'"
 
             # This enables task distribution via Nx Cloud
             # Run this command as early as possible, before dependencies are installed
             # Learn more at https://nx.dev/ci/reference/nx-cloud-cli#npx-nxcloud-startcirun
             - name: Start Nx Cloud CI Run
+              if: ${{ env.NX_NO_CLOUD != 'true' }}
               run: pnpm dlx nx-cloud start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="build"
 
-            # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
-            - run: pnpm exec nx-cloud record -- echo Hello World
+            - name: Restore cached npm dependencies
+              id: cache-dependencies-restore
+              uses: actions/cache/restore@v4
+              with:
+                  path: |
+                      node_modules
+                      ~/.cache/Cypress # needed for the Cypress binary
+                  key: npm-dependencies-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      npm-dependencies-${{ runner.os }}-${{ github.ref_name }}-
+                      npm-dependencies-${{ runner.os }}-develop-
+                      npm-dependencies-${{ runner.os }}-
 
-            # Nx Affected runs only tasks affected by the changes in this PR/commit. Learn more: https://nx.dev/ci/features/affected
-            - run: pnpm exec nx affected -t lint:eslint lint:knip lint:prettier
-            - run: pnpm exec nx affected -t test
-            - run: pnpm exec nx affected -t build
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Cache npm dependencies
+              id: cache-dependencies-save
+              uses: actions/cache/save@v4
+              with:
+                  path: |
+                      node_modules
+                      ~/.cache/Cypress # needed for the Cypress binary
+                  key: ${{ steps.cache-dependencies-restore.outputs.cache-primary-key }}
+
+            - name: Restore Nx cache
+              id: cache-nx-restore
+              if: ${{ env.NX_NO_CLOUD == 'true' }}
+              uses: actions/cache/restore@v4
+              with:
+                  path: .nx
+                  key: nx-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('nx.json') }}
+                  restore-keys: |
+                      nx-${{ runner.os }}-${{ github.ref_name }}-
+                      nx-${{ runner.os }}-develop-
+                      nx-${{ runner.os }}-
+
+            - name: Restore Stryker incremental cache
+              id: cache-stryker-restore
+              uses: actions/cache/restore@v4
+              with:
+                  path: packages/*/reports/stryker-incremental.json
+                  key: stryker-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      stryker-${{ runner.os }}-${{ github.ref_name }}-
+                      stryker-${{ runner.os }}-develop-
+                      stryker-${{ runner.os }}-
+
+            - name: 🔍 Check monorepo integrity
+              run: pnpm exec nx sync:check
+
+            - name: 🔍 Check exports from packages
+              run: pnpm exec nx run-many -t build:check-exports
+
+            - name: 🔍 Check for format and lint configs are valid
+              run: pnpm exec nx run-many -t lint:eslint:config-check lint:stylelint:config-check:scss
+
+            - name: 🔍 Execute lint checks for affected files (Affected)
+              run: pnpm exec nx affected -t lint:eslint lint:stylelint lint:markdownlint lint:prettier && pnpm run lint:knip
+              if: ${{ github.event_name == 'pull_request' }}
+
+            - name: 🔍 Execute lint checks for all files (All)
+              run: pnpm exec nx run-many -t lint:publint lint:knip lint:eslint lint:stylelint lint:markdownlint lint:prettier
+              if: ${{ github.event_name == 'push' }}
+
+            - name: 🧪 Execute unit test checks for affected files (Affected)
+              # We disable the coverage threshold for PRs because affected will only run on the files
+              # that have changed and the coverage will be lower than the threshold
+              run: pnpm exec nx affected -t test:unit:coverage -- --coverage.thresholds.0
+              if: ${{ github.event_name == 'pull_request' }}
+
+            - name: 🧪 Execute unit test checks for all files (All)
+              run: pnpm exec nx run-many -t test:unit:coverage
+              if: ${{ github.event_name == 'push' }}
+
+            - name: 🔍 Execute type test checks for affected files (Affected)
+              run: pnpm exec nx affected -t test:types
+              if: ${{ github.event_name == 'pull_request' }}
+
+            - name: 🔍 Execute type test checks for all files (All)
+              run: pnpm exec nx run-many -t test:types
+              if: ${{ github.event_name == 'push' }}
+
+            # Detect which packages are affected by PR changes for conditional Codecov uploads
+            # This step only runs on PRs to optimize upload time and API usage
+            - name: 🔍 Detect affected packages for Codecov
+              id: affected-codecov
+              if: ${{ github.event_name == 'pull_request' }}
+              run: |
+                  # Get list of affected projects from Nx
+                  AFFECTED_PROJECTS=$(pnpm exec nx show projects --affected)
+                  echo "Affected projects:"
+                  echo "$AFFECTED_PROJECTS"
+
+                  # Check each package and set boolean output
+                  for package in react-hooks react-clean is-even is-odd ts-configs; do
+                    if echo "$AFFECTED_PROJECTS" | grep -q "@monolab/$package"; then
+                      echo "$package=true" >> $GITHUB_OUTPUT
+                      echo "✓ $package is affected"
+                    else
+                      echo "$package=false" >> $GITHUB_OUTPUT
+                      echo "⏭️  $package is not affected"
+                    fi
+                  done
+
+            # Upload coverage per package with individual flags for isolated tracking
+            # In PRs: only upload affected packages. On main/develop/pre: upload all packages for baseline
+            - name: 📊 Upload coverage to Codecov - react-hooks
+              uses: codecov/codecov-action@v5
+              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.react-hooks == 'true') }}
+              with:
+                  files: ./packages/react-hooks/coverage/lcov.info
+                  flags: react-hooks
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  fail_ci_if_error: false
+
+            - name: 📊 Upload coverage to Codecov - react-clean
+              uses: codecov/codecov-action@v5
+              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.react-clean == 'true') }}
+              with:
+                  files: ./packages/react-clean/coverage/lcov.info
+                  flags: react-clean
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  fail_ci_if_error: false
+
+            - name: 📊 Upload coverage to Codecov - is-even
+              uses: codecov/codecov-action@v5
+              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.is-even == 'true') }}
+              with:
+                  files: ./packages/is-even/coverage/lcov.info
+                  flags: is-even
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  fail_ci_if_error: false
+
+            - name: 📊 Upload coverage to Codecov - is-odd
+              uses: codecov/codecov-action@v5
+              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.is-odd == 'true') }}
+              with:
+                  files: ./packages/is-odd/coverage/lcov.info
+                  flags: is-odd
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  fail_ci_if_error: false
+
+            - name: 📊 Upload coverage to Codecov - ts-configs
+              uses: codecov/codecov-action@v5
+              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.ts-configs == 'true') }}
+              with:
+                  files: ./packages/ts-configs/coverage/lcov.info
+                  flags: ts-configs
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  fail_ci_if_error: false
+
+            # Upload test results per package with individual flags
+            # Critical: runs even if tests fail (via !cancelled()) to capture failure data for Test Analytics
+            # In PRs: only upload affected packages. On main/develop/pre: upload all packages for baseline
+            - name: 📊 Upload test results to Codecov - react-hooks
+              uses: codecov/test-results-action@v1
+              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.react-hooks == 'true') }}
+              with:
+                  files: ./packages/react-hooks/test-results.junit.xml
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  flags: react-hooks
+                  fail_ci_if_error: false
+
+            - name: 📊 Upload test results to Codecov - react-clean
+              uses: codecov/test-results-action@v1
+              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.react-clean == 'true') }}
+              with:
+                  files: ./packages/react-clean/test-results.junit.xml
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  flags: react-clean
+                  fail_ci_if_error: false
+
+            - name: 📊 Upload test results to Codecov - is-even
+              uses: codecov/test-results-action@v1
+              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.is-even == 'true') }}
+              with:
+                  files: ./packages/is-even/test-results.junit.xml
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  flags: is-even
+                  fail_ci_if_error: false
+
+            - name: 📊 Upload test results to Codecov - is-odd
+              uses: codecov/test-results-action@v1
+              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.is-odd == 'true') }}
+              with:
+                  files: ./packages/is-odd/test-results.junit.xml
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  flags: is-odd
+                  fail_ci_if_error: false
+
+            - name: 📊 Upload test results to Codecov - ts-configs
+              uses: codecov/test-results-action@v1
+              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.ts-configs == 'true') }}
+              with:
+                  files: ./packages/ts-configs/test-results.junit.xml
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  flags: ts-configs
+                  fail_ci_if_error: false
+
+            - name: 🏗 Execute build checks
+              # Builds all packages; Nx cache optimizes by skipping rebuild of non-affected packages
+              run: pnpm exec nx run-many -t build
+
+            - name: 🧬 Execute mutation testing (All)
+              run: pnpm exec nx run-many -t test:mutation
+              if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
+              env:
+                  STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
+
+            - name: Cache Stryker incremental results
+              id: cache-stryker-save
+              uses: actions/cache/save@v4
+              if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
+              with:
+                  path: packages/*/reports/stryker-incremental.json
+                  key: ${{ steps.cache-stryker-restore.outputs.cache-primary-key }}
+
+            - name: 📊 Upload mutation reports as artifacts
+              uses: actions/upload-artifact@v4
+              if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
+              with:
+                  name: mutation-reports
+                  path: packages/*/reports/mutation
+                  retention-days: 30
+
+            - name: 📦 Analyze and upload bundle sizes to Codecov
+              continue-on-error: true
+              env:
+                  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+              run: |
+                  # Analyze each published package
+                  # Note: nx run-many with Nx cache avoids redundant rebuilds of non-affected packages
+                  for package in react-hooks react-clean is-even is-odd ts-configs; do
+                    if [ -d "packages/$package/dist" ]; then
+                      echo "📦 Analyzing bundle for $package..."
+                      pnpm exec bundle-analyzer packages/$package/dist \
+                        --bundle-name="$package" \
+                        --upload-token="$CODECOV_TOKEN"
+                    else
+                      echo "⚠️  Skipping $package: dist directory not found"
+                    fi
+                  done
+
+            - name: Cache Nx results
+              id: cache-nx-save
+              if: ${{ env.NX_NO_CLOUD == 'true' }}
+              uses: actions/cache/save@v4
+              with:
+                  path: .nx
+                  key: ${{ steps.cache-nx-restore.outputs.cache-primary-key }}

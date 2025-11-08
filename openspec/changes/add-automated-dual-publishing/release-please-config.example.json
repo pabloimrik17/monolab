@@ -1,0 +1,36 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    "packages/is-even": {
+      "extra-files": ["jsr.json"]
+    },
+    "packages/is-odd": {
+      "extra-files": ["jsr.json"]
+    },
+    "packages/react-clean": {
+      "extra-files": ["jsr.json"]
+    },
+    "packages/react-hooks": {
+      "extra-files": ["jsr.json"]
+    },
+    "packages/ts-configs": {
+      "extra-files": ["jsr.json"]
+    }
+  },
+  "release-type": "node",
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": true,
+  "changelog-sections": [
+    { "type": "feat", "section": "Features" },
+    { "type": "fix", "section": "Bug Fixes" },
+    { "type": "perf", "section": "Performance Improvements" },
+    { "type": "revert", "section": "Reverts" },
+    { "type": "docs", "section": "Documentation", "hidden": false },
+    { "type": "style", "section": "Styles", "hidden": true },
+    { "type": "chore", "section": "Miscellaneous", "hidden": true },
+    { "type": "refactor", "section": "Code Refactoring", "hidden": false },
+    { "type": "test", "section": "Tests", "hidden": true },
+    { "type": "build", "section": "Build System", "hidden": true },
+    { "type": "ci", "section": "Continuous Integration", "hidden": true }
+  ]
+}

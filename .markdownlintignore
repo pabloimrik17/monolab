@@ -1,0 +1,14 @@
+# Ignore markdown files in these directories
+openspec/
+.claude/
+.opencode/
+node_modules/
+dist/
+coverage/
+
+# Ignore AI agent instruction files
+AGENTS.md
+CLAUDE.md
+
+# Ignore auto-generated changelog files
+**/CHANGELOG.md
