@@ -6,3 +6,6 @@
 
 # Stryker mutation testing reports
 **/reports/
+
+# Auto-generated changelogs by release-please
+CHANGELOG.md
