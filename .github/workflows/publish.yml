@@ -37,9 +37,11 @@ jobs:
 
             - name: Get released packages
               id: released-packages
+              env:
+                  PR_BODY: ${{ github.event.pull_request.body }}
               run: |
-                  # Parse PR body to find released packages
-                  PACKAGES=$(echo '${{ github.event.pull_request.body }}' | grep -oP '@monolab/[a-z-]+' | sort -u | tr '\n' ' ')
+                  # Parse PR body to find released packages (using env var to prevent script injection)
+                  PACKAGES=$(echo "$PR_BODY" | grep -oP '@monolab/[a-z-]+' | sort -u | tr '\n' ' ')
                   echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
                   echo "Released packages: $PACKAGES"
 
@@ -73,7 +75,7 @@ jobs:
 
                     # Publish to JSR
                     echo "Publishing $PACKAGE_NAME to JSR..."
-                    npx jsr publish --allow-dirty
+                    npx jsr publish
 
                     cd ../..
 
