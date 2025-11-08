@@ -1,6 +1,7 @@
 {
     "name": "@monolab/is-even",
     "version": "1.2.0",
+    "author": "Pablo F.G.",
     "type": "module",
     "exports": {
         ".": {
