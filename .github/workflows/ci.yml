@@ -112,11 +112,11 @@ jobs:
               run: pnpm exec nx run-many -t lint:eslint:config-check lint:stylelint:config-check:scss
 
             - name: 🔍 Execute lint checks for affected files (Affected)
-              run: pnpm exec nx affected -t lint:eslint lint:stylelint lint:markdownlint lint:prettier && pnpm run lint:knip
+              run: pnpm exec nx affected -t lint:eslint lint:stylelint lint:markdownlint && pnpm run lint:knip && pnpm run lint:prettier
               if: ${{ github.event_name == 'pull_request' }}
 
             - name: 🔍 Execute lint checks for all files (All)
-              run: pnpm exec nx run-many -t lint:publint lint:knip lint:eslint lint:stylelint lint:markdownlint lint:prettier
+              run: pnpm exec nx run-many -t lint:publint lint:knip lint:eslint lint:stylelint lint:markdownlint && pnpm run lint:prettier
               if: ${{ github.event_name == 'push' }}
 
             - name: 🧪 Execute unit test checks for affected files (Affected)
