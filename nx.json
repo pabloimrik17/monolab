@@ -13,7 +13,7 @@
         ]
     },
     "parallel": 10,
-
+    "nxCloudId": "67f985a4bdd1693cbb6398fa",
     "targetDefaults": {
         "build": {
             "cache": true,
