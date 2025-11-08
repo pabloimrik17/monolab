@@ -166,23 +166,5 @@
                 }
             }
         }
-    ],
-    "release": {
-        "projects": [
-            "packages/is-even",
-            "packages/is-odd",
-            "packages/react-clean",
-            "packages/react-hooks"
-        ],
-        "projectsRelationship": "independent",
-        "version": {
-            "conventionalCommits": true,
-            "preserveLocalDependencyProtocols": true
-        },
-        "changelog": {
-            "projectChangelogs": {
-                "createRelease": "github"
-            }
-        }
-    }
+    ]
 }

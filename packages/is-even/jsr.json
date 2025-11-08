@@ -1,0 +1,9 @@
+{
+    "name": "@monolab/is-even",
+    "version": "1.1.1",
+    "license": "MIT",
+    "exports": "./src/index.ts",
+    "imports": {
+        "@monolab/is-odd": "jsr:@monolab/is-odd@^2.0.0"
+    }
+}

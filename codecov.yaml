@@ -110,7 +110,7 @@ ignore:
 
 # Enable inline annotations on pull requests
 comment:
-    layout: "header, diff, files, footer"
+    layout: "header, diff, flags,  files, footer"
     behavior: default # Update existing comment
     require_changes: false # Always comment, even if no coverage changes
 
