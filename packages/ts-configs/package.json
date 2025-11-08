@@ -35,6 +35,8 @@
         "lint:eslint:fix": "eslint --cache --max-warnings 60 --fix .",
         "lint:knip": "knip --max-issues 100",
         "lint:knip:fix": "knip --fix",
+        "lint:prettier": "prettier . --check",
+        "lint:prettier:fix": "prettier . --write",
         "test:integration": "vitest run **/*.integration.ts",
         "test:integration:watch": "vitest **/*.integration.ts",
         "test:types": "vitest --typecheck.enabled --run",

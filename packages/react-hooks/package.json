@@ -25,6 +25,8 @@
         "lint:eslint:fix": "eslint --cache --max-warnings 60 --fix .",
         "lint:knip": "knip --max-issues 100",
         "lint:knip:fix": "knip --fix",
+        "lint:prettier": "prettier . --check",
+        "lint:prettier:fix": "prettier . --write",
         "test:browser": "vitest run --browser.enabled=true src/hooks/*.browser.test.tsx",
         "test:browser:watch": "vitest --browser.enabled=true src/hooks/*.browser.test.tsx",
         "test:integration": "vitest run src/**/*.integration.ts",

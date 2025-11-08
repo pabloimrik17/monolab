@@ -9,8 +9,6 @@
         "jsr:sync-version": "node tools/sync-jsr-version.js",
         "lint:knip": "knip --max-issues 70",
         "lint:knip:fix": "knip --fix",
-        "lint:prettier": "prettier . --check --ignore-unknown",
-        "lint:prettier:fix": "prettier . --write --ignore-unknown",
         "monorepo:clean:dist": "pnpm dlx rimraf@5.0.10 -g \"**/dist\"",
         "monorepo:clean:eslintcache": "pnpm dlx rimraf@5.0.10 -g \"**/.eslintcache\"",
         "monorepo:clean:hard": "pnpm run monorepo:clean:soft && pnpm run monorepo:clean:dist && pnpm run monorepo:clean:node_modules",
