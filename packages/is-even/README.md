@@ -4,7 +4,7 @@
 [![is-even coverage](https://codecov.io/gh/pabloimrik17/monolab/badge.svg?flag=is-even)](https://codecov.io/gh/pabloimrik17/monolab?flag=is-even)
 [![is-even bundle](https://codecov.io/gh/pabloimrik17/monolab/graph/bundle/is-even/badge.svg)](https://codecov.io/gh/pabloimrik17/monolab/bundle/is-even)
 
-A simple, well-tested utility to check if a number is even.
+A simple, well-tested utility to check if a number is even. Perfect for number validation and mathematical operations.
 
 ## Features
 
