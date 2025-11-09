@@ -1,7 +1,7 @@
 {
-    "packages/is-even": "2.0.0",
-    "packages/is-odd": "5.0.0",
-    "packages/react-clean": "3.0.0",
-    "packages/react-hooks": "1.0.0",
-    "packages/ts-configs": "1.0.0"
+    "packages/is-even": "2.0.1",
+    "packages/is-odd": "5.0.1",
+    "packages/react-clean": "3.0.1",
+    "packages/react-hooks": "1.0.1",
+    "packages/ts-configs": "1.0.1"
 }
