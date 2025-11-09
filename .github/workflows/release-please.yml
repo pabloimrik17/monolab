@@ -31,6 +31,9 @@ jobs:
         needs: release-please
         runs-on: ubuntu-latest
         if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+        env:
+            NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+            NX_NO_CLOUD: ${{ vars.NX_NO_CLOUD }}
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
@@ -52,13 +55,14 @@ jobs:
 
             - name: Get released packages
               id: released-packages
+              env:
+                  PATHS_RELEASED: ${{ needs.release-please.outputs.paths_released }}
               run: |
-                  # Parse paths_released to get package names
-                  PATHS='${{ needs.release-please.outputs.paths_released }}'
-                  echo "Released paths: $PATHS"
+                  # Parse paths_released to get package names (using env var to prevent script injection)
+                  echo "Released paths: $PATHS_RELEASED"
 
                   # Extract package names from paths (packages/is-even -> is-even)
-                  PACKAGES=$(echo "$PATHS" | jq -r '.[] | select(startswith("packages/")) | sub("packages/"; "")')
+                  PACKAGES=$(echo "$PATHS_RELEASED" | jq -r '.[] | select(startswith("packages/")) | sub("packages/"; "")')
                   echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
                   echo "Released packages: $PACKAGES"
 
@@ -80,7 +84,7 @@ jobs:
 
                     echo "Processing package: $PACKAGE_NAME"
 
-                    # Build the package using Nx
+                    # Build the package using Nx (NX_NO_CLOUD disables cloud)
                     echo "Building $PACKAGE_NAME..."
                     pnpm nx run $PKG_DIR:build
 
