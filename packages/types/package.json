@@ -25,10 +25,10 @@
     ],
     "scripts": {
         "build": "tsc -b",
-        "lint:eslint": "eslint --cache --max-warnings 60 .",
+        "lint:eslint": "eslint --cache --max-warnings 40 .",
         "lint:eslint:config-check": "eslint-config-prettier src/index.ts",
-        "lint:eslint:fix": "eslint --cache --max-warnings 60 --fix .",
-        "lint:knip": "knip --max-issues 100",
+        "lint:eslint:fix": "eslint --cache --max-warnings 40 --fix .",
+        "lint:knip": "knip --max-issues 40",
         "lint:knip:fix": "knip --fix",
         "lint:prettier": "prettier . --check",
         "lint:prettier:fix": "prettier . --write",
