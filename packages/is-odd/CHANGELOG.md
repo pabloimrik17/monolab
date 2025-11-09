@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.2](https://github.com/pabloimrik17/monolab/compare/is-odd-v4.0.1...is-odd-v4.0.2) (2025-11-09)
+
+
+### Documentation
+
+* **is-odd:** add JSDoc examples to isOdd function ([6ec39c0](https://github.com/pabloimrik17/monolab/commit/6ec39c03377261652f391617511c31cdfcee38b9))
+
 ## [4.0.1](https://github.com/pabloimrik17/monolab/compare/is-odd-v4.0.0...is-odd-v4.0.1) (2025-11-09)
 
 
