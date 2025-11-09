@@ -8,6 +8,13 @@
 
 -   Pablo F. Guerra @pabloimrik17
 
+## [1.0.3](https://github.com/pabloimrik17/monolab/compare/react-hooks-v1.0.2...react-hooks-v1.0.3) (2025-11-09)
+
+
+### Documentation
+
+* **react-hooks:** improve package description ([8e1cea6](https://github.com/pabloimrik17/monolab/commit/8e1cea6cd0936aeb4065528ce08b8f0a9d3ae2c6))
+
 ## [1.0.2](https://github.com/pabloimrik17/monolab/compare/react-hooks-v1.0.1...react-hooks-v1.0.2) (2025-11-09)
 
 
