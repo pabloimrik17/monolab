@@ -31,6 +31,9 @@ jobs:
         needs: release-please
         runs-on: ubuntu-latest
         if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+        permissions:
+            contents: read
+            id-token: write
         env:
             NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
             NX_NO_CLOUD: ${{ vars.NX_NO_CLOUD }}

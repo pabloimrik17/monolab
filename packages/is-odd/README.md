@@ -6,6 +6,13 @@
 
 A simple, well-tested utility to check if a number is odd.
 
+## Features
+
+-   🎯 Simple and intuitive API
+-   ✅ Fully typed with TypeScript
+-   🧪 100% test coverage
+-   📦 Zero dependencies
+
 ## Installation
 
 ### npm
