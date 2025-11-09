@@ -1,6 +1,6 @@
 {
     "name": "@m0n0lab/ts-configs",
-    "version": "0.5.1",
+    "version": "1.0.0",
     "private": false,
     "sideEffects": false,
     "type": "module",
