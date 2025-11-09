@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isOdd } from "./index.js";
+import { isOdd } from "./index.ts";
 
 describe("isOdd", () => {
     it("should return true for odd numbers", () => {

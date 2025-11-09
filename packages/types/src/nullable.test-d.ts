@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from "vitest";
-import type { NonNullable, Nullable } from "./nullable.js";
-import { isNonNullable, isNullable } from "./nullable.js";
+import type { NonNullable, Nullable } from "./nullable.ts";
+import { isNonNullable, isNullable } from "./nullable.ts";
 
 describe("Nullable type", () => {
     it("should allow T or null", () => {
@@ -57,7 +57,7 @@ describe("isNonNullable type guard", () => {
         }
     });
 
-    it("should work with filter to remove nulls", () => {
+    it("should narrow array filter return type correctly", () => {
         const values: (string | null)[] = ["hello", null, "world"];
         const filtered = values.filter(isNonNullable);
         expectTypeOf(filtered).toEqualTypeOf<string[]>();

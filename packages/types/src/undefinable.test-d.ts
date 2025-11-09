@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from "vitest";
-import type { NonUndefinable, Undefinable } from "./undefinable.js";
-import { isNonUndefinable, isUndefinable } from "./undefinable.js";
+import type { NonUndefinable, Undefinable } from "./undefinable.ts";
+import { isNonUndefinable, isUndefinable } from "./undefinable.ts";
 
 describe("Undefinable type", () => {
     it("should allow T or undefined", () => {
@@ -63,7 +63,7 @@ describe("isNonUndefinable type guard", () => {
         }
     });
 
-    it("should work with filter to remove undefined values", () => {
+    it("should narrow array filter return type correctly", () => {
         const values: (string | undefined)[] = ["hello", undefined, "world"];
         const filtered = values.filter(isNonUndefinable);
         expectTypeOf(filtered).toEqualTypeOf<string[]>();

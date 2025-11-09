@@ -1,5 +1,5 @@
 {
-    "name": "@monolab/types",
+    "name": "@m0n0lab/types",
     "version": "0.1.0",
     "repository": {
         "type": "git",
@@ -19,6 +19,7 @@
     "types": "./dist/index.d.ts",
     "files": [
         "dist",
+        "package.json",
         "README.md",
         "CHANGELOG.md",
         "LICENSE"
@@ -34,6 +35,8 @@
         "lint:prettier:fix": "prettier . --write",
         "test:integration": "vitest run **/*.integration.ts",
         "test:integration:watch": "vitest **/*.integration.ts",
+        "test:mutation": "stryker run",
+        "test:mutation:report": "open reports/mutation/index.html",
         "test:types": "vitest --typecheck.enabled --run",
         "test:types:watch": "vitest --typecheck.enabled",
         "test:ui": "vitest --ui",

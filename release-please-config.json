@@ -32,7 +32,7 @@
         },
         "packages/types": {
             "release-type": "node",
-            "package-name": "@monolab/types",
+            "package-name": "@m0n0lab/types",
             "changelog-path": "CHANGELOG.md",
             "extra-files": ["jsr.json"]
         }

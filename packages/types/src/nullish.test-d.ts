@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from "vitest";
-import type { NonNullish, Nullish } from "./nullish.js";
-import { isNonNullish, isNullish } from "./nullish.js";
+import type { NonNullish, Nullish } from "./nullish.ts";
+import { isNonNullish, isNullish } from "./nullish.ts";
 
 describe("Nullish type", () => {
     it("should allow T, null, or undefined", () => {
@@ -77,7 +77,7 @@ describe("isNonNullish type guard", () => {
         }
     });
 
-    it("should work with filter to remove nullish values", () => {
+    it("should narrow array filter return type correctly", () => {
         const values: (string | null | undefined)[] = [
             "hello",
             null,

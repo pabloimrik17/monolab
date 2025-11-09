@@ -4,16 +4,16 @@
  */
 
 // Nullable utilities
-export { isNonNullable, isNullable } from "./nullable.js";
-export type { NonNullable, Nullable } from "./nullable.js";
+export { isNonNullable, isNullable } from "./nullable.ts";
+export type { NonNullable, Nullable } from "./nullable.ts";
 
 // Undefinable utilities
-export { isNonUndefinable, isUndefinable } from "./undefinable.js";
-export type { NonUndefinable, Undefinable } from "./undefinable.js";
+export { isNonUndefinable, isUndefinable } from "./undefinable.ts";
+export type { NonUndefinable, Undefinable } from "./undefinable.ts";
 
 // Nullish utilities
-export { isNonNullish, isNullish } from "./nullish.js";
-export type { NonNullish, Nullish } from "./nullish.js";
+export { isNonNullish, isNullish } from "./nullish.ts";
+export type { NonNullish, Nullish } from "./nullish.ts";
 
 // Strict type utilities
-export type { StrictOmit } from "./strict-omit.js";
+export type { StrictOmit } from "./strict-omit.ts";

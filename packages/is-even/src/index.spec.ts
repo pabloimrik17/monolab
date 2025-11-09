@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isEven, isNotEven } from "./index.js";
+import { isEven, isNotEven } from "./index.ts";
 
 describe("isEven", () => {
     it("should return true for even numbers", () => {
