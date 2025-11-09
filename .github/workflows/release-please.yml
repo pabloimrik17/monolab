@@ -9,15 +9,99 @@ permissions:
     contents: write
     issues: write
     pull-requests: write
+    id-token: write
 
 jobs:
     release-please:
         runs-on: ubuntu-latest
+        outputs:
+            releases_created: ${{ steps.release.outputs.releases_created }}
+            paths_released: ${{ steps.release.outputs.paths_released }}
         steps:
             - uses: googleapis/release-please-action@v4
+              id: release
               with:
                   # Use manifest mode for monorepo
                   config-file: release-please-config.json
                   manifest-file: .release-please-manifest.json
                   # Explicitly target main branch for release PRs
                   target-branch: main
+
+    publish:
+        needs: release-please
+        runs-on: ubuntu-latest
+        if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.19.0
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "22.21.0"
+                  cache: "pnpm"
+                  registry-url: "https://registry.npmjs.org"
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Get released packages
+              id: released-packages
+              run: |
+                  # Parse paths_released to get package names
+                  PATHS='${{ needs.release-please.outputs.paths_released }}'
+                  echo "Released paths: $PATHS"
+
+                  # Extract package names from paths (packages/is-even -> is-even)
+                  PACKAGES=$(echo "$PATHS" | jq -r '.[] | select(startswith("packages/")) | sub("packages/"; "")')
+                  echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
+                  echo "Released packages: $PACKAGES"
+
+            - name: Build and publish packages
+              env:
+                  NPM_CONFIG_PROVENANCE: true
+              run: |
+                  # Get list of packages
+                  PACKAGES="${{ steps.released-packages.outputs.packages }}"
+
+                  for PKG_DIR in $PACKAGES; do
+                    PKG_PATH="packages/$PKG_DIR"
+                    PACKAGE_NAME="@monolab/$PKG_DIR"
+
+                    if [ ! -d "$PKG_PATH" ]; then
+                      echo "Package directory $PKG_PATH not found, skipping..."
+                      continue
+                    fi
+
+                    echo "Processing package: $PACKAGE_NAME"
+
+                    # Build the package using Nx
+                    echo "Building $PACKAGE_NAME..."
+                    pnpm nx run $PKG_DIR:build
+
+                    # Publish to npm with provenance
+                    echo "Publishing $PACKAGE_NAME to npm..."
+                    cd $PKG_PATH
+                    npm publish --access public --provenance
+
+                    # Publish to JSR
+                    echo "Publishing $PACKAGE_NAME to JSR..."
+                    npx jsr publish
+
+                    cd ../..
+
+                    echo "Successfully published $PACKAGE_NAME"
+                  done
+
+            - name: Summary
+              if: success()
+              run: |
+                  echo "✅ All packages published successfully!" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "Published packages:" >> $GITHUB_STEP_SUMMARY
+                  echo "${{ steps.released-packages.outputs.packages }}" >> $GITHUB_STEP_SUMMARY
