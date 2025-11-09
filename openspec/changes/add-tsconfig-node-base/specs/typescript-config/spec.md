@@ -8,7 +8,7 @@ The monorepo SHALL provide a base TypeScript configuration file (`tsconfig.node.
 #### Scenario: Node.js environment support
 - **WHEN** a Node.js project extends from `tsconfig.node.base.json`
 - **THEN** the configuration excludes DOM type definitions
-- **AND** the target is set to a modern ES version compatible with Node.js 22.21.0
+- **AND** the target is set to a modern ES version compatible with Node.js 24.11.0
 - **AND** the lib includes modern ES features without browser-specific APIs
 
 #### Scenario: Node.js module support

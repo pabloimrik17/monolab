@@ -14,7 +14,7 @@
 - [ ] 2.3 Configure `type: "module"` for ESM
 - [ ] 2.4 Setup `exports` field pointing to `./dist/index.js` and types
 - [ ] 2.5 Add `files` array including dist, README, CHANGELOG, LICENSE
-- [ ] 2.6 Configure `engines` for Node 22.21.0 and pnpm 10.19.0
+- [ ] 2.6 Configure `engines` for Node 24.11.0 and pnpm 10.19.0
 - [ ] 2.7 Add `publishConfig` for public access
 - [ ] 2.8 Set `sideEffects: false` for tree-shaking
 
