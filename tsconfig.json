@@ -17,6 +17,9 @@
         },
         {
             "path": "./packages/ts-configs"
+        },
+        {
+            "path": "./packages/types"
         }
     ]
 }

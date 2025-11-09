@@ -34,8 +34,6 @@
         "lint:prettier:fix": "prettier . --write",
         "test:integration": "vitest run **/*.integration.ts",
         "test:integration:watch": "vitest **/*.integration.ts",
-        "test:mutation": "stryker run",
-        "test:mutation:report": "open reports/mutation/index.html",
         "test:types": "vitest --typecheck.enabled --run",
         "test:types:watch": "vitest --typecheck.enabled",
         "test:ui": "vitest --ui",
