@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.0.4](https://github.com/pabloimrik17/monolab/compare/is-odd-v5.0.3...is-odd-v5.0.4) (2025-11-09)
+
+
+### Bug Fixes
+
+* **ci:** use Nx dependency graph to determine JSR publish order ([5d27636](https://github.com/pabloimrik17/monolab/commit/5d276361c140372910b3aed6fe0c71935bfb7153))
+
 ## [5.0.3](https://github.com/pabloimrik17/monolab/compare/is-odd-v5.0.2...is-odd-v5.0.3) (2025-11-09)
 
 
