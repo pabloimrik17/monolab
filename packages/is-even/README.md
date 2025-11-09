@@ -43,10 +43,12 @@ import { isEven, isNotEven } from "@m0n0lab/is-even";
 // Check if a number is even
 console.log(isEven(2)); // true
 console.log(isEven(3)); // false
+console.log(isEven(0)); // true
 
 // Check if a number is not even (odd)
 console.log(isNotEven(3)); // true
 console.log(isNotEven(2)); // false
+console.log(isNotEven(1)); // true
 ```
 
 ## API
