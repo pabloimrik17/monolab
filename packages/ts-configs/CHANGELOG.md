@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/pabloimrik17/monolab/compare/ts-configs-v0.5.0...ts-configs-v0.5.1) (2025-11-09)
+
+
+### Bug Fixes
+
+* trigger release-please to process pending releases ([14df820](https://github.com/pabloimrik17/monolab/commit/14df82060ff59932bb3ec28d094f3feffee96ac9))
+
 ## [0.5.0](https://github.com/pabloimrik17/monolab/compare/ts-configs-v0.4.0...ts-configs-v0.5.0) (2025-11-09)
 
 

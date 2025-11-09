@@ -8,6 +8,13 @@
 
 -   Pablo F. Guerra @pabloimrik17
 
+## [0.3.1](https://github.com/pabloimrik17/monolab/compare/react-hooks-v0.3.0...react-hooks-v0.3.1) (2025-11-09)
+
+
+### Bug Fixes
+
+* trigger release-please to process pending releases ([14df820](https://github.com/pabloimrik17/monolab/commit/14df82060ff59932bb3ec28d094f3feffee96ac9))
+
 ## [0.3.0](https://github.com/pabloimrik17/monolab/compare/react-hooks-v0.2.0...react-hooks-v0.3.0) (2025-11-09)
 
 
