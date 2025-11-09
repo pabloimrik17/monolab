@@ -1,13 +1,13 @@
 {
     "name": "@m0n0lab/is-even",
     "version": "2.0.5",
-    "author": "Pablo F.G.",
-    "type": "module",
     "repository": {
         "type": "git",
         "url": "https://github.com/pabloimrik17/monolab.git",
         "directory": "packages/is-even"
     },
+    "author": "Pablo F.G.",
+    "type": "module",
     "exports": {
         ".": {
             "import": "./dist/index.js",

@@ -1,55 +1,55 @@
 {
-  "name": "@m0n0lab/is-odd",
-  "version": "5.0.4",
-  "type": "module",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+    "name": "@m0n0lab/is-odd",
+    "version": "5.0.4",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/pabloimrik17/monolab.git",
+        "directory": "packages/is-odd"
+    },
+    "type": "module",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsc -b",
+        "lint:eslint": "eslint --cache --max-warnings 60 .",
+        "lint:eslint:config-check": "eslint-config-prettier src/index.ts",
+        "lint:eslint:fix": "eslint --cache --max-warnings 60 --fix .",
+        "lint:knip": "knip --max-issues 100",
+        "lint:knip:fix": "knip --fix",
+        "lint:prettier": "prettier . --check",
+        "lint:prettier:fix": "prettier . --write",
+        "test:integration": "vitest run **/*.integration.ts",
+        "test:integration:watch": "vitest **/*.integration.ts",
+        "test:mutation": "stryker run",
+        "test:mutation:report": "open reports/mutation/index.html",
+        "test:types": "vitest --typecheck.enabled --run",
+        "test:types:watch": "vitest --typecheck.enabled",
+        "test:ui": "vitest --ui",
+        "test:unit": "vitest run",
+        "test:unit:coverage": "vitest run --coverage",
+        "test:unit:watch": "vitest",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "tslib": "2.8.1"
+    },
+    "devDependencies": {
+        "typescript": "5.9.3",
+        "vitest": "catalog:"
+    },
+    "packageManager": "pnpm@10.19.0",
+    "engines": {
+        "node": "24.11.0",
+        "pnpm": "10.19.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
     }
-  },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "scripts": {
-    "build": "tsc -b",
-    "lint:eslint": "eslint --cache --max-warnings 60 .",
-    "lint:eslint:config-check": "eslint-config-prettier src/index.ts",
-    "lint:eslint:fix": "eslint --cache --max-warnings 60 --fix .",
-    "lint:knip": "knip --max-issues 100",
-    "lint:knip:fix": "knip --fix",
-    "lint:prettier": "prettier . --check",
-    "lint:prettier:fix": "prettier . --write",
-    "test:integration": "vitest run **/*.integration.ts",
-    "test:integration:watch": "vitest **/*.integration.ts",
-    "test:mutation": "stryker run",
-    "test:mutation:report": "open reports/mutation/index.html",
-    "test:types": "vitest --typecheck.enabled --run",
-    "test:types:watch": "vitest --typecheck.enabled",
-    "test:ui": "vitest --ui",
-    "test:unit": "vitest run",
-    "test:unit:coverage": "vitest run --coverage",
-    "test:unit:watch": "vitest",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "tslib": "2.8.1"
-  },
-  "devDependencies": {
-    "typescript": "5.9.3",
-    "vitest": "catalog:"
-  },
-  "packageManager": "pnpm@10.19.0",
-  "engines": {
-    "node": "24.11.0",
-    "pnpm": "10.19.0"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/pabloimrik17/monolab.git",
-    "directory": "packages/is-odd"
-  }
 }

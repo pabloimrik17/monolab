@@ -1,67 +1,67 @@
 {
-  "name": "@m0n0lab/ts-configs",
-  "version": "1.0.2",
-  "private": false,
-  "sideEffects": false,
-  "type": "module",
-  "exports": {
-    "./tsconfig.base.json": "./tsconfig.base.json",
-    "./tsconfig.node.base.json": "./tsconfig.node.base.json",
-    "./tsconfig.node.app.json": "./tsconfig.node.app.json",
-    "./tsconfig.node.lib.json": "./tsconfig.node.lib.json",
-    "./tsconfig.web.base.json": "./tsconfig.web.base.json",
-    "./tsconfig.web.app.json": "./tsconfig.web.app.json",
-    "./tsconfig.web.lib.json": "./tsconfig.web.lib.json",
-    "./package.json": "./package.json"
-  },
-  "files": [
-    "tsconfig.base.json",
-    "tsconfig.node.base.json",
-    "tsconfig.node.app.json",
-    "tsconfig.node.lib.json",
-    "tsconfig.web.base.json",
-    "tsconfig.web.app.json",
-    "tsconfig.web.lib.json",
-    "package.json",
-    "README.md",
-    "CHANGELOG.md",
-    "LICENSE"
-  ],
-  "scripts": {
-    "build": "pnpm run build:typecheck",
-    "build:typecheck": "tsc --noEmit",
-    "lint:eslint": "eslint --cache --max-warnings 60 .",
-    "lint:eslint:config-check": "eslint-config-prettier src/index.ts",
-    "lint:eslint:fix": "eslint --cache --max-warnings 60 --fix .",
-    "lint:knip": "knip --max-issues 100",
-    "lint:knip:fix": "knip --fix",
-    "lint:prettier": "prettier . --check",
-    "lint:prettier:fix": "prettier . --write",
-    "test:integration": "vitest run **/*.integration.ts",
-    "test:integration:watch": "vitest **/*.integration.ts",
-    "test:types": "vitest --typecheck.enabled --run",
-    "test:types:watch": "vitest --typecheck.enabled",
-    "test:ui": "vitest --ui",
-    "test:unit": "vitest run",
-    "test:unit:coverage": "vitest run --coverage",
-    "test:unit:watch": "vitest"
-  },
-  "devDependencies": {
-    "typescript": "5.9.3",
-    "vitest": "catalog:"
-  },
-  "packageManager": "pnpm@10.19.0+sha512.c9fc7236e92adf5c8af42fd5bf1612df99c2ceb62f27047032f4720b33f8eacdde311865e91c411f2774f618d82f320808ecb51718bfa82c060c4ba7c76a32b8",
-  "engines": {
-    "node": "24.11.0",
-    "pnpm": "10.19.0"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/pabloimrik17/monolab.git",
-    "directory": "packages/ts-configs"
-  }
+    "name": "@m0n0lab/ts-configs",
+    "version": "1.0.2",
+    "private": false,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/pabloimrik17/monolab.git",
+        "directory": "packages/ts-configs"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        "./tsconfig.base.json": "./tsconfig.base.json",
+        "./tsconfig.node.base.json": "./tsconfig.node.base.json",
+        "./tsconfig.node.app.json": "./tsconfig.node.app.json",
+        "./tsconfig.node.lib.json": "./tsconfig.node.lib.json",
+        "./tsconfig.web.base.json": "./tsconfig.web.base.json",
+        "./tsconfig.web.app.json": "./tsconfig.web.app.json",
+        "./tsconfig.web.lib.json": "./tsconfig.web.lib.json",
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "tsconfig.base.json",
+        "tsconfig.node.base.json",
+        "tsconfig.node.app.json",
+        "tsconfig.node.lib.json",
+        "tsconfig.web.base.json",
+        "tsconfig.web.app.json",
+        "tsconfig.web.lib.json",
+        "package.json",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE"
+    ],
+    "scripts": {
+        "build": "pnpm run build:typecheck",
+        "build:typecheck": "tsc --noEmit",
+        "lint:eslint": "eslint --cache --max-warnings 60 .",
+        "lint:eslint:config-check": "eslint-config-prettier src/index.ts",
+        "lint:eslint:fix": "eslint --cache --max-warnings 60 --fix .",
+        "lint:knip": "knip --max-issues 100",
+        "lint:knip:fix": "knip --fix",
+        "lint:prettier": "prettier . --check",
+        "lint:prettier:fix": "prettier . --write",
+        "test:integration": "vitest run **/*.integration.ts",
+        "test:integration:watch": "vitest **/*.integration.ts",
+        "test:types": "vitest --typecheck.enabled --run",
+        "test:types:watch": "vitest --typecheck.enabled",
+        "test:ui": "vitest --ui",
+        "test:unit": "vitest run",
+        "test:unit:coverage": "vitest run --coverage",
+        "test:unit:watch": "vitest"
+    },
+    "devDependencies": {
+        "typescript": "5.9.3",
+        "vitest": "catalog:"
+    },
+    "packageManager": "pnpm@10.19.0+sha512.c9fc7236e92adf5c8af42fd5bf1612df99c2ceb62f27047032f4720b33f8eacdde311865e91c411f2774f618d82f320808ecb51718bfa82c060c4ba7c76a32b8",
+    "engines": {
+        "node": "24.11.0",
+        "pnpm": "10.19.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
+    }
 }
