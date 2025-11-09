@@ -15,6 +15,22 @@
 
 -   Pablo F. Guerra @pabloimrik17
 
+## [3.0.0](https://github.com/pabloimrik17/monolab/compare/react-clean-v2.0.1...react-clean-v3.0.0) (2025-11-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* All packages renamed from @monolab/* to @m0n0lab/*. Update imports and dependencies to use the new scope:
+    - @monolab/is-even -> @m0n0lab/is-even
+    - @monolab/is-odd -> @m0n0lab/is-odd
+    - @monolab/react-clean -> @m0n0lab/react-clean
+    - @monolab/react-hooks -> @m0n0lab/react-hooks
+    - @monolab/ts-configs -> @m0n0lab/ts-configs
+
+### Features
+
+* change package scope from [@monolab](https://github.com/monolab) to [@m0n0lab](https://github.com/m0n0lab) ([bf07c95](https://github.com/pabloimrik17/monolab/commit/bf07c95eca39194c5aaca5dd08a5669ba21cb190))
+
 ## [2.0.1](https://github.com/pabloimrik17/monolab/compare/react-clean-v2.0.0...react-clean-v2.0.1) (2025-11-09)
 
 
