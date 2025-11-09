@@ -107,12 +107,9 @@ jobs:
                   # Get list of packages that were released
                   PACKAGES="${{ steps.released-packages.outputs.packages }}"
 
-                  # Generate dependency graph to determine publish order
-                  pnpm exec nx graph --file=graph.json
-
-                  # Extract topologically sorted order from graph (packages with fewer deps first)
-                  # Filter to only include library projects (excludes demo app)
-                  ORDERED_PACKAGES=$(cat graph.json | jq -r '
+                  # Generate dependency graph to determine publish order (using --print to avoid creating files)
+                  # Filter to only include library projects (excludes demo app) and sort by dependencies
+                  ORDERED_PACKAGES=$(pnpm exec nx graph --print 2>/dev/null | jq -r '
                     .graph.dependencies |
                     to_entries |
                     map(select(.key | startswith("@m0n0lab/") and (contains("demo") | not))) |
