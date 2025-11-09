@@ -1,8 +1,8 @@
 import type { Configuration } from "lint-staged";
 import { relative } from "path";
 
-const ESLINT_MAX_WARNINGS = 50;
-const KNIP_MAX_ISSUES = 70;
+const ESLINT_MAX_WARNINGS = 40;
+const KNIP_MAX_ISSUES = 40;
 
 function toRelativePaths(absoluteFilenames: string[]): string[] {
     const workspaceRoot = process.env.NX_WORKSPACE_ROOT ?? process.cwd();
