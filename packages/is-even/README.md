@@ -12,6 +12,8 @@ A simple, well-tested utility to check if a number is even.
 -   ✅ Fully typed with TypeScript
 -   🧪 100% test coverage
 -   📦 Zero dependencies
+-   ⚡ Lightweight and fast
+-   🔒 Secure and reliable
 
 ## Installation
 
