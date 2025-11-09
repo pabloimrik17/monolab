@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.0.2](https://github.com/pabloimrik17/monolab/compare/is-odd-v5.0.1...is-odd-v5.0.2) (2025-11-09)
+
+
+### Bug Fixes
+
+* **ci:** add id-token permission to publish job for npm Trusted Publishers ([68d37ab](https://github.com/pabloimrik17/monolab/commit/68d37abbd5b474812f6c46471334deefe6f757b2))
+
 ## [5.0.1](https://github.com/pabloimrik17/monolab/compare/is-odd-v5.0.0...is-odd-v5.0.1) (2025-11-09)
 
 
