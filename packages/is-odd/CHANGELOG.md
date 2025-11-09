@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.0.3](https://github.com/pabloimrik17/monolab/compare/is-odd-v5.0.2...is-odd-v5.0.3) (2025-11-09)
+
+
+### Bug Fixes
+
+* **packages:** add repository field to package.json files ([e4b8dde](https://github.com/pabloimrik17/monolab/commit/e4b8ddefc25eee5c4338bb61b2d6fa9423009b80))
+
 ## [5.0.2](https://github.com/pabloimrik17/monolab/compare/is-odd-v5.0.1...is-odd-v5.0.2) (2025-11-09)
 
 

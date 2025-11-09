@@ -1,6 +1,6 @@
 {
   "name": "@m0n0lab/is-odd",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "type": "module",
   "exports": {
     ".": {
