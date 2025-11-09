@@ -1,5 +1,5 @@
 {
-    "name": "@monolab/react-clean",
+    "name": "@m0n0lab/react-clean",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/react-clean/src",
     "projectType": "library"

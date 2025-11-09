@@ -1,7 +1,7 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-    name: "@monolab/react-clean",
+    name: "@m0n0lab/react-clean",
     entry: ["src/index.ts"],
     format: ["esm"],
     outDir: "dist",
@@ -10,7 +10,7 @@ export default defineConfig({
         /^react($|\/)/,
         /^inversify($|\/)/,
         /^rxjs($|\/)/,
-        /^@monolab\/react-hooks($|\/)/,
+        /^@m0n0lab\/react-hooks($|\/)/,
     ],
     dts: {
         compilerOptions: {

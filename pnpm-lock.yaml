@@ -151,10 +151,10 @@ importers:
 
     apps/demo:
         dependencies:
-            "@monolab/is-even":
+            "@m0n0lab/is-even":
                 specifier: workspace:*
                 version: link:../../packages/is-even
-            "@monolab/is-odd":
+            "@m0n0lab/is-odd":
                 specifier: workspace:*
                 version: link:../../packages/is-odd
             solid-js:
@@ -173,7 +173,7 @@ importers:
 
     packages/is-even:
         dependencies:
-            "@monolab/is-odd":
+            "@m0n0lab/is-odd":
                 specifier: workspace:*
                 version: link:../is-odd
             tslib:
@@ -202,7 +202,7 @@ importers:
 
     packages/react-clean:
         dependencies:
-            "@monolab/react-hooks":
+            "@m0n0lab/react-hooks":
                 specifier: workspace:*
                 version: link:../react-hooks
             tslib:

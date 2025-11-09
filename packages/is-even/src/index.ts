@@ -1,4 +1,4 @@
-import { isOdd } from "@monolab/is-odd";
+import { isOdd } from "@m0n0lab/is-odd";
 
 /**
  * Checks if a number is even.

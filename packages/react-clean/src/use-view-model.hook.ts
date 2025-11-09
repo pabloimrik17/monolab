@@ -1,4 +1,4 @@
-import { useDidMount, useWillUnmount } from "@monolab/react-hooks";
+import { useDidMount, useWillUnmount } from "@m0n0lab/react-hooks";
 import { useRef } from "react";
 import { BaseViewModel } from "./base.viewmodel.js";
 

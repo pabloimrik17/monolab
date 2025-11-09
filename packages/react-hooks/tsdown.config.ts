@@ -1,7 +1,7 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-    name: "@monolab/react-hooks",
+    name: "@m0n0lab/react-hooks",
     entry: ["src/index.ts"],
     format: ["esm"],
     outDir: "dist",

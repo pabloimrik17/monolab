@@ -10,11 +10,11 @@ export default defineConfig({
 
     resolve: {
         alias: {
-            "@monolab/is-odd": resolve(
+            "@m0n0lab/is-odd": resolve(
                 __dirname,
                 "../../packages/is-odd/src/index.ts"
             ),
-            "@monolab/is-even": resolve(
+            "@m0n0lab/is-even": resolve(
                 __dirname,
                 "../../packages/is-even/src/index.ts"
             ),

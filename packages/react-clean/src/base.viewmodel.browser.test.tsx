@@ -1,4 +1,4 @@
-import { useDidMount, useWillUnmount } from "@monolab/react-hooks";
+import { useDidMount, useWillUnmount } from "@m0n0lab/react-hooks";
 import { render } from "@testing-library/react";
 import { Container, injectable } from "inversify";
 import { useState } from "react";

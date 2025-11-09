@@ -1,5 +1,5 @@
 {
-    "name": "@monolab/is-even",
+    "name": "@m0n0lab/is-even",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/is-even/src",
     "projectType": "library"

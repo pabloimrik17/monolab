@@ -7,7 +7,7 @@ export default defineConfig({
     plugins: [react({ tsDecorators: true })],
     resolve: {
         alias: {
-            "@monolab/react-hooks": resolve(
+            "@m0n0lab/react-hooks": resolve(
                 __dirname,
                 "../react-hooks/src/index.ts"
             ),

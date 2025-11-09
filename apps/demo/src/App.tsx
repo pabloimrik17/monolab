@@ -1,5 +1,5 @@
-import { isEven } from "@monolab/is-even";
-import { isOdd } from "@monolab/is-odd";
+import { isEven } from "@m0n0lab/is-even";
+import { isOdd } from "@m0n0lab/is-odd";
 import { createSignal } from "solid-js";
 import "./App.css";
 import solidLogo from "./assets/solid.svg";

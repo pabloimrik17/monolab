@@ -2,31 +2,31 @@
     "packages": {
         "packages/is-even": {
             "release-type": "node",
-            "package-name": "@monolab/is-even",
+            "package-name": "@m0n0lab/is-even",
             "changelog-path": "CHANGELOG.md",
             "extra-files": ["jsr.json"]
         },
         "packages/is-odd": {
             "release-type": "node",
-            "package-name": "@monolab/is-odd",
+            "package-name": "@m0n0lab/is-odd",
             "changelog-path": "CHANGELOG.md",
             "extra-files": ["jsr.json"]
         },
         "packages/react-clean": {
             "release-type": "node",
-            "package-name": "@monolab/react-clean",
+            "package-name": "@m0n0lab/react-clean",
             "changelog-path": "CHANGELOG.md",
             "extra-files": ["jsr.json"]
         },
         "packages/react-hooks": {
             "release-type": "node",
-            "package-name": "@monolab/react-hooks",
+            "package-name": "@m0n0lab/react-hooks",
             "changelog-path": "CHANGELOG.md",
             "extra-files": ["jsr.json"]
         },
         "packages/ts-configs": {
             "release-type": "node",
-            "package-name": "@monolab/ts-configs",
+            "package-name": "@m0n0lab/ts-configs",
             "changelog-path": "CHANGELOG.md",
             "extra-files": ["jsr.json"]
         }

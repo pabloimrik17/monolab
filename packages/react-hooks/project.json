@@ -1,5 +1,5 @@
 {
-    "name": "@monolab/react-hooks",
+    "name": "@m0n0lab/react-hooks",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/react-hooks/src",
     "projectType": "library"

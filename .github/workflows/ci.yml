@@ -150,7 +150,7 @@ jobs:
 
                   # Check each package and set boolean output
                   for package in react-hooks react-clean is-even is-odd ts-configs; do
-                    if echo "$AFFECTED_PROJECTS" | grep -q "@monolab/$package"; then
+                    if echo "$AFFECTED_PROJECTS" | grep -q "@m0n0lab/$package"; then
                       echo "$package=true" >> $GITHUB_OUTPUT
                       echo "✓ $package is affected"
                     else

@@ -7,6 +7,6 @@
         "importHelpers": true,
         "isolatedModules": true,
         "noEmitOnError": true,
-        "customConditions": ["@monolab/source"]
+        "customConditions": ["@m0n0lab/source"]
     }
 }

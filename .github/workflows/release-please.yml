@@ -75,7 +75,7 @@ jobs:
 
                   for PKG_DIR in $PACKAGES; do
                     PKG_PATH="packages/$PKG_DIR"
-                    PACKAGE_NAME="@monolab/$PKG_DIR"
+                    PACKAGE_NAME="@m0n0lab/$PKG_DIR"
 
                     if [ ! -d "$PKG_PATH" ]; then
                       echo "Package directory $PKG_PATH not found, skipping..."

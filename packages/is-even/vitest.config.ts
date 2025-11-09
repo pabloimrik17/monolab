@@ -4,7 +4,7 @@ import { defineProject } from "vitest/config";
 export default defineProject({
     resolve: {
         alias: {
-            "@monolab/is-odd": resolve(__dirname, "../is-odd/src/index.ts"),
+            "@m0n0lab/is-odd": resolve(__dirname, "../is-odd/src/index.ts"),
         },
     },
     test: {

@@ -1,5 +1,5 @@
 {
-    "name": "@monolab/demo",
+    "name": "@m0n0lab/demo",
     "version": "0.0.2",
     "private": true,
     "type": "module",
@@ -16,8 +16,8 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "@monolab/is-even": "workspace:*",
-        "@monolab/is-odd": "workspace:*",
+        "@m0n0lab/is-even": "workspace:*",
+        "@m0n0lab/is-odd": "workspace:*",
         "solid-js": "1.9.9"
     },
     "devDependencies": {
