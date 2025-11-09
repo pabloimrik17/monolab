@@ -4,6 +4,13 @@
 
 -   Updated @monolab/is-odd to 2.0.0
 
+## [2.0.3](https://github.com/pabloimrik17/monolab/compare/is-even-v2.0.2...is-even-v2.0.3) (2025-11-09)
+
+
+### Documentation
+
+* **is-even:** add more features to README ([5bc010c](https://github.com/pabloimrik17/monolab/commit/5bc010c1dcbe68125bb2cef5d32e36fb20151d37))
+
 ## [2.0.2](https://github.com/pabloimrik17/monolab/compare/is-even-v2.0.1...is-even-v2.0.2) (2025-11-09)
 
 
