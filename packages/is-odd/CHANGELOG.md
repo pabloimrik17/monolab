@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.0.1](https://github.com/pabloimrik17/monolab/compare/is-odd-v5.0.0...is-odd-v5.0.1) (2025-11-09)
+
+
+### Documentation
+
+* update READMEs with new [@m0n0lab](https://github.com/m0n0lab) scope and improve documentation ([8e3fb1e](https://github.com/pabloimrik17/monolab/commit/8e3fb1e670e601a40b79ef99c34a393c69fa7604))
+
 ## [5.0.0](https://github.com/pabloimrik17/monolab/compare/is-odd-v4.0.2...is-odd-v5.0.0) (2025-11-09)
 
 
