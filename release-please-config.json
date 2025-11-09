@@ -1,5 +1,11 @@
 {
     "packages": {
+        ".": {
+            "release-type": "node",
+            "package-name": "monolab",
+            "changelog-path": "CHANGELOG.md",
+            "include-component-in-tag": false
+        },
         "packages/is-even": {
             "release-type": "node",
             "package-name": "@monolab/is-even",
