@@ -1,16 +1,29 @@
-# @monolab/ts-configs
+# @m0n0lab/ts-configs
 
+[![npm version](https://img.shields.io/npm/v/@m0n0lab/ts-configs.svg)](https://www.npmjs.com/package/@m0n0lab/ts-configs)
 [![ts-configs coverage](https://codecov.io/gh/pabloimrik17/monolab/badge.svg?flag=ts-configs)](https://codecov.io/gh/pabloimrik17/monolab?flag=ts-configs)
 [![ts-configs bundle](https://codecov.io/gh/pabloimrik17/monolab/graph/bundle/ts-configs/badge.svg)](https://codecov.io/gh/pabloimrik17/monolab/bundle/ts-configs)
 
-Shared TypeScript configurations for the monolab monorepo.
+Shared TypeScript configurations for modern web and Node.js projects.
 
 ## Installation
 
+### npm
+
 ```bash
-npm install @monolab/ts-configs
-# or
-pnpm add @monolab/ts-configs
+npm install @m0n0lab/ts-configs
+```
+
+### pnpm
+
+```bash
+pnpm add @m0n0lab/ts-configs
+```
+
+### JSR
+
+```bash
+npx jsr add @m0n0lab/ts-configs
 ```
 
 ## Configuration Hierarchy
@@ -48,7 +61,7 @@ tsconfig.base.json (platform-agnostic foundation)
 
 ```json
 {
-    "extends": "@monolab/ts-configs/tsconfig.base.json",
+    "extends": "@m0n0lab/ts-configs/tsconfig.base.json",
     "compilerOptions": {
         // Add platform-specific settings here
         "module": "preserve", // or "NodeNext" for Node.js
@@ -73,7 +86,7 @@ tsconfig.base.json (platform-agnostic foundation)
 
 ```json
 {
-    "extends": "@monolab/ts-configs/tsconfig.web.base.json",
+    "extends": "@m0n0lab/ts-configs/tsconfig.web.base.json",
     "compilerOptions": {
         // Override JSX for SolidJS projects
         "jsx": "preserve",
@@ -99,7 +112,7 @@ tsconfig.base.json (platform-agnostic foundation)
 
 ```json
 {
-    "extends": "@monolab/ts-configs/tsconfig.web.app.json",
+    "extends": "@m0n0lab/ts-configs/tsconfig.web.app.json",
     "compilerOptions": {
         // Add app-specific overrides here
     },
@@ -124,7 +137,7 @@ tsconfig.base.json (platform-agnostic foundation)
 
 ```json
 {
-    "extends": "@monolab/ts-configs/tsconfig.web.lib.json",
+    "extends": "@m0n0lab/ts-configs/tsconfig.web.lib.json",
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src"
@@ -159,7 +172,7 @@ If your project currently extends the base config, migrate to the appropriate pl
 
 ```json
 {
-    "extends": "@monolab/ts-configs/tsconfig.base.json",
+    "extends": "@m0n0lab/ts-configs/tsconfig.base.json",
     "compilerOptions": {
         "module": "preserve",
         "moduleResolution": "bundler"
@@ -171,7 +184,7 @@ If your project currently extends the base config, migrate to the appropriate pl
 
 ```json
 {
-    "extends": "@monolab/ts-configs/tsconfig.web.app.json",
+    "extends": "@m0n0lab/ts-configs/tsconfig.web.app.json",
     "include": ["src"]
 }
 ```
@@ -180,7 +193,7 @@ If your project currently extends the base config, migrate to the appropriate pl
 
 ```json
 {
-    "extends": "@monolab/ts-configs/tsconfig.web.lib.json",
+    "extends": "@m0n0lab/ts-configs/tsconfig.web.lib.json",
     "include": ["src"]
 }
 ```
@@ -189,7 +202,7 @@ If your project currently extends the base config, migrate to the appropriate pl
 
 ```json
 {
-    "extends": "@monolab/ts-configs/tsconfig.node.base.json",
+    "extends": "@m0n0lab/ts-configs/tsconfig.node.base.json",
     "compilerOptions": {
         "module": "NodeNext"
     }
@@ -209,7 +222,7 @@ The updated base config includes additional strictness flags that may cause comp
 
 ```json
 {
-    "extends": "@monolab/ts-configs/tsconfig.base.json",
+    "extends": "@m0n0lab/ts-configs/tsconfig.base.json",
     "compilerOptions": {
         // Temporarily disable while fixing issues
         "noImplicitReturns": false,
