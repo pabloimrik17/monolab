@@ -4,6 +4,6 @@
     "license": "MIT",
     "exports": "./src/index.ts",
     "imports": {
-        "@m0n0lab/react-hooks": "jsr:@m0n0lab/react-hooks@^0.1.2"
+        "@m0n0lab/react-hooks": "jsr:@m0n0lab/react-hooks@^1.0.0"
     }
 }
