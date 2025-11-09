@@ -62,7 +62,8 @@ jobs:
                   echo "Released paths: $PATHS_RELEASED"
 
                   # Extract package names from paths (packages/is-even -> is-even)
-                  PACKAGES=$(echo "$PATHS_RELEASED" | jq -r '.[] | select(startswith("packages/")) | sub("packages/"; "")')
+                  # Convert to space-separated single line for GitHub Actions output
+                  PACKAGES=$(echo "$PATHS_RELEASED" | jq -r '.[] | select(startswith("packages/")) | sub("packages/"; "")' | tr '\n' ' ')
                   echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
                   echo "Released packages: $PACKAGES"
 
