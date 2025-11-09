@@ -29,6 +29,12 @@
             "package-name": "@m0n0lab/ts-configs",
             "changelog-path": "CHANGELOG.md",
             "extra-files": ["jsr.json"]
+        },
+        "packages/types": {
+            "release-type": "node",
+            "package-name": "@monolab/types",
+            "changelog-path": "CHANGELOG.md",
+            "extra-files": ["jsr.json"]
         }
     },
     "changelog-sections": [

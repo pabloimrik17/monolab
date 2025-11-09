@@ -3,7 +3,17 @@
  * @packageDocumentation
  */
 
-// This file serves as the main entry point for the @monolab/types package.
-// Add your shared type definitions here and export them for use across the monorepo.
+// Nullable utilities
+export { isNonNullable, isNullable } from "./nullable.js";
+export type { NonNullable, Nullable } from "./nullable.js";
 
-export {};
+// Undefinable utilities
+export { isNonUndefinable, isUndefinable } from "./undefinable.js";
+export type { NonUndefinable, Undefinable } from "./undefinable.js";
+
+// Nullish utilities
+export { isNonNullish, isNullish } from "./nullish.js";
+export type { NonNullish, Nullish } from "./nullish.js";
+
+// Strict type utilities
+export type { StrictOmit } from "./strict-omit.js";
