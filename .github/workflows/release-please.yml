@@ -70,13 +70,14 @@ jobs:
                   echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
                   echo "Released packages: $PACKAGES"
 
-            - name: Build and publish packages
+            - name: Build and publish packages to npm
               env:
                   NPM_CONFIG_PROVENANCE: true
               run: |
                   # Get list of packages
                   PACKAGES="${{ steps.released-packages.outputs.packages }}"
 
+                  # First, build and publish all packages to npm
                   for PKG_DIR in $PACKAGES; do
                     PKG_PATH="packages/$PKG_DIR"
                     PACKAGE_NAME="@m0n0lab/$PKG_DIR"
@@ -96,14 +97,49 @@ jobs:
                     echo "Publishing $PACKAGE_NAME to npm..."
                     cd $PKG_PATH
                     npm publish --access public --provenance
-
-                    # Publish to JSR
-                    echo "Publishing $PACKAGE_NAME to JSR..."
-                    npx jsr publish
-
                     cd ../..
 
-                    echo "Successfully published $PACKAGE_NAME"
+                    echo "Successfully published $PACKAGE_NAME to npm"
+                  done
+
+            - name: Publish packages to JSR
+              run: |
+                  # Get list of packages that were released
+                  PACKAGES="${{ steps.released-packages.outputs.packages }}"
+
+                  # Generate dependency graph to determine publish order
+                  pnpm exec nx graph --file=graph.json
+
+                  # Extract topologically sorted order from graph (packages with fewer deps first)
+                  # Filter to only include library projects (excludes demo app)
+                  ORDERED_PACKAGES=$(cat graph.json | jq -r '
+                    .graph.dependencies |
+                    to_entries |
+                    map(select(.key | startswith("@m0n0lab/") and (contains("demo") | not))) |
+                    map({
+                      pkg: (.key | sub("@m0n0lab/"; "")),
+                      deps: (.value | length)
+                    }) |
+                    sort_by(.deps) |
+                    .[].pkg
+                  ')
+
+                  echo "Publishing to JSR in dependency order: $ORDERED_PACKAGES"
+
+                  # Publish in dependency order
+                  for PKG_DIR in $ORDERED_PACKAGES; do
+                    # Only publish if package was released
+                    if echo "$PACKAGES" | grep -q "$PKG_DIR"; then
+                      PKG_PATH="packages/$PKG_DIR"
+                      PACKAGE_NAME="@m0n0lab/$PKG_DIR"
+
+                      echo "Publishing $PACKAGE_NAME to JSR..."
+                      cd $PKG_PATH
+                      npx jsr publish
+                      cd ../..
+
+                      echo "Successfully published $PACKAGE_NAME to JSR"
+                    fi
                   done
 
             - name: Summary

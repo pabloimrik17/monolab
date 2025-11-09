@@ -1,0 +1,2312 @@
+{
+    "graph": {
+        "nodes": {
+            "@m0n0lab/react-clean": {
+                "name": "@m0n0lab/react-clean",
+                "type": "lib",
+                "data": {
+                    "root": "packages/react-clean",
+                    "targets": {
+                        "typecheck": {
+                            "dependsOn": ["^typecheck"],
+                            "options": {
+                                "cwd": "packages/react-clean",
+                                "command": "tsc --build --emitDeclarationOnly"
+                            },
+                            "cache": true,
+                            "inputs": [
+                                "production",
+                                {
+                                    "dependentTasksOutputFiles": "**/*.d.ts"
+                                }
+                            ],
+                            "outputs": [
+                                "{projectRoot}/dist/**/*.d.ts",
+                                "{projectRoot}/*.tsbuildinfo"
+                            ],
+                            "syncGenerators": ["@nx/js:typescript-sync"],
+                            "metadata": {
+                                "technologies": ["typescript"],
+                                "description": "Runs type-checking for the project.",
+                                "help": {
+                                    "command": "pnpm exec tsc --build --help",
+                                    "example": {
+                                        "args": ["--force"]
+                                    }
+                                }
+                            },
+                            "executor": "nx:run-commands",
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "build": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "build"
+                            },
+                            "metadata": {
+                                "scriptContent": "pnpm run build:typecheck && pnpm run build:lib",
+                                "runCommand": "pnpm run build"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build"],
+                            "inputs": ["default"],
+                            "outputs": [
+                                "{projectRoot}/dist",
+                                "{projectRoot}/tsconfig.lib.tsbuildinfo",
+                                "{projectRoot}/tsconfig.tsbuildinfo"
+                            ]
+                        },
+                        "build:check-exports": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "build:check-exports"
+                            },
+                            "metadata": {
+                                "scriptContent": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
+                                "runCommand": "pnpm run build:check-exports"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "dependsOn": [
+                                "^build",
+                                "build",
+                                "^build:check-exports"
+                            ]
+                        },
+                        "build:lib": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "build:lib"
+                            },
+                            "metadata": {
+                                "scriptContent": "tsdown",
+                                "runCommand": "pnpm run build:lib"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "build:typecheck": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "build:typecheck"
+                            },
+                            "metadata": {
+                                "scriptContent": "tsc --noEmit",
+                                "runCommand": "pnpm run build:typecheck"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "lint:eslint": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint --cache --max-warnings 60 .",
+                                "runCommand": "pnpm run lint:eslint"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^lint:eslint"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/eslint.config.ts"
+                            ],
+                            "outputs": ["{projectRoot}/.eslintcache"]
+                        },
+                        "lint:eslint:config-check": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint:config-check"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint-config-prettier src/index.ts",
+                                "runCommand": "pnpm run lint:eslint:config-check"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "lint:eslint:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint --cache --max-warnings 60 --fix .",
+                                "runCommand": "pnpm run lint:eslint:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^lint:eslint:fix"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/eslint.config.ts"
+                            ],
+                            "outputs": ["{projectRoot}/.eslintcache"]
+                        },
+                        "lint:knip": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:knip"
+                            },
+                            "metadata": {
+                                "scriptContent": "knip --max-issues 100",
+                                "runCommand": "pnpm run lint:knip"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^lint:knip"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/knip.config.ts"
+                            ]
+                        },
+                        "lint:knip:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:knip:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "knip --fix",
+                                "runCommand": "pnpm run lint:knip:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "lint:prettier": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:prettier"
+                            },
+                            "metadata": {
+                                "scriptContent": "prettier . --check",
+                                "runCommand": "pnpm run lint:prettier"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^lint:eslint", "^lint:prettier"],
+                            "inputs": [
+                                "default",
+                                "{projectRoot}/.prettierignore",
+                                "{workspaceRoot}/.prettierrc",
+                                "{workspaceRoot}/.prettierignore"
+                            ]
+                        },
+                        "lint:prettier:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:prettier:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "prettier . --write",
+                                "runCommand": "pnpm run lint:prettier:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:browser": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:browser"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest run --browser.enabled=true src/*.browser.test.tsx",
+                                "runCommand": "pnpm run test:browser"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:browser:watch": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:browser:watch"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest --browser.enabled=true src/*.browser.test.tsx",
+                                "runCommand": "pnpm run test:browser:watch"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:integration": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:integration"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest run **/*.integration.ts",
+                                "runCommand": "pnpm run test:integration"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:integration:watch": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:integration:watch"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest **/*.integration.ts",
+                                "runCommand": "pnpm run test:integration:watch"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:mutation": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:mutation"
+                            },
+                            "metadata": {
+                                "scriptContent": "stryker run",
+                                "runCommand": "pnpm run test:mutation"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "build"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/stryker.config.base.ts",
+                                "{projectRoot}/stryker.config.ts",
+                                "{projectRoot}/reports/stryker-incremental.json"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/reports/mutation",
+                                "{projectRoot}/reports/stryker-incremental.json"
+                            ]
+                        },
+                        "test:mutation:report": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:mutation:report"
+                            },
+                            "metadata": {
+                                "scriptContent": "open reports/mutation/index.html",
+                                "runCommand": "pnpm run test:mutation:report"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": false
+                        },
+                        "test:types": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:types"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest --typecheck.enabled --run",
+                                "runCommand": "pnpm run test:types"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:types:watch": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:types:watch"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest --typecheck.enabled",
+                                "runCommand": "pnpm run test:types:watch"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:ui": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:ui"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest --ui",
+                                "runCommand": "pnpm run test:ui"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:unit": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:unit"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest run",
+                                "runCommand": "pnpm run test:unit"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^test:unit"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/vitest.workspace.ts",
+                                "{projectRoot}/vitest.config.ts"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/html",
+                                "{projectRoot}/test-results.junit.xml"
+                            ]
+                        },
+                        "test:unit:coverage": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:unit:coverage"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest run --coverage",
+                                "runCommand": "pnpm run test:unit:coverage"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^test:unit:coverage"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/vitest.workspace.ts",
+                                "{projectRoot}/vitest.config.ts"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/coverage",
+                                "{projectRoot}/html",
+                                "{projectRoot}/test-results.junit.xml"
+                            ]
+                        },
+                        "test:unit:watch": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:unit:watch"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest",
+                                "runCommand": "pnpm run test:unit:watch"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "continuous": true,
+                            "dependsOn": ["^build", "^test:unit:watch"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/vitest.config.ts",
+                                "{projectRoot}/vitest.config.ts"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/coverage",
+                                "{projectRoot}/html"
+                            ]
+                        },
+                        "nx-release-publish": {
+                            "executor": "@nx/js:release-publish",
+                            "dependsOn": ["^nx-release-publish"],
+                            "options": {},
+                            "configurations": {},
+                            "parallelism": true
+                        }
+                    },
+                    "name": "@m0n0lab/react-clean",
+                    "tags": ["npm:public"],
+                    "metadata": {
+                        "targetGroups": {
+                            "NPM Scripts": [
+                                "build",
+                                "build:check-exports",
+                                "build:lib",
+                                "build:typecheck",
+                                "lint:eslint",
+                                "lint:eslint:config-check",
+                                "lint:eslint:fix",
+                                "lint:knip",
+                                "lint:knip:fix",
+                                "lint:prettier",
+                                "lint:prettier:fix",
+                                "test:browser",
+                                "test:browser:watch",
+                                "test:integration",
+                                "test:integration:watch",
+                                "test:mutation",
+                                "test:mutation:report",
+                                "test:types",
+                                "test:types:watch",
+                                "test:ui",
+                                "test:unit",
+                                "test:unit:coverage",
+                                "test:unit:watch"
+                            ]
+                        },
+                        "js": {
+                            "packageName": "@m0n0lab/react-clean",
+                            "packageVersion": "3.0.1",
+                            "packageExports": {
+                                ".": {
+                                    "types": "./dist/index.d.ts",
+                                    "import": "./dist/index.js",
+                                    "default": "./dist/index.js"
+                                },
+                                "./package.json": "./package.json"
+                            },
+                            "packageMain": "./dist/index.js",
+                            "isInPackageManagerWorkspaces": true
+                        }
+                    },
+                    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+                    "sourceRoot": "packages/react-clean/src",
+                    "projectType": "library",
+                    "implicitDependencies": []
+                }
+            },
+            "@m0n0lab/react-hooks": {
+                "name": "@m0n0lab/react-hooks",
+                "type": "lib",
+                "data": {
+                    "root": "packages/react-hooks",
+                    "targets": {
+                        "typecheck": {
+                            "dependsOn": ["^typecheck"],
+                            "options": {
+                                "cwd": "packages/react-hooks",
+                                "command": "tsc --build --emitDeclarationOnly"
+                            },
+                            "cache": true,
+                            "inputs": ["production", "^production"],
+                            "outputs": [
+                                "{projectRoot}/dist/**/*.d.ts",
+                                "{projectRoot}/*.tsbuildinfo"
+                            ],
+                            "syncGenerators": ["@nx/js:typescript-sync"],
+                            "metadata": {
+                                "technologies": ["typescript"],
+                                "description": "Runs type-checking for the project.",
+                                "help": {
+                                    "command": "pnpm exec tsc --build --help",
+                                    "example": {
+                                        "args": ["--force"]
+                                    }
+                                }
+                            },
+                            "executor": "nx:run-commands",
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "build": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "build"
+                            },
+                            "metadata": {
+                                "scriptContent": "pnpm run build:typecheck && pnpm run build:lib",
+                                "runCommand": "pnpm run build"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build"],
+                            "inputs": ["default"],
+                            "outputs": [
+                                "{projectRoot}/dist",
+                                "{projectRoot}/tsconfig.lib.tsbuildinfo",
+                                "{projectRoot}/tsconfig.tsbuildinfo"
+                            ]
+                        },
+                        "build:check-exports": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "build:check-exports"
+                            },
+                            "metadata": {
+                                "scriptContent": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
+                                "runCommand": "pnpm run build:check-exports"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "dependsOn": [
+                                "^build",
+                                "build",
+                                "^build:check-exports"
+                            ]
+                        },
+                        "build:lib": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "build:lib"
+                            },
+                            "metadata": {
+                                "scriptContent": "tsdown",
+                                "runCommand": "pnpm run build:lib"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "build:typecheck": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "build:typecheck"
+                            },
+                            "metadata": {
+                                "scriptContent": "tsc --noEmit",
+                                "runCommand": "pnpm run build:typecheck"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "lint:eslint": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint --cache --max-warnings 60 .",
+                                "runCommand": "pnpm run lint:eslint"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^lint:eslint"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/eslint.config.ts"
+                            ],
+                            "outputs": ["{projectRoot}/.eslintcache"]
+                        },
+                        "lint:eslint:config-check": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint:config-check"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint-config-prettier src/index.ts",
+                                "runCommand": "pnpm run lint:eslint:config-check"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "lint:eslint:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint --cache --max-warnings 60 --fix .",
+                                "runCommand": "pnpm run lint:eslint:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^lint:eslint:fix"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/eslint.config.ts"
+                            ],
+                            "outputs": ["{projectRoot}/.eslintcache"]
+                        },
+                        "lint:knip": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:knip"
+                            },
+                            "metadata": {
+                                "scriptContent": "knip --max-issues 100",
+                                "runCommand": "pnpm run lint:knip"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^lint:knip"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/knip.config.ts"
+                            ]
+                        },
+                        "lint:knip:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:knip:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "knip --fix",
+                                "runCommand": "pnpm run lint:knip:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "lint:prettier": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:prettier"
+                            },
+                            "metadata": {
+                                "scriptContent": "prettier . --check",
+                                "runCommand": "pnpm run lint:prettier"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^lint:eslint", "^lint:prettier"],
+                            "inputs": [
+                                "default",
+                                "{projectRoot}/.prettierignore",
+                                "{workspaceRoot}/.prettierrc",
+                                "{workspaceRoot}/.prettierignore"
+                            ]
+                        },
+                        "lint:prettier:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:prettier:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "prettier . --write",
+                                "runCommand": "pnpm run lint:prettier:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:browser": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:browser"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest run --browser.enabled=true src/hooks/*.browser.test.tsx",
+                                "runCommand": "pnpm run test:browser"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:browser:watch": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:browser:watch"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest --browser.enabled=true src/hooks/*.browser.test.tsx",
+                                "runCommand": "pnpm run test:browser:watch"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:integration": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:integration"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest run src/**/*.integration.ts",
+                                "runCommand": "pnpm run test:integration"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:integration:watch": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:integration:watch"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest src/**/*.integration.ts",
+                                "runCommand": "pnpm run test:integration:watch"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:mutation": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:mutation"
+                            },
+                            "metadata": {
+                                "scriptContent": "stryker run",
+                                "runCommand": "pnpm run test:mutation"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "build"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/stryker.config.base.ts",
+                                "{projectRoot}/stryker.config.ts",
+                                "{projectRoot}/reports/stryker-incremental.json"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/reports/mutation",
+                                "{projectRoot}/reports/stryker-incremental.json"
+                            ]
+                        },
+                        "test:mutation:report": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:mutation:report"
+                            },
+                            "metadata": {
+                                "scriptContent": "open reports/mutation/index.html",
+                                "runCommand": "pnpm run test:mutation:report"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": false
+                        },
+                        "test:types": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:types"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest --typecheck.enabled --run",
+                                "runCommand": "pnpm run test:types"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:types:watch": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:types:watch"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest --typecheck.enabled",
+                                "runCommand": "pnpm run test:types:watch"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:ui": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:ui"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest --ui",
+                                "runCommand": "pnpm run test:ui"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:unit": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:unit"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest run",
+                                "runCommand": "pnpm run test:unit"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^test:unit"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/vitest.workspace.ts",
+                                "{projectRoot}/vitest.config.ts"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/html",
+                                "{projectRoot}/test-results.junit.xml"
+                            ]
+                        },
+                        "test:unit:coverage": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:unit:coverage"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest run --coverage",
+                                "runCommand": "pnpm run test:unit:coverage"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^test:unit:coverage"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/vitest.workspace.ts",
+                                "{projectRoot}/vitest.config.ts"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/coverage",
+                                "{projectRoot}/html",
+                                "{projectRoot}/test-results.junit.xml"
+                            ]
+                        },
+                        "test:unit:watch": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:unit:watch"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest",
+                                "runCommand": "pnpm run test:unit:watch"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "continuous": true,
+                            "dependsOn": ["^build", "^test:unit:watch"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/vitest.config.ts",
+                                "{projectRoot}/vitest.config.ts"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/coverage",
+                                "{projectRoot}/html"
+                            ]
+                        },
+                        "nx-release-publish": {
+                            "executor": "@nx/js:release-publish",
+                            "dependsOn": ["^nx-release-publish"],
+                            "options": {},
+                            "configurations": {},
+                            "parallelism": true
+                        }
+                    },
+                    "name": "@m0n0lab/react-hooks",
+                    "tags": ["npm:public"],
+                    "metadata": {
+                        "targetGroups": {
+                            "NPM Scripts": [
+                                "build",
+                                "build:check-exports",
+                                "build:lib",
+                                "build:typecheck",
+                                "lint:eslint",
+                                "lint:eslint:config-check",
+                                "lint:eslint:fix",
+                                "lint:knip",
+                                "lint:knip:fix",
+                                "lint:prettier",
+                                "lint:prettier:fix",
+                                "test:browser",
+                                "test:browser:watch",
+                                "test:integration",
+                                "test:integration:watch",
+                                "test:mutation",
+                                "test:mutation:report",
+                                "test:types",
+                                "test:types:watch",
+                                "test:ui",
+                                "test:unit",
+                                "test:unit:coverage",
+                                "test:unit:watch"
+                            ]
+                        },
+                        "js": {
+                            "packageName": "@m0n0lab/react-hooks",
+                            "packageVersion": "1.0.1",
+                            "packageExports": {
+                                ".": {
+                                    "types": "./dist/index.d.ts",
+                                    "import": "./dist/index.js",
+                                    "default": "./dist/index.js"
+                                },
+                                "./package.json": "./package.json"
+                            },
+                            "packageMain": "./dist/index.js",
+                            "isInPackageManagerWorkspaces": true
+                        }
+                    },
+                    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+                    "sourceRoot": "packages/react-hooks/src",
+                    "projectType": "library",
+                    "implicitDependencies": []
+                }
+            },
+            "@m0n0lab/ts-configs": {
+                "name": "@m0n0lab/ts-configs",
+                "type": "lib",
+                "data": {
+                    "root": "packages/ts-configs",
+                    "targets": {
+                        "typecheck": {
+                            "dependsOn": ["^typecheck"],
+                            "options": {
+                                "cwd": "packages/ts-configs",
+                                "command": "tsc --build --emitDeclarationOnly"
+                            },
+                            "cache": true,
+                            "inputs": ["production", "^production"],
+                            "outputs": [
+                                "{projectRoot}/dist/**/*.d.ts",
+                                "{projectRoot}/*.tsbuildinfo"
+                            ],
+                            "syncGenerators": ["@nx/js:typescript-sync"],
+                            "metadata": {
+                                "technologies": ["typescript"],
+                                "description": "Runs type-checking for the project.",
+                                "help": {
+                                    "command": "pnpm exec tsc --build --help",
+                                    "example": {
+                                        "args": ["--force"]
+                                    }
+                                }
+                            },
+                            "executor": "nx:run-commands",
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "build": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "build"
+                            },
+                            "metadata": {
+                                "scriptContent": "pnpm run build:typecheck",
+                                "runCommand": "pnpm run build"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build"],
+                            "inputs": ["default"],
+                            "outputs": [
+                                "{projectRoot}/dist",
+                                "{projectRoot}/tsconfig.lib.tsbuildinfo",
+                                "{projectRoot}/tsconfig.tsbuildinfo"
+                            ]
+                        },
+                        "build:typecheck": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "build:typecheck"
+                            },
+                            "metadata": {
+                                "scriptContent": "tsc --noEmit",
+                                "runCommand": "pnpm run build:typecheck"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "lint:eslint": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint --cache --max-warnings 60 .",
+                                "runCommand": "pnpm run lint:eslint"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^lint:eslint"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/eslint.config.ts"
+                            ],
+                            "outputs": ["{projectRoot}/.eslintcache"]
+                        },
+                        "lint:eslint:config-check": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint:config-check"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint-config-prettier src/index.ts",
+                                "runCommand": "pnpm run lint:eslint:config-check"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "lint:eslint:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint --cache --max-warnings 60 --fix .",
+                                "runCommand": "pnpm run lint:eslint:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^lint:eslint:fix"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/eslint.config.ts"
+                            ],
+                            "outputs": ["{projectRoot}/.eslintcache"]
+                        },
+                        "lint:knip": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:knip"
+                            },
+                            "metadata": {
+                                "scriptContent": "knip --max-issues 100",
+                                "runCommand": "pnpm run lint:knip"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^lint:knip"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/knip.config.ts"
+                            ]
+                        },
+                        "lint:knip:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:knip:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "knip --fix",
+                                "runCommand": "pnpm run lint:knip:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "lint:prettier": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:prettier"
+                            },
+                            "metadata": {
+                                "scriptContent": "prettier . --check",
+                                "runCommand": "pnpm run lint:prettier"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^lint:eslint", "^lint:prettier"],
+                            "inputs": [
+                                "default",
+                                "{projectRoot}/.prettierignore",
+                                "{workspaceRoot}/.prettierrc",
+                                "{workspaceRoot}/.prettierignore"
+                            ]
+                        },
+                        "lint:prettier:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:prettier:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "prettier . --write",
+                                "runCommand": "pnpm run lint:prettier:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:integration": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:integration"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest run **/*.integration.ts",
+                                "runCommand": "pnpm run test:integration"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:integration:watch": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:integration:watch"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest **/*.integration.ts",
+                                "runCommand": "pnpm run test:integration:watch"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:types": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:types"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest --typecheck.enabled --run",
+                                "runCommand": "pnpm run test:types"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:types:watch": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:types:watch"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest --typecheck.enabled",
+                                "runCommand": "pnpm run test:types:watch"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:ui": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:ui"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest --ui",
+                                "runCommand": "pnpm run test:ui"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:unit": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:unit"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest run",
+                                "runCommand": "pnpm run test:unit"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^test:unit"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/vitest.workspace.ts",
+                                "{projectRoot}/vitest.config.ts"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/html",
+                                "{projectRoot}/test-results.junit.xml"
+                            ]
+                        },
+                        "test:unit:coverage": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:unit:coverage"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest run --coverage",
+                                "runCommand": "pnpm run test:unit:coverage"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^test:unit:coverage"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/vitest.workspace.ts",
+                                "{projectRoot}/vitest.config.ts"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/coverage",
+                                "{projectRoot}/html",
+                                "{projectRoot}/test-results.junit.xml"
+                            ]
+                        },
+                        "test:unit:watch": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:unit:watch"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest",
+                                "runCommand": "pnpm run test:unit:watch"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "continuous": true,
+                            "dependsOn": ["^build", "^test:unit:watch"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/vitest.config.ts",
+                                "{projectRoot}/vitest.config.ts"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/coverage",
+                                "{projectRoot}/html"
+                            ]
+                        },
+                        "nx-release-publish": {
+                            "executor": "@nx/js:release-publish",
+                            "dependsOn": ["^nx-release-publish"],
+                            "options": {},
+                            "configurations": {},
+                            "parallelism": true
+                        }
+                    },
+                    "name": "@m0n0lab/ts-configs",
+                    "tags": ["npm:public"],
+                    "metadata": {
+                        "targetGroups": {
+                            "NPM Scripts": [
+                                "build",
+                                "build:typecheck",
+                                "lint:eslint",
+                                "lint:eslint:config-check",
+                                "lint:eslint:fix",
+                                "lint:knip",
+                                "lint:knip:fix",
+                                "lint:prettier",
+                                "lint:prettier:fix",
+                                "test:integration",
+                                "test:integration:watch",
+                                "test:types",
+                                "test:types:watch",
+                                "test:ui",
+                                "test:unit",
+                                "test:unit:coverage",
+                                "test:unit:watch"
+                            ]
+                        },
+                        "js": {
+                            "packageName": "@m0n0lab/ts-configs",
+                            "packageVersion": "1.0.1",
+                            "packageExports": {
+                                "./tsconfig.base.json": "./tsconfig.base.json",
+                                "./tsconfig.node.base.json": "./tsconfig.node.base.json",
+                                "./tsconfig.node.app.json": "./tsconfig.node.app.json",
+                                "./tsconfig.node.lib.json": "./tsconfig.node.lib.json",
+                                "./tsconfig.web.base.json": "./tsconfig.web.base.json",
+                                "./tsconfig.web.app.json": "./tsconfig.web.app.json",
+                                "./tsconfig.web.lib.json": "./tsconfig.web.lib.json",
+                                "./package.json": "./package.json"
+                            },
+                            "isInPackageManagerWorkspaces": true
+                        }
+                    },
+                    "$schema": "https://json.schemastore.org/nx-project.json",
+                    "projectType": "library",
+                    "implicitDependencies": []
+                }
+            },
+            "@m0n0lab/is-even": {
+                "name": "@m0n0lab/is-even",
+                "type": "lib",
+                "data": {
+                    "root": "packages/is-even",
+                    "targets": {
+                        "typecheck": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "typecheck"
+                            },
+                            "metadata": {
+                                "technologies": ["typescript"],
+                                "description": "Runs type-checking for the project.",
+                                "help": {
+                                    "command": "pnpm exec tsc --build --help",
+                                    "example": {
+                                        "args": ["--force"]
+                                    }
+                                },
+                                "scriptContent": "tsc --noEmit",
+                                "runCommand": "pnpm run typecheck"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "build": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "build"
+                            },
+                            "metadata": {
+                                "scriptContent": "tsc -b",
+                                "runCommand": "pnpm run build"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build"],
+                            "inputs": ["default"],
+                            "outputs": [
+                                "{projectRoot}/dist",
+                                "{projectRoot}/tsconfig.lib.tsbuildinfo",
+                                "{projectRoot}/tsconfig.tsbuildinfo"
+                            ]
+                        },
+                        "lint:eslint": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint --cache --max-warnings 60 .",
+                                "runCommand": "pnpm run lint:eslint"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^lint:eslint"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/eslint.config.ts"
+                            ],
+                            "outputs": ["{projectRoot}/.eslintcache"]
+                        },
+                        "lint:eslint:config-check": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint:config-check"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint-config-prettier src/index.ts",
+                                "runCommand": "pnpm run lint:eslint:config-check"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "lint:eslint:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint --cache --max-warnings 60 --fix .",
+                                "runCommand": "pnpm run lint:eslint:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^lint:eslint:fix"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/eslint.config.ts"
+                            ],
+                            "outputs": ["{projectRoot}/.eslintcache"]
+                        },
+                        "lint:knip": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:knip"
+                            },
+                            "metadata": {
+                                "scriptContent": "knip --max-issues 100",
+                                "runCommand": "pnpm run lint:knip"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^lint:knip"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/knip.config.ts"
+                            ]
+                        },
+                        "lint:knip:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:knip:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "knip --fix",
+                                "runCommand": "pnpm run lint:knip:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "lint:prettier": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:prettier"
+                            },
+                            "metadata": {
+                                "scriptContent": "prettier . --check",
+                                "runCommand": "pnpm run lint:prettier"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^lint:eslint", "^lint:prettier"],
+                            "inputs": [
+                                "default",
+                                "{projectRoot}/.prettierignore",
+                                "{workspaceRoot}/.prettierrc",
+                                "{workspaceRoot}/.prettierignore"
+                            ]
+                        },
+                        "lint:prettier:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:prettier:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "prettier . --write",
+                                "runCommand": "pnpm run lint:prettier:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:integration": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:integration"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest run **/*.integration.ts",
+                                "runCommand": "pnpm run test:integration"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:integration:watch": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:integration:watch"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest **/*.integration.ts",
+                                "runCommand": "pnpm run test:integration:watch"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:mutation": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:mutation"
+                            },
+                            "metadata": {
+                                "scriptContent": "stryker run",
+                                "runCommand": "pnpm run test:mutation"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "build"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/stryker.config.base.ts",
+                                "{projectRoot}/stryker.config.ts",
+                                "{projectRoot}/reports/stryker-incremental.json"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/reports/mutation",
+                                "{projectRoot}/reports/stryker-incremental.json"
+                            ]
+                        },
+                        "test:mutation:report": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:mutation:report"
+                            },
+                            "metadata": {
+                                "scriptContent": "open reports/mutation/index.html",
+                                "runCommand": "pnpm run test:mutation:report"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": false
+                        },
+                        "test:types": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:types"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest --typecheck.enabled --run",
+                                "runCommand": "pnpm run test:types"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:types:watch": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:types:watch"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest --typecheck.enabled",
+                                "runCommand": "pnpm run test:types:watch"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:ui": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:ui"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest --ui",
+                                "runCommand": "pnpm run test:ui"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:unit": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:unit"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest run",
+                                "runCommand": "pnpm run test:unit"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^test:unit"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/vitest.workspace.ts",
+                                "{projectRoot}/vitest.config.ts"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/html",
+                                "{projectRoot}/test-results.junit.xml"
+                            ]
+                        },
+                        "test:unit:coverage": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:unit:coverage"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest run --coverage",
+                                "runCommand": "pnpm run test:unit:coverage"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^test:unit:coverage"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/vitest.workspace.ts",
+                                "{projectRoot}/vitest.config.ts"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/coverage",
+                                "{projectRoot}/html",
+                                "{projectRoot}/test-results.junit.xml"
+                            ]
+                        },
+                        "test:unit:watch": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:unit:watch"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest",
+                                "runCommand": "pnpm run test:unit:watch"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "continuous": true,
+                            "dependsOn": ["^build", "^test:unit:watch"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/vitest.config.ts",
+                                "{projectRoot}/vitest.config.ts"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/coverage",
+                                "{projectRoot}/html"
+                            ]
+                        },
+                        "nx-release-publish": {
+                            "executor": "@nx/js:release-publish",
+                            "dependsOn": ["^nx-release-publish"],
+                            "options": {},
+                            "configurations": {},
+                            "parallelism": true
+                        }
+                    },
+                    "name": "@m0n0lab/is-even",
+                    "tags": ["npm:public"],
+                    "metadata": {
+                        "targetGroups": {
+                            "NPM Scripts": [
+                                "build",
+                                "lint:eslint",
+                                "lint:eslint:config-check",
+                                "lint:eslint:fix",
+                                "lint:knip",
+                                "lint:knip:fix",
+                                "lint:prettier",
+                                "lint:prettier:fix",
+                                "test:integration",
+                                "test:integration:watch",
+                                "test:mutation",
+                                "test:mutation:report",
+                                "test:types",
+                                "test:types:watch",
+                                "test:ui",
+                                "test:unit",
+                                "test:unit:coverage",
+                                "test:unit:watch",
+                                "typecheck"
+                            ]
+                        },
+                        "js": {
+                            "packageName": "@m0n0lab/is-even",
+                            "packageVersion": "2.0.3",
+                            "packageExports": {
+                                ".": {
+                                    "import": "./dist/index.js",
+                                    "types": "./dist/index.d.ts"
+                                }
+                            },
+                            "packageMain": "./dist/index.js",
+                            "isInPackageManagerWorkspaces": true
+                        }
+                    },
+                    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+                    "sourceRoot": "packages/is-even/src",
+                    "projectType": "library",
+                    "implicitDependencies": []
+                }
+            },
+            "@m0n0lab/is-odd": {
+                "name": "@m0n0lab/is-odd",
+                "type": "lib",
+                "data": {
+                    "root": "packages/is-odd",
+                    "targets": {
+                        "typecheck": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "typecheck"
+                            },
+                            "metadata": {
+                                "technologies": ["typescript"],
+                                "description": "Runs type-checking for the project.",
+                                "help": {
+                                    "command": "pnpm exec tsc --build --help",
+                                    "example": {
+                                        "args": ["--force"]
+                                    }
+                                },
+                                "scriptContent": "tsc --noEmit",
+                                "runCommand": "pnpm run typecheck"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "build": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "build"
+                            },
+                            "metadata": {
+                                "scriptContent": "tsc -b",
+                                "runCommand": "pnpm run build"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build"],
+                            "inputs": ["default"],
+                            "outputs": [
+                                "{projectRoot}/dist",
+                                "{projectRoot}/tsconfig.lib.tsbuildinfo",
+                                "{projectRoot}/tsconfig.tsbuildinfo"
+                            ]
+                        },
+                        "lint:eslint": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint --cache --max-warnings 60 .",
+                                "runCommand": "pnpm run lint:eslint"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^lint:eslint"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/eslint.config.ts"
+                            ],
+                            "outputs": ["{projectRoot}/.eslintcache"]
+                        },
+                        "lint:eslint:config-check": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint:config-check"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint-config-prettier src/index.ts",
+                                "runCommand": "pnpm run lint:eslint:config-check"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "lint:eslint:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint --cache --max-warnings 60 --fix .",
+                                "runCommand": "pnpm run lint:eslint:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^lint:eslint:fix"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/eslint.config.ts"
+                            ],
+                            "outputs": ["{projectRoot}/.eslintcache"]
+                        },
+                        "lint:knip": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:knip"
+                            },
+                            "metadata": {
+                                "scriptContent": "knip --max-issues 100",
+                                "runCommand": "pnpm run lint:knip"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^lint:knip"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/knip.config.ts"
+                            ]
+                        },
+                        "lint:knip:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:knip:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "knip --fix",
+                                "runCommand": "pnpm run lint:knip:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "lint:prettier": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:prettier"
+                            },
+                            "metadata": {
+                                "scriptContent": "prettier . --check",
+                                "runCommand": "pnpm run lint:prettier"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^lint:eslint", "^lint:prettier"],
+                            "inputs": [
+                                "default",
+                                "{projectRoot}/.prettierignore",
+                                "{workspaceRoot}/.prettierrc",
+                                "{workspaceRoot}/.prettierignore"
+                            ]
+                        },
+                        "lint:prettier:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:prettier:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "prettier . --write",
+                                "runCommand": "pnpm run lint:prettier:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:integration": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:integration"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest run **/*.integration.ts",
+                                "runCommand": "pnpm run test:integration"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:integration:watch": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:integration:watch"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest **/*.integration.ts",
+                                "runCommand": "pnpm run test:integration:watch"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:mutation": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:mutation"
+                            },
+                            "metadata": {
+                                "scriptContent": "stryker run",
+                                "runCommand": "pnpm run test:mutation"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "build"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/stryker.config.base.ts",
+                                "{projectRoot}/stryker.config.ts",
+                                "{projectRoot}/reports/stryker-incremental.json"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/reports/mutation",
+                                "{projectRoot}/reports/stryker-incremental.json"
+                            ]
+                        },
+                        "test:mutation:report": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:mutation:report"
+                            },
+                            "metadata": {
+                                "scriptContent": "open reports/mutation/index.html",
+                                "runCommand": "pnpm run test:mutation:report"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": false
+                        },
+                        "test:types": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:types"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest --typecheck.enabled --run",
+                                "runCommand": "pnpm run test:types"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:types:watch": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:types:watch"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest --typecheck.enabled",
+                                "runCommand": "pnpm run test:types:watch"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:ui": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:ui"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest --ui",
+                                "runCommand": "pnpm run test:ui"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "test:unit": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:unit"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest run",
+                                "runCommand": "pnpm run test:unit"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^test:unit"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/vitest.workspace.ts",
+                                "{projectRoot}/vitest.config.ts"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/html",
+                                "{projectRoot}/test-results.junit.xml"
+                            ]
+                        },
+                        "test:unit:coverage": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:unit:coverage"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest run --coverage",
+                                "runCommand": "pnpm run test:unit:coverage"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^test:unit:coverage"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/vitest.workspace.ts",
+                                "{projectRoot}/vitest.config.ts"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/coverage",
+                                "{projectRoot}/html",
+                                "{projectRoot}/test-results.junit.xml"
+                            ]
+                        },
+                        "test:unit:watch": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "test:unit:watch"
+                            },
+                            "metadata": {
+                                "scriptContent": "vitest",
+                                "runCommand": "pnpm run test:unit:watch"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "continuous": true,
+                            "dependsOn": ["^build", "^test:unit:watch"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/vitest.config.ts",
+                                "{projectRoot}/vitest.config.ts"
+                            ],
+                            "outputs": [
+                                "{projectRoot}/coverage",
+                                "{projectRoot}/html"
+                            ]
+                        },
+                        "nx-release-publish": {
+                            "executor": "@nx/js:release-publish",
+                            "dependsOn": ["^nx-release-publish"],
+                            "options": {},
+                            "configurations": {},
+                            "parallelism": true
+                        }
+                    },
+                    "name": "@m0n0lab/is-odd",
+                    "tags": ["npm:public"],
+                    "metadata": {
+                        "targetGroups": {
+                            "NPM Scripts": [
+                                "build",
+                                "lint:eslint",
+                                "lint:eslint:config-check",
+                                "lint:eslint:fix",
+                                "lint:knip",
+                                "lint:knip:fix",
+                                "lint:prettier",
+                                "lint:prettier:fix",
+                                "test:integration",
+                                "test:integration:watch",
+                                "test:mutation",
+                                "test:mutation:report",
+                                "test:types",
+                                "test:types:watch",
+                                "test:ui",
+                                "test:unit",
+                                "test:unit:coverage",
+                                "test:unit:watch",
+                                "typecheck"
+                            ]
+                        },
+                        "js": {
+                            "packageName": "@m0n0lab/is-odd",
+                            "packageVersion": "5.0.2",
+                            "packageExports": {
+                                ".": {
+                                    "import": "./dist/index.js",
+                                    "types": "./dist/index.d.ts"
+                                }
+                            },
+                            "packageMain": "./dist/index.js",
+                            "isInPackageManagerWorkspaces": true
+                        }
+                    },
+                    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+                    "sourceRoot": "packages/is-odd/src",
+                    "projectType": "library",
+                    "implicitDependencies": []
+                }
+            },
+            "@m0n0lab/demo": {
+                "name": "@m0n0lab/demo",
+                "type": "app",
+                "data": {
+                    "root": "apps/demo",
+                    "targets": {
+                        "typecheck": {
+                            "dependsOn": ["^typecheck"],
+                            "options": {
+                                "cwd": "apps/demo",
+                                "command": "echo \"The 'typecheck' target is disabled because one or more project references set 'noEmit: true' in their tsconfig. Remove this property to resolve this issue.\""
+                            },
+                            "cache": true,
+                            "inputs": [
+                                "production",
+                                {
+                                    "dependentTasksOutputFiles": "**/*.d.ts"
+                                }
+                            ],
+                            "outputs": [
+                                "{projectRoot}/**/*.js",
+                                "{projectRoot}/**/*.cjs",
+                                "{projectRoot}/**/*.mjs",
+                                "{projectRoot}/**/*.jsx",
+                                "{projectRoot}/**/*.js.map",
+                                "{projectRoot}/**/*.jsx.map",
+                                "{projectRoot}/**/*.d.ts",
+                                "{projectRoot}/**/*.d.cts",
+                                "{projectRoot}/**/*.d.mts",
+                                "{projectRoot}/**/*.d.ts.map",
+                                "{projectRoot}/**/*.d.cts.map",
+                                "{projectRoot}/**/*.d.mts.map",
+                                "{projectRoot}/tsconfig.tsbuildinfo"
+                            ],
+                            "syncGenerators": ["@nx/js:typescript-sync"],
+                            "metadata": {
+                                "technologies": ["typescript"],
+                                "description": "Runs type-checking for the project.",
+                                "help": {
+                                    "command": "pnpm exec tsc --build --help",
+                                    "example": {
+                                        "args": ["--force"]
+                                    }
+                                }
+                            },
+                            "executor": "nx:run-commands",
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "build": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "build"
+                            },
+                            "metadata": {
+                                "scriptContent": "tsc -b && vite build",
+                                "runCommand": "pnpm run build"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build"],
+                            "inputs": ["default"],
+                            "outputs": [
+                                "{projectRoot}/dist",
+                                "{projectRoot}/tsconfig.lib.tsbuildinfo",
+                                "{projectRoot}/tsconfig.tsbuildinfo"
+                            ]
+                        },
+                        "dev": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "dev"
+                            },
+                            "metadata": {
+                                "scriptContent": "vite",
+                                "runCommand": "pnpm run dev"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "continuous": true,
+                            "dependsOn": ["^build", "^dev"]
+                        },
+                        "lint:eslint": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint --cache --max-warnings 60 .",
+                                "runCommand": "pnpm run lint:eslint"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^lint:eslint"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/eslint.config.ts"
+                            ],
+                            "outputs": ["{projectRoot}/.eslintcache"]
+                        },
+                        "lint:eslint:config-check": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint:config-check"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint-config-prettier src/index.tsx",
+                                "runCommand": "pnpm run lint:eslint:config-check"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "lint:eslint:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:eslint:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "eslint --cache --max-warnings 60 --fix .",
+                                "runCommand": "pnpm run lint:eslint:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^build", "^lint:eslint:fix"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/eslint.config.ts"
+                            ],
+                            "outputs": ["{projectRoot}/.eslintcache"]
+                        },
+                        "lint:knip": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:knip"
+                            },
+                            "metadata": {
+                                "scriptContent": "knip --max-issues 100",
+                                "runCommand": "pnpm run lint:knip"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^lint:knip"],
+                            "inputs": [
+                                "default",
+                                "{workspaceRoot}/knip.config.ts"
+                            ]
+                        },
+                        "lint:knip:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:knip:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "knip --fix",
+                                "runCommand": "pnpm run lint:knip:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "lint:prettier": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:prettier"
+                            },
+                            "metadata": {
+                                "scriptContent": "prettier . --check",
+                                "runCommand": "pnpm run lint:prettier"
+                            },
+                            "configurations": {},
+                            "parallelism": true,
+                            "cache": true,
+                            "dependsOn": ["^lint:eslint", "^lint:prettier"],
+                            "inputs": [
+                                "default",
+                                "{projectRoot}/.prettierignore",
+                                "{workspaceRoot}/.prettierrc",
+                                "{workspaceRoot}/.prettierignore"
+                            ]
+                        },
+                        "lint:prettier:fix": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "lint:prettier:fix"
+                            },
+                            "metadata": {
+                                "scriptContent": "prettier . --write",
+                                "runCommand": "pnpm run lint:prettier:fix"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        },
+                        "preview": {
+                            "executor": "nx:run-script",
+                            "options": {
+                                "script": "preview"
+                            },
+                            "metadata": {
+                                "scriptContent": "vite preview",
+                                "runCommand": "pnpm run preview"
+                            },
+                            "configurations": {},
+                            "parallelism": true
+                        }
+                    },
+                    "name": "@m0n0lab/demo",
+                    "tags": ["npm:private"],
+                    "metadata": {
+                        "targetGroups": {
+                            "NPM Scripts": [
+                                "build",
+                                "dev",
+                                "lint:eslint",
+                                "lint:eslint:config-check",
+                                "lint:eslint:fix",
+                                "lint:knip",
+                                "lint:knip:fix",
+                                "lint:prettier",
+                                "lint:prettier:fix",
+                                "preview"
+                            ]
+                        },
+                        "js": {
+                            "packageName": "@m0n0lab/demo",
+                            "packageVersion": "0.0.2",
+                            "isInPackageManagerWorkspaces": true
+                        }
+                    },
+                    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+                    "sourceRoot": "apps/demo/src",
+                    "projectType": "application",
+                    "implicitDependencies": []
+                }
+            }
+        },
+        "dependencies": {
+            "@m0n0lab/react-clean": [
+                {
+                    "source": "@m0n0lab/react-clean",
+                    "target": "@m0n0lab/react-hooks",
+                    "type": "static"
+                }
+            ],
+            "@m0n0lab/react-hooks": [],
+            "@m0n0lab/ts-configs": [],
+            "@m0n0lab/is-even": [
+                {
+                    "source": "@m0n0lab/is-even",
+                    "target": "@m0n0lab/is-odd",
+                    "type": "static"
+                }
+            ],
+            "@m0n0lab/is-odd": [],
+            "@m0n0lab/demo": [
+                {
+                    "source": "@m0n0lab/demo",
+                    "target": "@m0n0lab/is-even",
+                    "type": "static"
+                },
+                {
+                    "source": "@m0n0lab/demo",
+                    "target": "@m0n0lab/is-odd",
+                    "type": "static"
+                }
+            ]
+        }
+    }
+}
