@@ -15,6 +15,76 @@
 
 <!-- markdownlint-enable MD041 -->
 
+## Published Packages
+
+This monorepo publishes several packages to both npm and JSR registries:
+
+### Utility Libraries
+
+**[@m0n0lab/is-odd](https://www.npmjs.com/package/@m0n0lab/is-odd)** | **[@m0n0lab/is-odd (JSR)](https://jsr.io/@m0n0lab/is-odd)**
+
+Check if a number is odd.
+
+```bash
+# npm
+npm install @m0n0lab/is-odd
+
+# JSR (Deno, Node.js, Bun)
+npx jsr add @m0n0lab/is-odd
+```
+
+**[@m0n0lab/is-even](https://www.npmjs.com/package/@m0n0lab/is-even)** | **[@m0n0lab/is-even (JSR)](https://jsr.io/@m0n0lab/is-even)**
+
+Check if a number is even.
+
+```bash
+# npm
+npm install @m0n0lab/is-even
+
+# JSR (Deno, Node.js, Bun)
+npx jsr add @m0n0lab/is-even
+```
+
+### React Hooks
+
+**[@m0n0lab/react-hooks](https://www.npmjs.com/package/@m0n0lab/react-hooks)** | **[@m0n0lab/react-hooks (JSR)](https://jsr.io/@m0n0lab/react-hooks)**
+
+Collection of reusable React hooks.
+
+```bash
+# npm
+npm install @m0n0lab/react-hooks
+
+# JSR (Deno, Node.js, Bun)
+npx jsr add @m0n0lab/react-hooks
+```
+
+**[@m0n0lab/react-clean](https://www.npmjs.com/package/@m0n0lab/react-clean)** | **[@m0n0lab/react-clean (JSR)](https://jsr.io/@m0n0lab/react-clean)**
+
+Clean React components and patterns.
+
+```bash
+# npm
+npm install @m0n0lab/react-clean
+
+# JSR (Deno, Node.js, Bun)
+npx jsr add @m0n0lab/react-clean
+```
+
+### Configuration Packages
+
+**[@m0n0lab/ts-configs](https://www.npmjs.com/package/@m0n0lab/ts-configs)** | **[@m0n0lab/ts-configs (JSR)](https://jsr.io/@m0n0lab/ts-configs)**
+
+Shared TypeScript configurations for web and Node.js projects.
+
+```bash
+# npm
+npm install -D @m0n0lab/ts-configs
+
+# JSR (Deno, Node.js, Bun)
+npx jsr add -D @m0n0lab/ts-configs
+```
+
 ## Development Setup
 
 ### Node.js Installation
@@ -271,3 +341,327 @@ significantly reducing execution time.
 
 Reports are generated at `packages/*/reports/mutation/index.html` and can be
 viewed in your browser.
+
+## Contributing
+
+### Commit Message Convention
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/)
+to automatically generate changelogs and determine version bumps. All commits
+must follow this format:
+
+```text
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+#### Commit Types
+
+-   **feat**: A new feature (triggers MINOR version bump)
+-   **fix**: A bug fix (triggers PATCH version bump)
+-   **docs**: Documentation only changes
+-   **style**: Code style changes (formatting, missing semicolons, etc.)
+-   **refactor**: Code changes that neither fix a bug nor add a feature
+-   **perf**: Performance improvements
+-   **test**: Adding or updating tests
+-   **build**: Changes to build system or dependencies
+-   **ci**: Changes to CI configuration files and scripts
+-   **chore**: Other changes that don't modify src or test files
+
+#### Breaking Changes
+
+To trigger a MAJOR version bump, add `BREAKING CHANGE:` in the commit footer
+or append `!` after the type/scope:
+
+```text
+feat(api)!: remove deprecated endpoint
+
+BREAKING CHANGE: The /v1/old-endpoint has been removed.
+Use /v2/new-endpoint instead.
+```
+
+#### Scope
+
+The scope should be the package name without the `@m0n0lab/` prefix:
+
+-   `is-odd`
+-   `is-even`
+-   `react-hooks`
+-   `react-clean`
+-   `ts-configs`
+
+#### Examples
+
+```bash
+# Feature addition (minor version bump)
+feat(is-odd): add support for BigInt numbers
+
+# Bug fix (patch version bump)
+fix(react-hooks): prevent memory leak in useDidMount
+
+# Breaking change (major version bump)
+feat(ts-configs)!: require Node.js 24.11.0 or higher
+
+BREAKING CHANGE: Dropped support for Node.js versions below 24.11.0
+
+# Documentation update (no version bump)
+docs(react-clean): improve usage examples in README
+
+# Multiple packages
+feat(is-odd,is-even): add type narrowing
+```
+
+### Release Process
+
+This project uses [release-please](https://github.com/googleapis/release-please)
+to automate versioning and publishing.
+
+#### How It Works
+
+1. **Develop & Commit**: Make changes and commit using conventional commits
+2. **Automatic PR Creation**: release-please analyzes commits and
+   creates/updates a "Release PR"
+3. **Review Release PR**: The PR shows version bumps and changelog entries
+   for affected packages
+4. **Merge to Publish**: Merging the Release PR triggers automatic publishing
+   to npm and JSR
+
+#### Release PR
+
+When commits are pushed to `main`, release-please automatically:
+
+-   Calculates version bumps based on conventional commits
+-   Updates `package.json` and `jsr.json` versions
+-   Generates/updates `CHANGELOG.md` for each package
+-   Updates `.release-please-manifest.json`
+-   Creates or updates a single Release PR with all changes
+
+The Release PR title follows the pattern: `chore(main): release packages`
+
+#### Publishing Workflow
+
+When the Release PR is merged:
+
+1. **Build**: All packages are built using Nx
+2. **npm Publishing**: Packages are published to npm with provenance
+   attestation (OIDC authentication)
+3. **JSR Publishing**: Packages are published to JSR in dependency order
+   (OIDC authentication)
+4. **GitHub Releases**: release-please creates GitHub releases with changelogs
+   and tags
+
+**Important**: Both npm and JSR use OIDC Trusted Publishers, so no
+secrets/tokens are needed in the repository.
+
+#### Dependency Order
+
+JSR packages are published in the correct order to respect dependencies:
+
+1. `is-odd` (no dependencies)
+2. `react-hooks` (no dependencies)
+3. `ts-configs` (no dependencies)
+4. `is-even` (depends on `is-odd`)
+5. `react-clean` (depends on `react-hooks`)
+
+This ordering is calculated dynamically using Nx's project graph.
+
+### Adding a New Package
+
+To add a new package to the automated release system:
+
+#### 1. Create Package Structure
+
+```bash
+# Create package directory
+mkdir -p packages/my-package
+
+# Initialize package.json
+cd packages/my-package
+```
+
+#### 2. Configure package.json
+
+```json
+{
+    "name": "@m0n0lab/my-package",
+    "version": "0.0.0",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/pabloimrik17/monolab.git",
+        "directory": "packages/my-package"
+    },
+    "engines": {
+        "node": "24.11.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org/"
+    }
+}
+```
+
+**Important**: Set initial version to `0.0.0` (release-please will bump it
+on first release).
+
+#### 3. Create jsr.json
+
+```json
+{
+    "name": "@m0n0lab/my-package",
+    "version": "0.0.0",
+    "exports": "./src/index.ts"
+}
+```
+
+#### 4. Update release-please-config.json
+
+Add your package to the `packages` section:
+
+```json
+{
+    "packages": {
+        "packages/my-package": {
+            "extra-files": ["jsr.json"]
+        }
+    }
+}
+```
+
+This ensures both `package.json` and `jsr.json` versions stay
+synchronized.
+
+#### 5. Update .release-please-manifest.json
+
+Add the initial version:
+
+```json
+{
+    "packages/my-package": "0.0.0"
+}
+```
+
+#### 6. Configure Nx Project
+
+Create or update `packages/my-package/project.json`:
+
+```json
+{
+    "name": "@m0n0lab/my-package",
+    "sourceRoot": "packages/my-package/src",
+    "projectType": "library",
+    "tags": ["type:library"]
+}
+```
+
+#### 7. First Release
+
+1. Commit your new package with a conventional commit:
+
+    ```bash
+    git add .
+    git commit -m "feat(my-package): add new package"
+    git push origin develop
+    ```
+
+2. Merge to `main` branch
+
+3. Wait for release-please to create a Release PR
+
+4. Review and merge the Release PR to publish
+
+### Manual Recovery Procedures
+
+If publishing fails, follow these recovery steps:
+
+#### Failed npm Publish
+
+If npm publish fails but JSR succeeds:
+
+```bash
+# 1. Verify the package version that failed
+cat packages/<package>/package.json
+
+# 2. Build the package
+pnpm exec nx run @m0n0lab/<package>:build
+
+# 3. Manually publish to npm
+cd packages/<package>
+npm publish --provenance --access public
+```
+
+**Note**: You may need to configure npm authentication locally if OIDC fails.
+
+#### Failed JSR Publish
+
+If JSR publish fails but npm succeeds:
+
+```bash
+# 1. Verify the package version that failed
+cat packages/<package>/jsr.json
+
+# 2. Build the package
+pnpm exec nx run @m0n0lab/<package>:build
+
+# 3. Manually publish to JSR
+cd packages/<package>
+npx jsr publish
+```
+
+#### Version Mismatch Recovery
+
+If `package.json` and `jsr.json` versions get out of sync:
+
+```bash
+# 1. Check current versions
+cat packages/<package>/package.json | grep version
+cat packages/<package>/jsr.json | grep version
+
+# 2. Manually align versions (choose the higher version)
+# Edit both files to match
+
+# 3. Commit the fix
+git add packages/<package>/{package,jsr}.json
+git commit -m "fix(<package>): align versions"
+git push
+
+# 4. Wait for next release cycle to normalize
+```
+
+#### Complete Publish Failure
+
+If both npm and JSR fail:
+
+1. **Check workflow logs**: Review GitHub Actions logs for the specific
+   error
+2. **Verify authentication**: Ensure OIDC Trusted Publishers are configured
+   correctly in npm and JSR
+3. **Check package validity**: Run local builds and tests
+4. **Manual publish**: Follow the steps above for both registries
+5. **Update manifest**: Manually update `.release-please-manifest.json` to
+   reflect published versions
+
+#### Rollback a Release
+
+If you need to unpublish a bad release:
+
+**npm** (only within 72 hours):
+
+```bash
+npm unpublish @m0n0lab/<package>@<version>
+```
+
+**JSR** (contact JSR support or publish a patch version):
+
+```bash
+# JSR doesn't support unpublishing, so publish a fixed version
+git revert <bad-commit>
+git commit -m "fix(<package>): revert breaking change"
+# Follow normal release process
+```
+
+**Important**: Avoid unpublishing if possible. Instead, publish a new
+patch/minor version with the fix.
