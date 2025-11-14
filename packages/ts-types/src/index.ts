@@ -1,5 +1,5 @@
 /**
- * @monolab/types - Shared TypeScript type definitions for MonoLab packages
+ * @monolab/ts-types - Shared TypeScript type definitions for MonoLab packages
  * @packageDocumentation
  */
 
@@ -17,3 +17,6 @@ export type { NonNullish, Nullish } from "./nullish.ts";
 
 // Strict type utilities
 export type { StrictOmit } from "./strict-omit.ts";
+
+// String key utilities
+export type { StringKeyOf } from "./string-keyof.ts";
