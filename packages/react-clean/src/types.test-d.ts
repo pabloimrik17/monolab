@@ -1,5 +1,5 @@
 import { expectTypeOf } from "vitest";
-import type { StrictOmit } from "./types.js";
+import type { StrictOmit } from "./types.ts";
 
 interface User {
     id: string;

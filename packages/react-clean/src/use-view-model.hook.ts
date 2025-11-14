@@ -1,6 +1,7 @@
 import { useDidMount, useWillUnmount } from "@m0n0lab/react-hooks";
+import type { Nullable } from "@m0n0lab/ts-types";
 import { useRef } from "react";
-import { BaseViewModel } from "./base.viewmodel.js";
+import { BaseViewModel } from "./base.viewmodel.ts";
 
 /**
  * A custom React hook for managing lifecycle events of a `BaseViewModel` instance.
@@ -18,7 +19,7 @@ import { BaseViewModel } from "./base.viewmodel.js";
 export const useViewModel = <T extends BaseViewModel>(
     viewModel: () => T
 ): T => {
-    const instanceRef = useRef<T | null>(null);
+    const instanceRef = useRef<Nullable<T>>(null);
     if (instanceRef.current === null) {
         instanceRef.current = viewModel();
     }
