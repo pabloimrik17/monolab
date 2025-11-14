@@ -30,9 +30,9 @@
             "changelog-path": "CHANGELOG.md",
             "extra-files": ["jsr.json"]
         },
-        "packages/types": {
+        "packages/ts-types": {
             "release-type": "node",
-            "package-name": "@m0n0lab/types",
+            "package-name": "@m0n0lab/ts-types",
             "changelog-path": "CHANGELOG.md",
             "extra-files": ["jsr.json"]
         }

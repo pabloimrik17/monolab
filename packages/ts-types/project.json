@@ -1,6 +1,6 @@
 {
-    "name": "@monolab/types",
+    "name": "@monolab/ts-types",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/types/src",
+    "sourceRoot": "packages/ts-types/src",
     "projectType": "library"
 }

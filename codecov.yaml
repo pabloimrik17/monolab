@@ -47,12 +47,12 @@ coverage:
                 flags:
                     - ts-configs
 
-            types:
+            ts-types:
                 target: auto
                 threshold: 2%
                 informational: false
                 flags:
-                    - types
+                    - ts-types
 
         # Patch coverage (new/modified code in PRs)
         patch:
@@ -97,12 +97,12 @@ coverage:
                 flags:
                     - ts-configs
 
-            types:
+            ts-types:
                 target: 50%
                 threshold: 10%
                 informational: false
                 flags:
-                    - types
+                    - ts-types
 
 # Files and directories to ignore from coverage calculations
 ignore:
@@ -155,7 +155,7 @@ flags:
             - packages/ts-configs/
         carryforward: true
 
-    types:
+    ts-types:
         paths:
-            - packages/types/
+            - packages/ts-types/
         carryforward: true

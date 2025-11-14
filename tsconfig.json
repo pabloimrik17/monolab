@@ -19,7 +19,7 @@
             "path": "./packages/ts-configs"
         },
         {
-            "path": "./packages/types"
+            "path": "./packages/ts-types"
         }
     ]
 }

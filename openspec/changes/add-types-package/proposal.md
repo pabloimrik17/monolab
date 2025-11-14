@@ -1,6 +1,6 @@
-# Add @monolab/types Package
+# Add @monolab/ts-types Package
 
-**Linear Issue:** [MON-51: Setup @monolab/types package structure](https://linear.app/monolab/issue/MON-51/setup-monolabtypes-package-structure)
+**Linear Issue:** [MON-51: Setup @monolab/ts-types package structure](https://linear.app/monolab/issue/MON-51/setup-monolabtypes-package-structure)
 
 ## Why
 
@@ -8,7 +8,7 @@ MonoLab needs a centralized package for sharing custom TypeScript types across a
 
 ## What Changes
 
-- Create new `@monolab/types` package under `packages/types/`
+- Create new `@monolab/ts-types` package under `packages/ts-types/`
 - Setup complete package structure: `package.json`, `jsr.json`, TypeScript configuration, build system, and exports
 - Configure TypeScript compilation with declaration files
 - Setup ESM-only exports following project conventions
@@ -20,6 +20,6 @@ MonoLab needs a centralized package for sharing custom TypeScript types across a
 
 - **Affected specs**: New `types-package` capability
 - **Affected code**:
-  - New directory: `packages/types/`
+  - New directory: `packages/ts-types/`
   - Workspace configuration may need updates for new package
-- **Future packages**: Can import shared types from `@monolab/types`
+- **Future packages**: Can import shared types from `@monolab/ts-types`

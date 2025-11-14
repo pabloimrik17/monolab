@@ -1,8 +1,8 @@
-# @m0n0lab/types
+# @m0n0lab/ts-types
 
-[![npm version](https://img.shields.io/npm/v/@m0n0lab/types.svg)](https://www.npmjs.com/package/@m0n0lab/types)
-[![types coverage](https://codecov.io/gh/pabloimrik17/monolab/badge.svg?flag=types)](https://codecov.io/gh/pabloimrik17/monolab?flag=types)
-[![types bundle](https://codecov.io/gh/pabloimrik17/monolab/graph/bundle/types/badge.svg)](https://codecov.io/gh/pabloimrik17/monolab/bundle/types)
+[![npm version](https://img.shields.io/npm/v/@m0n0lab/ts-types.svg)](https://www.npmjs.com/package/@m0n0lab/ts-types)
+[![ts-types coverage](https://codecov.io/gh/pabloimrik17/monolab/badge.svg?flag=ts-types)](https://codecov.io/gh/pabloimrik17/monolab?flag=ts-types)
+[![ts-types bundle](https://codecov.io/gh/pabloimrik17/monolab/graph/bundle/ts-types/badge.svg)](https://codecov.io/gh/pabloimrik17/monolab/bundle/ts-types)
 
 A centralized package for sharing custom TypeScript type definitions across all MonoLab projects.
 
@@ -19,19 +19,19 @@ A centralized package for sharing custom TypeScript type definitions across all 
 ### npm
 
 ```bash
-npm install @m0n0lab/types
+npm install @m0n0lab/ts-types
 ```
 
 ### pnpm
 
 ```bash
-pnpm add @m0n0lab/types
+pnpm add @m0n0lab/ts-types
 ```
 
 ### JSR
 
 ```bash
-npx jsr add @m0n0lab/types
+npx jsr add @m0n0lab/ts-types
 ```
 
 ## Usage
@@ -41,8 +41,8 @@ npx jsr add @m0n0lab/types
 Handle nullable values with type-safe utilities:
 
 ```typescript
-import type { Nullable, NonNullable } from "@m0n0lab/types";
-import { isNullable, isNonNullable } from "@m0n0lab/types";
+import type { Nullable, NonNullable } from "@m0n0lab/ts-types";
+import { isNullable, isNonNullable } from "@m0n0lab/ts-types";
 
 // Type definitions
 type NullableString = Nullable<string>; // string | null
@@ -64,8 +64,8 @@ const validItems = items.filter(isNonNullable); // string[]
 Work with optional values safely:
 
 ```typescript
-import type { Undefinable, NonUndefinable } from "@m0n0lab/types";
-import { isUndefinable, isNonUndefinable } from "@m0n0lab/types";
+import type { Undefinable, NonUndefinable } from "@m0n0lab/ts-types";
+import { isUndefinable, isNonUndefinable } from "@m0n0lab/ts-types";
 
 // Type definitions
 type OptionalString = Undefinable<string>; // string | undefined
@@ -83,8 +83,8 @@ if (isNonUndefinable(value)) {
 Handle both null and undefined:
 
 ```typescript
-import type { Nullish, NonNullish } from "@m0n0lab/types";
-import { isNullish, isNonNullish } from "@m0n0lab/types";
+import type { Nullish, NonNullish } from "@m0n0lab/ts-types";
+import { isNullish, isNonNullish } from "@m0n0lab/ts-types";
 
 // Type definitions
 type MaybeString = Nullish<string>; // string | null | undefined
@@ -111,7 +111,7 @@ const validItems = items.filter(isNonNullish); // string[]
 Omit object properties with compile-time safety:
 
 ```typescript
-import type { StrictOmit } from "@m0n0lab/types";
+import type { StrictOmit } from "@m0n0lab/ts-types";
 
 interface User {
     id: string;
