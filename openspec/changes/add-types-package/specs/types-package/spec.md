@@ -4,13 +4,13 @@
 
 ### Requirement: Package Structure
 
-The `@monolab/types` package SHALL provide a standard library structure for sharing TypeScript type definitions across the monorepo.
+The `@monolab/ts-types` package SHALL provide a standard library structure for sharing TypeScript type definitions across the monorepo.
 
 #### Scenario: Package directory layout
 
 - **WHEN** the package is created
-- **THEN** it SHALL have directory structure: `packages/types/src/` for source code
-- **AND** it SHALL have `packages/types/dist/` for compiled output
+- **THEN** it SHALL have directory structure: `packages/ts-types/src/` for source code
+- **AND** it SHALL have `packages/ts-types/dist/` for compiled output
 - **AND** it SHALL include `project.json` for Nx integration without Nx plugins
 
 #### Scenario: Source organization
@@ -82,7 +82,7 @@ The package SHALL include proper versioning, authoring, and publishing configura
 #### Scenario: Package identification
 
 - **WHEN** the package is initialized
-- **THEN** `package.json` SHALL have name `@monolab/types`
+- **THEN** `package.json` SHALL have name `@monolab/ts-types`
 - **AND** initial version SHALL be `0.1.0`
 - **AND** author field SHALL be set to `Pablo F.G.`
 
@@ -102,7 +102,7 @@ The package SHALL be configured for publishing to JSR (JavaScript Registry) with
 
 - **WHEN** setting up JSR publishing
 - **THEN** a `jsr.json` file SHALL exist in package root
-- **AND** it SHALL have name `@monolab/types`
+- **AND** it SHALL have name `@monolab/ts-types`
 - **AND** version SHALL match `package.json` version
 - **AND** `license` field SHALL be set to `MIT`
 

@@ -149,7 +149,7 @@ jobs:
                   echo "$AFFECTED_PROJECTS"
 
                   # Check each package and set boolean output
-                  for package in react-hooks react-clean is-even is-odd ts-configs; do
+                  for package in react-hooks react-clean is-even is-odd ts-configs ts-types; do
                     if echo "$AFFECTED_PROJECTS" | grep -q "@m0n0lab/$package"; then
                       echo "$package=true" >> $GITHUB_OUTPUT
                       echo "✓ $package is affected"
@@ -206,6 +206,15 @@ jobs:
                   token: ${{ secrets.CODECOV_TOKEN }}
                   fail_ci_if_error: false
 
+            - name: 📊 Upload coverage to Codecov - ts-types
+              uses: codecov/codecov-action@v5
+              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.ts-types == 'true') }}
+              with:
+                  files: ./packages/ts-types/coverage/lcov.info
+                  flags: ts-types
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  fail_ci_if_error: false
+
             # Upload test results per package with individual flags
             # Critical: runs even if tests fail (via !cancelled()) to capture failure data for Test Analytics
             # In PRs: only upload affected packages. On main/develop/pre: upload all packages for baseline
@@ -254,6 +263,15 @@ jobs:
                   flags: ts-configs
                   fail_ci_if_error: false
 
+            - name: 📊 Upload test results to Codecov - ts-types
+              uses: codecov/test-results-action@v1
+              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.ts-types == 'true') }}
+              with:
+                  files: ./packages/ts-types/test-results.junit.xml
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  flags: ts-types
+                  fail_ci_if_error: false
+
             - name: 🏗 Execute build checks
               # Builds all packages; Nx cache optimizes by skipping rebuild of non-affected packages
               run: pnpm exec nx run-many -t build
@@ -287,7 +305,7 @@ jobs:
               run: |
                   # Analyze each published package
                   # Note: nx run-many with Nx cache avoids redundant rebuilds of non-affected packages
-                  for package in react-hooks react-clean is-even is-odd ts-configs; do
+                  for package in react-hooks react-clean is-even is-odd ts-configs ts-types; do
                     if [ -d "packages/$package/dist" ]; then
                       echo "📦 Analyzing bundle for $package..."
                       pnpm exec bundle-analyzer packages/$package/dist \

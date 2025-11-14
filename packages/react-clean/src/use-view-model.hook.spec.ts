@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { BaseViewModel } from "./base.viewmodel.js";
-import { useViewModel } from "./use-view-model.hook.js";
+import { BaseViewModel } from "./base.viewmodel.ts";
+import { useViewModel } from "./use-view-model.hook.ts";
 
 class TestViewModel extends BaseViewModel {
     override didMount = vi.fn().mockResolvedValue(undefined);

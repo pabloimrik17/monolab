@@ -58,6 +58,7 @@
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "0.18.2",
+        "@m0n0lab/ts-types": "workspace:*",
         "@testing-library/react": "catalog:",
         "@types/react": "18.3.26",
         "inversify": "7.8.1",

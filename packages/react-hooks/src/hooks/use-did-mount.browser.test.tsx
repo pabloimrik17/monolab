@@ -1,7 +1,7 @@
 import { render, waitFor } from "@testing-library/react";
 import { useState } from "react";
 import { beforeAll, expect, test } from "vitest";
-import { useDidMount } from "./use-did-mount.hook.js";
+import { useDidMount } from "./use-did-mount.hook.ts";
 
 // Verify browser environment is properly configured
 beforeAll(() => {

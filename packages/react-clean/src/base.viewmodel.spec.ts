@@ -1,6 +1,6 @@
 import { Subscription } from "rxjs";
 import { describe, expect, it, vi } from "vitest";
-import { BaseViewModel } from "./base.viewmodel.js";
+import { BaseViewModel } from "./base.viewmodel.ts";
 
 // Test concrete implementation since BaseViewModel is abstract
 class TestViewModel extends BaseViewModel {}

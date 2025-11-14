@@ -4,7 +4,7 @@ import { Container, injectable } from "inversify";
 import { useState } from "react";
 import { BehaviorSubject } from "rxjs";
 import { expect, test } from "vitest";
-import { BaseViewModel } from "./base.viewmodel.js";
+import { BaseViewModel } from "./base.viewmodel.ts";
 
 // Concrete ViewModel for testing
 @injectable()

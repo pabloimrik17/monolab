@@ -1,3 +1,3 @@
-export { BaseViewModel } from "./base.viewmodel.js";
-export type { StrictOmit } from "./types.js";
-export { useViewModel } from "./use-view-model.hook.js";
+export { BaseViewModel } from "./base.viewmodel.ts";
+export type { StrictOmit } from "./types.ts";
+export { useViewModel } from "./use-view-model.hook.ts";
