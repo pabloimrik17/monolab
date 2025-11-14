@@ -11,7 +11,7 @@ const config = {
     },
     dashboard: {
         ...baseConfig.dashboard,
-        module: "types",
+        module: "ts-types",
     },
 };
 

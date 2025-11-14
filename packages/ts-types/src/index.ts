@@ -1,5 +1,5 @@
 /**
- * @monolab/ts-types - Shared TypeScript type definitions for MonoLab packages
+ * @m0n0lab/ts-types - Shared TypeScript type definitions for MonoLab packages
  * @packageDocumentation
  */
 

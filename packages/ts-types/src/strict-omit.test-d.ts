@@ -28,7 +28,7 @@ describe("StrictOmit type", () => {
 
     it("should preserve remaining properties with correct types", () => {
         type UserWithoutAge = StrictOmit<User, "age">;
-        expectTypeOf<UserWithoutAge>().toMatchTypeOf<{
+        expectTypeOf<UserWithoutAge>().toEqualTypeOf<{
             id: string;
             name: string;
             email: string;

@@ -34,8 +34,8 @@ The system SHALL provide a `StringKeyof<T>` utility type that extracts only stri
 The StringKeyof type SHALL be exported from the package's main entry point for consumer usage.
 
 #### Scenario: Import from package
-- **GIVEN** the @m0n0lab/types package is installed
-- **WHEN** importing { StringKeyof } from "@m0n0lab/types"
+- **GIVEN** the @m0n0lab/ts-types package is installed
+- **WHEN** importing { StringKeyOf } from "@m0n0lab/ts-types"
 - **THEN** the type is available for use in consuming code
 
 ### Requirement: Type Documentation

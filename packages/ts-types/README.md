@@ -129,6 +129,44 @@ type PublicUser = StrictOmit<User, "email">; // { id: string; name: string }
 type Unsafe = Omit<User, "age">; // No error, less safe
 ```
 
+### StringKeyOf
+
+Extract only string keys from object types, filtering out numeric and symbol keys:
+
+```typescript
+import type { StringKeyOf } from "@m0n0lab/ts-types";
+
+interface MixedKeys {
+    name: string; // string key
+    age: number; // string key
+    42: string; // numeric key
+    [Symbol.iterator]: () => void; // symbol key
+}
+
+// Only extracts string keys
+type OnlyStringKeys = StringKeyOf<MixedKeys>; // "name" | "age"
+
+// Useful for type-safe object key operations
+interface Config {
+    host: string;
+    port: number;
+    debug: boolean;
+}
+
+type ConfigKey = StringKeyOf<Config>; // "host" | "port" | "debug"
+
+// Works with Record types
+type StringRecord = Record<string, number>;
+type RecordKeys = StringKeyOf<StringRecord>; // string
+
+// Returns never for objects with no string keys
+interface OnlyNumeric {
+    0: string;
+    1: number;
+}
+type NoKeys = StringKeyOf<OnlyNumeric>; // never
+```
+
 ## Contributing
 
 Contributions are welcome! Please read our [contributing guidelines](../../CONTRIBUTING.md) before submitting a pull request.

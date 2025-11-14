@@ -68,7 +68,7 @@ describe("StringKeyOf type", () => {
     });
 
     it("should work with empty objects", () => {
-        interface Empty {}
+        type Empty = {};
 
         type EmptyKeys = StringKeyOf<Empty>;
         expectTypeOf<EmptyKeys>().toEqualTypeOf<never>();
