@@ -4,6 +4,13 @@
 
 -   Updated @monolab/is-odd to 2.0.0
 
+## [2.1.3](https://github.com/pabloimrik17/monolab/compare/is-even-v2.1.2...is-even-v2.1.3) (2025-11-15)
+
+
+### Bug Fixes
+
+* remove --allow-dirty and --no-git-checks flags ([68c1518](https://github.com/pabloimrik17/monolab/commit/68c1518df82597b4a0ff3fbd5b75282878cde548))
+
 ## [2.1.2](https://github.com/pabloimrik17/monolab/compare/is-even-v2.1.1...is-even-v2.1.2) (2025-11-15)
 
 
