@@ -6,5 +6,10 @@
         "./packages/react-hooks",
         "./packages/ts-configs",
         "./packages/ts-types"
-    ]
+    ],
+    "fmt": {
+        "files": {
+            "exclude": ["**/*"]
+        }
+    }
 }
