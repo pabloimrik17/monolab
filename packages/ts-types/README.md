@@ -15,6 +15,7 @@ A centralized package for sharing custom TypeScript type definitions across all 
 -   🔒 Type-safe and reliable
 -   📚 Comprehensive documentation
 -   🚀 Production ready library
+-   📘 Well documented
 
 ## Installation
 
