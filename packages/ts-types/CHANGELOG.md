@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.6](https://github.com/pabloimrik17/monolab/compare/ts-types-v1.0.5...ts-types-v1.0.6) (2025-11-15)
+
+
+### Bug Fixes
+
+* **@m0n0lab/ts-types:** fix nx package name ([d885bd6](https://github.com/pabloimrik17/monolab/commit/d885bd6badb6d1d3289ebfd27dfbf00f20599b54))
+* standardize package naming to [@m0n0lab](https://github.com/m0n0lab) ([ee735c0](https://github.com/pabloimrik17/monolab/commit/ee735c0816789529377c4fde8886ac9225161b89))
+
 ## [1.0.5](https://github.com/pabloimrik17/monolab/compare/ts-types-v1.0.4...ts-types-v1.0.5) (2025-11-15)
 
 

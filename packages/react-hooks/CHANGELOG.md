@@ -8,6 +8,14 @@
 
 -   Pablo F. Guerra @pabloimrik17
 
+## [1.1.4](https://github.com/pabloimrik17/monolab/compare/react-hooks-v1.1.3...react-hooks-v1.1.4) (2025-11-15)
+
+
+### Bug Fixes
+
+* **@m0n0lab/react-hooks:** format ([b310656](https://github.com/pabloimrik17/monolab/commit/b3106563bf1418da22995110e01e0d1791b25158))
+* standardize package naming to [@m0n0lab](https://github.com/m0n0lab) ([ee735c0](https://github.com/pabloimrik17/monolab/commit/ee735c0816789529377c4fde8886ac9225161b89))
+
 ## [1.1.3](https://github.com/pabloimrik17/monolab/compare/react-hooks-v1.1.2...react-hooks-v1.1.3) (2025-11-15)
 
 

@@ -4,6 +4,13 @@
 
 -   Updated @monolab/is-odd to 2.0.0
 
+## [2.1.4](https://github.com/pabloimrik17/monolab/compare/is-even-v2.1.3...is-even-v2.1.4) (2025-11-15)
+
+
+### Bug Fixes
+
+* standardize package naming to [@m0n0lab](https://github.com/m0n0lab) ([ee735c0](https://github.com/pabloimrik17/monolab/commit/ee735c0816789529377c4fde8886ac9225161b89))
+
 ## [2.1.3](https://github.com/pabloimrik17/monolab/compare/is-even-v2.1.2...is-even-v2.1.3) (2025-11-15)
 
 

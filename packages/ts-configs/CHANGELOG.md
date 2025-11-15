@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.4](https://github.com/pabloimrik17/monolab/compare/ts-configs-v1.1.3...ts-configs-v1.1.4) (2025-11-15)
+
+
+### Bug Fixes
+
+* standardize package naming to [@m0n0lab](https://github.com/m0n0lab) ([ee735c0](https://github.com/pabloimrik17/monolab/commit/ee735c0816789529377c4fde8886ac9225161b89))
+
 ## [1.1.3](https://github.com/pabloimrik17/monolab/compare/ts-configs-v1.1.2...ts-configs-v1.1.3) (2025-11-15)
 
 
