@@ -5,6 +5,15 @@ const config = {
     commandRunner: {
         command: "pnpm run test:unit",
     },
+    mutate: [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "!src/**/*.spec.ts",
+        "!src/**/*.spec.tsx",
+        "!src/**/*.test.ts",
+        "!src/**/*.test.tsx",
+        "!src/**/*.test-d.ts",
+    ],
     ignorePatterns: [
         "target/**",
         "project/**",
