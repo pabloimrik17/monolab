@@ -4,6 +4,13 @@
 
 -   Updated @monolab/is-odd to 2.0.0
 
+## [2.1.2](https://github.com/pabloimrik17/monolab/compare/is-even-v2.1.1...is-even-v2.1.2) (2025-11-15)
+
+
+### Documentation
+
+* add well documented badge to all packages ([46b624a](https://github.com/pabloimrik17/monolab/commit/46b624a9d68aa17f362320ace4095d86c2f84662))
+
 ## [2.1.1](https://github.com/pabloimrik17/monolab/compare/is-even-v2.1.0...is-even-v2.1.1) (2025-11-15)
 
 
