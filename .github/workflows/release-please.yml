@@ -75,36 +75,6 @@ jobs:
                   echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
                   echo "Released packages: $PACKAGES"
 
-            - name: Build and publish packages to npm
-              run: |
-                  # Get list of packages
-                  PACKAGES="${{ steps.released-packages.outputs.packages }}"
-
-                  # First, build and publish all packages to npm
-                  for PKG_DIR in $PACKAGES; do
-                    PKG_PATH="packages/$PKG_DIR"
-                    PACKAGE_NAME="@m0n0lab/$PKG_DIR"
-
-                    if [ ! -d "$PKG_PATH" ]; then
-                      echo "Package directory $PKG_PATH not found, skipping..."
-                      continue
-                    fi
-
-                    echo "Processing package: $PACKAGE_NAME"
-
-                    # Build the package using Nx (NX_NO_CLOUD disables cloud)
-                    echo "Building $PACKAGE_NAME..."
-                    pnpm nx run $PKG_DIR:build
-
-                    # Publish to npm using pnpm (transforms workspace:* to semver)
-                    echo "Publishing $PACKAGE_NAME to npm..."
-                    cd $PKG_PATH
-                    pnpm publish --access public --no-git-checks
-                    cd ../..
-
-                    echo "Successfully published $PACKAGE_NAME to npm"
-                  done
-
             - name: Publish packages to JSR
               run: |
                   # Get list of packages that were released
@@ -135,7 +105,7 @@ jobs:
 
                       echo "Publishing $PACKAGE_NAME to JSR..."
                       cd $PKG_PATH
-                      deno publish --allow-dirty
+                      deno publish
                       cd ../..
 
                       echo "Successfully published $PACKAGE_NAME to JSR"
@@ -151,11 +121,41 @@ jobs:
 
                       echo "Publishing standalone package $PACKAGE_NAME to JSR..."
                       cd $PKG_PATH
-                      deno publish --allow-dirty
+                      deno publish
                       cd ../..
 
                       echo "Successfully published $PACKAGE_NAME to JSR"
                     fi
+                  done
+
+            - name: Build and publish packages to npm
+              run: |
+                  # Get list of packages
+                  PACKAGES="${{ steps.released-packages.outputs.packages }}"
+
+                  # Build and publish all packages to npm
+                  for PKG_DIR in $PACKAGES; do
+                    PKG_PATH="packages/$PKG_DIR"
+                    PACKAGE_NAME="@m0n0lab/$PKG_DIR"
+
+                    if [ ! -d "$PKG_PATH" ]; then
+                      echo "Package directory $PKG_PATH not found, skipping..."
+                      continue
+                    fi
+
+                    echo "Processing package: $PACKAGE_NAME"
+
+                    # Build the package using Nx (NX_NO_CLOUD disables cloud)
+                    echo "Building $PACKAGE_NAME..."
+                    pnpm nx run $PKG_DIR:build
+
+                    # Publish to npm using pnpm (transforms workspace:* to semver)
+                    echo "Publishing $PACKAGE_NAME to npm..."
+                    cd $PKG_PATH
+                    pnpm publish --access public
+                    cd ../..
+
+                    echo "Successfully published $PACKAGE_NAME to npm"
                   done
 
             - name: Summary

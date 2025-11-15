@@ -42,7 +42,6 @@
         "@commitlint/config-conventional": "19.8.1",
         "@commitlint/types": "19.8.1",
         "@eslint/js": "9.32.0",
-        "@fission-ai/openspec": "0.14.0",
         "@nx/js": "22.0.2",
         "@stryker-mutator/core": "9.3.0",
         "@stryker-mutator/typescript-checker": "9.3.0",
@@ -57,7 +56,6 @@
         "@vitest/browser-playwright": "4.0.6",
         "@vitest/coverage-v8": "catalog:",
         "@vitest/ui": "catalog:",
-        "claude-flow": "2.7.31",
         "eslint": "9.32.0",
         "eslint-config-prettier": "10.1.8",
         "husky": "9.1.7",
@@ -86,10 +84,17 @@
         "pnpm": "10.19.0"
     },
     "devEngines": {
-        "runtime": {
-            "name": "node",
-            "version": "24.11.0",
-            "onFail": "download"
-        }
+        "runtime": [
+            {
+                "name": "deno",
+                "version": "2.5.6",
+                "onFail": "download"
+            },
+            {
+                "name": "node",
+                "version": "24.11.0",
+                "onFail": "download"
+            }
+        ]
     }
 }
