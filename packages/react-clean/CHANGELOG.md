@@ -15,6 +15,14 @@
 
 -   Pablo F. Guerra @pabloimrik17
 
+## [3.1.4](https://github.com/pabloimrik17/monolab/compare/react-clean-v3.1.3...react-clean-v3.1.4) (2025-11-15)
+
+
+### Bug Fixes
+
+* **@m0n0lab/react-clean:** format ([f533ef6](https://github.com/pabloimrik17/monolab/commit/f533ef61e07937d416c889f6e0192f1d9311a5f2))
+* standardize package naming to [@m0n0lab](https://github.com/m0n0lab) ([ee735c0](https://github.com/pabloimrik17/monolab/commit/ee735c0816789529377c4fde8886ac9225161b89))
+
 ## [3.1.3](https://github.com/pabloimrik17/monolab/compare/react-clean-v3.1.2...react-clean-v3.1.3) (2025-11-15)
 
 
