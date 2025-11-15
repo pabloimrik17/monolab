@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/pabloimrik17/monolab/compare/ts-configs-v1.1.0...ts-configs-v1.1.1) (2025-11-15)
+
+
+### Documentation
+
+* add production ready badge to all packages ([08ad79c](https://github.com/pabloimrik17/monolab/commit/08ad79c8936a069ec9daae40a314f496fecf0560))
+
 ## [1.1.0](https://github.com/pabloimrik17/monolab/compare/ts-configs-v1.0.2...ts-configs-v1.1.0) (2025-11-15)
 
 
