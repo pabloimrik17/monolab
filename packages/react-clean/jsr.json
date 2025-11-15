@@ -1,9 +1,0 @@
-{
-    "name": "@m0n0lab/react-clean",
-    "version": "3.0.2",
-    "license": "MIT",
-    "exports": "./src/index.ts",
-    "imports": {
-        "@m0n0lab/react-hooks": "jsr:@m0n0lab/react-hooks@^1.0.0"
-    }
-}
