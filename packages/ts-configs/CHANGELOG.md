@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/pabloimrik17/monolab/compare/ts-configs-v1.1.2...ts-configs-v1.1.3) (2025-11-15)
+
+
+### Bug Fixes
+
+* remove --allow-dirty and --no-git-checks flags ([68c1518](https://github.com/pabloimrik17/monolab/commit/68c1518df82597b4a0ff3fbd5b75282878cde548))
+
 ## [1.1.2](https://github.com/pabloimrik17/monolab/compare/ts-configs-v1.1.1...ts-configs-v1.1.2) (2025-11-15)
 
 

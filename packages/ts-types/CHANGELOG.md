@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.5](https://github.com/pabloimrik17/monolab/compare/ts-types-v1.0.4...ts-types-v1.0.5) (2025-11-15)
+
+
+### Bug Fixes
+
+* remove --allow-dirty and --no-git-checks flags ([68c1518](https://github.com/pabloimrik17/monolab/commit/68c1518df82597b4a0ff3fbd5b75282878cde548))
+
 ## [1.0.4](https://github.com/pabloimrik17/monolab/compare/ts-types-v1.0.3...ts-types-v1.0.4) (2025-11-15)
 
 
