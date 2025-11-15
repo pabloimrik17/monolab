@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/pabloimrik17/monolab/compare/ts-types-v1.0.3...ts-types-v1.0.4) (2025-11-15)
+
+
+### Documentation
+
+* add well documented badge to all packages ([46b624a](https://github.com/pabloimrik17/monolab/commit/46b624a9d68aa17f362320ace4095d86c2f84662))
+
 ## [1.0.3](https://github.com/pabloimrik17/monolab/compare/ts-types-v1.0.2...ts-types-v1.0.3) (2025-11-15)
 
 

@@ -1,9 +1,9 @@
 {
-    "packages/is-even": "2.1.1",
-    "packages/is-odd": "5.1.1",
-    "packages/react-clean": "3.1.1",
-    "packages/react-hooks": "1.1.1",
-    "packages/ts-configs": "1.1.1",
+    "packages/is-even": "2.1.2",
+    "packages/is-odd": "5.1.2",
+    "packages/react-clean": "3.1.2",
+    "packages/react-hooks": "1.1.2",
+    "packages/ts-configs": "1.1.2",
     "packages/types": "0.1.0",
-    "packages/ts-types": "1.0.3"
+    "packages/ts-types": "1.0.4"
 }
