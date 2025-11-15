@@ -4,7 +4,7 @@
 [![ts-types coverage](https://codecov.io/gh/pabloimrik17/monolab/badge.svg?flag=ts-types)](https://codecov.io/gh/pabloimrik17/monolab?flag=ts-types)
 [![ts-types bundle](https://codecov.io/gh/pabloimrik17/monolab/graph/bundle/ts-types/badge.svg)](https://codecov.io/gh/pabloimrik17/monolab/bundle/ts-types)
 
-A centralized package for sharing custom TypeScript type definitions and utilities across all MonoLab projects.
+A centralized package for sharing custom TypeScript type definitions, utilities, and type guards across all Monolab projects.
 
 ## Features
 

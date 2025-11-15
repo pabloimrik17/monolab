@@ -4,7 +4,7 @@
 [![ts-configs coverage](https://codecov.io/gh/pabloimrik17/monolab/badge.svg?flag=ts-configs)](https://codecov.io/gh/pabloimrik17/monolab?flag=ts-configs)
 [![ts-configs bundle](https://codecov.io/gh/pabloimrik17/monolab/graph/bundle/ts-configs/badge.svg)](https://codecov.io/gh/pabloimrik17/monolab/bundle/ts-configs)
 
-Shared TypeScript configurations for modern web and Node.js projects. Battle-tested and production-ready.
+Shared TypeScript configurations for modern web and Node.js projects. Battle-tested, production-ready, and maximum type safety.
 
 ## Features
 
