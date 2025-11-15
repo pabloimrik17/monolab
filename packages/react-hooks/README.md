@@ -4,7 +4,7 @@
 [![react-hooks coverage](https://codecov.io/gh/pabloimrik17/monolab/badge.svg?flag=react-hooks)](https://codecov.io/gh/pabloimrik17/monolab?flag=react-hooks)
 [![react-hooks bundle](https://codecov.io/gh/pabloimrik17/monolab/graph/bundle/react-hooks/badge.svg)](https://codecov.io/gh/pabloimrik17/monolab/bundle/react-hooks)
 
-A collection of React lifecycle hooks for functional components. Simplify your React development with clean, reusable hooks.
+A collection of React lifecycle hooks for functional components. Simplify your React development with clean, reusable, and well-tested hooks.
 
 ## Features
 

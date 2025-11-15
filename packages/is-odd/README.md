@@ -4,7 +4,7 @@
 [![is-odd coverage](https://codecov.io/gh/pabloimrik17/monolab/badge.svg?flag=is-odd)](https://codecov.io/gh/pabloimrik17/monolab?flag=is-odd)
 [![is-odd bundle](https://codecov.io/gh/pabloimrik17/monolab/graph/bundle/is-odd/badge.svg)](https://codecov.io/gh/pabloimrik17/monolab/bundle/is-odd)
 
-A simple, well-tested utility to check if a number is odd.
+A simple, well-tested utility to check if a number is odd. Perfect for number validation, mathematical operations, and conditional logic.
 
 ## Features
 
