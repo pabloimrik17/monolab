@@ -1,6 +1,6 @@
 {
     "name": "@m0n0lab/is-odd",
-    "version": "5.1.1",
+    "version": "5.1.2",
     "license": "MIT",
     "exports": "./src/index.ts"
 }

@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.2](https://github.com/pabloimrik17/monolab/compare/is-odd-v5.1.1...is-odd-v5.1.2) (2025-11-15)
+
+
+### Documentation
+
+* add well documented badge to all packages ([46b624a](https://github.com/pabloimrik17/monolab/commit/46b624a9d68aa17f362320ace4095d86c2f84662))
+
 ## [5.1.1](https://github.com/pabloimrik17/monolab/compare/is-odd-v5.1.0...is-odd-v5.1.1) (2025-11-15)
 
 

@@ -1,9 +1,12 @@
 {
     "name": "@m0n0lab/react-hooks",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "license": "MIT",
     "exports": "./src/index.ts",
     "compilerOptions": {
-        "lib": ["ES2023", "DOM"]
+        "lib": [
+            "ES2023",
+            "DOM"
+        ]
     }
 }

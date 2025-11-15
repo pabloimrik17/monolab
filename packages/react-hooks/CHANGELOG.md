@@ -8,6 +8,18 @@
 
 -   Pablo F. Guerra @pabloimrik17
 
+## [1.1.2](https://github.com/pabloimrik17/monolab/compare/react-hooks-v1.1.1...react-hooks-v1.1.2) (2025-11-15)
+
+
+### Bug Fixes
+
+* remove --allow-dirty and --no-git-checks flags ([2dc0f39](https://github.com/pabloimrik17/monolab/commit/2dc0f394fb953d4442d70d455e3cc69381e0b374))
+
+
+### Documentation
+
+* add well documented badge to all packages ([46b624a](https://github.com/pabloimrik17/monolab/commit/46b624a9d68aa17f362320ace4095d86c2f84662))
+
 ## [1.1.1](https://github.com/pabloimrik17/monolab/compare/react-hooks-v1.1.0...react-hooks-v1.1.1) (2025-11-15)
 
 
