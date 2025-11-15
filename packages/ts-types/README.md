@@ -13,6 +13,7 @@ A centralized package for sharing custom TypeScript type definitions across all 
 -   📦 Zero runtime dependencies
 -   ⚡ Lightweight and tree-shakeable
 -   🔒 Type-safe and reliable
+-   📚 Comprehensive documentation
 
 ## Installation
 
