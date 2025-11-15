@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.1](https://github.com/pabloimrik17/monolab/compare/is-odd-v5.1.0...is-odd-v5.1.1) (2025-11-15)
+
+
+### Documentation
+
+* add production ready badge to all packages ([08ad79c](https://github.com/pabloimrik17/monolab/commit/08ad79c8936a069ec9daae40a314f496fecf0560))
+
 ## [5.1.0](https://github.com/pabloimrik17/monolab/compare/is-odd-v5.0.4...is-odd-v5.1.0) (2025-11-15)
 
 
