@@ -53,6 +53,11 @@ jobs:
                   cache: "pnpm"
                   registry-url: "https://registry.npmjs.org"
 
+            - name: Setup Deno
+              uses: denoland/setup-deno@v2
+              with:
+                  deno-version: v2.5.6
+
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
@@ -71,8 +76,6 @@ jobs:
                   echo "Released packages: $PACKAGES"
 
             - name: Build and publish packages to npm
-              env:
-                  NPM_CONFIG_PROVENANCE: true
               run: |
                   # Get list of packages
                   PACKAGES="${{ steps.released-packages.outputs.packages }}"
@@ -93,10 +96,10 @@ jobs:
                     echo "Building $PACKAGE_NAME..."
                     pnpm nx run $PKG_DIR:build
 
-                    # Publish to npm with provenance
+                    # Publish to npm using pnpm (transforms workspace:* to semver)
                     echo "Publishing $PACKAGE_NAME to npm..."
                     cd $PKG_PATH
-                    npm publish --access public --provenance
+                    pnpm publish --access public --no-git-checks
                     cd ../..
 
                     echo "Successfully published $PACKAGE_NAME to npm"
@@ -132,7 +135,7 @@ jobs:
 
                       echo "Publishing $PACKAGE_NAME to JSR..."
                       cd $PKG_PATH
-                      npx jsr publish
+                      deno publish --allow-dirty
                       cd ../..
 
                       echo "Successfully published $PACKAGE_NAME to JSR"

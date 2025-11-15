@@ -4,37 +4,37 @@
             "release-type": "node",
             "package-name": "@m0n0lab/is-even",
             "changelog-path": "CHANGELOG.md",
-            "extra-files": ["jsr.json"]
+            "extra-files": ["deno.json"]
         },
         "packages/is-odd": {
             "release-type": "node",
             "package-name": "@m0n0lab/is-odd",
             "changelog-path": "CHANGELOG.md",
-            "extra-files": ["jsr.json"]
+            "extra-files": ["deno.json"]
         },
         "packages/react-clean": {
             "release-type": "node",
             "package-name": "@m0n0lab/react-clean",
             "changelog-path": "CHANGELOG.md",
-            "extra-files": ["jsr.json"]
+            "extra-files": ["deno.json"]
         },
         "packages/react-hooks": {
             "release-type": "node",
             "package-name": "@m0n0lab/react-hooks",
             "changelog-path": "CHANGELOG.md",
-            "extra-files": ["jsr.json"]
+            "extra-files": ["deno.json"]
         },
         "packages/ts-configs": {
             "release-type": "node",
             "package-name": "@m0n0lab/ts-configs",
             "changelog-path": "CHANGELOG.md",
-            "extra-files": ["jsr.json"]
+            "extra-files": ["deno.json"]
         },
         "packages/ts-types": {
             "release-type": "node",
             "package-name": "@m0n0lab/ts-types",
             "changelog-path": "CHANGELOG.md",
-            "extra-files": ["jsr.json"]
+            "extra-files": ["deno.json"]
         }
     },
     "changelog-sections": [
