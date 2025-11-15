@@ -4,9 +4,6 @@
     "license": "MIT",
     "exports": "./src/index.ts",
     "compilerOptions": {
-        "lib": [
-            "ES2023",
-            "DOM"
-        ]
+        "lib": ["ES2023", "DOM"]
     }
 }
