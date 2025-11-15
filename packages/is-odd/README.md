@@ -14,6 +14,7 @@ A simple, well-tested utility to check if a number is odd.
 -   📦 Zero dependencies
 -   ⚡ Lightweight and fast
 -   🔒 Secure and reliable
+-   🚀 Production ready
 
 ## Installation
 

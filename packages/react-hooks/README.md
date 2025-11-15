@@ -6,6 +6,10 @@
 
 A collection of React lifecycle hooks for functional components. Simplify your React development with clean, reusable hooks.
 
+## Features
+
+-   🚀 Production ready
+
 ## Installation
 
 ### npm

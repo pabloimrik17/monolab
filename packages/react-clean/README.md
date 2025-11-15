@@ -6,6 +6,10 @@
 
 MVVM pattern library using Inversify (IoC) and RxJS for reactive state management in React.
 
+## Features
+
+-   🚀 Production ready
+
 ## Installation
 
 ### npm

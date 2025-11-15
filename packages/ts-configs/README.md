@@ -6,6 +6,10 @@
 
 Shared TypeScript configurations for modern web and Node.js projects.
 
+## Features
+
+-   🚀 Production ready
+
 ## Installation
 
 ### npm
