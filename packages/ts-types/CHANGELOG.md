@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/pabloimrik17/monolab/compare/ts-types-v1.0.2...ts-types-v1.0.3) (2025-11-15)
+
+
+### Documentation
+
+* **@m0n0lab/ts-types:** updated README ([f357148](https://github.com/pabloimrik17/monolab/commit/f357148abe1af532fdaea802a61c4a1affa95154))
+
 ## [1.0.2](https://github.com/pabloimrik17/monolab/compare/ts-types-v1.0.1...ts-types-v1.0.2) (2025-11-15)
 
 

@@ -5,5 +5,5 @@
     "packages/react-hooks": "1.1.0",
     "packages/ts-configs": "1.1.0",
     "packages/types": "0.1.0",
-    "packages/ts-types": "1.0.2"
+    "packages/ts-types": "1.0.3"
 }
