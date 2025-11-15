@@ -445,26 +445,62 @@ The Release PR title follows the pattern: `chore(main): release packages`
 
 When the Release PR is merged:
 
-1. **Build**: All packages are built using Nx
-2. **npm Publishing**: Packages are published to npm with provenance
-   attestation (OIDC authentication)
-3. **JSR Publishing**: Packages are published to JSR in dependency order
-   (OIDC authentication)
-4. **GitHub Releases**: release-please creates GitHub releases with changelogs
+1. **JSR Publishing**: Packages are published to JSR first, in dependency order
+    - Uses `deno publish` with Deno workspaces for automatic dependency resolution
+    - Working directory stays clean (no build artifacts yet)
+    - OIDC Trusted Publisher authentication
+2. **npm Publishing**: Packages are built and published to npm
+    - Build generates `dist/` artifacts
+    - Uses `pnpm publish` which automatically transforms `workspace:*` → semver ranges
+    - Provenance attestation via OIDC authentication
+3. **GitHub Releases**: release-please creates GitHub releases with changelogs
    and tags
 
-**Important**: Both npm and JSR use OIDC Trusted Publishers, so no
-secrets/tokens are needed in the repository.
+**Important**:
+
+-   Both npm and JSR use OIDC Trusted Publishers (no secrets/tokens needed)
+-   JSR runs first to keep working directory clean (no `--allow-dirty` flag needed)
+-   pnpm automatically transforms workspace protocol dependencies to proper semver
+-   Both tools run full validation suites (no disabled checks)
+
+#### Workspace Protocol Dependencies
+
+**For Internal Dependencies:**
+
+Use the `workspace:*` protocol in `package.json` for dependencies on other
+monorepo packages:
+
+```json
+{
+    "dependencies": {
+        "@m0n0lab/is-odd": "workspace:*",
+        "@m0n0lab/react-hooks": "workspace:*"
+    }
+}
+```
+
+**Why this works:**
+
+-   **Development**: pnpm links packages locally for fast iteration
+-   **Publishing to npm**: pnpm automatically transforms `workspace:*` →
+    `^X.Y.Z` (published version)
+-   **Publishing to JSR**: Deno workspaces automatically resolve to JSR
+    registry URLs
+-   **No manual updates**: Dependency versions stay in sync automatically
+
+**Important**: Never manually update internal dependency versions - the
+workspace protocol and publishing tools handle this automatically.
 
 #### Dependency Order
 
 JSR packages are published in the correct order to respect dependencies:
 
-1. `is-odd` (no dependencies)
-2. `react-hooks` (no dependencies)
-3. `ts-configs` (no dependencies)
-4. `is-even` (depends on `is-odd`)
-5. `react-clean` (depends on `react-hooks`)
+1. `ts-types` (no internal dependencies)
+2. `is-odd` (no internal dependencies)
+3. `react-hooks` (no internal dependencies)
+4. `ts-configs` (no internal dependencies)
+5. `is-even` (depends on `is-odd`)
+6. `react-clean` (depends on `react-hooks` and `ts-types`)
 
 This ordering is calculated dynamically using Nx's project graph.
 
@@ -507,13 +543,28 @@ cd packages/my-package
 **Important**: Set initial version to `0.0.0` (release-please will bump it
 on first release).
 
-#### 3. Create jsr.json
+#### 3. Create deno.json
 
 ```json
 {
     "name": "@m0n0lab/my-package",
     "version": "0.0.0",
+    "license": "MIT",
     "exports": "./src/index.ts"
+}
+```
+
+**Note**: For packages that use DOM APIs (React, browser utilities), add compilerOptions:
+
+```json
+{
+    "name": "@m0n0lab/my-package",
+    "version": "0.0.0",
+    "license": "MIT",
+    "exports": "./src/index.ts",
+    "compilerOptions": {
+        "lib": ["ES2023", "DOM"]
+    }
 }
 ```
 
@@ -525,13 +576,13 @@ Add your package to the `packages` section:
 {
     "packages": {
         "packages/my-package": {
-            "extra-files": ["jsr.json"]
+            "extra-files": ["deno.json"]
         }
     }
 }
 ```
 
-This ensures both `package.json` and `jsr.json` versions stay
+This ensures both `package.json` and `deno.json` versions stay
 synchronized.
 
 #### 5. Update .release-please-manifest.json
@@ -588,12 +639,13 @@ cat packages/<package>/package.json
 # 2. Build the package
 pnpm exec nx run @m0n0lab/<package>:build
 
-# 3. Manually publish to npm
+# 3. Manually publish to npm using pnpm (transforms workspace:*)
 cd packages/<package>
-npm publish --provenance --access public
+pnpm publish --access public
 ```
 
-**Note**: You may need to configure npm authentication locally if OIDC fails.
+**Note**: Use `pnpm publish` (not `npm publish`) to ensure workspace:\*
+dependencies are transformed correctly.
 
 #### Failed JSR Publish
 
@@ -601,30 +653,30 @@ If JSR publish fails but npm succeeds:
 
 ```bash
 # 1. Verify the package version that failed
-cat packages/<package>/jsr.json
+cat packages/<package>/deno.json
 
-# 2. Build the package
-pnpm exec nx run @m0n0lab/<package>:build
-
-# 3. Manually publish to JSR
+# 2. Manually publish to JSR using Deno
 cd packages/<package>
-npx jsr publish
+deno publish
 ```
+
+**Note**: Ensure you're in a clean git state. Deno workspaces automatically
+resolve internal dependencies.
 
 #### Version Mismatch Recovery
 
-If `package.json` and `jsr.json` versions get out of sync:
+If `package.json` and `deno.json` versions get out of sync:
 
 ```bash
 # 1. Check current versions
 cat packages/<package>/package.json | grep version
-cat packages/<package>/jsr.json | grep version
+cat packages/<package>/deno.json | grep version
 
 # 2. Manually align versions (choose the higher version)
 # Edit both files to match
 
 # 3. Commit the fix
-git add packages/<package>/{package,jsr}.json
+git add packages/<package>/{package,deno}.json
 git commit -m "fix(<package>): align versions"
 git push
 
