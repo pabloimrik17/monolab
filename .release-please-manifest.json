@@ -1,6 +1,4 @@
 {
-    "packages/is-even": "2.1.4",
-    "packages/is-odd": "5.1.4",
     "packages/react-clean": "3.1.4",
     "packages/react-hooks": "1.1.4",
     "packages/ts-configs": "1.1.4",

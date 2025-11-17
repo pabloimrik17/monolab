@@ -1,5 +1,3 @@
-import { isEven } from "@m0n0lab/is-even";
-import { isOdd } from "@m0n0lab/is-odd";
 import { createSignal } from "solid-js";
 import "./App.css";
 import solidLogo from "./assets/solid.svg";
@@ -37,10 +35,7 @@ function App() {
                 <button onClick={() => setCount((count) => count + 1)}>
                     count is {count()}
                 </button>
-                <p>
-                    The current count is {isOdd(count()) ? "odd" : "not odd"}{" "}
-                    and {isEven(count()) ? "even" : "not even"}
-                </p>
+                <p>The current count is {count() % 2 !== 0 ? "odd" : "even"}</p>
                 <p>
                     Edit <code>src/App.tsx</code> and save to test HMR
                 </p>

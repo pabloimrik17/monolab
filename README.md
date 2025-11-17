@@ -19,32 +19,6 @@
 
 This monorepo publishes several packages to both npm and JSR registries:
 
-### Utility Libraries
-
-**[@m0n0lab/is-odd](https://www.npmjs.com/package/@m0n0lab/is-odd)** | **[@m0n0lab/is-odd (JSR)](https://jsr.io/@m0n0lab/is-odd)**
-
-Check if a number is odd.
-
-```bash
-# npm
-npm install @m0n0lab/is-odd
-
-# JSR (Deno, Node.js, Bun)
-npx jsr add @m0n0lab/is-odd
-```
-
-**[@m0n0lab/is-even](https://www.npmjs.com/package/@m0n0lab/is-even)** | **[@m0n0lab/is-even (JSR)](https://jsr.io/@m0n0lab/is-even)**
-
-Check if a number is even.
-
-```bash
-# npm
-npm install @m0n0lab/is-even
-
-# JSR (Deno, Node.js, Bun)
-npx jsr add @m0n0lab/is-even
-```
-
 ### React Hooks
 
 **[@m0n0lab/react-hooks](https://www.npmjs.com/package/@m0n0lab/react-hooks)** | **[@m0n0lab/react-hooks (JSR)](https://jsr.io/@m0n0lab/react-hooks)**
@@ -196,7 +170,7 @@ pnpm run test:browser:affected
 **Per-package tests:**
 
 ```bash
-pnpm --filter @monolab/is-odd run test:unit
+pnpm --filter @monolab/react-hooks run test:unit
 pnpm --filter @monolab/react-hooks run test:browser
 ```
 
@@ -205,27 +179,27 @@ pnpm --filter @monolab/react-hooks run test:browser
 **Unit Test Example:**
 
 ```typescript
-// src/utils/is-odd.test.ts
-import { expect, test } from "vitest";
-import { isOdd } from "./is-odd.js";
+// src/hooks/use-did-mount.test.ts
+import { renderHook } from "@testing-library/react";
+import { expect, test, vi } from "vitest";
+import { useDidMount } from "./use-did-mount.js";
 
-test("returns true for odd numbers", () => {
-    expect(isOdd(3)).toBe(true);
+test("calls callback on mount", () => {
+    const callback = vi.fn();
+    renderHook(() => useDidMount(callback));
+    expect(callback).toHaveBeenCalledTimes(1);
 });
 ```
 
 **Type Test Example:**
 
 ```typescript
-// src/utils/is-odd.test-d.ts
+// src/hooks/use-did-mount.test-d.ts
 import { expectTypeOf } from "vitest";
-import { isOdd } from "./is-odd.js";
+import { useDidMount } from "./use-did-mount.js";
 
-expectTypeOf(isOdd).parameter(0).toBeNumber();
-expectTypeOf(isOdd).returns.toBeBoolean();
-
-// @ts-expect-error - should not accept string
-isOdd("3");
+expectTypeOf(useDidMount).parameter(0).toBeFunction();
+expectTypeOf(useDidMount).returns.toBeVoid();
 ```
 
 **Browser Test Example (React):**
@@ -291,13 +265,13 @@ pnpm exec nx affected -t test:mutation
 Run mutation testing on a specific package:
 
 ```bash
-pnpm exec nx run @monolab/is-odd:test:mutation
+pnpm exec nx run @monolab/react-hooks:test:mutation
 ```
 
 View HTML report for a package:
 
 ```bash
-pnpm exec nx run @monolab/is-odd:test:mutation:report
+pnpm exec nx run @monolab/react-hooks:test:mutation:report
 ```
 
 #### Mutation Score Interpretation
@@ -311,9 +285,8 @@ Mutation scores indicate the percentage of mutations that were detected
 
 Each package has graduated thresholds based on complexity:
 
--   **Utilities** (is-odd, is-even): 90% high / 75% low / 75% break
 -   **React packages** (react-hooks, react-clean): 80% high / 65% low / 60% break
--   **Config packages** (ts-configs): 70% high / 50% low / 50% break
+-   **Config packages** (ts-configs, ts-types): 70% high / 50% low / 50% break
 
 #### CI Behavior
 
@@ -387,17 +360,16 @@ Use /v2/new-endpoint instead.
 
 The scope should be the package name without the `@m0n0lab/` prefix:
 
--   `is-odd`
--   `is-even`
 -   `react-hooks`
 -   `react-clean`
 -   `ts-configs`
+-   `ts-types`
 
 #### Examples
 
 ```bash
 # Feature addition (minor version bump)
-feat(is-odd): add support for BigInt numbers
+feat(react-hooks): add useWillUnmount hook
 
 # Bug fix (patch version bump)
 fix(react-hooks): prevent memory leak in useDidMount
@@ -411,7 +383,7 @@ BREAKING CHANGE: Dropped support for Node.js versions below 24.11.0
 docs(react-clean): improve usage examples in README
 
 # Multiple packages
-feat(is-odd,is-even): add type narrowing
+feat(react-hooks,react-clean): add TypeScript 5.9 support
 ```
 
 ### Release Process
@@ -473,8 +445,8 @@ monorepo packages:
 ```json
 {
     "dependencies": {
-        "@m0n0lab/is-odd": "workspace:*",
-        "@m0n0lab/react-hooks": "workspace:*"
+        "@m0n0lab/react-hooks": "workspace:*",
+        "@m0n0lab/ts-types": "workspace:*"
     }
 }
 ```
@@ -496,11 +468,9 @@ workspace protocol and publishing tools handle this automatically.
 JSR packages are published in the correct order to respect dependencies:
 
 1. `ts-types` (no internal dependencies)
-2. `is-odd` (no internal dependencies)
-3. `react-hooks` (no internal dependencies)
-4. `ts-configs` (no internal dependencies)
-5. `is-even` (depends on `is-odd`)
-6. `react-clean` (depends on `react-hooks` and `ts-types`)
+2. `react-hooks` (no internal dependencies)
+3. `ts-configs` (no internal dependencies)
+4. `react-clean` (depends on `react-hooks` and `ts-types`)
 
 This ordering is calculated dynamically using Nx's project graph.
 

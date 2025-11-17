@@ -149,7 +149,7 @@ jobs:
                   echo "$AFFECTED_PROJECTS"
 
                   # Check each package and set boolean output
-                  for package in react-hooks react-clean is-even is-odd ts-configs ts-types; do
+                  for package in react-hooks react-clean ts-configs ts-types; do
                     if echo "$AFFECTED_PROJECTS" | grep -q "@m0n0lab/$package"; then
                       echo "$package=true" >> $GITHUB_OUTPUT
                       echo "✓ $package is affected"
@@ -176,24 +176,6 @@ jobs:
               with:
                   files: ./packages/react-clean/coverage/lcov.info
                   flags: react-clean
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload coverage to Codecov - is-even
-              uses: codecov/codecov-action@v5
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.is-even == 'true') }}
-              with:
-                  files: ./packages/is-even/coverage/lcov.info
-                  flags: is-even
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload coverage to Codecov - is-odd
-              uses: codecov/codecov-action@v5
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.is-odd == 'true') }}
-              with:
-                  files: ./packages/is-odd/coverage/lcov.info
-                  flags: is-odd
                   token: ${{ secrets.CODECOV_TOKEN }}
                   fail_ci_if_error: false
 
@@ -234,24 +216,6 @@ jobs:
                   files: ./packages/react-clean/test-results.junit.xml
                   token: ${{ secrets.CODECOV_TOKEN }}
                   flags: react-clean
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload test results to Codecov - is-even
-              uses: codecov/test-results-action@v1
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.is-even == 'true') }}
-              with:
-                  files: ./packages/is-even/test-results.junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: is-even
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload test results to Codecov - is-odd
-              uses: codecov/test-results-action@v1
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.is-odd == 'true') }}
-              with:
-                  files: ./packages/is-odd/test-results.junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: is-odd
                   fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - ts-configs
@@ -305,7 +269,7 @@ jobs:
               run: |
                   # Analyze each published package
                   # Note: nx run-many with Nx cache avoids redundant rebuilds of non-affected packages
-                  for package in react-hooks react-clean is-even is-odd ts-configs ts-types; do
+                  for package in react-hooks react-clean ts-configs ts-types; do
                     if [ -d "packages/$package/dist" ]; then
                       echo "📦 Analyzing bundle for $package..."
                       pnpm exec bundle-analyzer packages/$package/dist \

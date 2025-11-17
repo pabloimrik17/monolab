@@ -1,7 +1,5 @@
 {
     "workspace": [
-        "./packages/is-even",
-        "./packages/is-odd",
         "./packages/react-clean",
         "./packages/react-hooks",
         "./packages/ts-configs",

@@ -1,6 +1,0 @@
-{
-    "name": "@m0n0lab/is-odd",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/is-odd/src",
-    "projectType": "library"
-}
