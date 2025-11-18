@@ -149,7 +149,7 @@ jobs:
                   echo "$AFFECTED_PROJECTS"
 
                   # Check each package and set boolean output
-                  for package in react-hooks react-clean ts-configs ts-types; do
+                  for package in react-hooks react-clean ts-configs ts-types http-client; do
                     if echo "$AFFECTED_PROJECTS" | grep -q "@m0n0lab/$package"; then
                       echo "$package=true" >> $GITHUB_OUTPUT
                       echo "✓ $package is affected"
@@ -197,6 +197,15 @@ jobs:
                   token: ${{ secrets.CODECOV_TOKEN }}
                   fail_ci_if_error: false
 
+            - name: 📊 Upload coverage to Codecov - http-client
+              uses: codecov/codecov-action@v5
+              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.http-client == 'true') }}
+              with:
+                  files: ./packages/http-client/coverage/lcov.info
+                  flags: http-client
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  fail_ci_if_error: false
+
             # Upload test results per package with individual flags
             # Critical: runs even if tests fail (via !cancelled()) to capture failure data for Test Analytics
             # In PRs: only upload affected packages. On main/develop/pre: upload all packages for baseline
@@ -234,6 +243,15 @@ jobs:
                   files: ./packages/ts-types/test-results.junit.xml
                   token: ${{ secrets.CODECOV_TOKEN }}
                   flags: ts-types
+                  fail_ci_if_error: false
+
+            - name: 📊 Upload test results to Codecov - http-client
+              uses: codecov/test-results-action@v1
+              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.http-client == 'true') }}
+              with:
+                  files: ./packages/http-client/test-results.junit.xml
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  flags: http-client
                   fail_ci_if_error: false
 
             - name: 🏗 Execute build checks

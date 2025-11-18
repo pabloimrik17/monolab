@@ -40,6 +40,13 @@ coverage:
                 flags:
                     - ts-types
 
+            http-client:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - http-client
+
         # Patch coverage (new/modified code in PRs)
         patch:
             default:
@@ -75,6 +82,13 @@ coverage:
                 informational: false
                 flags:
                     - ts-types
+
+            http-client:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - http-client
 
 # Files and directories to ignore from coverage calculations
 ignore:
@@ -120,4 +134,9 @@ flags:
     ts-types:
         paths:
             - packages/ts-types/
+        carryforward: true
+
+    http-client:
+        paths:
+            - packages/http-client/
         carryforward: true

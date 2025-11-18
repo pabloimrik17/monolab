@@ -59,6 +59,20 @@ npm install -D @m0n0lab/ts-configs
 npx jsr add -D @m0n0lab/ts-configs
 ```
 
+### HTTP Clients
+
+**[@m0n0lab/http-client](https://www.npmjs.com/package/@m0n0lab/http-client)** | **[@m0n0lab/http-client (JSR)](https://jsr.io/@m0n0lab/http-client)**
+
+Abstracted HTTP client for web and Node.js environments. Foundation package for future implementations with neverthrow and effect-ts wrappers.
+
+```bash
+# npm
+npm install @m0n0lab/http-client
+
+# JSR (Deno, Node.js, Bun)
+npx jsr add @m0n0lab/http-client
+```
+
 ## Development Setup
 
 ### Node.js Installation
