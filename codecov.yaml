@@ -26,20 +26,6 @@ coverage:
                 flags:
                     - react-clean
 
-            is-even:
-                target: auto
-                threshold: 2%
-                informational: false
-                flags:
-                    - is-even
-
-            is-odd:
-                target: auto
-                threshold: 2%
-                informational: false
-                flags:
-                    - is-odd
-
             ts-configs:
                 target: auto
                 threshold: 2%
@@ -75,20 +61,6 @@ coverage:
                 informational: false
                 flags:
                     - react-clean
-
-            is-even:
-                target: 50%
-                threshold: 10%
-                informational: false
-                flags:
-                    - is-even
-
-            is-odd:
-                target: 50%
-                threshold: 10%
-                informational: false
-                flags:
-                    - is-odd
 
             ts-configs:
                 target: 50%
@@ -138,16 +110,6 @@ flags:
     react-clean:
         paths:
             - packages/react-clean/
-        carryforward: true
-
-    is-even:
-        paths:
-            - packages/is-even/
-        carryforward: true
-
-    is-odd:
-        paths:
-            - packages/is-odd/
         carryforward: true
 
     ts-configs:

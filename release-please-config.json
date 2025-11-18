@@ -1,17 +1,5 @@
 {
     "packages": {
-        "packages/is-even": {
-            "release-type": "node",
-            "package-name": "@m0n0lab/is-even",
-            "changelog-path": "CHANGELOG.md",
-            "extra-files": ["deno.json"]
-        },
-        "packages/is-odd": {
-            "release-type": "node",
-            "package-name": "@m0n0lab/is-odd",
-            "changelog-path": "CHANGELOG.md",
-            "extra-files": ["deno.json"]
-        },
         "packages/react-clean": {
             "release-type": "node",
             "package-name": "@m0n0lab/react-clean",

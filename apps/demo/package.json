@@ -16,8 +16,6 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "@m0n0lab/is-even": "workspace:*",
-        "@m0n0lab/is-odd": "workspace:*",
         "solid-js": "1.9.9"
     },
     "devDependencies": {
