@@ -2,6 +2,12 @@
  * HTTP error hierarchy and error classes.
  * These are contract definitions - constructor implementation and error throwing logic
  * will be added in implementation proposals (axios/ky adapters).
+ *
+ * NOTE: All error classes include `Object.setPrototypeOf(this, ClassName.prototype)`
+ * in their constructors. This is necessary for proper `instanceof` checks when
+ * TypeScript transpiles to ES5. Without this fix, `instanceof` may fail for custom
+ * error classes that extend Error.
+ *
  * @module
  */
 
@@ -64,6 +70,9 @@ export class HttpError extends Error {
         this.message = message;
         this.request = request;
         this.timestamp = new Date().toISOString();
+
+        // Fix prototype chain for proper instanceof checks
+        Object.setPrototypeOf(this, HttpError.prototype);
     }
 }
 
@@ -114,6 +123,9 @@ export class HttpNetworkError extends HttpError {
         super(message, request);
         this.name = "HttpNetworkError";
         this.code = code;
+
+        // Fix prototype chain for proper instanceof checks
+        Object.setPrototypeOf(this, HttpNetworkError.prototype);
     }
 }
 
@@ -191,6 +203,9 @@ export class HttpResponseError<T = unknown> extends HttpError {
         this.statusText = statusText;
         this.data = data;
         this.headers = headers;
+
+        // Fix prototype chain for proper instanceof checks
+        Object.setPrototypeOf(this, HttpResponseError.prototype);
     }
 }
 
@@ -410,6 +425,9 @@ export class HttpTimeoutError extends HttpError {
     constructor(message: string, request: Readonly<HttpRequestConfig>) {
         super(message, request);
         this.name = "HttpTimeoutError";
+
+        // Fix prototype chain for proper instanceof checks
+        Object.setPrototypeOf(this, HttpTimeoutError.prototype);
     }
 }
 
@@ -456,5 +474,8 @@ export class HttpAbortError extends HttpError {
         super(message, request);
         this.name = "HttpAbortError";
         this.reason = reason;
+
+        // Fix prototype chain for proper instanceof checks
+        Object.setPrototypeOf(this, HttpAbortError.prototype);
     }
 }
