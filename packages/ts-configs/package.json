@@ -33,8 +33,6 @@
         "LICENSE"
     ],
     "scripts": {
-        "build": "pnpm run build:typecheck",
-        "build:typecheck": "tsc --noEmit",
         "lint:eslint": "eslint --cache --max-warnings 40 .",
         "lint:eslint:config-check": "eslint-config-prettier src/index.ts",
         "lint:eslint:fix": "eslint --cache --max-warnings 40 --fix .",
