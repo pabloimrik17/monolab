@@ -54,7 +54,7 @@
     },
     "packageManager": "pnpm@10.19.0",
     "engines": {
-        "node": "^20.18.0 || >=22.0.0",
+        "node": "v25.2.1",
         "pnpm": "10.19.0"
     },
     "publishConfig": {

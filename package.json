@@ -80,7 +80,7 @@
     "packageManager": "pnpm@10.19.0",
     "engines": {
         "deno": "2.5.6",
-        "node": "^20.18.0 || >=22.0.0",
+        "node": "v25.2.1",
         "pnpm": "10.19.0"
     },
     "devEngines": {
