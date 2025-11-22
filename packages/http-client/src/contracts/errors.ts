@@ -227,6 +227,21 @@ export class HttpResponseError<T = unknown> extends HttpError {
 export class HttpBadRequestError<T = unknown> extends HttpResponseError<T> {
     override readonly name = "HttpBadRequestError" as const;
     override readonly status = 400 as const;
+
+    constructor(
+        message: string,
+        status: number,
+        statusText: string,
+        data: T,
+        headers: HttpHeaders,
+        request: Readonly<HttpRequestConfig>
+    ) {
+        super(message, status, statusText, data, headers, request);
+        this.name = "HttpBadRequestError";
+
+        // Fix prototype chain for proper instanceof checks
+        Object.setPrototypeOf(this, HttpBadRequestError.prototype);
+    }
 }
 
 /**
@@ -247,6 +262,21 @@ export class HttpBadRequestError<T = unknown> extends HttpResponseError<T> {
 export class HttpUnauthorizedError<T = unknown> extends HttpResponseError<T> {
     override readonly name = "HttpUnauthorizedError" as const;
     override readonly status = 401 as const;
+
+    constructor(
+        message: string,
+        status: number,
+        statusText: string,
+        data: T,
+        headers: HttpHeaders,
+        request: Readonly<HttpRequestConfig>
+    ) {
+        super(message, status, statusText, data, headers, request);
+        this.name = "HttpUnauthorizedError";
+
+        // Fix prototype chain for proper instanceof checks
+        Object.setPrototypeOf(this, HttpUnauthorizedError.prototype);
+    }
 }
 
 /**
@@ -267,6 +297,21 @@ export class HttpUnauthorizedError<T = unknown> extends HttpResponseError<T> {
 export class HttpForbiddenError<T = unknown> extends HttpResponseError<T> {
     override readonly name = "HttpForbiddenError" as const;
     override readonly status = 403 as const;
+
+    constructor(
+        message: string,
+        status: number,
+        statusText: string,
+        data: T,
+        headers: HttpHeaders,
+        request: Readonly<HttpRequestConfig>
+    ) {
+        super(message, status, statusText, data, headers, request);
+        this.name = "HttpForbiddenError";
+
+        // Fix prototype chain for proper instanceof checks
+        Object.setPrototypeOf(this, HttpForbiddenError.prototype);
+    }
 }
 
 /**
@@ -287,6 +332,21 @@ export class HttpForbiddenError<T = unknown> extends HttpResponseError<T> {
 export class HttpNotFoundError<T = unknown> extends HttpResponseError<T> {
     override readonly name = "HttpNotFoundError" as const;
     override readonly status = 404 as const;
+
+    constructor(
+        message: string,
+        status: number,
+        statusText: string,
+        data: T,
+        headers: HttpHeaders,
+        request: Readonly<HttpRequestConfig>
+    ) {
+        super(message, status, statusText, data, headers, request);
+        this.name = "HttpNotFoundError";
+
+        // Fix prototype chain for proper instanceof checks
+        Object.setPrototypeOf(this, HttpNotFoundError.prototype);
+    }
 }
 
 /**
@@ -307,6 +367,21 @@ export class HttpNotFoundError<T = unknown> extends HttpResponseError<T> {
 export class HttpConflictError<T = unknown> extends HttpResponseError<T> {
     override readonly name = "HttpConflictError" as const;
     override readonly status = 409 as const;
+
+    constructor(
+        message: string,
+        status: number,
+        statusText: string,
+        data: T,
+        headers: HttpHeaders,
+        request: Readonly<HttpRequestConfig>
+    ) {
+        super(message, status, statusText, data, headers, request);
+        this.name = "HttpConflictError";
+
+        // Fix prototype chain for proper instanceof checks
+        Object.setPrototypeOf(this, HttpConflictError.prototype);
+    }
 }
 
 /**
@@ -329,6 +404,21 @@ export class HttpUnprocessableEntityError<
 > extends HttpResponseError<T> {
     override readonly name = "HttpUnprocessableEntityError" as const;
     override readonly status = 422 as const;
+
+    constructor(
+        message: string,
+        status: number,
+        statusText: string,
+        data: T,
+        headers: HttpHeaders,
+        request: Readonly<HttpRequestConfig>
+    ) {
+        super(message, status, statusText, data, headers, request);
+        this.name = "HttpUnprocessableEntityError";
+
+        // Fix prototype chain for proper instanceof checks
+        Object.setPrototypeOf(this, HttpUnprocessableEntityError.prototype);
+    }
 }
 
 /**
@@ -352,6 +442,21 @@ export class HttpTooManyRequestsError<
 > extends HttpResponseError<T> {
     override readonly name = "HttpTooManyRequestsError" as const;
     override readonly status = 429 as const;
+
+    constructor(
+        message: string,
+        status: number,
+        statusText: string,
+        data: T,
+        headers: HttpHeaders,
+        request: Readonly<HttpRequestConfig>
+    ) {
+        super(message, status, statusText, data, headers, request);
+        this.name = "HttpTooManyRequestsError";
+
+        // Fix prototype chain for proper instanceof checks
+        Object.setPrototypeOf(this, HttpTooManyRequestsError.prototype);
+    }
 }
 
 /**
@@ -372,6 +477,21 @@ export class HttpTooManyRequestsError<
 export class HttpInternalServerError<T = unknown> extends HttpResponseError<T> {
     override readonly name = "HttpInternalServerError" as const;
     override readonly status = 500 as const;
+
+    constructor(
+        message: string,
+        status: number,
+        statusText: string,
+        data: T,
+        headers: HttpHeaders,
+        request: Readonly<HttpRequestConfig>
+    ) {
+        super(message, status, statusText, data, headers, request);
+        this.name = "HttpInternalServerError";
+
+        // Fix prototype chain for proper instanceof checks
+        Object.setPrototypeOf(this, HttpInternalServerError.prototype);
+    }
 }
 
 /**
@@ -395,6 +515,21 @@ export class HttpServiceUnavailableError<
 > extends HttpResponseError<T> {
     override readonly name = "HttpServiceUnavailableError" as const;
     override readonly status = 503 as const;
+
+    constructor(
+        message: string,
+        status: number,
+        statusText: string,
+        data: T,
+        headers: HttpHeaders,
+        request: Readonly<HttpRequestConfig>
+    ) {
+        super(message, status, statusText, data, headers, request);
+        this.name = "HttpServiceUnavailableError";
+
+        // Fix prototype chain for proper instanceof checks
+        Object.setPrototypeOf(this, HttpServiceUnavailableError.prototype);
+    }
 }
 
 /**
