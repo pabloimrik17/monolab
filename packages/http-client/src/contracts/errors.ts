@@ -230,13 +230,12 @@ export class HttpBadRequestError<T = unknown> extends HttpResponseError<T> {
 
     constructor(
         message: string,
-        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
         request: Readonly<HttpRequestConfig>
     ) {
-        super(message, status, statusText, data, headers, request);
+        super(message, 400, statusText, data, headers, request);
         this.name = "HttpBadRequestError";
 
         // Fix prototype chain for proper instanceof checks
@@ -265,13 +264,12 @@ export class HttpUnauthorizedError<T = unknown> extends HttpResponseError<T> {
 
     constructor(
         message: string,
-        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
         request: Readonly<HttpRequestConfig>
     ) {
-        super(message, status, statusText, data, headers, request);
+        super(message, 401, statusText, data, headers, request);
         this.name = "HttpUnauthorizedError";
 
         // Fix prototype chain for proper instanceof checks
@@ -300,13 +298,12 @@ export class HttpForbiddenError<T = unknown> extends HttpResponseError<T> {
 
     constructor(
         message: string,
-        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
         request: Readonly<HttpRequestConfig>
     ) {
-        super(message, status, statusText, data, headers, request);
+        super(message, 403, statusText, data, headers, request);
         this.name = "HttpForbiddenError";
 
         // Fix prototype chain for proper instanceof checks
@@ -335,13 +332,12 @@ export class HttpNotFoundError<T = unknown> extends HttpResponseError<T> {
 
     constructor(
         message: string,
-        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
         request: Readonly<HttpRequestConfig>
     ) {
-        super(message, status, statusText, data, headers, request);
+        super(message, 404, statusText, data, headers, request);
         this.name = "HttpNotFoundError";
 
         // Fix prototype chain for proper instanceof checks
@@ -370,13 +366,12 @@ export class HttpConflictError<T = unknown> extends HttpResponseError<T> {
 
     constructor(
         message: string,
-        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
         request: Readonly<HttpRequestConfig>
     ) {
-        super(message, status, statusText, data, headers, request);
+        super(message, 409, statusText, data, headers, request);
         this.name = "HttpConflictError";
 
         // Fix prototype chain for proper instanceof checks
@@ -407,13 +402,12 @@ export class HttpUnprocessableEntityError<
 
     constructor(
         message: string,
-        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
         request: Readonly<HttpRequestConfig>
     ) {
-        super(message, status, statusText, data, headers, request);
+        super(message, 422, statusText, data, headers, request);
         this.name = "HttpUnprocessableEntityError";
 
         // Fix prototype chain for proper instanceof checks
@@ -445,13 +439,12 @@ export class HttpTooManyRequestsError<
 
     constructor(
         message: string,
-        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
         request: Readonly<HttpRequestConfig>
     ) {
-        super(message, status, statusText, data, headers, request);
+        super(message, 429, statusText, data, headers, request);
         this.name = "HttpTooManyRequestsError";
 
         // Fix prototype chain for proper instanceof checks
@@ -480,13 +473,12 @@ export class HttpInternalServerError<T = unknown> extends HttpResponseError<T> {
 
     constructor(
         message: string,
-        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
         request: Readonly<HttpRequestConfig>
     ) {
-        super(message, status, statusText, data, headers, request);
+        super(message, 500, statusText, data, headers, request);
         this.name = "HttpInternalServerError";
 
         // Fix prototype chain for proper instanceof checks
@@ -518,13 +510,12 @@ export class HttpServiceUnavailableError<
 
     constructor(
         message: string,
-        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
         request: Readonly<HttpRequestConfig>
     ) {
-        super(message, status, statusText, data, headers, request);
+        super(message, 503, statusText, data, headers, request);
         this.name = "HttpServiceUnavailableError";
 
         // Fix prototype chain for proper instanceof checks

@@ -135,7 +135,6 @@ describe("Specific HTTP error classes", () => {
     it("HttpBadRequestError should have status 400", () => {
         const error = new HttpBadRequestError(
             "Bad request",
-            400,
             "Bad Request",
             {},
             {},
@@ -153,7 +152,6 @@ describe("Specific HTTP error classes", () => {
     it("HttpUnauthorizedError should have status 401", () => {
         const error = new HttpUnauthorizedError(
             "Unauthorized",
-            401,
             "Unauthorized",
             {},
             {},
@@ -169,7 +167,6 @@ describe("Specific HTTP error classes", () => {
     it("HttpForbiddenError should have status 403", () => {
         const error = new HttpForbiddenError(
             "Forbidden",
-            403,
             "Forbidden",
             {},
             {},
@@ -185,7 +182,6 @@ describe("Specific HTTP error classes", () => {
     it("HttpNotFoundError should have status 404", () => {
         const error = new HttpNotFoundError(
             "Not found",
-            404,
             "Not Found",
             {},
             {},
@@ -199,14 +195,7 @@ describe("Specific HTTP error classes", () => {
     });
 
     it("HttpConflictError should have status 409", () => {
-        const error = new HttpConflictError(
-            "Conflict",
-            409,
-            "Conflict",
-            {},
-            {},
-            {}
-        );
+        const error = new HttpConflictError("Conflict", "Conflict", {}, {}, {});
 
         expect(error.name).toBe("HttpConflictError");
         expect(error.status).toBe(409);
@@ -217,7 +206,6 @@ describe("Specific HTTP error classes", () => {
     it("HttpUnprocessableEntityError should have status 422", () => {
         const error = new HttpUnprocessableEntityError(
             "Unprocessable",
-            422,
             "Unprocessable Entity",
             {},
             {},
@@ -233,7 +221,6 @@ describe("Specific HTTP error classes", () => {
     it("HttpTooManyRequestsError should have status 429", () => {
         const error = new HttpTooManyRequestsError(
             "Too many requests",
-            429,
             "Too Many Requests",
             {},
             { "retry-after": "60" },
@@ -250,7 +237,6 @@ describe("Specific HTTP error classes", () => {
     it("HttpInternalServerError should have status 500", () => {
         const error = new HttpInternalServerError(
             "Internal error",
-            500,
             "Internal Server Error",
             {},
             {},
@@ -266,7 +252,6 @@ describe("Specific HTTP error classes", () => {
     it("HttpServiceUnavailableError should have status 503", () => {
         const error = new HttpServiceUnavailableError(
             "Service unavailable",
-            503,
             "Service Unavailable",
             {},
             { "retry-after": "120" },
@@ -348,7 +333,6 @@ describe("Error prototype chain integrity", () => {
         );
         const notFoundError = new HttpNotFoundError(
             "Not found",
-            404,
             "Not Found",
             {},
             {},
@@ -388,7 +372,7 @@ describe("Error prototype chain integrity", () => {
             new HttpError("Test", {}),
             new HttpNetworkError("Test", "CODE", {}),
             new HttpResponseError("Test", 500, "Error", {}, {}, {}),
-            new HttpBadRequestError("Test", 400, "Bad Request", {}, {}, {}),
+            new HttpBadRequestError("Test", "Bad Request", {}, {}, {}),
             new HttpTimeoutError("Test", {}),
             new HttpAbortError("Test", {}),
         ];
