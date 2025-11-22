@@ -236,10 +236,8 @@ export interface HttpClient {
      * ```ts
      * // Check if resource exists
      * const response = await client.head('/users/1');
-     * if (response.ok) {
-     *   console.log('User exists');
-     *   console.log('Content-Type:', response.headers['content-type']);
-     * }
+     * console.log('User exists');
+     * console.log('Content-Type:', response.headers['content-type']);
      * ```
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -23,7 +23,6 @@ import type { HttpHeaders } from "./types.js";
  *
  * console.log(response.data.name); // Type-safe access to User properties
  * console.log(response.status);    // 200
- * console.log(response.ok);        // true
  * console.log(response.headers);   // { 'content-type': 'application/json', ... }
  * ```
  */
@@ -61,19 +60,6 @@ export interface HttpResponse<T> {
      * ```
      */
     readonly statusText: string;
-
-    /**
-     * Whether the response is considered successful.
-     * True for 2xx status codes, false otherwise.
-     *
-     * @example
-     * ```ts
-     * if (response.ok) {
-     *   console.log('Request succeeded');
-     * }
-     * ```
-     */
-    readonly ok: boolean;
 
     /**
      * The response headers.

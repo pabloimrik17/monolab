@@ -18,7 +18,6 @@ describe("HttpResponse type safety", () => {
         expectTypeOf(response.data).toEqualTypeOf<User>();
         expectTypeOf(response.status).toEqualTypeOf<number>();
         expectTypeOf(response.statusText).toEqualTypeOf<string>();
-        expectTypeOf(response.ok).toEqualTypeOf<boolean>();
         expectTypeOf(response.url).toEqualTypeOf<string>();
     });
 
