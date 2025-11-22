@@ -23,7 +23,7 @@ import {
 
 describe("HttpError", () => {
     it("should create error with correct properties", () => {
-        const request = { url: "/test", timeout: 5000 };
+        const request = { baseUrl: "https://api.example.com", timeout: 5000 };
         const error = new HttpError("Test error", request);
 
         expect(error.name).toBe("HttpError");
@@ -50,7 +50,7 @@ describe("HttpError", () => {
 
 describe("HttpNetworkError", () => {
     it("should create error with code property", () => {
-        const request = { url: "/test" };
+        const request = { baseUrl: "https://api.example.com" };
         const error = new HttpNetworkError(
             "Connection refused",
             "ECONNREFUSED",
@@ -74,7 +74,7 @@ describe("HttpNetworkError", () => {
 
 describe("HttpResponseError", () => {
     it("should create error with response properties", () => {
-        const request = { url: "/test" };
+        const request = { baseUrl: "https://api.example.com" };
         const headers = { "content-type": "application/json" };
         const data = { error: "Bad Request", details: [] };
         const error = new HttpResponseError(
@@ -283,7 +283,7 @@ describe("Specific HTTP error classes", () => {
 
 describe("HttpTimeoutError", () => {
     it("should create error with timeout properties", () => {
-        const request = { url: "/test", timeout: 1000 };
+        const request = { baseUrl: "https://api.example.com", timeout: 1000 };
         const error = new HttpTimeoutError("Request timeout", request);
 
         expect(error.name).toBe("HttpTimeoutError");
@@ -302,7 +302,7 @@ describe("HttpTimeoutError", () => {
 
 describe("HttpAbortError", () => {
     it("should create error without reason", () => {
-        const request = { url: "/test" };
+        const request = { baseUrl: "https://api.example.com" };
         const error = new HttpAbortError("Request aborted", request);
 
         expect(error.name).toBe("HttpAbortError");
@@ -312,7 +312,7 @@ describe("HttpAbortError", () => {
     });
 
     it("should create error with reason", () => {
-        const request = { url: "/test" };
+        const request = { baseUrl: "https://api.example.com" };
         const error = new HttpAbortError(
             "Request aborted",
             request,
@@ -393,11 +393,11 @@ describe("Error prototype chain integrity", () => {
             new HttpAbortError("Test", {}),
         ];
 
-        expect(errors[0].constructor.name).toBe("HttpError");
-        expect(errors[1].constructor.name).toBe("HttpNetworkError");
-        expect(errors[2].constructor.name).toBe("HttpResponseError");
-        expect(errors[3].constructor.name).toBe("HttpBadRequestError");
-        expect(errors[4].constructor.name).toBe("HttpTimeoutError");
-        expect(errors[5].constructor.name).toBe("HttpAbortError");
+        expect(errors[0]!.constructor.name).toBe("HttpError");
+        expect(errors[1]!.constructor.name).toBe("HttpNetworkError");
+        expect(errors[2]!.constructor.name).toBe("HttpResponseError");
+        expect(errors[3]!.constructor.name).toBe("HttpBadRequestError");
+        expect(errors[4]!.constructor.name).toBe("HttpTimeoutError");
+        expect(errors[5]!.constructor.name).toBe("HttpAbortError");
     });
 });
