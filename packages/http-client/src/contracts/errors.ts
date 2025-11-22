@@ -1,3 +1,6 @@
+import type { HttpRequestConfig } from "./request.js";
+import type { HttpHeaders } from "./types.js";
+
 /**
  * HTTP error hierarchy and error classes.
  * These are contract definitions - constructor implementation and error throwing logic
@@ -10,9 +13,6 @@
  *
  * @module
  */
-
-import type { HttpRequestConfig } from "./request.js";
-import type { HttpHeaders } from "./types.js";
 
 /**
  * Base class for all HTTP-related errors.
