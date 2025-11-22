@@ -61,6 +61,10 @@ describe("HttpNetworkError", () => {
         expect(error.message).toBe("Connection refused");
         expect(error.code).toBe("ECONNREFUSED");
         expect(error.request).toEqual(request);
+        expect(error.timestamp).toMatch(
+            /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+        );
+        expect(error.stack).toBeDefined();
     });
 
     it("should be instanceof HttpNetworkError, HttpError, and Error", () => {
@@ -93,6 +97,10 @@ describe("HttpResponseError", () => {
         expect(error.data).toEqual(data);
         expect(error.headers).toEqual(headers);
         expect(error.request).toEqual(request);
+        expect(error.timestamp).toMatch(
+            /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+        );
+        expect(error.stack).toBeDefined();
     });
 
     it("should be instanceof HttpResponseError, HttpError, and Error", () => {
