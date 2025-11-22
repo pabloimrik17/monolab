@@ -1,10 +1,10 @@
+import type { HttpRequestConfig } from "./request.js";
+import type { HttpHeaders } from "./types.js";
+
 /**
  * HTTP response interface and types.
  * @module
  */
-
-import type { HttpRequestConfig } from "./request.js";
-import type { HttpHeaders } from "./types.js";
 
 /**
  * Represents a successful HTTP response with type-safe data access.

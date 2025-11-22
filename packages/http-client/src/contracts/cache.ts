@@ -1,10 +1,10 @@
+import type { HttpRequestConfig } from "./request.js";
+import type { HttpHeaders } from "./types.js";
+
 /**
  * HTTP cache abstraction and configuration.
  * @module
  */
-
-import type { HttpRequestConfig } from "./request.js";
-import type { HttpHeaders } from "./types.js";
 
 /**
  * Cache entry metadata and data.

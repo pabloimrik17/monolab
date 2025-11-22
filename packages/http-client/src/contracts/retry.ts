@@ -1,9 +1,9 @@
+import type { HttpError } from "./errors.js";
+
 /**
  * HTTP retry configuration and strategies.
  * @module
  */
-
-import type { HttpError } from "./errors.js";
 
 /**
  * Default retry condition function type.

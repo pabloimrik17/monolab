@@ -1,8 +1,3 @@
-/**
- * HTTP client interface defining the contract for making HTTP requests.
- * @module
- */
-
 import type {
     InterceptorHandle,
     RequestOnFulfilled,
@@ -12,6 +7,11 @@ import type {
 } from "./interceptors.js";
 import type { HttpRequestConfig } from "./request.js";
 import type { HttpResponse } from "./response.js";
+
+/**
+ * HTTP client interface defining the contract for making HTTP requests.
+ * @module
+ */
 
 /**
  * HTTP client interface with standard methods and interceptor management.

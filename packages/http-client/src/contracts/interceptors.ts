@@ -1,12 +1,12 @@
+import type { HttpError } from "./errors.js";
+import type { HttpRequestConfig } from "./request.js";
+import type { HttpResponse } from "./response.js";
+
 /**
  * HTTP interceptor types using the onFulfilled/onRejected pattern.
  * This abstraction works uniformly with both axios interceptors and ky hooks.
  * @module
  */
-
-import type { HttpError } from "./errors.js";
-import type { HttpRequestConfig } from "./request.js";
-import type { HttpResponse } from "./response.js";
 
 /**
  * Request interceptor onFulfilled callback.

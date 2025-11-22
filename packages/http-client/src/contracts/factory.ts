@@ -1,8 +1,3 @@
-/**
- * HTTP client factory types and options.
- * @module
- */
-
 import type { HttpCacheConfig } from "./cache.js";
 import type { HttpClient } from "./client.js";
 import type { HttpDeduplicationConfig } from "./deduplication.js";
@@ -14,6 +9,11 @@ import type {
 } from "./interceptors.js";
 import type { HttpRequestConfig } from "./request.js";
 import type { HttpRetryConfig } from "./retry.js";
+
+/**
+ * HTTP client factory types and options.
+ * @module
+ */
 
 /**
  * Interceptor configuration for client initialization.

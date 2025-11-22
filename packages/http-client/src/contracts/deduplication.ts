@@ -1,9 +1,9 @@
+import type { HttpRequestConfig } from "./request.js";
+
 /**
  * HTTP request deduplication types and configuration.
  * @module
  */
-
-import type { HttpRequestConfig } from "./request.js";
 
 /**
  * Deduplication key type.

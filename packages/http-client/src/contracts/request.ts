@@ -1,8 +1,3 @@
-/**
- * HTTP request configuration interfaces and types.
- * @module
- */
-
 import type { HttpCacheConfig } from "./cache.js";
 import type { HttpDeduplicationConfig } from "./deduplication.js";
 import type { HttpRetryConfig } from "./retry.js";
@@ -11,6 +6,11 @@ import type {
     HttpHeaders,
     HttpResponseType,
 } from "./types.js";
+
+/**
+ * HTTP request configuration interfaces and types.
+ * @module
+ */
 
 /**
  * HTTP request body type.
