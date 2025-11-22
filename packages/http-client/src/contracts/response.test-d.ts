@@ -1,5 +1,9 @@
 import { describe, expectTypeOf, test } from "vitest";
-import type { HttpRequestConfig, HttpResponse } from "../index.js";
+import type {
+    HttpRequestConfig,
+    HttpResponse,
+    HttpStatusCode,
+} from "../index.js";
 
 /**
  * Type-level tests for HttpResponse interface.
@@ -16,7 +20,7 @@ describe("HttpResponse type safety", () => {
         const response: HttpResponse<User> = {} as HttpResponse<User>;
 
         expectTypeOf(response.data).toEqualTypeOf<User>();
-        expectTypeOf(response.status).toEqualTypeOf<number>();
+        expectTypeOf(response.status).toEqualTypeOf<HttpStatusCode>();
         expectTypeOf(response.statusText).toEqualTypeOf<string>();
         expectTypeOf(response.url).toEqualTypeOf<string>();
     });
@@ -39,6 +43,8 @@ describe("HttpResponse readonly enforcement", () => {
         const response: HttpResponse<User> = {} as HttpResponse<User>;
 
         expectTypeOf(response).toHaveProperty("data").toEqualTypeOf<User>();
-        expectTypeOf(response).toHaveProperty("status").toEqualTypeOf<number>();
+        expectTypeOf(response)
+            .toHaveProperty("status")
+            .toEqualTypeOf<HttpStatusCode>();
     });
 });

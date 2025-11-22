@@ -2,6 +2,7 @@ import { describe, expectTypeOf, test } from "vitest";
 import type {
     HttpBadRequestError,
     HttpError,
+    HttpErrorStatusCode,
     HttpNetworkError,
     HttpNotFoundError,
     HttpRequestConfig,
@@ -42,7 +43,7 @@ describe("Error hierarchy type checking", () => {
         const error: HttpResponseError<ErrorResponse> =
             {} as HttpResponseError<ErrorResponse>;
 
-        expectTypeOf(error.status).toEqualTypeOf<number>();
+        expectTypeOf(error.status).toEqualTypeOf<HttpErrorStatusCode>();
         expectTypeOf(error.statusText).toEqualTypeOf<string>();
         expectTypeOf(error.data).toEqualTypeOf<ErrorResponse>();
         expectTypeOf(error).toMatchTypeOf<HttpError>();

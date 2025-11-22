@@ -81,6 +81,8 @@ interface CreateUserDto {
 }
 
 // Assuming you have an axios or ky adapter
+declare const createHttpClient: HttpClientFactory;
+
 const client: HttpClient = createHttpClient({
     baseUrl: "https://api.example.com",
     timeout: 5000,
@@ -167,7 +169,7 @@ const refreshInterceptor: ResponseOnRejected = async (error) => {
     throw error;
 };
 
-client.addResponseInterceptor(undefined, refreshInterceptor);
+client.addResponseInterceptor((response) => response, refreshInterceptor);
 
 // Remove interceptor when done
 const handle = client.addRequestInterceptor(authInterceptor);
@@ -178,6 +180,8 @@ client.removeInterceptor(handle);
 
 ```typescript
 import { exponentialBackoff } from "@m0n0lab/http-client";
+
+declare const createHttpClient: HttpClientFactory;
 
 const client = createHttpClient({
     baseUrl: "https://api.example.com",
@@ -234,6 +238,8 @@ class MemoryCache implements HttpCache {
     }
 }
 
+declare const createHttpClient: HttpClientFactory;
+
 const client = createHttpClient({
     baseUrl: "https://api.example.com",
     cache: {
@@ -243,7 +249,7 @@ const client = createHttpClient({
         staleWhileRevalidate: true, // Return stale data while refreshing
         invalidatePatterns: (config) => {
             // Invalidate user cache after mutations
-            if (config.url?.includes("/users")) {
+            if (config.baseUrl?.includes("/users")) {
                 return ["/users/*"];
             }
             return [];

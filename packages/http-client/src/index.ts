@@ -13,6 +13,7 @@
 // Core types
 export type {
     HttpCredentialsMode,
+    HttpErrorStatusCode,
     HttpHeaders,
     HttpMethod,
     HttpResponseType,

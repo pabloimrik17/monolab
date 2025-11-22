@@ -1,5 +1,5 @@
 import type { HttpRequestConfig } from "./request.js";
-import type { HttpHeaders } from "./types.js";
+import type { HttpErrorStatusCode, HttpHeaders } from "./types.js";
 
 /**
  * HTTP error hierarchy and error classes.
@@ -160,7 +160,7 @@ export class HttpResponseError<T = unknown> extends HttpError {
     /**
      * HTTP status code (400-599).
      */
-    readonly status: number;
+    readonly status: HttpErrorStatusCode;
 
     /**
      * HTTP status text message.
@@ -191,7 +191,7 @@ export class HttpResponseError<T = unknown> extends HttpError {
      */
     constructor(
         message: string,
-        status: number,
+        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
@@ -230,7 +230,7 @@ export class HttpBadRequestError<T = unknown> extends HttpResponseError<T> {
 
     constructor(
         message: string,
-        status: number,
+        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
@@ -265,7 +265,7 @@ export class HttpUnauthorizedError<T = unknown> extends HttpResponseError<T> {
 
     constructor(
         message: string,
-        status: number,
+        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
@@ -300,7 +300,7 @@ export class HttpForbiddenError<T = unknown> extends HttpResponseError<T> {
 
     constructor(
         message: string,
-        status: number,
+        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
@@ -335,7 +335,7 @@ export class HttpNotFoundError<T = unknown> extends HttpResponseError<T> {
 
     constructor(
         message: string,
-        status: number,
+        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
@@ -370,7 +370,7 @@ export class HttpConflictError<T = unknown> extends HttpResponseError<T> {
 
     constructor(
         message: string,
-        status: number,
+        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
@@ -407,7 +407,7 @@ export class HttpUnprocessableEntityError<
 
     constructor(
         message: string,
-        status: number,
+        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
@@ -445,7 +445,7 @@ export class HttpTooManyRequestsError<
 
     constructor(
         message: string,
-        status: number,
+        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
@@ -480,7 +480,7 @@ export class HttpInternalServerError<T = unknown> extends HttpResponseError<T> {
 
     constructor(
         message: string,
-        status: number,
+        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,
@@ -518,7 +518,7 @@ export class HttpServiceUnavailableError<
 
     constructor(
         message: string,
-        status: number,
+        status: HttpErrorStatusCode,
         statusText: string,
         data: T,
         headers: HttpHeaders,

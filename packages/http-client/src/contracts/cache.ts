@@ -127,14 +127,15 @@ export interface HttpCache {
  * @example
  * ```ts
  * const keyGenerator: HttpCacheKeyGenerator = (config) => {
- *   const method = config.method || 'GET';
- *   const url = config.baseUrl ? `${config.baseUrl}${config.url}` : config.url;
+ *   const baseUrl = config.baseUrl || '';
  *   const query = JSON.stringify(config.query || {});
- *   return `${method}:${url}?${query}`;
+ *   return `${baseUrl}?${query}`;
  * };
  * ```
  */
-export type HttpCacheKeyGenerator = (config: HttpRequestConfig) => string;
+export type HttpCacheKeyGenerator = (
+    config: Readonly<HttpRequestConfig>
+) => string;
 
 /**
  * Cache invalidation pattern matcher.
@@ -146,8 +147,8 @@ export type HttpCacheKeyGenerator = (config: HttpRequestConfig) => string;
  * @example
  * ```ts
  * const invalidatePatterns: HttpCacheInvalidationPattern = (config) => {
- *   // Invalidate all user-related cache entries after POST/PUT/DELETE
- *   if (config.url?.includes('/users')) {
+ *   // Invalidate all user-related cache entries
+ *   if (config.baseUrl?.includes('/users')) {
  *     return ['/users/*'];
  *   }
  *   return [];
@@ -155,7 +156,7 @@ export type HttpCacheKeyGenerator = (config: HttpRequestConfig) => string;
  * ```
  */
 export type HttpCacheInvalidationPattern = (
-    config: HttpRequestConfig
+    config: Readonly<HttpRequestConfig>
 ) => string[];
 
 /**
@@ -170,10 +171,10 @@ export type HttpCacheInvalidationPattern = (
  *   ttl: 60000, // 1 minute default TTL
  *   respectCacheHeaders: true,
  *   staleWhileRevalidate: true,
- *   keyGenerator: (config) => `${config.method}:${config.url}`,
+ *   keyGenerator: (config) => `${config.baseUrl || ''}:${JSON.stringify(config.query || {})}`,
  *   invalidatePatterns: (config) => {
- *     // Invalidate related cache entries after mutations
- *     if (config.method === 'POST' && config.url?.includes('/users')) {
+ *     // Invalidate related cache entries
+ *     if (config.baseUrl?.includes('/users')) {
  *       return ['/users', '/users/*'];
  *     }
  *     return [];
@@ -201,7 +202,7 @@ export interface HttpCacheConfig {
      * @example
      * ```ts
      * keyGenerator: (config) => {
-     *   return `${config.method || 'GET'}:${config.url}`;
+     *   return `${config.baseUrl || ''}:${JSON.stringify(config.query || {})}`;
      * }
      * ```
      */
@@ -256,7 +257,7 @@ export interface HttpCacheConfig {
      *
      * // Dynamic patterns based on request
      * invalidatePatterns: (config) => {
-     *   if (config.url?.includes('/users')) {
+     *   if (config.baseUrl?.includes('/users')) {
      *     return ['/users', '/users/*'];
      *   }
      *   return [];

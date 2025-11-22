@@ -39,6 +39,7 @@ export type HttpRequestBody =
     | FormData
     | Blob
     | ArrayBuffer
+    | ArrayBufferView
     | ReadableStream
     | string
     | null
@@ -216,7 +217,7 @@ export interface HttpRequestConfig {
      * deduplication: {
      *   enabled: true,
      *   ttl: 5000,
-     *   keyGenerator: (config) => `${config.method}:${config.url}`
+     *   keyGenerator: (config) => `${config.baseUrl || ''}:${JSON.stringify(config.query || {})}`
      * }
      * ```
      */

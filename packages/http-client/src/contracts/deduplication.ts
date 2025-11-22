@@ -23,15 +23,14 @@ export type DeduplicationKey = string;
  * @example
  * ```ts
  * const keyGenerator: HttpDeduplicationKeyGenerator = (config) => {
- *   const method = config.method || 'GET';
- *   const url = config.baseUrl ? `${config.baseUrl}${config.url}` : config.url;
+ *   const baseUrl = config.baseUrl || '';
  *   const query = JSON.stringify(config.query || {});
- *   return `${method}:${url}?${query}`;
+ *   return `${baseUrl}?${query}`;
  * };
  * ```
  */
 export type HttpDeduplicationKeyGenerator = (
-    config: HttpRequestConfig
+    config: Readonly<HttpRequestConfig>
 ) => DeduplicationKey;
 
 /**
@@ -47,10 +46,10 @@ export type HttpDeduplicationKeyGenerator = (
  *   criticalHeaders: ['Authorization', 'Content-Type', 'X-API-Key'],
  *   keyGenerator: (config) => {
  *     // Custom key generation logic
- *     const method = config.method || 'GET';
- *     const url = `${config.baseUrl || ''}${config.url || ''}`;
+ *     const baseUrl = config.baseUrl || '';
+ *     const query = JSON.stringify(config.query || {});
  *     const authHeader = config.headers?.['Authorization'];
- *     return `${method}:${url}:${authHeader}`;
+ *     return `${baseUrl}:${query}:${authHeader}`;
  *   }
  * };
  * ```
@@ -78,8 +77,8 @@ export interface HttpDeduplicationConfig {
      * @example
      * ```ts
      * keyGenerator: (config) => {
-     *   // Simple key based on method and URL only
-     *   return `${config.method || 'GET'}:${config.url}`;
+     *   // Simple key based on baseUrl and query params
+     *   return `${config.baseUrl || ''}:${JSON.stringify(config.query || {})}`;
      * }
      * ```
      */

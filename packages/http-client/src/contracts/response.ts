@@ -1,5 +1,5 @@
 import type { HttpRequestConfig } from "./request.js";
-import type { HttpHeaders } from "./types.js";
+import type { HttpHeaders, HttpStatusCode } from "./types.js";
 
 /**
  * HTTP response interface and types.
@@ -48,7 +48,7 @@ export interface HttpResponse<T> {
      * console.log(response.status); // 200, 201, 204, etc.
      * ```
      */
-    readonly status: number;
+    readonly status: HttpStatusCode;
 
     /**
      * The HTTP status text message.
