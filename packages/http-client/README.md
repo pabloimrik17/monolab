@@ -282,11 +282,105 @@ const response = await client.get<User>("/users/1");
 const user = response.data; // Type-safe!
 ```
 
+## Axios Adapter (Fully Implemented)
+
+The axios adapter provides a complete HTTP client with all features:
+
+### Axios Installation
+
+```bash
+pnpm add @m0n0lab/http-client axios
+```
+
+### Quick Start
+
+```typescript
+import axios from "axios";
+import { createAxiosHttpClient, exponentialBackoff } from "@m0n0lab/http-client";
+
+// Basic client
+const client = createAxiosHttpClient({
+    axiosInstance: axios.create({ baseURL: "https://api.example.com" }),
+});
+
+// Client with all features
+const advancedClient = createAxiosHttpClient({
+    axiosInstance: axios.create({ baseURL: "https://api.example.com" }),
+    retry: {
+        attempts: 3,
+        delay: exponentialBackoff(1000, 10000),
+    },
+    cache: {
+        cache: new Map(),
+        ttl: 60000,
+    },
+    deduplication: {
+        enabled: true,
+        criticalHeaders: ["Authorization"],
+    },
+});
+
+// Use it!
+const response = await client.get<User>("/users/1");
+```
+
+### Factory Pattern (Recommended)
+
+The factory provides the easiest way to create clients:
+
+```typescript
+import { createHttpClientFactory, exponentialBackoff } from "@m0n0lab/http-client";
+
+const client = createHttpClientFactory({
+    baseUrl: "https://api.example.com",
+    timeout: 5000,
+    headers: {
+        "X-API-Key": "secret",
+    },
+    retry: {
+        attempts: 3,
+        delay: exponentialBackoff(1000, 10000),
+    },
+    cache: {
+        cache: new Map(),
+        ttl: 60000,
+    },
+    deduplication: {
+        enabled: true,
+    },
+    interceptors: {
+        request: [{
+            onFulfilled: async (config) => {
+                // Add dynamic auth
+                return {
+                    ...config,
+                    headers: {
+                        ...config.headers,
+                        Authorization: `Bearer ${await getToken()}`,
+                    },
+                };
+            },
+        }],
+    },
+});
+```
+
+### Axios Adapter Features
+
+- ✅ All HTTP methods (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)
+- ✅ Request/response interceptors
+- ✅ Automatic retry with exponential/linear backoff
+- ✅ Request deduplication (prevents duplicate concurrent requests)
+- ✅ Response caching with TTL and automatic invalidation
+- ✅ Type-safe error handling
+- ✅ Full TypeScript support with generics
+- ✅ 147 tests with 100% coverage
+
 ## Roadmap
 
 -   ✅ Package foundation and infrastructure
 -   ✅ Core HTTP client contracts (types and interfaces)
--   🚧 Axios adapter implementation
+-   ✅ Axios adapter implementation (COMPLETE)
 -   🚧 Ky adapter implementation
 -   🚧 neverthrow (ResultAsync) wrapper for functional error handling
 -   🚧 effect-ts integration for advanced effect systems

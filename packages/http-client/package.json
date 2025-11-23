@@ -48,7 +48,17 @@
     "dependencies": {
         "tslib": "2.8.1"
     },
+    "peerDependencies": {
+        "axios": "^1.6.0"
+    },
+    "peerDependenciesMeta": {
+        "axios": {
+            "optional": false
+        }
+    },
     "devDependencies": {
+        "axios": "^1.8.1",
+        "axios-mock-adapter": "^2.1.0",
         "typescript": "5.9.3",
         "vitest": "catalog:"
     },
