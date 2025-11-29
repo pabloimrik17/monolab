@@ -16,7 +16,7 @@ import {
     HttpUnprocessableEntityError,
 } from "../contracts/errors.js";
 import type { HttpRequestConfig } from "../contracts/request.js";
-import type { HttpHeaders } from "../contracts/types.js";
+import { normalizeHeaders } from "./headers.js";
 
 /**
  * Type guard to check if an error is an AxiosError.
@@ -31,26 +31,6 @@ function isAxiosError(error: unknown): error is AxiosError {
         "isAxiosError" in error &&
         error.isAxiosError === true
     );
-}
-
-/**
- * Normalize axios headers to HttpHeaders format.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function normalizeHeaders(headers: any): HttpHeaders {
-    if (!headers) return {};
-
-    // If it's already a plain object, return it
-    if (typeof headers === "object" && !headers.toJSON) {
-        return headers as HttpHeaders;
-    }
-
-    // If it has a toJSON method (AxiosHeaders), convert it
-    if (headers.toJSON) {
-        return headers.toJSON() as HttpHeaders;
-    }
-
-    return {};
 }
 
 /**

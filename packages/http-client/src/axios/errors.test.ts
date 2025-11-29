@@ -130,7 +130,7 @@ describe("transformAxiosError", () => {
                     statusText: "Bad Request",
                     data: { error: "Invalid input" },
                     headers: { "content-type": "application/json" },
-                    config: {} as any,
+                    config: {},
                 }
             );
 
@@ -156,7 +156,7 @@ describe("transformAxiosError", () => {
                     statusText: "Unauthorized",
                     data: { error: "Not authenticated" },
                     headers: {},
-                    config: {} as any,
+                    config: {},
                 }
             );
 
@@ -177,7 +177,7 @@ describe("transformAxiosError", () => {
                     statusText: "Forbidden",
                     data: { error: "No permission" },
                     headers: {},
-                    config: {} as any,
+                    config: {},
                 }
             );
 
@@ -198,7 +198,7 @@ describe("transformAxiosError", () => {
                     statusText: "Not Found",
                     data: { error: "Resource not found" },
                     headers: {},
-                    config: {} as any,
+                    config: {},
                 }
             );
 
@@ -219,7 +219,7 @@ describe("transformAxiosError", () => {
                     statusText: "Conflict",
                     data: { error: "Resource already exists" },
                     headers: {},
-                    config: {} as any,
+                    config: {},
                 }
             );
 
@@ -240,7 +240,7 @@ describe("transformAxiosError", () => {
                     statusText: "Unprocessable Entity",
                     data: { errors: ["Age must be positive"] },
                     headers: {},
-                    config: {} as any,
+                    config: {},
                 }
             );
 
@@ -261,7 +261,7 @@ describe("transformAxiosError", () => {
                     statusText: "Too Many Requests",
                     data: { error: "Rate limit exceeded" },
                     headers: { "retry-after": "60" },
-                    config: {} as any,
+                    config: {},
                 }
             );
 
@@ -283,7 +283,7 @@ describe("transformAxiosError", () => {
                     statusText: "I'm a teapot",
                     data: {},
                     headers: {},
-                    config: {} as any,
+                    config: {},
                 }
             );
 
@@ -307,7 +307,7 @@ describe("transformAxiosError", () => {
                     statusText: "Internal Server Error",
                     data: { error: "Something went wrong" },
                     headers: {},
-                    config: {} as any,
+                    config: {},
                 }
             );
 
@@ -328,7 +328,7 @@ describe("transformAxiosError", () => {
                     statusText: "Service Unavailable",
                     data: { error: "Maintenance mode" },
                     headers: { "retry-after": "300" },
-                    config: {} as any,
+                    config: {},
                 }
             );
 
@@ -350,7 +350,7 @@ describe("transformAxiosError", () => {
                     statusText: "Bad Gateway",
                     data: {},
                     headers: {},
-                    config: {} as any,
+                    config: {},
                 }
             );
 

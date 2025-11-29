@@ -1,5 +1,9 @@
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import type { CacheEntry, HttpCache, HttpCacheConfig } from "../contracts/cache.js";
+import type {
+    CacheEntry,
+    HttpCache,
+    HttpCacheConfig,
+} from "../contracts/cache.js";
 
 /**
  * Extended cache entry that includes the original AxiosResponse.
@@ -57,7 +61,7 @@ export class CacheManager {
      * Get cached response if available and not expired.
      */
     async get<T>(key: string): Promise<AxiosResponse<T> | undefined> {
-        const entry = await this.cache.get(key) as InternalCacheEntry | null; // eslint-disable-line @typescript-eslint/no-explicit-any
+        const entry = (await this.cache.get(key)) as InternalCacheEntry | null;
 
         if (!entry) return undefined;
 
@@ -85,9 +89,15 @@ export class CacheManager {
         // Normalize headers - axios headers can be AxiosHeaders or plain object
         const headers: Record<string, string | string[]> = {};
         if (response.headers) {
+            const axiosHeaders = response.headers;
             // If it's an AxiosHeaders object with toJSON, use that
-            if (typeof response.headers === 'object' && 'toJSON' in response.headers) {
-                Object.assign(headers, (response.headers as any).toJSON()); // eslint-disable-line @typescript-eslint/no-explicit-any
+            if (
+                typeof axiosHeaders === "object" &&
+                axiosHeaders !== null &&
+                "toJSON" in axiosHeaders &&
+                typeof axiosHeaders.toJSON === "function"
+            ) {
+                Object.assign(headers, axiosHeaders.toJSON());
             } else {
                 // Otherwise treat as plain object
                 Object.assign(headers, response.headers);
@@ -125,10 +135,7 @@ export class CacheManager {
             if (!keyUrl) continue;
 
             // Match exact URL or URLs starting with pattern
-            if (
-                keyUrl === urlPattern ||
-                keyUrl.startsWith(urlPattern + "/")
-            ) {
+            if (keyUrl === urlPattern || keyUrl.startsWith(urlPattern + "/")) {
                 keysToDelete.push(key);
             }
         }
@@ -203,7 +210,7 @@ export function setupCache(
     // Wrap POST with cache invalidation
     (axios as any).post = async function (
         url: string,
-        data?: any,
+        data?: unknown,
         requestConfig?: AxiosRequestConfig
     ): Promise<AxiosResponse> {
         const response = await originalPost(url, data, requestConfig);
@@ -214,7 +221,7 @@ export function setupCache(
     // Wrap PUT with cache invalidation
     (axios as any).put = async function (
         url: string,
-        data?: any,
+        data?: unknown,
         requestConfig?: AxiosRequestConfig
     ): Promise<AxiosResponse> {
         const response = await originalPut(url, data, requestConfig);
@@ -225,7 +232,7 @@ export function setupCache(
     // Wrap PATCH with cache invalidation
     (axios as any).patch = async function (
         url: string,
-        data?: any,
+        data?: unknown,
         requestConfig?: AxiosRequestConfig
     ): Promise<AxiosResponse> {
         const response = await originalPatch(url, data, requestConfig);

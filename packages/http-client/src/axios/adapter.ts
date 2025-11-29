@@ -1,8 +1,8 @@
 import type {
     AxiosInstance,
     AxiosRequestConfig,
+    AxiosRequestHeaders,
     AxiosResponse,
-    InternalAxiosRequestConfig
 } from "axios";
 import type { HttpCacheConfig } from "../contracts/cache.js";
 import type { HttpClient } from "../contracts/client.js";
@@ -17,10 +17,10 @@ import type {
 import type { HttpRequestConfig } from "../contracts/request.js";
 import type { HttpResponse } from "../contracts/response.js";
 import type { HttpRetryConfig } from "../contracts/retry.js";
-import type { HttpHeaders } from "../contracts/types.js";
 import { setupCache } from "./cache.js";
 import { setupDeduplication } from "./deduplication.js";
 import { transformAxiosError } from "./errors.js";
+import { normalizeHeaders } from "./headers.js";
 import { setupRetry } from "./retry.js";
 
 /**
@@ -72,6 +72,7 @@ class AxiosHttpClient implements HttpClient {
         try {
             const axiosConfig = this.mapToAxiosConfig(config);
             const response = await this.axios.get<TResponse>(url, axiosConfig);
+
             return this.mapFromAxiosResponse(response, config);
         } catch (error: unknown) {
             throw transformAxiosError(error, config || {});
@@ -91,6 +92,7 @@ class AxiosHttpClient implements HttpClient {
                 body,
                 axiosConfig
             );
+
             return this.mapFromAxiosResponse(response, config);
         } catch (error: unknown) {
             throw transformAxiosError(error, config || {});
@@ -110,6 +112,7 @@ class AxiosHttpClient implements HttpClient {
                 body,
                 axiosConfig
             );
+
             return this.mapFromAxiosResponse(response, config);
         } catch (error: unknown) {
             throw transformAxiosError(error, config || {});
@@ -129,6 +132,7 @@ class AxiosHttpClient implements HttpClient {
                 body,
                 axiosConfig
             );
+
             return this.mapFromAxiosResponse(response, config);
         } catch (error: unknown) {
             throw transformAxiosError(error, config || {});
@@ -146,6 +150,7 @@ class AxiosHttpClient implements HttpClient {
                 url,
                 axiosConfig
             );
+
             return this.mapFromAxiosResponse(response, config);
         } catch (error: unknown) {
             throw transformAxiosError(error, config || {});
@@ -160,6 +165,7 @@ class AxiosHttpClient implements HttpClient {
         try {
             const axiosConfig = this.mapToAxiosConfig(config);
             const response = await this.axios.head(url, axiosConfig);
+
             return this.mapFromAxiosResponse(response, config);
         } catch (error: unknown) {
             throw transformAxiosError(error, config || {});
@@ -174,6 +180,7 @@ class AxiosHttpClient implements HttpClient {
         try {
             const axiosConfig = this.mapToAxiosConfig(config);
             const response = await this.axios.options(url, axiosConfig);
+
             return this.mapFromAxiosResponse(response, config);
         } catch (error: unknown) {
             throw transformAxiosError(error, config || {});
@@ -190,28 +197,53 @@ class AxiosHttpClient implements HttpClient {
                     const httpConfig = this.mapFromAxiosConfig(config);
                     const result = await onFulfilled(httpConfig);
                     // Merge the result back into the axios config
+                    // Only include properties that are defined to avoid assigning undefined
                     return {
                         ...config,
-                        headers: result.headers,
-                        timeout: result.timeout,
-                        params: result.query,
-                        withCredentials: result.credentials === "include",
-                        responseType: result.responseType,
-                    } as InternalAxiosRequestConfig;
+                        ...(result.headers !== undefined && {
+                            headers: result.headers as AxiosRequestHeaders,
+                        }),
+                        ...(result.timeout !== undefined && {
+                            timeout: result.timeout,
+                        }),
+                        ...(result.query !== undefined && {
+                            params: result.query,
+                        }),
+                        ...(result.credentials !== undefined && {
+                            withCredentials: result.credentials === "include",
+                        }),
+                        ...(result.responseType !== undefined && {
+                            responseType: result.responseType,
+                        }),
+                    };
                 } catch (error: unknown) {
                     if (onRejected) {
                         // onRejected expects Error, convert unknown to Error
-                        const errorObj = error instanceof Error ? error : new Error(String(error));
+                        const errorObj =
+                            error instanceof Error
+                                ? error
+                                : new Error(String(error));
                         const recoveredConfig = await onRejected(errorObj);
                         return {
                             ...config,
-                            headers: recoveredConfig.headers,
-                            timeout: recoveredConfig.timeout,
-                            params: recoveredConfig.query,
-                            withCredentials:
-                                recoveredConfig.credentials === "include",
-                            responseType: recoveredConfig.responseType,
-                        } as InternalAxiosRequestConfig;
+                            ...(recoveredConfig.headers !== undefined && {
+                                headers:
+                                    recoveredConfig.headers as AxiosRequestHeaders,
+                            }),
+                            ...(recoveredConfig.timeout !== undefined && {
+                                timeout: recoveredConfig.timeout,
+                            }),
+                            ...(recoveredConfig.query !== undefined && {
+                                params: recoveredConfig.query,
+                            }),
+                            ...(recoveredConfig.credentials !== undefined && {
+                                withCredentials:
+                                    recoveredConfig.credentials === "include",
+                            }),
+                            ...(recoveredConfig.responseType !== undefined && {
+                                responseType: recoveredConfig.responseType,
+                            }),
+                        };
                     }
                     throw error;
                 }
@@ -252,7 +284,8 @@ class AxiosHttpClient implements HttpClient {
                               status: result.status,
                               statusText: result.statusText,
                               headers: result.headers,
-                              config: error.config || ({} as AxiosRequestConfig),
+                              config:
+                                  error.config || ({} as AxiosRequestConfig),
                               request: error.request,
                               response: undefined,
                           } as AxiosResponse;
@@ -318,11 +351,11 @@ class AxiosHttpClient implements HttpClient {
         // 1. We're extending Axios's config with custom properties for feature detection
         // 2. The feature modules check for these properties to enable/disable functionality per-request
         // 3. This pattern is standard in Axios ecosystem (e.g., axios-retry uses similar approach)
-        if ((config as any).deduplication !== undefined) { // eslint-disable-line @typescript-eslint/no-explicit-any
+        if ((config as any).deduplication !== undefined) {
             (axiosConfig as any).deduplication = (config as any).deduplication; // eslint-disable-line @typescript-eslint/no-explicit-any
         }
 
-        if ((config as any).cache !== undefined) { // eslint-disable-line @typescript-eslint/no-explicit-any
+        if ((config as any).cache !== undefined) {
             (axiosConfig as any).cache = (config as any).cache; // eslint-disable-line @typescript-eslint/no-explicit-any
         }
 
@@ -332,37 +365,19 @@ class AxiosHttpClient implements HttpClient {
     /**
      * Map AxiosRequestConfig to HttpRequestConfig.
      */
-    private mapFromAxiosConfig(
-        config: AxiosRequestConfig
-    ): HttpRequestConfig {
+    private mapFromAxiosConfig(config: AxiosRequestConfig): HttpRequestConfig {
         return {
-            ...(config.headers && { headers: this.normalizeHeaders(config.headers) }),
+            ...(config.headers && {
+                headers: normalizeHeaders(config.headers),
+            }),
             ...(config.timeout && { timeout: config.timeout }),
             ...(config.params && { query: config.params }),
             ...(config.withCredentials && { credentials: "include" as const }),
             ...(config.responseType && {
-                responseType: config.responseType as HttpRequestConfig["responseType"]
+                responseType:
+                    config.responseType as HttpRequestConfig["responseType"],
             }),
         };
-    }
-
-    /**
-     * Normalize axios headers to HttpHeaders format.
-     */
-    private normalizeHeaders(headers: any): HttpHeaders {
-        if (!headers) return {};
-
-        // If it's already a plain object, return it
-        if (typeof headers === "object" && !headers.toJSON) {
-            return headers as HttpHeaders;
-        }
-
-        // If it has a toJSON method (AxiosHeaders), convert it
-        if (headers.toJSON) {
-            return headers.toJSON() as HttpHeaders;
-        }
-
-        return {};
     }
 
     /**
@@ -376,7 +391,7 @@ class AxiosHttpClient implements HttpClient {
             data: response.data,
             status: response.status,
             statusText: response.statusText,
-            headers: this.normalizeHeaders(response.headers),
+            headers: normalizeHeaders(response.headers),
             request: originalConfig || {},
             url: response.config.url || "",
         };

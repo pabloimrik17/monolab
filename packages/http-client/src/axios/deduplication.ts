@@ -61,11 +61,7 @@ export function generateDeduplicationKey(
  * Ensures only one actual request is made for multiple identical concurrent requests.
  */
 export class DeduplicationManager {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private inFlightRequests = new Map<
-        string,
-        Promise<AxiosResponse<any>>
-    >();
+    private inFlightRequests = new Map<string, Promise<AxiosResponse<any>>>();
     private readonly criticalHeaders?: string[];
 
     constructor(config?: HttpDeduplicationConfig) {
@@ -88,7 +84,6 @@ export class DeduplicationManager {
         // Check if identical request is in flight
         const existingRequest = this.inFlightRequests.get(key);
         if (existingRequest) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return existingRequest as Promise<AxiosResponse<T>>;
         }
 
@@ -162,7 +157,7 @@ export function setupDeduplication(
 
     (axios as any).post = async function (
         url: string,
-        data?: any,
+        data?: unknown,
         config?: AxiosRequestConfig
     ): Promise<AxiosResponse> {
         const requestConfig = { ...config, method: "POST", url, data };
@@ -178,7 +173,7 @@ export function setupDeduplication(
 
     (axios as any).put = async function (
         url: string,
-        data?: any,
+        data?: unknown,
         config?: AxiosRequestConfig
     ): Promise<AxiosResponse> {
         const requestConfig = { ...config, method: "PUT", url, data };
@@ -194,7 +189,7 @@ export function setupDeduplication(
 
     (axios as any).patch = async function (
         url: string,
-        data?: any,
+        data?: unknown,
         config?: AxiosRequestConfig
     ): Promise<AxiosResponse> {
         const requestConfig = { ...config, method: "PATCH", url, data };

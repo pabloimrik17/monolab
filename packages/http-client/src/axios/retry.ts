@@ -12,11 +12,10 @@ function defaultRetryCondition(error: HttpError): boolean {
         return true;
     }
 
-    // Response errors
-    if ("status" in error) {
-        const status = (error as any).status; // eslint-disable-line @typescript-eslint/no-explicit-any
+    // Response errors with status codes
+    if ("status" in error && typeof error.status === "number") {
         // Retry on 5xx server errors and 429 rate limit
-        return status >= 500 || status === 429;
+        return error.status >= 500 || error.status === 429;
     }
 
     return false;
