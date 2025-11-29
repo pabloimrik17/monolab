@@ -63,8 +63,12 @@ describe("HttpClientFactory", () => {
             const mock1 = new MockAdapter(axiosInstance1);
             const mock2 = new MockAdapter(axiosInstance2);
 
-            const client1 = createAxiosHttpClient({ axiosInstance: axiosInstance1 });
-            const client2 = createAxiosHttpClient({ axiosInstance: axiosInstance2 });
+            const client1 = createAxiosHttpClient({
+                axiosInstance: axiosInstance1,
+            });
+            const client2 = createAxiosHttpClient({
+                axiosInstance: axiosInstance2,
+            });
 
             client1.addRequestInterceptor((config) => {
                 return {

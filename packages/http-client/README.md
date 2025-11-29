@@ -296,7 +296,10 @@ pnpm add @m0n0lab/http-client axios
 
 ```typescript
 import axios from "axios";
-import { createAxiosHttpClient, exponentialBackoff } from "@m0n0lab/http-client";
+import {
+    createAxiosHttpClient,
+    exponentialBackoff,
+} from "@m0n0lab/http-client";
 
 // Basic client
 const client = createAxiosHttpClient({
@@ -329,7 +332,10 @@ const response = await client.get<User>("/users/1");
 The factory provides the easiest way to create clients:
 
 ```typescript
-import { createHttpClientFactory, exponentialBackoff } from "@m0n0lab/http-client";
+import {
+    createHttpClientFactory,
+    exponentialBackoff,
+} from "@m0n0lab/http-client";
 
 const client = createHttpClientFactory({
     baseUrl: "https://api.example.com",
@@ -349,32 +355,34 @@ const client = createHttpClientFactory({
         enabled: true,
     },
     interceptors: {
-        request: [{
-            onFulfilled: async (config) => {
-                // Add dynamic auth
-                return {
-                    ...config,
-                    headers: {
-                        ...config.headers,
-                        Authorization: `Bearer ${await getToken()}`,
-                    },
-                };
+        request: [
+            {
+                onFulfilled: async (config) => {
+                    // Add dynamic auth
+                    return {
+                        ...config,
+                        headers: {
+                            ...config.headers,
+                            Authorization: `Bearer ${await getToken()}`,
+                        },
+                    };
+                },
             },
-        }],
+        ],
     },
 });
 ```
 
 ### Axios Adapter Features
 
-- ✅ All HTTP methods (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)
-- ✅ Request/response interceptors
-- ✅ Automatic retry with exponential/linear backoff
-- ✅ Request deduplication (prevents duplicate concurrent requests)
-- ✅ Response caching with TTL and automatic invalidation
-- ✅ Type-safe error handling
-- ✅ Full TypeScript support with generics
-- ✅ 147 tests with 100% coverage
+-   ✅ All HTTP methods (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)
+-   ✅ Request/response interceptors
+-   ✅ Automatic retry with exponential/linear backoff
+-   ✅ Request deduplication (prevents duplicate concurrent requests)
+-   ✅ Response caching with TTL and automatic invalidation
+-   ✅ Type-safe error handling
+-   ✅ Full TypeScript support with generics
+-   ✅ 147 tests with 100% coverage
 
 ## Roadmap
 

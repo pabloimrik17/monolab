@@ -192,10 +192,7 @@ describe("Request Deduplication", () => {
             expect(callCount).toBe(1);
 
             // Second batch after completion - should make new request
-            await Promise.all([
-                client.get("/users"),
-                client.get("/users"),
-            ]);
+            await Promise.all([client.get("/users"), client.get("/users")]);
 
             expect(callCount).toBe(2);
         });
@@ -270,7 +267,10 @@ describe("Request Deduplication", () => {
         it("considers critical headers in deduplication key", async () => {
             mock.onGet("/data").reply((config) => {
                 const auth = config.headers?.["Authorization"];
-                return [200, { user: auth === "Bearer token1" ? "user1" : "user2" }];
+                return [
+                    200,
+                    { user: auth === "Bearer token1" ? "user1" : "user2" },
+                ];
             });
 
             const client = createAxiosHttpClient({

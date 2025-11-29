@@ -1,6 +1,6 @@
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import { describe, expect, it, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { HttpClient } from "../contracts/client.js";
 import { createAxiosHttpClient } from "./adapter.js";
 
@@ -59,7 +59,10 @@ describe("AxiosHttpClient", () => {
             });
 
             expect(response.status).toBe(200);
-            expect(mock.history.get[0].params).toEqual({ q: "test", limit: 10 });
+            expect(mock.history.get[0].params).toEqual({
+                q: "test",
+                limit: 10,
+            });
         });
 
         it("includes response headers", async () => {
@@ -154,7 +157,10 @@ describe("AxiosHttpClient", () => {
                 email: "charlie@example.com",
             });
 
-            const response = await client.patch<User>("/users/1", partialUpdate);
+            const response = await client.patch<User>(
+                "/users/1",
+                partialUpdate
+            );
 
             expect(response.status).toBe(200);
             expect(response.data.name).toBe("Charlie");

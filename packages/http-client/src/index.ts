@@ -105,7 +105,11 @@ export type { AxiosHttpClientOptions } from "./axios/adapter.js";
 export { createHttpClientFactory } from "./axios/factory.js";
 
 // Axios deduplication
-export { setupDeduplication, generateDeduplicationKey, DeduplicationManager } from "./axios/deduplication.js";
+export {
+    DeduplicationManager,
+    generateDeduplicationKey,
+    setupDeduplication,
+} from "./axios/deduplication.js";
 
 // Axios cache
-export { setupCache, generateCacheKey, CacheManager } from "./axios/cache.js";
+export { CacheManager, generateCacheKey, setupCache } from "./axios/cache.js";

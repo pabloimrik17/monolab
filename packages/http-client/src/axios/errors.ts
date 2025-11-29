@@ -155,9 +155,5 @@ export function transformAxiosError(
     }
 
     // Network errors (no response received)
-    return new HttpNetworkError(
-        error.message,
-        error.code || "UNKNOWN",
-        config
-    );
+    return new HttpNetworkError(error.message, error.code || "UNKNOWN", config);
 }

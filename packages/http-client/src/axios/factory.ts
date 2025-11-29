@@ -99,8 +99,10 @@ export const createHttpClientFactory: HttpClientFactory = (
     if (options?.timeout) axiosConfig["timeout"] = options.timeout;
     if (options?.headers) axiosConfig["headers"] = options.headers;
     if (options?.query) axiosConfig["params"] = options.query;
-    if (options?.credentials) axiosConfig["withCredentials"] = options.credentials === "include";
-    if (options?.responseType) axiosConfig["responseType"] = options.responseType;
+    if (options?.credentials)
+        axiosConfig["withCredentials"] = options.credentials === "include";
+    if (options?.responseType)
+        axiosConfig["responseType"] = options.responseType;
 
     // Create axios instance
     const axiosInstance = axios.create(axiosConfig);
@@ -112,7 +114,8 @@ export const createHttpClientFactory: HttpClientFactory = (
     };
 
     if (options?.retry) adapterOptions["retry"] = options.retry;
-    if (options?.deduplication) adapterOptions["deduplication"] = options.deduplication;
+    if (options?.deduplication)
+        adapterOptions["deduplication"] = options.deduplication;
     if (options?.cache) adapterOptions["cache"] = options.cache;
 
     // Create HTTP client

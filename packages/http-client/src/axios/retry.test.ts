@@ -1,6 +1,6 @@
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import { describe, expect, it, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { HttpClient } from "../contracts/client.js";
 import { exponentialBackoff, linearBackoff } from "../contracts/retry.js";
 import { createAxiosHttpClient } from "./adapter.js";
