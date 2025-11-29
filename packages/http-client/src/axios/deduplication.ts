@@ -126,7 +126,15 @@ export function setupDeduplication(
 ): DeduplicationManager {
     const manager = new DeduplicationManager(config);
 
-    // Store original HTTP methods
+    // Meta-programming: Method replacement for request deduplication
+    // We replace Axios instance methods to inject deduplication logic transparently.
+    // The 'as any' casts are justified here because:
+    // 1. TypeScript prevents assignment to methods, but this is intentional runtime behavior
+    // 2. This pattern enables transparent request deduplication without code changes
+    // 3. We preserve the original method signatures and bind context correctly
+    // 4. Prevents redundant concurrent requests with identical parameters
+
+    // Store original HTTP methods with proper binding
     const originalGet = axios.get.bind(axios);
     const originalPost = axios.post.bind(axios);
     const originalPut = axios.put.bind(axios);
@@ -135,7 +143,7 @@ export function setupDeduplication(
     const originalHead = axios.head.bind(axios);
     const originalOptions = axios.options.bind(axios);
 
-    // Wrap each HTTP method with deduplication
+    // Replace each HTTP method with deduplication-aware version
     (axios as any).get = async function (
         url: string,
         config?: AxiosRequestConfig

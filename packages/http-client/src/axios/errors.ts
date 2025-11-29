@@ -19,6 +19,21 @@ import type { HttpRequestConfig } from "../contracts/request.js";
 import type { HttpHeaders } from "../contracts/types.js";
 
 /**
+ * Type guard to check if an error is an AxiosError.
+ *
+ * @param error - The error to check
+ * @returns True if the error is an AxiosError
+ */
+function isAxiosError(error: unknown): error is AxiosError {
+    return (
+        error !== null &&
+        typeof error === "object" &&
+        "isAxiosError" in error &&
+        error.isAxiosError === true
+    );
+}
+
+/**
  * Normalize axios headers to HttpHeaders format.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,14 +56,21 @@ function normalizeHeaders(headers: any): HttpHeaders {
 /**
  * Transform an AxiosError into contract-compliant HTTP error classes.
  *
- * @param error - The AxiosError to transform
+ * @param error - The error to transform (validated as AxiosError)
  * @param config - The original request configuration
  * @returns Transformed HttpError subclass
  */
 export function transformAxiosError(
-    error: AxiosError,
+    error: unknown,
     config: HttpRequestConfig
 ): HttpError {
+    // Validate that it's an AxiosError
+    if (!isAxiosError(error)) {
+        // Fallback for non-Axios errors
+        const message =
+            error instanceof Error ? error.message : "Unknown error";
+        return new HttpNetworkError(message, "UNKNOWN", config);
+    }
     // Timeout errors
     if (
         error.code === "ECONNABORTED" &&
@@ -143,7 +165,7 @@ export function transformAxiosError(
             default:
                 return new HttpResponseError(
                     error.message,
-                    status as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+                    status,
                     statusText,
                     data,
                     normalizedHeaders,

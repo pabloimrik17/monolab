@@ -77,8 +77,13 @@ export function setupRetry(
                 return Promise.reject(error);
             }
 
-            // Initialize retry count
-            // Use a property directly on config to track retries
+            // Meta-programming: Store retry state on config object
+            // We attach a custom property to the AxiosRequestConfig to track retry attempts.
+            // The 'as any' casts are justified here because:
+            // 1. We're extending Axios config with custom runtime state (not part of type definitions)
+            // 2. This pattern matches the official axios-retry library implementation
+            // 3. Allows retry state to persist across interceptor calls for the same request
+            // 4. TypeScript prevents property assignment to readonly objects, but this is safe at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const retryState = (axiosConfig as any)["axios-retry"] || {
                 retryCount: 0,

@@ -160,14 +160,22 @@ export function setupCache(
 ): CacheManager {
     const manager = new CacheManager(config);
 
-    // Store original GET method
+    // Meta-programming: Method replacement for cache interception
+    // We replace Axios instance methods to inject caching logic transparently.
+    // The 'as any' casts are justified here because:
+    // 1. TypeScript prevents assignment to methods, but this is intentional runtime behavior
+    // 2. This is a standard pattern for creating transparent interceptors/middleware
+    // 3. We preserve the original method signatures and bind context correctly
+    // 4. Allows caching to work without modifying user code or Axios internals
+
+    // Store original methods with proper binding
     const originalGet = axios.get.bind(axios);
     const originalPost = axios.post.bind(axios);
     const originalPut = axios.put.bind(axios);
     const originalPatch = axios.patch.bind(axios);
     const originalDelete = axios.delete.bind(axios);
 
-    // Wrap GET with caching
+    // Replace GET with cache-aware version
     (axios as any).get = async function (
         url: string,
         requestConfig?: AxiosRequestConfig

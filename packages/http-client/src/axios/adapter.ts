@@ -1,4 +1,9 @@
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+import type {
+    AxiosInstance,
+    AxiosRequestConfig,
+    AxiosResponse,
+    InternalAxiosRequestConfig
+} from "axios";
 import type { HttpCacheConfig } from "../contracts/cache.js";
 import type { HttpClient } from "../contracts/client.js";
 import type { HttpDeduplicationConfig } from "../contracts/deduplication.js";
@@ -69,7 +74,7 @@ class AxiosHttpClient implements HttpClient {
             const response = await this.axios.get<TResponse>(url, axiosConfig);
             return this.mapFromAxiosResponse(response, config);
         } catch (error: unknown) {
-            throw transformAxiosError(error as any, config || {}); // eslint-disable-line @typescript-eslint/no-explicit-any
+            throw transformAxiosError(error, config || {});
         }
     }
 
@@ -88,7 +93,7 @@ class AxiosHttpClient implements HttpClient {
             );
             return this.mapFromAxiosResponse(response, config);
         } catch (error: unknown) {
-            throw transformAxiosError(error as any, config || {}); // eslint-disable-line @typescript-eslint/no-explicit-any
+            throw transformAxiosError(error, config || {});
         }
     }
 
@@ -107,7 +112,7 @@ class AxiosHttpClient implements HttpClient {
             );
             return this.mapFromAxiosResponse(response, config);
         } catch (error: unknown) {
-            throw transformAxiosError(error as any, config || {}); // eslint-disable-line @typescript-eslint/no-explicit-any
+            throw transformAxiosError(error, config || {});
         }
     }
 
@@ -126,7 +131,7 @@ class AxiosHttpClient implements HttpClient {
             );
             return this.mapFromAxiosResponse(response, config);
         } catch (error: unknown) {
-            throw transformAxiosError(error as any, config || {}); // eslint-disable-line @typescript-eslint/no-explicit-any
+            throw transformAxiosError(error, config || {});
         }
     }
 
@@ -143,7 +148,7 @@ class AxiosHttpClient implements HttpClient {
             );
             return this.mapFromAxiosResponse(response, config);
         } catch (error: unknown) {
-            throw transformAxiosError(error as any, config || {}); // eslint-disable-line @typescript-eslint/no-explicit-any
+            throw transformAxiosError(error, config || {});
         }
     }
 
@@ -157,7 +162,7 @@ class AxiosHttpClient implements HttpClient {
             const response = await this.axios.head(url, axiosConfig);
             return this.mapFromAxiosResponse(response, config);
         } catch (error: unknown) {
-            throw transformAxiosError(error as any, config || {}); // eslint-disable-line @typescript-eslint/no-explicit-any
+            throw transformAxiosError(error, config || {});
         }
     }
 
@@ -171,7 +176,7 @@ class AxiosHttpClient implements HttpClient {
             const response = await this.axios.options(url, axiosConfig);
             return this.mapFromAxiosResponse(response, config);
         } catch (error: unknown) {
-            throw transformAxiosError(error as any, config || {}); // eslint-disable-line @typescript-eslint/no-explicit-any
+            throw transformAxiosError(error, config || {});
         }
     }
 
@@ -192,10 +197,12 @@ class AxiosHttpClient implements HttpClient {
                         params: result.query,
                         withCredentials: result.credentials === "include",
                         responseType: result.responseType,
-                    } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+                    } as InternalAxiosRequestConfig;
                 } catch (error: unknown) {
                     if (onRejected) {
-                        const recoveredConfig = await onRejected(error);
+                        // onRejected expects Error, convert unknown to Error
+                        const errorObj = error instanceof Error ? error : new Error(String(error));
+                        const recoveredConfig = await onRejected(errorObj);
                         return {
                             ...config,
                             headers: recoveredConfig.headers,
@@ -204,7 +211,7 @@ class AxiosHttpClient implements HttpClient {
                             withCredentials:
                                 recoveredConfig.credentials === "include",
                             responseType: recoveredConfig.responseType,
-                        } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+                        } as InternalAxiosRequestConfig;
                     }
                     throw error;
                 }
@@ -232,7 +239,7 @@ class AxiosHttpClient implements HttpClient {
                     status: result.status,
                     statusText: result.statusText,
                     headers: result.headers,
-                } as AxiosResponse; // eslint-disable-line @typescript-eslint/no-explicit-any
+                } as AxiosResponse;
             },
             onRejected
                 ? async (error) => {
@@ -245,10 +252,10 @@ class AxiosHttpClient implements HttpClient {
                               status: result.status,
                               statusText: result.statusText,
                               headers: result.headers,
-                              config: error.config || ({} as any), // eslint-disable-line @typescript-eslint/no-explicit-any
+                              config: error.config || ({} as AxiosRequestConfig),
                               request: error.request,
                               response: undefined,
-                          } as AxiosResponse; // eslint-disable-line @typescript-eslint/no-explicit-any
+                          } as AxiosResponse;
                       }
                       // If result is an error, throw it
                       throw result;
@@ -284,18 +291,37 @@ class AxiosHttpClient implements HttpClient {
 
         const axiosConfig: AxiosRequestConfig = {};
 
-        if (config.headers) axiosConfig.headers = config.headers as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-        if (config.timeout) axiosConfig.timeout = config.timeout;
-        if (config.query) axiosConfig.params = config.query;
-        if (config.credentials) axiosConfig.withCredentials = config.credentials === "include";
-        if (config.responseType) axiosConfig.responseType = config.responseType as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+        // Type assertions needed for library boundary mapping between HttpClient and Axios types
+        // Note: Some casts to 'any' are necessary due to exactOptionalPropertyTypes strictness
+        // and incompatibilities between HttpHeaders/ResponseType and Axios's type definitions
+        if (config.headers !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            axiosConfig.headers = config.headers as any;
+        }
+        if (config.timeout !== undefined) {
+            axiosConfig.timeout = config.timeout;
+        }
+        if (config.query !== undefined) {
+            axiosConfig.params = config.query;
+        }
+        if (config.credentials !== undefined) {
+            axiosConfig.withCredentials = config.credentials === "include";
+        }
+        if (config.responseType !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            axiosConfig.responseType = config.responseType as any;
+        }
 
-        // Pass through deduplication config for setupDeduplication to check
+        // Meta-programming: Pass through custom feature configs for detection by feature modules.
+        // These properties are not part of Axios's type definitions but are attached at runtime
+        // by setupCache and setupDeduplication. The 'as any' casts are justified here because:
+        // 1. We're extending Axios's config with custom properties for feature detection
+        // 2. The feature modules check for these properties to enable/disable functionality per-request
+        // 3. This pattern is standard in Axios ecosystem (e.g., axios-retry uses similar approach)
         if ((config as any).deduplication !== undefined) { // eslint-disable-line @typescript-eslint/no-explicit-any
             (axiosConfig as any).deduplication = (config as any).deduplication; // eslint-disable-line @typescript-eslint/no-explicit-any
         }
 
-        // Pass through cache config for setupCache to check
         if ((config as any).cache !== undefined) { // eslint-disable-line @typescript-eslint/no-explicit-any
             (axiosConfig as any).cache = (config as any).cache; // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -314,7 +340,9 @@ class AxiosHttpClient implements HttpClient {
             ...(config.timeout && { timeout: config.timeout }),
             ...(config.params && { query: config.params }),
             ...(config.withCredentials && { credentials: "include" as const }),
-            ...(config.responseType && { responseType: config.responseType as any }), // eslint-disable-line @typescript-eslint/no-explicit-any
+            ...(config.responseType && {
+                responseType: config.responseType as HttpRequestConfig["responseType"]
+            }),
         };
     }
 
@@ -346,7 +374,7 @@ class AxiosHttpClient implements HttpClient {
     ): HttpResponse<T> {
         return {
             data: response.data,
-            status: response.status as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+            status: response.status,
             statusText: response.statusText,
             headers: this.normalizeHeaders(response.headers),
             request: originalConfig || {},
