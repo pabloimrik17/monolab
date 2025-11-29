@@ -562,7 +562,6 @@ export default defineConfig({
         statements: 90
       },
       include: ['src/axios/**/*.ts'],
-      exclude: ['**/*.test.ts', '**/*.spec.ts', '**/types.ts']
     }
   }
 })

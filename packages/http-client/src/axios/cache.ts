@@ -78,7 +78,10 @@ export class CacheManager {
             status: entry.status,
             statusText: entry.statusText,
             headers: entry.headers,
-            config: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+            // Empty config is enough for cached responses (original config not needed for client usage)
+            // Using 'as any' here is acceptable - creating a valid AxiosRequestConfig would be wasteful
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            config: {} as any,
         } as AxiosResponse<T>;
     }
 
@@ -126,7 +129,9 @@ export class CacheManager {
 
         // Iterate through tracked keys
         const keysToDelete: string[] = [];
-        for (const key of this.keyIndex) {
+        // Convert Set to Array for iteration compatibility
+        const keys = Array.from(this.keyIndex);
+        for (const key of keys) {
             // Extract URL from key (format: METHOD:URL:PARAMS)
             const parts = key.split("::");
             if (parts.length < 2) continue;
@@ -169,13 +174,8 @@ export function setupCache(
 
     // Meta-programming: Method replacement for cache interception
     // We replace Axios instance methods to inject caching logic transparently.
-    // The 'as any' casts are justified here because:
-    // 1. TypeScript prevents assignment to methods, but this is intentional runtime behavior
-    // 2. This is a standard pattern for creating transparent interceptors/middleware
-    // 3. We preserve the original method signatures and bind context correctly
-    // 4. Allows caching to work without modifying user code or Axios internals
-
     // Store original methods with proper binding
+    // IMPORTANT: These may already be wrapped if other features ran before
     const originalGet = axios.get.bind(axios);
     const originalPost = axios.post.bind(axios);
     const originalPut = axios.put.bind(axios);
@@ -183,14 +183,18 @@ export function setupCache(
     const originalDelete = axios.delete.bind(axios);
 
     // Replace GET with cache-aware version
-    (axios as any).get = async function (
+    // @ts-expect-error - Intentionally replacing axios.get method for transparent caching
+    axios.get = async function (
         url: string,
         requestConfig?: AxiosRequestConfig
     ): Promise<AxiosResponse> {
         const fullConfig = { ...requestConfig, method: "GET", url };
 
         // Check cache opt-out
-        if ((fullConfig as any).cache?.enabled === false) {
+        // @ts-expect-error - Accessing custom cache property passed through from HttpRequestConfig
+        const cacheConfig = fullConfig.cache;
+        // Skip cache if: cache === false (boolean) OR cache.enabled === false
+        if (cacheConfig === false || cacheConfig?.enabled === false) {
             return originalGet(url, requestConfig);
         }
 
@@ -208,7 +212,8 @@ export function setupCache(
     };
 
     // Wrap POST with cache invalidation
-    (axios as any).post = async function (
+    // @ts-expect-error - Intentionally replacing axios.post method for cache invalidation
+    axios.post = async function (
         url: string,
         data?: unknown,
         requestConfig?: AxiosRequestConfig
@@ -219,7 +224,8 @@ export function setupCache(
     };
 
     // Wrap PUT with cache invalidation
-    (axios as any).put = async function (
+    // @ts-expect-error - Intentionally replacing axios.put method for cache invalidation
+    axios.put = async function (
         url: string,
         data?: unknown,
         requestConfig?: AxiosRequestConfig
@@ -230,7 +236,8 @@ export function setupCache(
     };
 
     // Wrap PATCH with cache invalidation
-    (axios as any).patch = async function (
+    // @ts-expect-error - Intentionally replacing axios.patch method for cache invalidation
+    axios.patch = async function (
         url: string,
         data?: unknown,
         requestConfig?: AxiosRequestConfig
@@ -241,7 +248,8 @@ export function setupCache(
     };
 
     // Wrap DELETE with cache invalidation
-    (axios as any).delete = async function (
+    // @ts-expect-error - Intentionally replacing axios.delete method for cache invalidation
+    axios.delete = async function (
         url: string,
         requestConfig?: AxiosRequestConfig
     ): Promise<AxiosResponse> {

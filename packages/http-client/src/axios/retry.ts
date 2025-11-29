@@ -8,7 +8,10 @@ import { transformAxiosError } from "./errors.js";
  */
 function defaultRetryCondition(error: HttpError): boolean {
     // Network errors should be retried
-    if (error.name === "HttpNetworkError" || error.name === "HttpTimeoutError") {
+    if (
+        error.name === "HttpNetworkError" ||
+        error.name === "HttpTimeoutError"
+    ) {
         return true;
     }
 
@@ -78,16 +81,15 @@ export function setupRetry(
 
             // Meta-programming: Store retry state on config object
             // We attach a custom property to the AxiosRequestConfig to track retry attempts.
-            // The 'as any' casts are justified here because:
-            // 1. We're extending Axios config with custom runtime state (not part of type definitions)
-            // 2. This pattern matches the official axios-retry library implementation
-            // 3. Allows retry state to persist across interceptor calls for the same request
-            // 4. TypeScript prevents property assignment to readonly objects, but this is safe at runtime
+            // This pattern matches the official axios-retry library implementation.
+            // Note: AxiosRequestConfig is indexable, so we can add custom properties at runtime
+            // without type errors. This allows retry state to persist across interceptor calls.
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const retryState = (axiosConfig as any)["axios-retry"] || {
                 retryCount: 0,
             };
-            (axiosConfig as any)["axios-retry"] = retryState; // eslint-disable-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (axiosConfig as any)["axios-retry"] = retryState;
 
             // Check if we should retry
             const httpError = transformAxiosError(error, {});

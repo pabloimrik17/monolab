@@ -1,10 +1,37 @@
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { HttpCache } from "../contracts/cache.js";
 import { createAxiosHttpClient } from "./adapter.js";
 
+/**
+ * Simple in-memory cache implementation for testing.
+ * HttpCache requires async methods, but Map is synchronous.
+ */
+class TestCache implements HttpCache {
+    private store = new Map<string, unknown>();
+
+    async get(key: string) {
+        const value = this.store.get(key);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (value as any) ?? null;
+    }
+
+    async set(key: string, value: unknown) {
+        this.store.set(key, value);
+    }
+
+    async delete(key: string) {
+        this.store.delete(key);
+    }
+
+    async clear() {
+        this.store.clear();
+    }
+}
+
 describe("Cache Layer", () => {
-    let mock: MockAdapter;
+    let mock: InstanceType<typeof MockAdapter>;
     let axiosInstance: ReturnType<typeof axios.create>;
 
     beforeEach(() => {
@@ -23,13 +50,13 @@ describe("Cache Layer", () => {
             const client = createAxiosHttpClient({
                 axiosInstance,
                 cache: {
-                    cache: new Map(),
+                    cache: new TestCache(),
                     ttl: 60000,
                 },
             });
 
-            const response1 = await client.get("/data");
-            const response2 = await client.get("/data");
+            const response1 = await client.get<{ result: string }>("/data");
+            const response2 = await client.get<{ result: string }>("/data");
 
             expect(response1.data.result).toBe("call-1");
             expect(response2.data.result).toBe("call-1"); // Cached
@@ -42,7 +69,7 @@ describe("Cache Layer", () => {
             const client = createAxiosHttpClient({
                 axiosInstance,
                 cache: {
-                    cache: new Map(),
+                    cache: new TestCache(),
                     ttl: 60000,
                 },
             });
@@ -67,20 +94,20 @@ describe("Cache Layer", () => {
             const client = createAxiosHttpClient({
                 axiosInstance,
                 cache: {
-                    cache: new Map(),
+                    cache: new TestCache(),
                     ttl: 1000, // 1 second
                 },
             });
 
             // First call
-            const response1 = await client.get("/data");
+            const response1 = await client.get<{ result: string }>("/data");
             expect(response1.data.result).toBe("call-1");
 
             // Advance time by 500ms (still within TTL)
             vi.advanceTimersByTime(500);
 
             // Second call - should be cached
-            const response2 = await client.get("/data");
+            const response2 = await client.get<{ result: string }>("/data");
             expect(response2.data.result).toBe("call-1");
             expect(callCount).toBe(1);
 
@@ -88,7 +115,7 @@ describe("Cache Layer", () => {
             vi.advanceTimersByTime(600);
 
             // Third call - should refetch
-            const response3 = await client.get("/data");
+            const response3 = await client.get<{ result: string }>("/data");
             expect(response3.data.result).toBe("call-2");
             expect(callCount).toBe(2);
 
@@ -104,21 +131,21 @@ describe("Cache Layer", () => {
             const client = createAxiosHttpClient({
                 axiosInstance,
                 cache: {
-                    cache: new Map(),
+                    cache: new TestCache(),
                     ttl: 60000,
                 },
             });
 
             // GET request - cache it
-            const response1 = await client.get("/users");
-            expect(response1.data[0].id).toBe(1);
+            const response1 = await client.get<Array<{ id: number }>>("/users");
+            expect(response1.data[0]?.id).toBe(1);
 
             // POST request - should invalidate cache
             await client.post("/users", { name: "New User" });
 
             // GET request again - should refetch (not cached)
             mock.onGet("/users").reply(200, [{ id: 1 }, { id: 2 }]);
-            const response2 = await client.get("/users");
+            const response2 = await client.get<Array<{ id: number }>>("/users");
             expect(response2.data.length).toBe(2);
             expect(mock.history.get.length).toBe(2); // Two actual GET requests
         });
@@ -130,7 +157,7 @@ describe("Cache Layer", () => {
             const client = createAxiosHttpClient({
                 axiosInstance,
                 cache: {
-                    cache: new Map(),
+                    cache: new TestCache(),
                     ttl: 60000,
                 },
             });
@@ -151,7 +178,7 @@ describe("Cache Layer", () => {
             const client = createAxiosHttpClient({
                 axiosInstance,
                 cache: {
-                    cache: new Map(),
+                    cache: new TestCache(),
                     ttl: 60000,
                 },
             });
@@ -173,7 +200,7 @@ describe("Cache Layer", () => {
             const client = createAxiosHttpClient({
                 axiosInstance,
                 cache: {
-                    cache: new Map(),
+                    cache: new TestCache(),
                     ttl: 60000,
                 },
             });
@@ -195,19 +222,36 @@ describe("Cache Layer", () => {
     });
 
     describe("cache configuration", () => {
-        it("allows per-request cache opt-out", async () => {
+        it("allows per-request cache opt-out with enabled flag", async () => {
             mock.onGet("/data").reply(200, { value: 1 });
 
             const client = createAxiosHttpClient({
                 axiosInstance,
                 cache: {
-                    cache: new Map(),
+                    cache: new TestCache(),
                     ttl: 60000,
                 },
             });
 
             await client.get("/data");
-            await client.get("/data", { cache: { enabled: false } } as any);
+            await client.get("/data", { cache: { enabled: false } });
+
+            expect(mock.history.get.length).toBe(2); // Both requests made
+        });
+
+        it("allows per-request cache opt-out with boolean false", async () => {
+            mock.onGet("/data").reply(200, { value: 1 });
+
+            const client = createAxiosHttpClient({
+                axiosInstance,
+                cache: {
+                    cache: new TestCache(),
+                    ttl: 60000,
+                },
+            });
+
+            await client.get("/data");
+            await client.get("/data", { cache: false });
 
             expect(mock.history.get.length).toBe(2); // Both requests made
         });
@@ -235,13 +279,13 @@ describe("Cache Layer", () => {
             const client = createAxiosHttpClient({
                 axiosInstance,
                 cache: {
-                    cache: new Map(),
+                    cache: new TestCache(),
                     ttl: 60000,
                 },
             });
 
-            const response1 = await client.get("/endpoint1");
-            const response2 = await client.get("/endpoint2");
+            const response1 = await client.get<{ data: number }>("/endpoint1");
+            const response2 = await client.get<{ data: number }>("/endpoint2");
 
             expect(response1.data.data).toBe(1);
             expect(response2.data.data).toBe(2);
@@ -257,15 +301,15 @@ describe("Cache Layer", () => {
             const client = createAxiosHttpClient({
                 axiosInstance,
                 cache: {
-                    cache: new Map(),
+                    cache: new TestCache(),
                     ttl: 60000,
                 },
             });
 
-            const response1 = await client.get("/search", {
+            const response1 = await client.get<{ query: string }>("/search", {
                 query: { q: "test1" },
             });
-            const response2 = await client.get("/search", {
+            const response2 = await client.get<{ query: string }>("/search", {
                 query: { q: "test2" },
             });
 
@@ -280,7 +324,7 @@ describe("Cache Layer", () => {
             const client = createAxiosHttpClient({
                 axiosInstance,
                 cache: {
-                    cache: new Map(),
+                    cache: new TestCache(),
                     ttl: 60000,
                 },
             });

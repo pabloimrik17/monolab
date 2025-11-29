@@ -328,8 +328,7 @@ class AxiosHttpClient implements HttpClient {
         // Note: Some casts to 'any' are necessary due to exactOptionalPropertyTypes strictness
         // and incompatibilities between HttpHeaders/ResponseType and Axios's type definitions
         if (config.headers !== undefined) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            axiosConfig.headers = config.headers as any;
+            axiosConfig.headers = config.headers;
         }
         if (config.timeout !== undefined) {
             axiosConfig.timeout = config.timeout;
@@ -341,22 +340,20 @@ class AxiosHttpClient implements HttpClient {
             axiosConfig.withCredentials = config.credentials === "include";
         }
         if (config.responseType !== undefined) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            axiosConfig.responseType = config.responseType as any;
+            axiosConfig.responseType = config.responseType;
         }
 
         // Meta-programming: Pass through custom feature configs for detection by feature modules.
         // These properties are not part of Axios's type definitions but are attached at runtime
-        // by setupCache and setupDeduplication. The 'as any' casts are justified here because:
-        // 1. We're extending Axios's config with custom properties for feature detection
-        // 2. The feature modules check for these properties to enable/disable functionality per-request
-        // 3. This pattern is standard in Axios ecosystem (e.g., axios-retry uses similar approach)
-        if ((config as any).deduplication !== undefined) {
-            (axiosConfig as any).deduplication = (config as any).deduplication; // eslint-disable-line @typescript-eslint/no-explicit-any
+        // by setupCache and setupDeduplication.
+        if (config.deduplication !== undefined) {
+            // @ts-expect-error - Custom property for deduplication feature detection, not in AxiosRequestConfig
+            axiosConfig.deduplication = config.deduplication;
         }
 
-        if ((config as any).cache !== undefined) {
-            (axiosConfig as any).cache = (config as any).cache; // eslint-disable-line @typescript-eslint/no-explicit-any
+        if (config.cache !== undefined) {
+            // @ts-expect-error - Custom property for cache feature detection, not in AxiosRequestConfig
+            axiosConfig.cache = config.cache;
         }
 
         return axiosConfig;
@@ -406,6 +403,22 @@ class AxiosHttpClient implements HttpClient {
  * - **Retry**: Automatically retry failed requests with configurable backoff strategies
  * - **Deduplication**: Prevent duplicate concurrent requests
  * - **Cache**: Cache GET responses with TTL and automatic invalidation
+ *
+ * ## Implementation Strategy: Method Wrapping
+ *
+ * Cache and deduplication use method wrapping (replacing axios.get, axios.post, etc.)
+ * rather than interceptors because:
+ * 1. They need to short-circuit requests (return cached/deduplicated responses)
+ * 2. Axios request interceptors cannot return responses directly
+ * 3. Multiple interceptors setting `config.adapter` would overwrite each other
+ * 4. This pattern is used by established libraries (axios-retry, axios-cache-adapter)
+ *
+ * **Setup order is critical** - each function wraps the previous:
+ * - `setupCache` wraps axios methods first (innermost layer)
+ * - `setupDeduplication` wraps cached methods (middle layer)
+ * - `setupRetry` uses interceptors (outermost layer for error handling)
+ *
+ * **Request flow**: dedup check → cache check → network → retry on error
  *
  * @param options - Configuration options
  * @param options.axiosInstance - Pre-configured axios instance (required)
@@ -457,17 +470,20 @@ export function createAxiosHttpClient(
         throw new Error("axiosInstance is required");
     }
 
-    // Setup cache if configured (before deduplication/retry)
+    // IMPORTANT: Setup order matters - each function wraps the previous layer
+    // Cache must be setup first (innermost), then dedup, then retry (outermost)
+
+    // Setup cache if configured (innermost layer)
     if (options?.cache) {
         setupCache(axios, options.cache);
     }
 
-    // Setup deduplication if configured
+    // Setup deduplication if configured (middle layer, wraps cache)
     if (options?.deduplication?.enabled) {
         setupDeduplication(axios, options.deduplication);
     }
 
-    // Setup retry if configured
+    // Setup retry if configured (outermost layer, uses interceptors)
     if (options?.retry) {
         setupRetry(axios, options.retry);
     }

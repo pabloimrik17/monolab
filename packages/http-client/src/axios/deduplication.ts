@@ -61,7 +61,10 @@ export function generateDeduplicationKey(
  * Ensures only one actual request is made for multiple identical concurrent requests.
  */
 export class DeduplicationManager {
-    private inFlightRequests = new Map<string, Promise<AxiosResponse<any>>>();
+    private inFlightRequests = new Map<
+        string,
+        Promise<AxiosResponse<unknown>>
+    >();
     private readonly criticalHeaders?: string[];
 
     constructor(config?: HttpDeduplicationConfig) {
@@ -122,14 +125,9 @@ export function setupDeduplication(
     const manager = new DeduplicationManager(config);
 
     // Meta-programming: Method replacement for request deduplication
-    // We replace Axios instance methods to inject deduplication logic transparently.
-    // The 'as any' casts are justified here because:
-    // 1. TypeScript prevents assignment to methods, but this is intentional runtime behavior
-    // 2. This pattern enables transparent request deduplication without code changes
-    // 3. We preserve the original method signatures and bind context correctly
-    // 4. Prevents redundant concurrent requests with identical parameters
-
-    // Store original HTTP methods with proper binding
+    // Store HTTP methods with proper binding
+    // IMPORTANT: These are likely already wrapped by setupCache if cache is enabled
+    // We're creating a chain: dedup → cache → original
     const originalGet = axios.get.bind(axios);
     const originalPost = axios.post.bind(axios);
     const originalPut = axios.put.bind(axios);
@@ -139,14 +137,16 @@ export function setupDeduplication(
     const originalOptions = axios.options.bind(axios);
 
     // Replace each HTTP method with deduplication-aware version
-    (axios as any).get = async function (
+    // @ts-expect-error - Intentionally replacing axios.get method for request deduplication
+    axios.get = async function (
         url: string,
         config?: AxiosRequestConfig
     ): Promise<AxiosResponse> {
         const requestConfig = { ...config, method: "GET", url };
 
         // Check if deduplication is disabled for this request
-        if ((requestConfig as any).deduplication?.enabled === false) {
+        // @ts-expect-error - Accessing custom deduplication property passed through from HttpRequestConfig
+        if (requestConfig.deduplication?.enabled === false) {
             return originalGet(url, config);
         }
 
@@ -155,14 +155,16 @@ export function setupDeduplication(
         );
     };
 
-    (axios as any).post = async function (
+    // @ts-expect-error - Intentionally replacing axios.post method for request deduplication
+    axios.post = async function (
         url: string,
         data?: unknown,
         config?: AxiosRequestConfig
     ): Promise<AxiosResponse> {
         const requestConfig = { ...config, method: "POST", url, data };
 
-        if ((requestConfig as any).deduplication?.enabled === false) {
+        // @ts-expect-error - Accessing custom deduplication property passed through from HttpRequestConfig
+        if (requestConfig.deduplication?.enabled === false) {
             return originalPost(url, data, config);
         }
 
@@ -171,14 +173,16 @@ export function setupDeduplication(
         );
     };
 
-    (axios as any).put = async function (
+    // @ts-expect-error - Intentionally replacing axios.put method for request deduplication
+    axios.put = async function (
         url: string,
         data?: unknown,
         config?: AxiosRequestConfig
     ): Promise<AxiosResponse> {
         const requestConfig = { ...config, method: "PUT", url, data };
 
-        if ((requestConfig as any).deduplication?.enabled === false) {
+        // @ts-expect-error - Accessing custom deduplication property passed through from HttpRequestConfig
+        if (requestConfig.deduplication?.enabled === false) {
             return originalPut(url, data, config);
         }
 
@@ -187,14 +191,16 @@ export function setupDeduplication(
         );
     };
 
-    (axios as any).patch = async function (
+    // @ts-expect-error - Intentionally replacing axios.patch method for request deduplication
+    axios.patch = async function (
         url: string,
         data?: unknown,
         config?: AxiosRequestConfig
     ): Promise<AxiosResponse> {
         const requestConfig = { ...config, method: "PATCH", url, data };
 
-        if ((requestConfig as any).deduplication?.enabled === false) {
+        // @ts-expect-error - Accessing custom deduplication property passed through from HttpRequestConfig
+        if (requestConfig.deduplication?.enabled === false) {
             return originalPatch(url, data, config);
         }
 
@@ -203,13 +209,15 @@ export function setupDeduplication(
         );
     };
 
-    (axios as any).delete = async function (
+    // @ts-expect-error - Intentionally replacing axios.delete method for request deduplication
+    axios.delete = async function (
         url: string,
         config?: AxiosRequestConfig
     ): Promise<AxiosResponse> {
         const requestConfig = { ...config, method: "DELETE", url };
 
-        if ((requestConfig as any).deduplication?.enabled === false) {
+        // @ts-expect-error - Accessing custom deduplication property passed through from HttpRequestConfig
+        if (requestConfig.deduplication?.enabled === false) {
             return originalDelete(url, config);
         }
 
@@ -218,13 +226,15 @@ export function setupDeduplication(
         );
     };
 
-    (axios as any).head = async function (
+    // @ts-expect-error - Intentionally replacing axios.head method for request deduplication
+    axios.head = async function (
         url: string,
         config?: AxiosRequestConfig
     ): Promise<AxiosResponse> {
         const requestConfig = { ...config, method: "HEAD", url };
 
-        if ((requestConfig as any).deduplication?.enabled === false) {
+        // @ts-expect-error - Accessing custom deduplication property passed through from HttpRequestConfig
+        if (requestConfig.deduplication?.enabled === false) {
             return originalHead(url, config);
         }
 
@@ -233,13 +243,15 @@ export function setupDeduplication(
         );
     };
 
-    (axios as any).options = async function (
+    // @ts-expect-error - Intentionally replacing axios.options method for request deduplication
+    axios.options = async function (
         url: string,
         config?: AxiosRequestConfig
     ): Promise<AxiosResponse> {
         const requestConfig = { ...config, method: "OPTIONS", url };
 
-        if ((requestConfig as any).deduplication?.enabled === false) {
+        // @ts-expect-error - Accessing custom deduplication property passed through from HttpRequestConfig
+        if (requestConfig.deduplication?.enabled === false) {
             return originalOptions(url, config);
         }
 
