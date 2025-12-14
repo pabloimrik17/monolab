@@ -15,10 +15,16 @@ interface InternalCacheEntry extends CacheEntry {
 }
 
 /**
+ * Cache key format: METHOD::URL::PARAMS
+ * @example "GET::/users::page=1&limit=10"
+ */
+export type CacheKey = `${string}::${string}::${string}`;
+
+/**
  * Generate cache key from request config.
  * Format: METHOD::URL::PARAMS
  */
-export function generateCacheKey(config: AxiosRequestConfig): string {
+export function generateCacheKey(config: AxiosRequestConfig): CacheKey {
     const parts: string[] = [];
 
     // Method
@@ -38,13 +44,15 @@ export function generateCacheKey(config: AxiosRequestConfig): string {
         parts.push("");
     }
 
-    return parts.join("::");
+    return parts.join("::") as CacheKey;
 }
 
 /**
  * Cache manager for HTTP responses.
  */
 export class CacheManager {
+    private static readonly DEFAULT_TTL = 60000; // Default 60 seconds
+
     private readonly cache: HttpCache;
     private readonly ttl: number;
     private readonly keyIndex: Set<string> = new Set(); // Track keys for pattern invalidation
@@ -54,7 +62,7 @@ export class CacheManager {
             throw new Error("Cache implementation is required");
         }
         this.cache = config.cache;
-        this.ttl = config.ttl || 60000; // Default 60 seconds
+        this.ttl = config.ttl || CacheManager.DEFAULT_TTL;
     }
 
     /**
