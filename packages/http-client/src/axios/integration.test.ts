@@ -1,7 +1,30 @@
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import type { CacheEntry, HttpCache } from "../contracts/cache.js";
 import { createAxiosHttpClient } from "./adapter.js";
+
+/**
+ * Creates a test cache implementation that wraps a Map with async interface.
+ * Required because HttpCache interface uses Promise-based methods.
+ */
+function createTestCache(): HttpCache {
+    const store = new Map<string, CacheEntry>();
+    return {
+        async get(key: string) {
+            return store.get(key) ?? null;
+        },
+        async set(key: string, value: CacheEntry) {
+            store.set(key, value);
+        },
+        async delete(key: string) {
+            store.delete(key);
+        },
+        async clear() {
+            store.clear();
+        },
+    };
+}
 
 /**
  * Integration tests verifying all features work together correctly.
@@ -47,7 +70,7 @@ describe("Integration Tests", () => {
 
             expect(response.status).toBe(201);
             expect(response.data).toEqual({ id: 2, name: "Bob" });
-            expect(response.headers.location).toBe("/users/2");
+            expect(response.headers["location"]).toBe("/users/2");
         });
 
         it("handles request with headers and query params", async () => {
@@ -234,7 +257,7 @@ describe("Integration Tests", () => {
                 return [200, { value: callCount }];
             });
 
-            const cache = new Map();
+            const cache = createTestCache();
             const client = createAxiosHttpClient({
                 axiosInstance,
                 cache: {
@@ -260,7 +283,7 @@ describe("Integration Tests", () => {
             });
             mock.onPost("/users").reply(201, { id: 2 });
 
-            const cache = new Map();
+            const cache = createTestCache();
             const client = createAxiosHttpClient({
                 axiosInstance,
                 cache: {
@@ -288,7 +311,7 @@ describe("Integration Tests", () => {
                 return [200, { value: callCount }];
             });
 
-            const cache = new Map();
+            const cache = createTestCache();
             const client = createAxiosHttpClient({
                 axiosInstance,
                 cache: {
@@ -365,7 +388,9 @@ describe("Integration Tests", () => {
                 client.get("/users/2"),
             ]);
 
-            expect(response1.data.id).not.toBe(response2.data.id);
+            expect((response1.data as { id: number }).id).not.toBe(
+                (response2.data as { id: number }).id
+            );
             expect(callCount).toBe(2); // Two different requests
         });
     });
@@ -380,7 +405,7 @@ describe("Integration Tests", () => {
                     : [200, { value: callCount }];
             });
 
-            const cache = new Map();
+            const cache = createTestCache();
             const client = createAxiosHttpClient({
                 axiosInstance,
                 retry: {
@@ -419,7 +444,7 @@ describe("Integration Tests", () => {
                 return [200, [{ id: callCount }]];
             });
 
-            const cache = new Map();
+            const cache = createTestCache();
             const client = createAxiosHttpClient({
                 axiosInstance,
                 deduplication: {

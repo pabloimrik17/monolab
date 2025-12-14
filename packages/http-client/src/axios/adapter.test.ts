@@ -59,7 +59,7 @@ describe("AxiosHttpClient", () => {
             });
 
             expect(response.status).toBe(200);
-            expect(mock.history.get[0].params).toEqual({
+            expect(mock.history.get[0]!.params).toEqual({
                 q: "test",
                 limit: 10,
             });
@@ -107,7 +107,7 @@ describe("AxiosHttpClient", () => {
             expect(response.status).toBe(201);
             expect(response.data.id).toBe(2);
             expect(response.data.name).toBe("Jane");
-            expect(mock.history.post[0].data).toBe(JSON.stringify(newUser));
+            expect(mock.history.post[0]!.data).toBe(JSON.stringify(newUser));
         });
 
         it("supports POST without body", async () => {
@@ -226,7 +226,7 @@ describe("AxiosHttpClient", () => {
             const response = await client.options("/users");
 
             expect(response.status).toBe(200);
-            expect(response.headers.allow).toBe("GET, POST, PUT, DELETE");
+            expect(response.headers["allow"]).toBe("GET, POST, PUT, DELETE");
         });
     });
 
@@ -261,8 +261,8 @@ describe("AxiosHttpClient", () => {
 
             await client.get("/users");
 
-            expect(mock.history.get[0].headers?.["X-API-Key"]).toBe("secret");
-            expect(mock.history.get[0].headers?.["Content-Type"]).toBe(
+            expect(mock.history.get[0]!.headers?.["X-API-Key"]).toBe("secret");
+            expect(mock.history.get[0]!.headers?.["Content-Type"]).toBe(
                 "application/json"
             );
         });
@@ -280,8 +280,8 @@ describe("AxiosHttpClient", () => {
                 headers: { "X-Custom": "value" },
             });
 
-            expect(mock.history.get[0].headers?.["X-API-Key"]).toBe("secret");
-            expect(mock.history.get[0].headers?.["X-Custom"]).toBe("value");
+            expect(mock.history.get[0]!.headers?.["X-API-Key"]).toBe("secret");
+            expect(mock.history.get[0]!.headers?.["X-Custom"]).toBe("value");
         });
     });
 
@@ -291,7 +291,7 @@ describe("AxiosHttpClient", () => {
 
             await client.get("/users", { timeout: 5000 });
 
-            expect(mock.history.get[0].timeout).toBe(5000);
+            expect(mock.history.get[0]!.timeout).toBe(5000);
         });
     });
 });

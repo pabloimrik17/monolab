@@ -1,3 +1,4 @@
+import type { InternalAxiosRequestConfig } from "axios";
 import { AxiosError } from "axios";
 import { describe, expect, it } from "vitest";
 import {
@@ -17,6 +18,11 @@ import {
 } from "../contracts/errors.js";
 import type { HttpRequestConfig } from "../contracts/request.js";
 import { transformAxiosError } from "./errors.js";
+
+// Helper to create minimal InternalAxiosRequestConfig for tests
+function createMockAxiosConfig(): InternalAxiosRequestConfig {
+    return { headers: {} } as InternalAxiosRequestConfig;
+}
 
 describe("transformAxiosError", () => {
     const mockConfig: HttpRequestConfig = {
@@ -38,11 +44,12 @@ describe("transformAxiosError", () => {
             const result = transformAxiosError(axiosError, mockConfig);
 
             expect(result).toBeInstanceOf(HttpNetworkError);
-            expect(result.name).toBe("HttpNetworkError");
-            expect(result.code).toBe("ECONNREFUSED");
-            expect(result.message).toContain("Network Error");
-            expect(result.request).toEqual(mockConfig);
-            expect(result.timestamp).toBeDefined();
+            const networkError = result as HttpNetworkError;
+            expect(networkError.name).toBe("HttpNetworkError");
+            expect(networkError.code).toBe("ECONNREFUSED");
+            expect(networkError.message).toContain("Network Error");
+            expect(networkError.request).toEqual(mockConfig);
+            expect(networkError.timestamp).toBeDefined();
         });
 
         it("transforms ETIMEDOUT to HttpNetworkError", () => {
@@ -58,7 +65,7 @@ describe("transformAxiosError", () => {
             const result = transformAxiosError(axiosError, mockConfig);
 
             expect(result).toBeInstanceOf(HttpNetworkError);
-            expect(result.code).toBe("ETIMEDOUT");
+            expect((result as HttpNetworkError).code).toBe("ETIMEDOUT");
         });
 
         it("transforms ENOTFOUND to HttpNetworkError", () => {
@@ -74,7 +81,7 @@ describe("transformAxiosError", () => {
             const result = transformAxiosError(axiosError, mockConfig);
 
             expect(result).toBeInstanceOf(HttpNetworkError);
-            expect(result.code).toBe("ENOTFOUND");
+            expect((result as HttpNetworkError).code).toBe("ENOTFOUND");
         });
     });
 
@@ -130,17 +137,18 @@ describe("transformAxiosError", () => {
                     statusText: "Bad Request",
                     data: { error: "Invalid input" },
                     headers: { "content-type": "application/json" },
-                    config: {},
+                    config: createMockAxiosConfig(),
                 }
             );
 
             const result = transformAxiosError(axiosError, mockConfig);
 
             expect(result).toBeInstanceOf(HttpBadRequestError);
-            expect(result.status).toBe(400);
-            expect(result.statusText).toBe("Bad Request");
-            expect(result.data).toEqual({ error: "Invalid input" });
-            expect(result.headers).toEqual({
+            const responseError = result as HttpResponseError;
+            expect(responseError.status).toBe(400);
+            expect(responseError.statusText).toBe("Bad Request");
+            expect(responseError.data).toEqual({ error: "Invalid input" });
+            expect(responseError.headers).toEqual({
                 "content-type": "application/json",
             });
         });
@@ -156,14 +164,14 @@ describe("transformAxiosError", () => {
                     statusText: "Unauthorized",
                     data: { error: "Not authenticated" },
                     headers: {},
-                    config: {},
+                    config: createMockAxiosConfig(),
                 }
             );
 
             const result = transformAxiosError(axiosError, mockConfig);
 
             expect(result).toBeInstanceOf(HttpUnauthorizedError);
-            expect(result.status).toBe(401);
+            expect((result as HttpResponseError).status).toBe(401);
         });
 
         it("transforms 403 Forbidden to HttpForbiddenError", () => {
@@ -177,14 +185,14 @@ describe("transformAxiosError", () => {
                     statusText: "Forbidden",
                     data: { error: "No permission" },
                     headers: {},
-                    config: {},
+                    config: createMockAxiosConfig(),
                 }
             );
 
             const result = transformAxiosError(axiosError, mockConfig);
 
             expect(result).toBeInstanceOf(HttpForbiddenError);
-            expect(result.status).toBe(403);
+            expect((result as HttpResponseError).status).toBe(403);
         });
 
         it("transforms 404 Not Found to HttpNotFoundError", () => {
@@ -198,14 +206,14 @@ describe("transformAxiosError", () => {
                     statusText: "Not Found",
                     data: { error: "Resource not found" },
                     headers: {},
-                    config: {},
+                    config: createMockAxiosConfig(),
                 }
             );
 
             const result = transformAxiosError(axiosError, mockConfig);
 
             expect(result).toBeInstanceOf(HttpNotFoundError);
-            expect(result.status).toBe(404);
+            expect((result as HttpResponseError).status).toBe(404);
         });
 
         it("transforms 409 Conflict to HttpConflictError", () => {
@@ -219,14 +227,14 @@ describe("transformAxiosError", () => {
                     statusText: "Conflict",
                     data: { error: "Resource already exists" },
                     headers: {},
-                    config: {},
+                    config: createMockAxiosConfig(),
                 }
             );
 
             const result = transformAxiosError(axiosError, mockConfig);
 
             expect(result).toBeInstanceOf(HttpConflictError);
-            expect(result.status).toBe(409);
+            expect((result as HttpResponseError).status).toBe(409);
         });
 
         it("transforms 422 Unprocessable Entity to HttpUnprocessableEntityError", () => {
@@ -240,14 +248,14 @@ describe("transformAxiosError", () => {
                     statusText: "Unprocessable Entity",
                     data: { errors: ["Age must be positive"] },
                     headers: {},
-                    config: {},
+                    config: createMockAxiosConfig(),
                 }
             );
 
             const result = transformAxiosError(axiosError, mockConfig);
 
             expect(result).toBeInstanceOf(HttpUnprocessableEntityError);
-            expect(result.status).toBe(422);
+            expect((result as HttpResponseError).status).toBe(422);
         });
 
         it("transforms 429 Too Many Requests to HttpTooManyRequestsError", () => {
@@ -261,15 +269,16 @@ describe("transformAxiosError", () => {
                     statusText: "Too Many Requests",
                     data: { error: "Rate limit exceeded" },
                     headers: { "retry-after": "60" },
-                    config: {},
+                    config: createMockAxiosConfig(),
                 }
             );
 
             const result = transformAxiosError(axiosError, mockConfig);
 
             expect(result).toBeInstanceOf(HttpTooManyRequestsError);
-            expect(result.status).toBe(429);
-            expect(result.headers["retry-after"]).toBe("60");
+            const responseError = result as HttpResponseError;
+            expect(responseError.status).toBe(429);
+            expect(responseError.headers["retry-after"]).toBe("60");
         });
 
         it("transforms other 4xx to generic HttpResponseError", () => {
@@ -283,7 +292,7 @@ describe("transformAxiosError", () => {
                     statusText: "I'm a teapot",
                     data: {},
                     headers: {},
-                    config: {},
+                    config: createMockAxiosConfig(),
                 }
             );
 
@@ -291,7 +300,7 @@ describe("transformAxiosError", () => {
 
             expect(result).toBeInstanceOf(HttpResponseError);
             expect(result).not.toBeInstanceOf(HttpBadRequestError);
-            expect(result.status).toBe(418);
+            expect((result as HttpResponseError).status).toBe(418);
         });
     });
 
@@ -307,14 +316,14 @@ describe("transformAxiosError", () => {
                     statusText: "Internal Server Error",
                     data: { error: "Something went wrong" },
                     headers: {},
-                    config: {},
+                    config: createMockAxiosConfig(),
                 }
             );
 
             const result = transformAxiosError(axiosError, mockConfig);
 
             expect(result).toBeInstanceOf(HttpInternalServerError);
-            expect(result.status).toBe(500);
+            expect((result as HttpResponseError).status).toBe(500);
         });
 
         it("transforms 503 Service Unavailable to HttpServiceUnavailableError", () => {
@@ -328,15 +337,16 @@ describe("transformAxiosError", () => {
                     statusText: "Service Unavailable",
                     data: { error: "Maintenance mode" },
                     headers: { "retry-after": "300" },
-                    config: {},
+                    config: createMockAxiosConfig(),
                 }
             );
 
             const result = transformAxiosError(axiosError, mockConfig);
 
             expect(result).toBeInstanceOf(HttpServiceUnavailableError);
-            expect(result.status).toBe(503);
-            expect(result.headers["retry-after"]).toBe("300");
+            const responseError = result as HttpResponseError;
+            expect(responseError.status).toBe(503);
+            expect(responseError.headers["retry-after"]).toBe("300");
         });
 
         it("transforms other 5xx to generic HttpResponseError", () => {
@@ -350,7 +360,7 @@ describe("transformAxiosError", () => {
                     statusText: "Bad Gateway",
                     data: {},
                     headers: {},
-                    config: {},
+                    config: createMockAxiosConfig(),
                 }
             );
 
@@ -358,7 +368,7 @@ describe("transformAxiosError", () => {
 
             expect(result).toBeInstanceOf(HttpResponseError);
             expect(result).not.toBeInstanceOf(HttpInternalServerError);
-            expect(result.status).toBe(502);
+            expect((result as HttpResponseError).status).toBe(502);
         });
     });
 
@@ -375,7 +385,7 @@ describe("transformAxiosError", () => {
             const result = transformAxiosError(axiosError, mockConfig);
 
             expect(result).toBeInstanceOf(HttpNetworkError);
-            expect(result.code).toBe("UNKNOWN");
+            expect((result as HttpNetworkError).code).toBe("UNKNOWN");
         });
 
         it("preserves original request config", () => {

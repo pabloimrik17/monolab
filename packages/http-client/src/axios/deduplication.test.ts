@@ -116,8 +116,8 @@ describe("Request Deduplication", () => {
                 client.post("/data", {}),
             ]);
 
-            expect(getResponse.data.type).toBe("get");
-            expect(postResponse.data.type).toBe("post");
+            expect((getResponse.data as { type: string }).type).toBe("get");
+            expect((postResponse.data as { type: string }).type).toBe("post");
             expect(mock.history.get.length).toBe(1);
             expect(mock.history.post.length).toBe(1);
         });
@@ -142,8 +142,12 @@ describe("Request Deduplication", () => {
                 client.get("/search", { query: { q: "test", limit: 20 } }),
             ]);
 
-            expect(response1.data.results).toBe("test-10");
-            expect(response2.data.results).toBe("test-20");
+            expect((response1.data as { results: string }).results).toBe(
+                "test-10"
+            );
+            expect((response2.data as { results: string }).results).toBe(
+                "test-20"
+            );
             expect(mock.history.get.length).toBe(2);
         });
 
@@ -163,8 +167,8 @@ describe("Request Deduplication", () => {
                 client.post("/users", { name: "Jane", age: 25 }),
             ]);
 
-            expect(response1.data.name).toBe("John");
-            expect(response2.data.name).toBe("Jane");
+            expect((response1.data as { name: string }).name).toBe("John");
+            expect((response2.data as { name: string }).name).toBe("Jane");
             expect(mock.history.post.length).toBe(2);
         });
     });
@@ -290,8 +294,8 @@ describe("Request Deduplication", () => {
                 }),
             ]);
 
-            expect(response1.data.user).toBe("user1");
-            expect(response2.data.user).toBe("user2");
+            expect((response1.data as { user: string }).user).toBe("user1");
+            expect((response2.data as { user: string }).user).toBe("user2");
             expect(mock.history.get.length).toBe(2);
         });
 

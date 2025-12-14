@@ -36,7 +36,7 @@ describe("Interceptors", () => {
 
             await client.get("/protected");
 
-            expect(mock.history.get[0].headers?.Authorization).toBe(token);
+            expect(mock.history.get[0]!.headers?.Authorization).toBe(token);
         });
 
         it("executes multiple request interceptors in order", async () => {
@@ -83,9 +83,11 @@ describe("Interceptors", () => {
 
             await client.get("/test");
 
-            expect(mock.history.get[0].headers?.["X-Custom"]).toBe("value");
-            expect(mock.history.get[0].headers?.["X-Timestamp"]).toBe("123456");
-            expect(mock.history.get[0].timeout).toBe(5000);
+            expect(mock.history.get[0]!.headers?.["X-Custom"]).toBe("value");
+            expect(mock.history.get[0]!.headers?.["X-Timestamp"]).toBe(
+                "123456"
+            );
+            expect(mock.history.get[0]!.timeout).toBe(5000);
         });
 
         it("handles async request interceptor", async () => {
@@ -110,7 +112,7 @@ describe("Interceptors", () => {
 
             await client.get("/test");
 
-            expect(mock.history.get[0].headers?.Authorization).toBe(
+            expect(mock.history.get[0]!.headers?.Authorization).toBe(
                 "async-token"
             );
         });

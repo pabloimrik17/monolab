@@ -135,8 +135,8 @@ describe("Retry Policy", () => {
             await client.get("/flaky");
 
             // All delays should be similar (~100ms apart)
-            const delay1 = delays[1] - delays[0];
-            const delay2 = delays[2] - delays[1];
+            const delay1 = delays[1]! - delays[0]!;
+            const delay2 = delays[2]! - delays[1]!;
             expect(delay1).toBeGreaterThan(80);
             expect(delay1).toBeLessThan(150);
             expect(delay2).toBeGreaterThan(80);
@@ -208,7 +208,8 @@ describe("Retry Policy", () => {
                 retry: {
                     attempts: 3,
                     delay: 10,
-                    condition: (error) => error.status === 503,
+                    condition: (error) =>
+                        "status" in error && error.status === 503,
                 },
             });
 
@@ -233,7 +234,7 @@ describe("Retry Policy", () => {
                 retry: {
                     attempts: 3,
                     delay: 10,
-                    onRetry: (error, attempt) => {
+                    onRetry: (_error, attempt) => {
                         retryEvents.push({ attempt });
                     },
                 },
@@ -242,8 +243,8 @@ describe("Retry Policy", () => {
             await client.get("/flaky");
 
             expect(retryEvents).toHaveLength(2); // Retried twice (3 total attempts)
-            expect(retryEvents[0].attempt).toBe(1);
-            expect(retryEvents[1].attempt).toBe(2);
+            expect(retryEvents[0]!.attempt).toBe(1);
+            expect(retryEvents[1]!.attempt).toBe(2);
         });
 
         it("calls onRetryFailed hook when retries exhausted", async () => {

@@ -78,10 +78,9 @@ export class CacheManager {
             status: entry.status,
             statusText: entry.statusText,
             headers: entry.headers,
-            // Empty config is enough for cached responses (original config not needed for client usage)
-            // Using 'as any' here is acceptable - creating a valid AxiosRequestConfig would be wasteful
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            config: {} as any,
+            // Empty config is sufficient for cached responses - the original config isn't needed
+            // for downstream usage. Using type assertion since AxiosResponse requires a config.
+            config: {} as AxiosRequestConfig,
         } as AxiosResponse<T>;
     }
 

@@ -87,9 +87,9 @@ describe("HttpClientFactory", () => {
             await client2.get("/test");
 
             // Client 1 should have the interceptor
-            expect(mock1.history.get[0].headers?.["X-Client"]).toBe("1");
+            expect(mock1.history.get[0]!.headers?.["X-Client"]).toBe("1");
             // Client 2 should not have the interceptor
-            expect(mock2.history.get[0].headers?.["X-Client"]).toBeUndefined();
+            expect(mock2.history.get[0]!.headers?.["X-Client"]).toBeUndefined();
 
             mock1.reset();
             mock2.reset();

@@ -1,7 +1,27 @@
-import type { AxiosError, AxiosInstance } from "axios";
+import type {
+    AxiosError,
+    AxiosInstance,
+    InternalAxiosRequestConfig,
+} from "axios";
 import type { HttpError } from "../contracts/errors.js";
 import type { HttpRetryConfig } from "../contracts/retry.js";
 import { transformAxiosError } from "./errors.js";
+
+/**
+ * Retry state stored on the request config.
+ * Matches the axios-retry library pattern.
+ */
+interface RetryState {
+    retryCount: number;
+}
+
+/**
+ * Extended axios request config with retry state.
+ * Used internally to track retry attempts across interceptor calls.
+ */
+interface AxiosRequestConfigWithRetry extends InternalAxiosRequestConfig {
+    "axios-retry"?: RetryState;
+}
 
 /**
  * Default retry condition - retries on network errors, 5xx, and 429
@@ -82,14 +102,11 @@ export function setupRetry(
             // Meta-programming: Store retry state on config object
             // We attach a custom property to the AxiosRequestConfig to track retry attempts.
             // This pattern matches the official axios-retry library implementation.
-            // Note: AxiosRequestConfig is indexable, so we can add custom properties at runtime
-            // without type errors. This allows retry state to persist across interceptor calls.
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const retryState = (axiosConfig as any)["axios-retry"] || {
+            const configWithRetry = axiosConfig as AxiosRequestConfigWithRetry;
+            const retryState = configWithRetry["axios-retry"] ?? {
                 retryCount: 0,
             };
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (axiosConfig as any)["axios-retry"] = retryState;
+            configWithRetry["axios-retry"] = retryState;
 
             // Check if we should retry
             const httpError = transformAxiosError(error, {});

@@ -24,6 +24,15 @@ import { normalizeHeaders } from "./headers.js";
 import { setupRetry } from "./retry.js";
 
 /**
+ * Extended AxiosRequestConfig with custom properties for feature detection.
+ * Used internally to pass cache and deduplication settings through the request pipeline.
+ */
+interface ExtendedAxiosRequestConfig extends AxiosRequestConfig {
+    deduplication?: HttpDeduplicationConfig;
+    cache?: boolean | HttpCacheConfig;
+}
+
+/**
  * Options for creating an axios HTTP client.
  */
 export interface AxiosHttpClientOptions {
@@ -316,13 +325,14 @@ class AxiosHttpClient implements HttpClient {
 
     /**
      * Map HttpRequestConfig to AxiosRequestConfig.
+     * Returns ExtendedAxiosRequestConfig to support custom properties for feature detection.
      */
     private mapToAxiosConfig(
         config?: HttpRequestConfig
-    ): AxiosRequestConfig | undefined {
+    ): ExtendedAxiosRequestConfig | undefined {
         if (!config) return undefined;
 
-        const axiosConfig: AxiosRequestConfig = {};
+        const axiosConfig: ExtendedAxiosRequestConfig = {};
 
         // Type assertions needed for library boundary mapping between HttpClient and Axios types
         // Note: Some casts to 'any' are necessary due to exactOptionalPropertyTypes strictness
@@ -343,16 +353,14 @@ class AxiosHttpClient implements HttpClient {
             axiosConfig.responseType = config.responseType;
         }
 
-        // Meta-programming: Pass through custom feature configs for detection by feature modules.
-        // These properties are not part of Axios's type definitions but are attached at runtime
-        // by setupCache and setupDeduplication.
+        // Pass through custom feature configs for detection by feature modules.
+        // These properties are defined in ExtendedAxiosRequestConfig and used by
+        // setupCache and setupDeduplication to detect per-request feature settings.
         if (config.deduplication !== undefined) {
-            // @ts-expect-error - Custom property for deduplication feature detection, not in AxiosRequestConfig
             axiosConfig.deduplication = config.deduplication;
         }
 
         if (config.cache !== undefined) {
-            // @ts-expect-error - Custom property for cache feature detection, not in AxiosRequestConfig
             axiosConfig.cache = config.cache;
         }
 

@@ -1,10 +1,13 @@
-import axios from "axios";
+import axios, { type CreateAxiosDefaults } from "axios";
 import type { HttpClient } from "../contracts/client.js";
 import type {
     HttpClientFactory,
     HttpClientOptions,
 } from "../contracts/factory.js";
-import { createAxiosHttpClient } from "./adapter.js";
+import {
+    createAxiosHttpClient,
+    type AxiosHttpClientOptions,
+} from "./adapter.js";
 
 /**
  * Create a fully-configured HTTP client using the factory pattern.
@@ -92,31 +95,25 @@ export const createHttpClientFactory: HttpClientFactory = (
     options?: HttpClientOptions
 ): HttpClient => {
     // Build axios config, filtering out undefined values
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const axiosConfig: Record<string, any> = {};
+    const axiosConfig: CreateAxiosDefaults = {};
 
-    if (options?.baseUrl) axiosConfig["baseURL"] = options.baseUrl;
-    if (options?.timeout) axiosConfig["timeout"] = options.timeout;
-    if (options?.headers) axiosConfig["headers"] = options.headers;
-    if (options?.query) axiosConfig["params"] = options.query;
+    if (options?.baseUrl) axiosConfig.baseURL = options.baseUrl;
+    if (options?.timeout) axiosConfig.timeout = options.timeout;
+    if (options?.headers) axiosConfig.headers = options.headers;
+    if (options?.query) axiosConfig.params = options.query;
     if (options?.credentials)
-        axiosConfig["withCredentials"] = options.credentials === "include";
-    if (options?.responseType)
-        axiosConfig["responseType"] = options.responseType;
+        axiosConfig.withCredentials = options.credentials === "include";
+    if (options?.responseType) axiosConfig.responseType = options.responseType;
 
     // Create axios instance
     const axiosInstance = axios.create(axiosConfig);
 
-    // Build adapter options, filtering out undefined values
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const adapterOptions: Record<string, any> = {
-        axiosInstance,
-    };
-
-    if (options?.retry) adapterOptions["retry"] = options.retry;
+    // Build adapter options, only including defined properties
+    const adapterOptions: AxiosHttpClientOptions = { axiosInstance };
+    if (options?.retry) adapterOptions.retry = options.retry;
     if (options?.deduplication)
-        adapterOptions["deduplication"] = options.deduplication;
-    if (options?.cache) adapterOptions["cache"] = options.cache;
+        adapterOptions.deduplication = options.deduplication;
+    if (options?.cache) adapterOptions.cache = options.cache;
 
     // Create HTTP client
     const client = createAxiosHttpClient(adapterOptions);
