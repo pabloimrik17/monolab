@@ -8,8 +8,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Monorepo](https://img.shields.io/badge/Monorepo-Nx-blue)](https://nx.dev)
 [![Nx Cloud](https://img.shields.io/badge/Nx%20Cloud-Enabled-blue?logo=nx)](https://nx.app/)
-[![Node.js](https://img.shields.io/badge/Node.js-24.11.0-green?logo=node.js)](https://nodejs.org)
-[![pnpm](https://img.shields.io/badge/pnpm-10.19.0-orange?logo=pnpm)](https://pnpm.io/)
+[![Node.js](https://img.shields.io/badge/Node.js-24.12.0-green?logo=node.js)](https://nodejs.org)
+[![pnpm](https://img.shields.io/badge/pnpm-10.27.0-orange?logo=pnpm)](https://pnpm.io/)
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/pabloimrik17/monolab?utm_source=oss&utm_medium=github&utm_campaign=pabloimrik17%2Fmonolab&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 [![Maintained with](https://img.shields.io/badge/Maintained%20with-❤️-red)](https://github.com/pabloimrik17/monolab)
 
@@ -77,7 +77,7 @@ npx jsr add @m0n0lab/http-client
 
 ### Node.js Installation
 
-This project uses Node.js version 24.11.0. To install and use this specific version:
+This project uses Node.js version 24.12.0. To install and use this specific version:
 
 <!-- markdownlint-disable MD013 MD029 -->
 
@@ -90,13 +90,13 @@ This project uses Node.js version 24.11.0. To install and use this specific vers
 nvm use
 ```
 
-This will automatically read the `.nvmrc` file and switch to Node.js version 24.11.0.
+This will automatically read the `.nvmrc` file and switch to Node.js version 24.12.0.
 
 ### Package Manager Setup
 
 <!-- markdownlint-disable MD013 MD029 -->
 
-This project uses pnpm as the package manager. To activate pnpm version 10.19.0 using corepack:
+This project uses pnpm as the package manager. To activate pnpm version 10.27.0 using corepack:
 
 1. Make sure you have corepack enabled:
 
@@ -104,10 +104,10 @@ This project uses pnpm as the package manager. To activate pnpm version 10.19.0 
 corepack enable
 ```
 
-2. Activate pnpm version 10.19.0:
+2. Activate pnpm version 10.27.0:
 
 ```bash
-corepack prepare pnpm@10.19.0 --activate
+corepack prepare pnpm@10.27.0 --activate
 ```
 
 3. Verify the installation:
@@ -117,7 +117,7 @@ corepack prepare pnpm@10.19.0 --activate
 pnpm --version
 ```
 
-The output should be `10.19.0`.
+The output should be `10.27.0`.
 
 ## Testing
 
@@ -389,9 +389,9 @@ feat(react-hooks): add useWillUnmount hook
 fix(react-hooks): prevent memory leak in useDidMount
 
 # Breaking change (major version bump)
-feat(ts-configs)!: require Node.js 24.11.0 or higher
+feat(ts-configs)!: require Node.js 24.12.0 or higher
 
-BREAKING CHANGE: Dropped support for Node.js versions below 24.11.0
+BREAKING CHANGE: Dropped support for Node.js versions below 24.12.0
 
 # Documentation update (no version bump)
 docs(react-clean): improve usage examples in README
@@ -515,7 +515,7 @@ cd packages/my-package
         "directory": "packages/my-package"
     },
     "engines": {
-        "node": "24.11.0"
+        "node": "24.12.0"
     },
     "publishConfig": {
         "access": "public",

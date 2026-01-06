@@ -34,7 +34,7 @@ Implemented release-please with dual publishing workflow:
 - **npm**: Trusted Publishers with OIDC (no tokens needed)
   - Requires `id-token: write` permission
   - Automatic provenance attestation
-  - Node.js 24.11.0+ with npm 11.6.1+
+  - Node.js 24.12.0+ with npm 11.6.1+
 
 - **JSR**: OIDC authentication (no tokens needed)
   - Uses same `id-token: write` permission
@@ -60,13 +60,13 @@ Implemented release-please with dual publishing workflow:
 ### Affected Code
 - `.github/workflows/release-please.yml`: **NEW** - Unified release + publish workflow
 - `.github/workflows/publish.yml`: **DELETED** - Replaced by release-please workflow
-- `.github/workflows/ci.yml`: Updated Node.js version to 24.11.0
+- `.github/workflows/ci.yml`: Updated Node.js version to 24.12.0
 - `nx.json`: Changed `defaultBase` to `develop` (for feature branch workflow)
 - `release-please-config.json`: **NEW** - Configure release-please for monorepo
 - `.release-please-manifest.json`: **NEW** - Track current versions
-- `.nvmrc`: Updated to 24.11.0
+- `.nvmrc`: Updated to 24.12.0
 - `packages/*/package.json`:
-  - Updated `engines.node` to 24.11.0
+  - Updated `engines.node` to 24.12.0
   - Added `repository` field for npm provenance
   - Updated `publishConfig` for npm registry
 - `packages/*/jsr.json`:
@@ -96,7 +96,7 @@ All packages now publish to both npm and JSR:
 
 3. **Node.js version requirements**:
    - npm 11.5.1+ required for Trusted Publishers
-   - Node.js 24.11.0 LTS includes npm 11.6.1
+   - Node.js 24.12.0 LTS includes npm 11.6.1
    - Update all package.json engines fields
 
 4. **OIDC setup**:
