@@ -137,8 +137,8 @@ deno publish --allow-dirty
 // package.json (root)
 {
   "engines": {
-    "node": "24.11.0",
-    "pnpm": "10.19.0",
+    "node": "24.12.0",
+    "pnpm": "10.27.0",
     "deno": "2.5.6"  // Documented (not enforced by npm)
   }
 }
