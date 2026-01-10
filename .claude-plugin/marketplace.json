@@ -1,0 +1,20 @@
+{
+    "name": "monolab",
+    "owner": {
+        "name": "Pablo F.G.",
+        "email": "pabloimrik17@gmail.com"
+    },
+    "metadata": {
+        "description": "Claude Code plugins from the MonoLab monorepo",
+        "version": "0.1.0",
+        "pluginRoot": "./claude-plugins"
+    },
+    "plugins": [
+        {
+            "name": "demo",
+            "source": "./claude-plugins/demo",
+            "version": "0.1.0",
+            "description": "Demo plugin with hello-world command"
+        }
+    ]
+}
