@@ -33,3 +33,9 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 -   If the user needs help with an Nx configuration or project graph error, use the `nx_workspace` tool to get any errors
 
 <!-- nx configuration end-->
+
+<!-- Matt Pocock concise rule start-->
+
+In all interactions, plans, and commit messages, be extremely concise and sacrifice grammar for the sake of concision
+
+<!-- Matt Pocock concise rule end-->
