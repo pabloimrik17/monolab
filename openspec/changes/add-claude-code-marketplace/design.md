@@ -113,6 +113,14 @@ Only output the greeting, nothing else.
 
 **Rationale:** Markdown commands are the simplest plugin component - no scripts needed. Claude handles the randomization naturally.
 
+### Decision 5: CI Validation (Deferred)
+
+Skip CI validation for plugin manifests in initial implementation. Manual version synchronization between `marketplace.json` and individual `plugin.json` files is acceptable for 1-2 plugins.
+
+**Trigger for automation:** When plugin count exceeds 2, add a validation script to CI that checks version consistency across manifests.
+
+**Rationale:** YAGNI - avoid premature automation. The demo plugin is the only plugin for now; adding CI validation would be over-engineering.
+
 ## Risks / Trade-offs
 
 | Risk | Mitigation |
@@ -130,4 +138,8 @@ No migration required - this is greenfield addition to the monorepo.
 ## Open Questions
 
 1. Should plugins have their own Nx project.json for task running? (Initial answer: No, keep simple)
-2. Should we add CI validation for plugin manifests? (Deferred to future change)
+
+## Future Work
+
+- **CI validation script:** When plugin count exceeds 2, implement a script that validates version consistency between `marketplace.json` and each plugin's `plugin.json`. See Decision 5.
+- **Nx integration:** If plugins grow in complexity, consider adding `project.json` for Nx task orchestration.
