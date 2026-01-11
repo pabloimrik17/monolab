@@ -9,6 +9,11 @@
          *
          * Individual libraries should set their own outDir and rootDir
          * in their project-specific tsconfig.json files.
+         *
+         * IMPORTANT: Packages extending this config must define their own
+         * exclude for test files. TypeScript resolves exclude paths
+         * relative to the file that defines them, not the extending file.
+         * Add to your tsconfig: exclude: [*.test.ts, *.test-d.ts, *.spec.ts]
          */
 
         /* TypeScript Project References */

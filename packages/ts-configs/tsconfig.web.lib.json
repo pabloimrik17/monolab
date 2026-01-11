@@ -7,6 +7,11 @@
          * Extends the web base config with library-specific settings for
          * type declarations and bundler-friendly output. Optimized for
          * publishing reusable web components and libraries.
+         *
+         * IMPORTANT: Packages extending this config must define their own
+         * exclude for test files. TypeScript resolves exclude paths
+         * relative to the file that defines them, not the extending file.
+         * Add to your tsconfig: exclude: [*.test.ts, *.test.tsx, *.spec.ts]
          */
 
         /* Type Declarations */
