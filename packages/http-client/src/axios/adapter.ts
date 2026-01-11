@@ -175,7 +175,12 @@ class AxiosHttpClient implements HttpClient {
             const axiosConfig = this.mapToAxiosConfig(config);
             const response = await this.axios.head(url, axiosConfig);
 
-            return this.mapFromAxiosResponse(response, config);
+            // HEAD responses have no body by HTTP spec - force undefined
+            // regardless of what the underlying library returns
+            return {
+                ...this.mapFromAxiosResponse(response, config),
+                data: undefined,
+            };
         } catch (error: unknown) {
             throw transformAxiosError(error, config || {});
         }
