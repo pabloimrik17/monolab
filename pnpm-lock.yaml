@@ -75,19 +75,19 @@ importers:
                 version: 4.2.0(@swc/helpers@0.5.17)(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))
             "@vitest/browser":
                 specifier: 4.0.6
-                version: 4.0.6(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)
+                version: 4.0.6(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)
             "@vitest/browser-playwright":
                 specifier: 4.0.6
-                version: 4.0.6(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(playwright@1.56.1)(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)
+                version: 4.0.6(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(playwright@1.56.1)(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)
             "@vitest/coverage-v8":
                 specifier: "catalog:"
-                version: 4.0.6(@vitest/browser@4.0.6(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6))(vitest@4.0.6)
+                version: 4.0.6(@vitest/browser@4.0.6(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6))(vitest@4.0.6)
             "@vitest/ui":
                 specifier: "catalog:"
                 version: 4.0.6(vitest@4.0.6)
             deno:
-                specifier: runtime:2.5.6
-                version: runtime:2.5.6
+                specifier: runtime:2.6.4
+                version: runtime:2.6.4
             eslint:
                 specifier: 9.32.0
                 version: 9.32.0(jiti@2.5.1)
@@ -107,8 +107,8 @@ importers:
                 specifier: 0.45.0
                 version: 0.45.0
             node:
-                specifier: runtime:24.11.0
-                version: runtime:24.11.0
+                specifier: runtime:24.12.0
+                version: runtime:24.12.0
             nx:
                 specifier: 22.0.2
                 version: 22.0.2(@swc-node/register@1.11.1(@swc/core@1.13.21(@swc/helpers@0.5.17))(@swc/types@0.1.25)(typescript@5.9.3))(@swc/core@1.13.21(@swc/helpers@0.5.17))
@@ -147,7 +147,7 @@ importers:
                 version: 5.1.4(typescript@5.9.3)(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))
             vitest:
                 specifier: "catalog:"
-                version: 4.0.6(@types/debug@4.1.12)(@types/node@22.18.12)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(yaml@2.8.1)
+                version: 4.0.6(@types/debug@4.1.12)(@types/node@22.18.12)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(yaml@2.8.1)
             vitest-browser-react:
                 specifier: 2.0.2
                 version: 2.0.2(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(vitest@4.0.6)
@@ -168,6 +168,8 @@ importers:
                 specifier: 2.11.10
                 version: 2.11.10(solid-js@1.9.10)(vite@6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1))
 
+    claude-plugins/demo: {}
+
     packages/http-client:
         dependencies:
             tslib:
@@ -182,13 +184,13 @@ importers:
                 version: 2.1.0(axios@1.13.1)
             msw:
                 specifier: ^2.12.4
-                version: 2.12.4(@types/node@24.2.0)(typescript@5.9.3)
+                version: 2.12.7(@types/node@24.2.0)(typescript@5.9.3)
             typescript:
                 specifier: 5.9.3
                 version: 5.9.3
             vitest:
                 specifier: "catalog:"
-                version: 4.0.6(@types/debug@4.1.12)(@types/node@24.2.0)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.4(@types/node@24.2.0)(typescript@5.9.3))(yaml@2.8.1)
+                version: 4.0.6(@types/debug@4.1.12)(@types/node@24.2.0)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.7(@types/node@24.2.0)(typescript@5.9.3))(yaml@2.8.1)
 
     packages/react-clean:
         dependencies:
@@ -234,7 +236,7 @@ importers:
                 version: 5.9.3
             vitest:
                 specifier: "catalog:"
-                version: 4.0.6(@types/debug@4.1.12)(@types/node@24.2.0)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.4(@types/node@24.2.0)(typescript@5.9.3))(yaml@2.8.1)
+                version: 4.0.6(@types/debug@4.1.12)(@types/node@24.2.0)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.7(@types/node@24.2.0)(typescript@5.9.3))(yaml@2.8.1)
 
     packages/react-hooks:
         dependencies:
@@ -268,7 +270,7 @@ importers:
                 version: 5.9.3
             vitest:
                 specifier: "catalog:"
-                version: 4.0.6(@types/debug@4.1.12)(@types/node@24.2.0)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.4(@types/node@24.2.0)(typescript@5.9.3))(yaml@2.8.1)
+                version: 4.0.6(@types/debug@4.1.12)(@types/node@24.2.0)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.7(@types/node@24.2.0)(typescript@5.9.3))(yaml@2.8.1)
 
     packages/ts-configs:
         devDependencies:
@@ -287,7 +289,7 @@ importers:
                 version: 5.9.3
             vitest:
                 specifier: "catalog:"
-                version: 4.0.6(@types/debug@4.1.12)(@types/node@24.2.0)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.4(@types/node@24.2.0)(typescript@5.9.3))(yaml@2.8.1)
+                version: 4.0.6(@types/debug@4.1.12)(@types/node@24.2.0)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.7(@types/node@24.2.0)(typescript@5.9.3))(yaml@2.8.1)
 
 packages:
     "@actions/core@1.11.1":
@@ -4409,43 +4411,43 @@ packages:
             }
         engines: { node: ">=0.4.0" }
 
-    deno@runtime:2.5.6:
+    deno@runtime:2.6.4:
         resolution:
             type: variations
             variants:
                 - resolution:
                       archive: zip
                       bin: deno
-                      integrity: sha256-MqWyvPSUMnFXGcfHaVKSafvQjK/cBZt87NQvnXcQWas=
+                      integrity: sha256-AnPjRypJh6GurL2oFT0CPbq5FRKW4Vl3l372vbvKSFs=
                       type: binary
-                      url: https://github.com/denoland/deno/releases/download/v2.5.6/deno-aarch64-apple-darwin.zip
+                      url: https://github.com/denoland/deno/releases/download/v2.6.4/deno-aarch64-apple-darwin.zip
                   targets:
                       - cpu: arm64
                         os: darwin
                 - resolution:
                       archive: zip
                       bin: deno
-                      integrity: sha256-9eYK49/Oth5eWkHyISnkCovBf2OTtZ5118oZzu8y2CQ=
+                      integrity: sha256-2vtUxUVNf8yoEwUhVELoMuDDTpC3ai6aMdBnbLsGv8Y=
                       type: binary
-                      url: https://github.com/denoland/deno/releases/download/v2.5.6/deno-aarch64-unknown-linux-gnu.zip
+                      url: https://github.com/denoland/deno/releases/download/v2.6.4/deno-aarch64-unknown-linux-gnu.zip
                   targets:
                       - cpu: arm64
                         os: linux
                 - resolution:
                       archive: zip
                       bin: deno
-                      integrity: sha256-vSqGJQn5MMXe4qrvSTnWwWHYM6f+yNOF0MblXDE2xMI=
+                      integrity: sha256-FLeDM2UFsGzaGY66DyP/Ec6+1eqtsZB/rDHe1uCcHNs=
                       type: binary
-                      url: https://github.com/denoland/deno/releases/download/v2.5.6/deno-x86_64-apple-darwin.zip
+                      url: https://github.com/denoland/deno/releases/download/v2.6.4/deno-x86_64-apple-darwin.zip
                   targets:
                       - cpu: x64
                         os: darwin
                 - resolution:
                       archive: zip
                       bin: deno.exe
-                      integrity: sha256-Eyc1bNY+I9DafRHV9cprRZArG2LuLevU+70KrSqrl4Y=
+                      integrity: sha256-B3SudAGO+XCsc2Ts7F7xaJstZ8F3vopUFUDvEGFJ0dk=
                       type: binary
-                      url: https://github.com/denoland/deno/releases/download/v2.5.6/deno-x86_64-pc-windows-msvc.zip
+                      url: https://github.com/denoland/deno/releases/download/v2.6.4/deno-x86_64-pc-windows-msvc.zip
                   targets:
                       - cpu: x64
                         os: win32
@@ -4454,13 +4456,13 @@ packages:
                 - resolution:
                       archive: zip
                       bin: deno
-                      integrity: sha256-/U9qvBtqE0+ppNulZRnxYx9EyI4E5OPpqP9Zdd+mbho=
+                      integrity: sha256-kQC70EUMF7ggAtOUi7jn4ZU8nmUG5jtYbi2qQELsp/Y=
                       type: binary
-                      url: https://github.com/denoland/deno/releases/download/v2.5.6/deno-x86_64-unknown-linux-gnu.zip
+                      url: https://github.com/denoland/deno/releases/download/v2.6.4/deno-x86_64-unknown-linux-gnu.zip
                   targets:
                       - cpu: x64
                         os: linux
-        version: 2.5.6
+        version: 2.6.4
         hasBin: true
 
     deprecation@2.3.1:
@@ -6352,10 +6354,10 @@ packages:
                 integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==,
             }
 
-    msw@2.12.4:
+    msw@2.12.7:
         resolution:
             {
-                integrity: sha512-rHNiVfTyKhzc0EjoXUBVGteNKBevdjOlVC6GlIRXpy+/3LHEIGRovnB5WPjcvmNODVQ1TNFnoa7wsGbd0V3epg==,
+                integrity: sha512-retd5i3xCZDVWMYjHEVuKTmhqY8lSsxujjVrZiGbbdoxxIBg5S7rCuYy/YQpfrTYIxpd/o0Kyb/3H+1udBMoYg==,
             }
         engines: { node: ">=18" }
         hasBin: true
@@ -6451,94 +6453,94 @@ packages:
                 integrity: sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw==,
             }
 
-    node@runtime:24.11.0:
+    node@runtime:24.12.0:
         resolution:
             type: variations
             variants:
                 - resolution:
                       archive: tarball
                       bin: bin/node
-                      integrity: sha256-AVGoDHkzXAEx+qQIOkGjWIQ1rqFNz2aDBq0+q/3nG2U=
+                      integrity: sha256-MfPQZbuE8GnlIuVdDTA1vTZMul2KIiM/9oAF0oHou3g=
                       type: binary
-                      url: https://nodejs.org/download/release/v24.11.0/node-v24.11.0-aix-ppc64.tar.gz
+                      url: https://nodejs.org/download/release/v24.12.0/node-v24.12.0-aix-ppc64.tar.gz
                   targets:
                       - cpu: ppc64
                         os: aix
                 - resolution:
                       archive: tarball
                       bin: bin/node
-                      integrity: sha256-C+KrKBak+gLRrP8BSkNPKfVtjZVvWvapi3DO1sX00gE=
+                      integrity: sha256-MZ8iGtxeRP8O1X6KRBsihPArjcb8h7jrkqapNkP9gIA=
                       type: binary
-                      url: https://nodejs.org/download/release/v24.11.0/node-v24.11.0-darwin-arm64.tar.gz
+                      url: https://nodejs.org/download/release/v24.12.0/node-v24.12.0-darwin-arm64.tar.gz
                   targets:
                       - cpu: arm64
                         os: darwin
                 - resolution:
                       archive: tarball
                       bin: bin/node
-                      integrity: sha256-OIRnHof0b3c4MtmKCmyrzF7E9jcITw81FbaeZuon8vE=
+                      integrity: sha256-uC6kxi/QjiUMq1nWJeddd8xbCj1gxmmOvuRUXIihacU=
                       type: binary
-                      url: https://nodejs.org/download/release/v24.11.0/node-v24.11.0-darwin-x64.tar.gz
+                      url: https://nodejs.org/download/release/v24.12.0/node-v24.12.0-darwin-x64.tar.gz
                   targets:
                       - cpu: x64
                         os: darwin
                 - resolution:
                       archive: tarball
                       bin: bin/node
-                      integrity: sha256-R4bQDE0lnT/wsjKDB/dk7zztZfLW6VAtQz5o1mI4UJ0=
+                      integrity: sha256-myou65io6zc2EiTiodBgMArS3RQ69Y39sW3nhd8PEig=
                       type: binary
-                      url: https://nodejs.org/download/release/v24.11.0/node-v24.11.0-linux-arm64.tar.gz
+                      url: https://nodejs.org/download/release/v24.12.0/node-v24.12.0-linux-arm64.tar.gz
                   targets:
                       - cpu: arm64
                         os: linux
                 - resolution:
                       archive: tarball
                       bin: bin/node
-                      integrity: sha256-fnukMm/oWI8R52PFUhe89F9eC3vL8eJru7siJamuRyE=
+                      integrity: sha256-Zux5tNZPQQmu34IhCHFdC2CXEY35FZwvYyFHfaTqF6o=
                       type: binary
-                      url: https://nodejs.org/download/release/v24.11.0/node-v24.11.0-linux-ppc64le.tar.gz
+                      url: https://nodejs.org/download/release/v24.12.0/node-v24.12.0-linux-ppc64le.tar.gz
                   targets:
                       - cpu: ppc64le
                         os: linux
                 - resolution:
                       archive: tarball
                       bin: bin/node
-                      integrity: sha256-evDZLnSweiuOkQie5PzMe1Qz/YtjJZvO06NGaJmMvfc=
+                      integrity: sha256-jclgolVdsap3/RMcJb5XG594RLyLJ454cyufWA/n1YA=
                       type: binary
-                      url: https://nodejs.org/download/release/v24.11.0/node-v24.11.0-linux-s390x.tar.gz
+                      url: https://nodejs.org/download/release/v24.12.0/node-v24.12.0-linux-s390x.tar.gz
                   targets:
                       - cpu: s390x
                         os: linux
                 - resolution:
                       archive: tarball
                       bin: bin/node
-                      integrity: sha256-s8BxzfR6q4Z8OyqihyV98S7F18liv5IrMv0zImxClf0=
+                      integrity: sha256-YVkifgr318PGuy+pAEUrBKbLiEGnAqeazGEyCdcLBNA=
                       type: binary
-                      url: https://nodejs.org/download/release/v24.11.0/node-v24.11.0-linux-x64.tar.gz
+                      url: https://nodejs.org/download/release/v24.12.0/node-v24.12.0-linux-x64.tar.gz
                   targets:
                       - cpu: x64
                         os: linux
                 - resolution:
                       archive: zip
                       bin: node.exe
-                      integrity: sha256-EtOxqpaWt0EeEVpPoq71f5VWC17ha7Ys1phD5TXscr4=
-                      prefix: node-v24.11.0-win-arm64
+                      integrity: sha256-sF5+Bm+BPTWtPNnCTu2u4HTAEqx+AAcSl2CP3S6UiuM=
+                      prefix: node-v24.12.0-win-arm64
                       type: binary
-                      url: https://nodejs.org/download/release/v24.11.0/node-v24.11.0-win-arm64.zip
+                      url: https://nodejs.org/download/release/v24.12.0/node-v24.12.0-win-arm64.zip
                   targets:
                       - cpu: arm64
                         os: win32
                 - resolution:
                       archive: zip
                       bin: node.exe
-                      integrity: sha256-EFRUC84itU7H5Q68B47F0JBwCndldgelj2pk3yH0n90=
-                      prefix: node-v24.11.0-win-x64
+                      integrity: sha256-nBJfYa6Ue1LneQlYMPnKwmeEagQ+9xkhg8hAFqqtKBI=
+                      prefix: node-v24.12.0-win-x64
                       type: binary
-                      url: https://nodejs.org/download/release/v24.11.0/node-v24.11.0-win-x64.zip
+                      url: https://nodejs.org/download/release/v24.12.0/node-v24.12.0-win-x64.zip
                   targets:
                       - cpu: x64
                         os: win32
-        version: 24.11.0
+        version: 24.12.0
         hasBin: true
 
     normalize-path@3.0.0:
@@ -10416,7 +10418,7 @@ snapshots:
             "@stryker-mutator/core": 9.3.0(@types/node@22.18.12)
             "@stryker-mutator/util": 9.3.0
             tslib: 2.8.1
-            vitest: 4.0.6(@types/debug@4.1.12)(@types/node@22.18.12)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(yaml@2.8.1)
+            vitest: 4.0.6(@types/debug@4.1.12)(@types/node@22.18.12)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(yaml@2.8.1)
 
     "@swc-node/core@1.14.1(@swc/core@1.13.21(@swc/helpers@0.5.17))(@swc/types@0.1.25)":
         dependencies:
@@ -10715,26 +10717,26 @@ snapshots:
         transitivePeerDependencies:
             - supports-color
 
-    "@vitest/browser-playwright@4.0.6(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(playwright@1.56.1)(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)":
+    "@vitest/browser-playwright@4.0.6(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(playwright@1.56.1)(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)":
         dependencies:
-            "@vitest/browser": 4.0.6(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)
-            "@vitest/mocker": 4.0.6(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))
+            "@vitest/browser": 4.0.6(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)
+            "@vitest/mocker": 4.0.6(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))
             playwright: 1.56.1
             tinyrainbow: 3.0.3
-            vitest: 4.0.6(@types/debug@4.1.12)(@types/node@22.18.12)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(yaml@2.8.1)
+            vitest: 4.0.6(@types/debug@4.1.12)(@types/node@22.18.12)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(yaml@2.8.1)
         transitivePeerDependencies:
             - bufferutil
             - msw
             - utf-8-validate
             - vite
 
-    "@vitest/browser-playwright@4.0.6(msw@2.12.4(@types/node@24.2.0)(typescript@5.9.3))(playwright@1.56.1)(vite@6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)":
+    "@vitest/browser-playwright@4.0.6(msw@2.12.7(@types/node@24.2.0)(typescript@5.9.3))(playwright@1.56.1)(vite@6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)":
         dependencies:
-            "@vitest/browser": 4.0.6(msw@2.12.4(@types/node@24.2.0)(typescript@5.9.3))(vite@6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)
-            "@vitest/mocker": 4.0.6(msw@2.12.4(@types/node@24.2.0)(typescript@5.9.3))(vite@6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1))
+            "@vitest/browser": 4.0.6(msw@2.12.7(@types/node@24.2.0)(typescript@5.9.3))(vite@6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)
+            "@vitest/mocker": 4.0.6(msw@2.12.7(@types/node@24.2.0)(typescript@5.9.3))(vite@6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1))
             playwright: 1.56.1
             tinyrainbow: 3.0.3
-            vitest: 4.0.6(@types/debug@4.1.12)(@types/node@24.2.0)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.4(@types/node@24.2.0)(typescript@5.9.3))(yaml@2.8.1)
+            vitest: 4.0.6(@types/debug@4.1.12)(@types/node@24.2.0)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.7(@types/node@24.2.0)(typescript@5.9.3))(yaml@2.8.1)
         transitivePeerDependencies:
             - bufferutil
             - msw
@@ -10742,16 +10744,16 @@ snapshots:
             - vite
         optional: true
 
-    "@vitest/browser@4.0.6(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)":
+    "@vitest/browser@4.0.6(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)":
         dependencies:
-            "@vitest/mocker": 4.0.6(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))
+            "@vitest/mocker": 4.0.6(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))
             "@vitest/utils": 4.0.6
             magic-string: 0.30.21
             pixelmatch: 7.1.0
             pngjs: 7.0.0
             sirv: 3.0.2
             tinyrainbow: 3.0.3
-            vitest: 4.0.6(@types/debug@4.1.12)(@types/node@22.18.12)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(yaml@2.8.1)
+            vitest: 4.0.6(@types/debug@4.1.12)(@types/node@22.18.12)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(yaml@2.8.1)
             ws: 8.18.3
         transitivePeerDependencies:
             - bufferutil
@@ -10759,16 +10761,16 @@ snapshots:
             - utf-8-validate
             - vite
 
-    "@vitest/browser@4.0.6(msw@2.12.4(@types/node@24.2.0)(typescript@5.9.3))(vite@6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)":
+    "@vitest/browser@4.0.6(msw@2.12.7(@types/node@24.2.0)(typescript@5.9.3))(vite@6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)":
         dependencies:
-            "@vitest/mocker": 4.0.6(msw@2.12.4(@types/node@24.2.0)(typescript@5.9.3))(vite@6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1))
+            "@vitest/mocker": 4.0.6(msw@2.12.7(@types/node@24.2.0)(typescript@5.9.3))(vite@6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1))
             "@vitest/utils": 4.0.6
             magic-string: 0.30.21
             pixelmatch: 7.1.0
             pngjs: 7.0.0
             sirv: 3.0.2
             tinyrainbow: 3.0.3
-            vitest: 4.0.6(@types/debug@4.1.12)(@types/node@24.2.0)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.4(@types/node@24.2.0)(typescript@5.9.3))(yaml@2.8.1)
+            vitest: 4.0.6(@types/debug@4.1.12)(@types/node@24.2.0)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.7(@types/node@24.2.0)(typescript@5.9.3))(yaml@2.8.1)
             ws: 8.18.3
         transitivePeerDependencies:
             - bufferutil
@@ -10777,7 +10779,7 @@ snapshots:
             - vite
         optional: true
 
-    "@vitest/coverage-v8@4.0.6(@vitest/browser@4.0.6(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6))(vitest@4.0.6)":
+    "@vitest/coverage-v8@4.0.6(@vitest/browser@4.0.6(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6))(vitest@4.0.6)":
         dependencies:
             "@bcoe/v8-coverage": 1.0.2
             "@vitest/utils": 4.0.6
@@ -10790,9 +10792,9 @@ snapshots:
             magicast: 0.3.5
             std-env: 3.10.0
             tinyrainbow: 3.0.3
-            vitest: 4.0.6(@types/debug@4.1.12)(@types/node@22.18.12)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(yaml@2.8.1)
+            vitest: 4.0.6(@types/debug@4.1.12)(@types/node@22.18.12)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(yaml@2.8.1)
         optionalDependencies:
-            "@vitest/browser": 4.0.6(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)
+            "@vitest/browser": 4.0.6(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)
         transitivePeerDependencies:
             - supports-color
 
@@ -10805,22 +10807,22 @@ snapshots:
             chai: 6.2.0
             tinyrainbow: 3.0.3
 
-    "@vitest/mocker@4.0.6(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))":
+    "@vitest/mocker@4.0.6(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))":
         dependencies:
             "@vitest/spy": 4.0.6
             estree-walker: 3.0.3
             magic-string: 0.30.21
         optionalDependencies:
-            msw: 2.12.4(@types/node@22.18.12)(typescript@5.9.3)
+            msw: 2.12.7(@types/node@22.18.12)(typescript@5.9.3)
             vite: 6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1)
 
-    "@vitest/mocker@4.0.6(msw@2.12.4(@types/node@24.2.0)(typescript@5.9.3))(vite@6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1))":
+    "@vitest/mocker@4.0.6(msw@2.12.7(@types/node@24.2.0)(typescript@5.9.3))(vite@6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1))":
         dependencies:
             "@vitest/spy": 4.0.6
             estree-walker: 3.0.3
             magic-string: 0.30.21
         optionalDependencies:
-            msw: 2.12.4(@types/node@24.2.0)(typescript@5.9.3)
+            msw: 2.12.7(@types/node@24.2.0)(typescript@5.9.3)
             vite: 6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1)
 
     "@vitest/pretty-format@4.0.6":
@@ -10849,7 +10851,7 @@ snapshots:
             sirv: 3.0.2
             tinyglobby: 0.2.15
             tinyrainbow: 3.0.3
-            vitest: 4.0.6(@types/debug@4.1.12)(@types/node@24.2.0)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.4(@types/node@24.2.0)(typescript@5.9.3))(yaml@2.8.1)
+            vitest: 4.0.6(@types/debug@4.1.12)(@types/node@24.2.0)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.7(@types/node@24.2.0)(typescript@5.9.3))(yaml@2.8.1)
 
     "@vitest/utils@4.0.6":
         dependencies:
@@ -11314,7 +11316,7 @@ snapshots:
 
     delayed-stream@1.0.0: {}
 
-    deno@runtime:2.5.6: {}
+    deno@runtime:2.6.4: {}
 
     deprecation@2.3.1: {}
 
@@ -12453,7 +12455,7 @@ snapshots:
 
     ms@2.1.3: {}
 
-    msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3):
+    msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3):
         dependencies:
             "@inquirer/confirm": 5.1.19(@types/node@22.18.12)
             "@mswjs/interceptors": 0.40.0
@@ -12479,7 +12481,7 @@ snapshots:
             - "@types/node"
         optional: true
 
-    msw@2.12.4(@types/node@24.2.0)(typescript@5.9.3):
+    msw@2.12.7(@types/node@24.2.0)(typescript@5.9.3):
         dependencies:
             "@inquirer/confirm": 5.1.19(@types/node@24.2.0)
             "@mswjs/interceptors": 0.40.0
@@ -12543,7 +12545,7 @@ snapshots:
 
     node-releases@2.0.19: {}
 
-    node@runtime:24.11.0: {}
+    node@runtime:24.12.0: {}
 
     normalize-path@3.0.0: {}
 
@@ -13561,14 +13563,14 @@ snapshots:
         dependencies:
             react: 18.3.1
             react-dom: 18.3.1(react@18.3.1)
-            vitest: 4.0.6(@types/debug@4.1.12)(@types/node@22.18.12)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(yaml@2.8.1)
+            vitest: 4.0.6(@types/debug@4.1.12)(@types/node@22.18.12)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(yaml@2.8.1)
         optionalDependencies:
             "@types/react": 18.3.27
 
-    vitest@4.0.6(@types/debug@4.1.12)(@types/node@22.18.12)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(yaml@2.8.1):
+    vitest@4.0.6(@types/debug@4.1.12)(@types/node@22.18.12)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(yaml@2.8.1):
         dependencies:
             "@vitest/expect": 4.0.6
-            "@vitest/mocker": 4.0.6(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))
+            "@vitest/mocker": 4.0.6(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))
             "@vitest/pretty-format": 4.0.6
             "@vitest/runner": 4.0.6
             "@vitest/snapshot": 4.0.6
@@ -13590,7 +13592,7 @@ snapshots:
         optionalDependencies:
             "@types/debug": 4.1.12
             "@types/node": 22.18.12
-            "@vitest/browser-playwright": 4.0.6(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(playwright@1.56.1)(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)
+            "@vitest/browser-playwright": 4.0.6(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(playwright@1.56.1)(vite@6.4.1(@types/node@22.18.12)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)
             "@vitest/ui": 4.0.6(vitest@4.0.6)
             jsdom: 25.0.1
         transitivePeerDependencies:
@@ -13607,10 +13609,10 @@ snapshots:
             - tsx
             - yaml
 
-    vitest@4.0.6(@types/debug@4.1.12)(@types/node@24.2.0)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.4(@types/node@24.2.0)(typescript@5.9.3))(yaml@2.8.1):
+    vitest@4.0.6(@types/debug@4.1.12)(@types/node@24.2.0)(@vitest/browser-playwright@4.0.6)(@vitest/ui@4.0.6)(jiti@2.5.1)(jsdom@25.0.1)(msw@2.12.7(@types/node@24.2.0)(typescript@5.9.3))(yaml@2.8.1):
         dependencies:
             "@vitest/expect": 4.0.6
-            "@vitest/mocker": 4.0.6(msw@2.12.4(@types/node@24.2.0)(typescript@5.9.3))(vite@6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1))
+            "@vitest/mocker": 4.0.6(msw@2.12.7(@types/node@24.2.0)(typescript@5.9.3))(vite@6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1))
             "@vitest/pretty-format": 4.0.6
             "@vitest/runner": 4.0.6
             "@vitest/snapshot": 4.0.6
@@ -13632,7 +13634,7 @@ snapshots:
         optionalDependencies:
             "@types/debug": 4.1.12
             "@types/node": 24.2.0
-            "@vitest/browser-playwright": 4.0.6(msw@2.12.4(@types/node@24.2.0)(typescript@5.9.3))(playwright@1.56.1)(vite@6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)
+            "@vitest/browser-playwright": 4.0.6(msw@2.12.7(@types/node@24.2.0)(typescript@5.9.3))(playwright@1.56.1)(vite@6.4.1(@types/node@24.2.0)(jiti@2.5.1)(yaml@2.8.1))(vitest@4.0.6)
             "@vitest/ui": 4.0.6(vitest@4.0.6)
             jsdom: 25.0.1
         transitivePeerDependencies:

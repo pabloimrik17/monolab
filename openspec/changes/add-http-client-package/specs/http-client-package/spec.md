@@ -28,8 +28,8 @@ The system SHALL provide an `@m0n0lab/http-client` package with complete directo
   - Type: `"module"` (ESM only)
   - Exports field pointing to `./dist/index.js` and `./dist/index.d.ts`
   - Repository metadata with directory field
-  - Node.js engine: `24.11.0`
-  - pnpm version: `10.19.0`
+  - Node.js engine: `24.12.0`
+  - pnpm version: `10.27.0`
   - Scripts for build, lint, test, typecheck
   - publishConfig with JSR and npm registry information
 

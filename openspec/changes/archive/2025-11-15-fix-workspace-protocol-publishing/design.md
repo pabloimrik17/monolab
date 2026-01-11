@@ -245,8 +245,8 @@ import { isOdd } from "jsr:@m0n0lab/is-odd@5.0.4";
   - Pin in package.json engines (documentation)
   - Update explicitly when needed
 
-- **pnpm**: 10.19.0 (already pinned in project)
-- **Node.js**: 24.11.0 (already pinned in project)
+- **pnpm**: 10.27.0 (already pinned in project)
+- **Node.js**: 24.12.0 (already pinned in project)
 
 **Rationale for Pinning:**
 - Prevents unexpected breaking changes
