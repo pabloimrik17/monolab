@@ -11,10 +11,11 @@ catalog:
     vite-tsconfig-paths: 5.1.4
     vitest: 4.0.6
 
+minimumReleaseAge: 1440
+
 onlyBuiltDependencies:
     - "@swc/core"
     - esbuild
+    - msw
     - nx
     - oxc-resolver
-
-minimumReleaseAge: 1440
