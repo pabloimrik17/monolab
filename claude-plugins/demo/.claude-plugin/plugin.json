@@ -5,5 +5,9 @@
     "author": {
         "name": "Pablo F.G.",
         "email": "pabloimrik17@users.noreply.github.com"
-    }
+    },
+    "license": "MIT",
+    "repository": "https://github.com/pabloimrik17/monolab",
+    "homepage": "https://github.com/pabloimrik17/monolab/tree/main/claude-plugins/demo",
+    "keywords": ["demo", "hello-world", "greeting"]
 }
