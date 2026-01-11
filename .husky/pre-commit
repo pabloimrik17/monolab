@@ -1,2 +1,2 @@
 validate-branch-name
-NODE_OPTIONS="--experimental-strip-types" pnpm exec lint-staged --config lint-staged.config.ts
+pnpm exec lint-staged --config lint-staged.config.ts
