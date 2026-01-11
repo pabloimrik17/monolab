@@ -44,16 +44,16 @@
 
 ## 6. Validation
 
-- [ ] 6.1 Test plugin locally with `claude --plugin-dir ./claude-plugins/demo`
-- [ ] 6.2 Verify `/demo:hello-world` command works
-- [ ] 6.3 Verify random language selection (run multiple times)
+- [x] 6.1 Test plugin locally with `claude --plugin-dir ./claude-plugins/demo`
+- [x] 6.2 Verify `/demo:hello-world` command works
+- [x] 6.3 Verify random language selection (run multiple times)
 - [x] 6.4 Run markdownlint on plugin files
 - [x] 6.5 Verify marketplace.json is valid JSON
 
 ## 7. Git Configuration
 
 - [x] 7.1 Update `.gitignore` if needed for plugin artifacts (N/A - no artifacts to ignore)
-- [ ] 7.2 Commit all new files with appropriate commit message
+- [x] 7.2 Commit all new files with appropriate commit message
 
 ## 8. Cleanup
 
