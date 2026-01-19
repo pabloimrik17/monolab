@@ -48,7 +48,7 @@ The marketplace manifest SHALL include:
 #### Scenario: Users can add marketplace
 
 - **GIVEN** a user with Claude Code installed
-- **WHEN** they run `/plugin marketplace add m0n0t3ch/monolab`
+- **WHEN** they run `/plugin marketplace add pabloimrrik17/monolab`
 - **THEN** the monolab marketplace SHALL be registered in their Claude Code configuration
 - **AND** plugins from monolab SHALL appear in the Discover tab
 
