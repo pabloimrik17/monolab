@@ -26,7 +26,7 @@ The plugin manifest SHALL include:
 The plugin SHALL provide a skill at `skills/generate.md` that generates platform-appropriate loop scripts.
 
 When invoked, the skill SHALL:
-1. Detect the user's platform (darwin/linux → bash/zsh, win32 → PowerShell)
+1. Detect the user's platform (darwin/linux → Bash, win32 → PowerShell)
 2. Ask for task description and completion criteria
 3. Generate a script with safety limits
 4. Output the script with usage instructions
@@ -111,7 +111,7 @@ The template SHALL include:
 The skill SHALL detect the operating system and generate appropriate script syntax.
 
 Supported platforms:
-- **Unix-like** (darwin, linux): Bash script with POSIX compatibility
+- **Unix-like** (darwin, linux): Bash script
 - **Windows**: PowerShell script
 
 #### Scenario: Platform auto-detection
