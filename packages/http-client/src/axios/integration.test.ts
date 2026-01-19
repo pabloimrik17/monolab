@@ -51,7 +51,9 @@ describe("Integration Tests", () => {
             });
 
             const client = createAxiosHttpClient({ axiosInstance });
-            const response = await client.get("/users");
+            const response = await client.get<
+                Array<{ id: number; name: string }>
+            >("/users");
 
             expect(response.status).toBe(200);
             expect(response.data).toEqual([{ id: 1, name: "Alice" }]);
@@ -66,7 +68,10 @@ describe("Integration Tests", () => {
             );
 
             const client = createAxiosHttpClient({ axiosInstance });
-            const response = await client.post("/users", { name: "Bob" });
+            const response = await client.post<{ id: number; name: string }>(
+                "/users",
+                { name: "Bob" }
+            );
 
             expect(response.status).toBe(201);
             expect(response.data).toEqual({ id: 2, name: "Bob" });
@@ -161,12 +166,13 @@ describe("Integration Tests", () => {
             client.addResponseInterceptor(async (response) => {
                 return {
                     ...response,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    data: { value: (response.data as any).value * 2 },
+                    data: {
+                        value: (response.data as { value: number }).value * 2,
+                    },
                 };
             });
 
-            const response = await client.get("/test");
+            const response = await client.get<{ value: number }>("/test");
             expect(response.data).toEqual({ value: 20 });
         });
 
@@ -190,7 +196,7 @@ describe("Integration Tests", () => {
                 }
             );
 
-            const response = await client.get("/test");
+            const response = await client.get<{ fallback: boolean }>("/test");
             expect(response.data).toEqual({ fallback: true });
         });
     });
@@ -266,10 +272,10 @@ describe("Integration Tests", () => {
                 },
             });
 
-            const response1 = await client.get("/data");
+            const response1 = await client.get<{ value: number }>("/data");
             expect(response1.data).toEqual({ value: 1 });
 
-            const response2 = await client.get("/data");
+            const response2 = await client.get<{ value: number }>("/data");
             expect(response2.data).toEqual({ value: 1 }); // Cached
 
             expect(callCount).toBe(1); // Only one actual request
@@ -362,7 +368,9 @@ describe("Integration Tests", () => {
 
             // All should get same response
             responses.forEach((response) => {
-                expect(response.data).toEqual([{ id: 1 }]);
+                expect(response.data).toEqual([{ id: 1 }] as Array<{
+                    id: number;
+                }>);
             });
 
             // Only 1 actual request made
@@ -427,11 +435,11 @@ describe("Integration Tests", () => {
                 },
             }));
 
-            const response1 = await client.get("/data");
+            const response1 = await client.get<{ value: number }>("/data");
             expect(response1.data).toEqual({ value: 2 }); // Succeeded after retry
 
             // Second request should hit cache
-            const response2 = await client.get("/data");
+            const response2 = await client.get<{ value: number }>("/data");
             expect(response2.data).toEqual({ value: 2 }); // Cached
 
             expect(callCount).toBe(2); // 1 failed + 1 retry, no third request
@@ -475,7 +483,9 @@ describe("Integration Tests", () => {
 
             // All responses should be identical
             [...batch1, ...batch2].forEach((response) => {
-                expect(response.data).toEqual([{ id: 1 }]);
+                expect(response.data).toEqual([{ id: 1 }] as Array<{
+                    id: number;
+                }>);
             });
         });
 
@@ -502,7 +512,7 @@ describe("Integration Tests", () => {
                 }
             );
 
-            const response = await client.get("/test");
+            const response = await client.get<{ recovered: boolean }>("/test");
             expect(response.data).toEqual({ recovered: true });
         });
     });

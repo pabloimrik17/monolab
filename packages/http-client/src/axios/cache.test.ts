@@ -85,41 +85,43 @@ describe("Cache Layer", () => {
         it("respects cache TTL and refetches after expiration", async () => {
             vi.useFakeTimers();
 
-            let callCount = 0;
-            mock.onGet("/data").reply(() => {
-                callCount++;
-                return [200, { result: `call-${callCount}` }];
-            });
+            try {
+                let callCount = 0;
+                mock.onGet("/data").reply(() => {
+                    callCount++;
+                    return [200, { result: `call-${callCount}` }];
+                });
 
-            const client = createAxiosHttpClient({
-                axiosInstance,
-                cache: {
-                    cache: new TestCache(),
-                    ttl: 1000, // 1 second
-                },
-            });
+                const client = createAxiosHttpClient({
+                    axiosInstance,
+                    cache: {
+                        cache: new TestCache(),
+                        ttl: 1000, // 1 second
+                    },
+                });
 
-            // First call
-            const response1 = await client.get<{ result: string }>("/data");
-            expect(response1.data.result).toBe("call-1");
+                // First call
+                const response1 = await client.get<{ result: string }>("/data");
+                expect(response1.data.result).toBe("call-1");
 
-            // Advance time by 500ms (still within TTL)
-            vi.advanceTimersByTime(500);
+                // Advance time by 500ms (still within TTL)
+                vi.advanceTimersByTime(500);
 
-            // Second call - should be cached
-            const response2 = await client.get<{ result: string }>("/data");
-            expect(response2.data.result).toBe("call-1");
-            expect(callCount).toBe(1);
+                // Second call - should be cached
+                const response2 = await client.get<{ result: string }>("/data");
+                expect(response2.data.result).toBe("call-1");
+                expect(callCount).toBe(1);
 
-            // Advance time by 600ms (total 1100ms, past TTL)
-            vi.advanceTimersByTime(600);
+                // Advance time by 600ms (total 1100ms, past TTL)
+                vi.advanceTimersByTime(600);
 
-            // Third call - should refetch
-            const response3 = await client.get<{ result: string }>("/data");
-            expect(response3.data.result).toBe("call-2");
-            expect(callCount).toBe(2);
-
-            vi.useRealTimers();
+                // Third call - should refetch
+                const response3 = await client.get<{ result: string }>("/data");
+                expect(response3.data.result).toBe("call-2");
+                expect(callCount).toBe(2);
+            } finally {
+                vi.useRealTimers();
+            }
         });
     });
 

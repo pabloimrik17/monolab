@@ -98,7 +98,7 @@ export const createHttpClientFactory: HttpClientFactory = (
     const axiosConfig: CreateAxiosDefaults = {};
 
     if (options?.baseUrl) axiosConfig.baseURL = options.baseUrl;
-    if (options?.timeout) axiosConfig.timeout = options.timeout;
+    if (options?.timeout !== undefined) axiosConfig.timeout = options.timeout;
     if (options?.headers) axiosConfig.headers = options.headers;
     if (options?.query) axiosConfig.params = options.query;
     if (options?.credentials)

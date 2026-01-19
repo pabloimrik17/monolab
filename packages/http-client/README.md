@@ -306,6 +306,25 @@ const client = createAxiosHttpClient({
     axiosInstance: axios.create({ baseURL: "https://api.example.com" }),
 });
 
+// Simple async cache implementation (HttpCache requires async methods)
+function createMemoryCache() {
+    const store = new Map();
+    return {
+        async get(key: string) {
+            return store.get(key) ?? null;
+        },
+        async set(key: string, value: unknown) {
+            store.set(key, value);
+        },
+        async delete(key: string) {
+            store.delete(key);
+        },
+        async clear() {
+            store.clear();
+        },
+    };
+}
+
 // Client with all features
 const advancedClient = createAxiosHttpClient({
     axiosInstance: axios.create({ baseURL: "https://api.example.com" }),
@@ -314,7 +333,7 @@ const advancedClient = createAxiosHttpClient({
         delay: exponentialBackoff(1000, 10000),
     },
     cache: {
-        cache: new Map(),
+        cache: createMemoryCache(),
         ttl: 60000,
     },
     deduplication: {
@@ -348,7 +367,7 @@ const client = createHttpClientFactory({
         delay: exponentialBackoff(1000, 10000),
     },
     cache: {
-        cache: new Map(),
+        cache: createMemoryCache(), // See createMemoryCache() above
         ttl: 60000,
     },
     deduplication: {
@@ -382,7 +401,7 @@ const client = createHttpClientFactory({
 -   ✅ Response caching with TTL and automatic invalidation
 -   ✅ Type-safe error handling
 -   ✅ Full TypeScript support with generics
--   ✅ 147 tests with 100% coverage
+-   ✅ 147 tests with ~85% coverage
 
 ## Roadmap
 
