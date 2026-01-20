@@ -14,6 +14,8 @@ export default tseslint.config(
             ".claude/**",
             ".opencode/**",
             "**/CHANGELOG.md",
+            "**/CLAUDE.md",
+            "**/AGENTS.md",
         ],
     },
     eslint.configs.recommended,
