@@ -35,4 +35,9 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 In all interactions, plans, and commit messages, be extremely concise and sacrifice grammar for the sake of concision
 
+## Plan Mode
+
+- Make plans extremely concise. Sacrifice grammar for concision.
+- End each plan with list of unresolved questions, if any.
+
 <!-- Matt Pocock concise rule end-->
