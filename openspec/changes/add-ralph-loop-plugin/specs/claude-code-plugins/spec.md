@@ -35,7 +35,15 @@ The generated script SHALL include:
 - Maximum iteration limit (configurable, default 20)
 - Clear prompt file reference (PROMPT.md or similar)
 - Git commit after each successful iteration (optional)
-- Completion detection via exit code or file marker
+- Completion detection via exit code or file marker∫
+
+#### Scenario: Script generation is non-executing
+
+- **GIVEN** a user invokes the generate skill
+- **WHEN** the plugin outputs the loop script and PROMPT.md
+- **THEN** it SHALL only write/output the files
+- **AND** it MUST NOT execute the script or start any loop automatically
+- **AND** the user SHALL manually run the script when ready
 
 #### Scenario: Generate bash script on macOS/Linux
 
