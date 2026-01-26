@@ -1,4 +1,3 @@
-
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
 
@@ -10,6 +9,7 @@
 -   When working in individual projects, use the `nx_project_details` mcp tool to analyze and understand the specific project structure and dependencies
 -   For questions around nx configuration, best practices or if you're unsure, use the `nx_docs` tool to get relevant, up-to-date docs. Always use this instead of assuming things about nx configuration
 -   If the user needs help with an Nx configuration or project graph error, use the `nx_workspace` tool to get any errors
+-   For Nx plugin best practices, check `node_modules/@nx/<plugin>/PLUGIN.md`. Not all plugins have this file - proceed without it if unavailable.
 
 <!-- nx configuration end-->
 
@@ -19,7 +19,7 @@ In all interactions, plans, and commit messages, be extremely concise and sacrif
 
 ## Plan Mode
 
-- Make plans extremely concise. Sacrifice grammar for concision.
-- End each plan with list of unresolved questions, if any.
+-   Make plans extremely concise. Sacrifice grammar for concision.
+-   End each plan with list of unresolved questions, if any.
 
 <!-- Matt Pocock concise rule end-->
