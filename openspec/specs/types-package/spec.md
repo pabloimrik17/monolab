@@ -1,155 +1,132 @@
 # Types Package Specification
 
-## Requirements
+## ADDED Requirements
 
-### Requirement: Nullable Type Utilities
+### Requirement: Package Structure
 
-The package SHALL provide nullable type utilities for handling values that can be null.
+The `@m0n0lab/ts-types` package SHALL provide a standard library structure for sharing TypeScript type definitions across the monorepo.
 
-#### Scenario: Nullable type definition
+#### Scenario: Package directory layout
 
-- **WHEN** importing `Nullable<T>` from the package
-- **THEN** the type SHALL be equivalent to `T | null`
-- **AND** it SHALL accept any type parameter T
+- **WHEN** the package is created
+- **THEN** it SHALL have directory structure: `packages/ts-types/src/` for source code
+- **AND** it SHALL have `packages/ts-types/dist/` for compiled output
+- **AND** it SHALL include `project.json` for Nx integration without Nx plugins
 
-#### Scenario: NonNullable type definition
+#### Scenario: Source organization
 
-- **WHEN** importing `NonNullable<T>` from the package
-- **THEN** the type SHALL exclude null from type T
-- **AND** it SHALL be equivalent to `Exclude<T, null>`
+- **WHEN** types are added to the package
+- **THEN** they SHALL be exported through `src/index.ts` entry point
+- **AND** the package SHALL support tree-shaking via `sideEffects: false`
 
-#### Scenario: Type guard for nullable values
+### Requirement: TypeScript Configuration
 
-- **WHEN** using `isNullable(value)` type guard
-- **THEN** it SHALL return true if value is null
-- **AND** TypeScript SHALL narrow the type to include null in the true branch
-- **AND** it SHALL return false for non-null values
+The package SHALL use TypeScript with strict compilation settings following monorepo conventions.
 
-#### Scenario: Type guard for non-nullable values
+#### Scenario: TypeScript compilation
 
-- **WHEN** using `isNonNullable(value)` type guard
-- **THEN** it SHALL return true if value is not null
-- **AND** TypeScript SHALL narrow the type to exclude null in the true branch
-- **AND** it SHALL return false for null values
+- **WHEN** building the package
+- **THEN** `tsconfig.json` SHALL extend `../ts-configs/tsconfig.node.lib.json`
+- **AND** it SHALL compile from `src/` to `dist/` directory
+- **AND** it SHALL generate `.d.ts` declaration files
+- **AND** it SHALL support composite builds with declaration maps
 
-### Requirement: Undefinable Type Utilities
+#### Scenario: Type checking
 
-The package SHALL provide undefinable type utilities for handling values that can be undefined.
+- **WHEN** running type checks
+- **THEN** the package SHALL validate all TypeScript code with `tsc --noEmit`
+- **AND** it SHALL enforce strict mode rules
 
-#### Scenario: Undefinable type definition
+### Requirement: ESM Export Configuration
 
-- **WHEN** importing `Undefinable<T>` from the package
-- **THEN** the type SHALL be equivalent to `T | undefined`
-- **AND** it SHALL accept any type parameter T
+The package SHALL provide ES module exports compatible with modern JavaScript tooling.
 
-#### Scenario: NonUndefinable type definition
+#### Scenario: Package exports
 
-- **WHEN** importing `NonUndefinable<T>` from the package
-- **THEN** the type SHALL exclude undefined from type T
-- **AND** it SHALL be equivalent to `Exclude<T, undefined>`
+- **WHEN** consuming the package from another project
+- **THEN** `package.json` SHALL have `type: "module"`
+- **AND** the `exports` field SHALL map `.` to `./dist/index.js` for code
+- **AND** the `exports` field SHALL map types to `./dist/index.d.ts`
+- **AND** `main` field SHALL point to `./dist/index.js`
+- **AND** `types` field SHALL point to `./dist/index.d.ts`
 
-#### Scenario: Type guard for undefinable values
+#### Scenario: Published files
 
-- **WHEN** using `isUndefinable(value)` type guard
-- **THEN** it SHALL return true if value is undefined
-- **AND** TypeScript SHALL narrow the type to include undefined in the true branch
-- **AND** it SHALL return false for defined values
+- **WHEN** the package is published
+- **THEN** the `files` array SHALL include: `dist/`, `README.md`, `CHANGELOG.md`, `LICENSE`
+- **AND** source files (`src/`) SHALL NOT be included in published package
+- **AND** build artifacts SHALL be tree-shakeable
 
-#### Scenario: Type guard for non-undefinable values
+### Requirement: Build System
 
-- **WHEN** using `isNonUndefinable(value)` type guard
-- **THEN** it SHALL return true if value is not undefined
-- **AND** TypeScript SHALL narrow the type to exclude undefined in the true branch
-- **AND** it SHALL return false for undefined values
+The package SHALL provide automated build and validation scripts.
 
-### Requirement: Nullish Type Utilities
+#### Scenario: Build execution
 
-The package SHALL provide nullish type utilities for handling values that can be null or undefined.
+- **WHEN** running the build command
+- **THEN** `pnpm run build` SHALL execute `tsc -b` for composite build
+- **AND** it SHALL output JavaScript and declaration files to `dist/`
+- **AND** build SHALL fail on TypeScript errors
 
-#### Scenario: Nullish type definition
+#### Scenario: Development workflow
 
-- **WHEN** importing `Nullish<T>` from the package
-- **THEN** the type SHALL be equivalent to `T | null | undefined`
-- **AND** it SHALL accept any type parameter T
+- **WHEN** developing the package
+- **THEN** `pnpm run typecheck` SHALL validate types without emitting files
+- **AND** standard lint scripts SHALL be available (eslint, knip)
+- **AND** standard test scripts SHALL be available (vitest)
 
-#### Scenario: NonNullish type definition
+### Requirement: Package Metadata
 
-- **WHEN** importing `NonNullish<T>` from the package
-- **THEN** the type SHALL exclude both null and undefined from type T
-- **AND** it SHALL be equivalent to `Exclude<T, null | undefined>`
+The package SHALL include proper versioning, authoring, and publishing configuration.
 
-#### Scenario: Type guard for nullish values
+#### Scenario: Package identification
 
-- **WHEN** using `isNullish(value)` type guard
-- **THEN** it SHALL return true if value is null or undefined
-- **AND** TypeScript SHALL narrow the type to include null | undefined in the true branch
-- **AND** it SHALL return false for defined, non-null values
+- **WHEN** the package is initialized
+- **THEN** `package.json` SHALL have name `@m0n0lab/ts-types`
+- **AND** initial version SHALL be `0.1.0` (follows semver after initial release)
+- **AND** author field SHALL be set to `Pablo F.G.`
 
-#### Scenario: Type guard for non-nullish values
+#### Scenario: Publishing configuration
 
-- **WHEN** using `isNonNullish(value)` type guard
-- **THEN** it SHALL return true if value is neither null nor undefined
-- **AND** TypeScript SHALL narrow the type to exclude null | undefined in the true branch
-- **AND** it SHALL return false for null or undefined values
+- **WHEN** preparing for publication
+- **THEN** `engines` field SHALL require Node `^20.18.0 || >=22.0.0` and pnpm 10.27.0
+- **AND** `packageManager` SHALL specify pnpm 10.27.0
+- **AND** `publishConfig` SHALL set `access: "public"`
+- **AND** `publishConfig` SHALL use npm registry URL
 
-### Requirement: StrictOmit Utility Type
+### Requirement: JSR Publishing Configuration
 
-The package SHALL provide a type-safe omit utility that enforces key existence at compile time.
+The package SHALL be configured for publishing to JSR (JavaScript Registry) via Deno workspace pattern.
 
-#### Scenario: StrictOmit type definition
+#### Scenario: JSR configuration file
 
-- **WHEN** using `StrictOmit<T, K>` with valid keys
-- **THEN** it SHALL omit properties K from type T
-- **AND** K MUST extend keyof T (compile-time error if key doesn't exist)
-- **AND** the result SHALL be equivalent to `Omit<T, K>` but with stricter key validation
+- **WHEN** setting up JSR publishing
+- **THEN** a `deno.json` file SHALL exist in package root
+- **AND** it SHALL have name `@m0n0lab/ts-types`
+- **AND** version SHALL match `package.json` version
+- **AND** `license` field SHALL be set to `MIT`
 
-#### Scenario: StrictOmit compile-time safety
+#### Scenario: JSR exports
 
-- **WHEN** using `StrictOmit<T, K>` with invalid keys
-- **THEN** TypeScript SHALL produce a compile-time error
-- **AND** the error SHALL indicate the key does not exist in type T
+- **WHEN** JSR processes the package
+- **THEN** `deno.json` SHALL have `exports` field pointing to `./src/index.ts`
+- **AND** it SHALL export source TypeScript files (not compiled)
 
-#### Scenario: Comparison with built-in Omit
+### Requirement: Documentation
 
-- **WHEN** documentation explains StrictOmit
-- **THEN** it SHALL clarify the difference from TypeScript's built-in `Omit<T, K>`
-- **AND** it SHALL explain that built-in Omit accepts any string key without validation
-- **AND** it SHALL provide examples showing the stricter type safety
+The package SHALL provide comprehensive documentation for consumers and contributors.
 
-### Requirement: Type Testing
+#### Scenario: README documentation
 
-The package SHALL include comprehensive type tests for all utility types.
+- **WHEN** a user reads the package README
+- **THEN** it SHALL describe the package purpose
+- **AND** it SHALL include installation instructions
+- **AND** it SHALL provide usage examples
+- **AND** it SHALL reference contributing guidelines
 
-#### Scenario: Type test coverage
+#### Scenario: Changelog tracking
 
-- **WHEN** running type tests
-- **THEN** each utility type SHALL have corresponding `.test-d.ts` file
-- **AND** tests SHALL verify correct type inference
-- **AND** tests SHALL verify type guard narrowing behavior
-- **AND** tests SHALL verify compile-time error cases for StrictOmit
-
-#### Scenario: Type test execution
-
-- **WHEN** validating types during development
-- **THEN** running `tsc --noEmit` SHALL execute all type tests
-- **AND** type tests SHALL fail compilation if types behave incorrectly
-- **AND** the build system SHALL include type test validation
-
-### Requirement: Utility Types Documentation
-
-The package SHALL provide comprehensive documentation for all utility types with practical examples.
-
-#### Scenario: API documentation
-
-- **WHEN** a developer reads the utility type source files
-- **THEN** each type and function SHALL have JSDoc comments
-- **AND** JSDoc SHALL include `@example` tags with usage examples
-- **AND** JSDoc SHALL describe the purpose and behavior
-
-#### Scenario: README examples
-
-- **WHEN** a developer reads the package README
-- **THEN** it SHALL include a dedicated section for each utility type category
-- **AND** each section SHALL show import statements
-- **AND** each section SHALL provide practical code examples
-- **AND** examples SHALL demonstrate both types and type guards where applicable
+- **WHEN** changes are made to the package
+- **THEN** a `CHANGELOG.md` file SHALL exist
+- **AND** it SHALL follow conventional changelog format
+- **AND** it SHALL track version history

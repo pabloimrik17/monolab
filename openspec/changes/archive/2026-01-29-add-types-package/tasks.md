@@ -9,18 +9,18 @@
 
 ## 2. Package Configuration
 
-- [x] 2.1 Create `package.json` with name `@monolab/ts-types`
+- [x] 2.1 Create `package.json` with name `@m0n0lab/ts-types`
 - [x] 2.2 Set version to `0.1.0` (initial)
 - [x] 2.3 Configure `type: "module"` for ESM
 - [x] 2.4 Setup `exports` field pointing to `./dist/index.js` and types
 - [x] 2.5 Add `files` array including dist, README, CHANGELOG, LICENSE
-- [x] 2.6 Configure `engines` for Node 24.12.0 and pnpm 10.27.0
+- [x] 2.6 Configure `engines` for Node `^20.18.0 || >=22.0.0` and pnpm 10.27.0
 - [x] 2.7 Add `publishConfig` for public access
 - [x] 2.8 Set `sideEffects: false` for tree-shaking
 
 ## 3. JSR Publishing Configuration
 
-- [x] 3.1 Create `jsr.json` with name `@monolab/ts-types`
+- [x] 3.1 Create `deno.json` with name `@m0n0lab/ts-types`
 - [x] 3.2 Set version to `0.1.0` (matching package.json)
 - [x] 3.3 Set `license: "MIT"`
 - [x] 3.4 Configure `exports` field pointing to `./src/index.ts` (source file for JSR)
@@ -56,7 +56,7 @@
 ## 8. Validation
 
 - [x] 8.1 Run `pnpm install` to update workspace
-- [x] 8.2 Run `pnpm --filter @monolab/ts-types build` to verify compilation
+- [x] 8.2 Run `pnpm --filter @m0n0lab/ts-types build` to verify compilation
 - [x] 8.3 Verify `dist/` output contains `.js` and `.d.ts` files
-- [x] 8.4 Run `pnpm --filter @monolab/ts-types typecheck` successfully
+- [x] 8.4 Run `pnpm --filter @m0n0lab/ts-types typecheck` successfully
 - [x] 8.5 Verify package appears in `pnpm list` output

@@ -4,7 +4,7 @@
 
 ### Requirement: Package Structure
 
-The `@monolab/ts-types` package SHALL provide a standard library structure for sharing TypeScript type definitions across the monorepo.
+The `@m0n0lab/ts-types` package SHALL provide a standard library structure for sharing TypeScript type definitions across the monorepo.
 
 #### Scenario: Package directory layout
 
@@ -82,36 +82,35 @@ The package SHALL include proper versioning, authoring, and publishing configura
 #### Scenario: Package identification
 
 - **WHEN** the package is initialized
-- **THEN** `package.json` SHALL have name `@monolab/ts-types`
-- **AND** initial version SHALL be `0.1.0`
+- **THEN** `package.json` SHALL have name `@m0n0lab/ts-types`
+- **AND** initial version SHALL be `0.1.0` (follows semver after initial release)
 - **AND** author field SHALL be set to `Pablo F.G.`
 
 #### Scenario: Publishing configuration
 
 - **WHEN** preparing for publication
-- **THEN** `engines` field SHALL require Node 24.12.0 and pnpm 10.27.0
+- **THEN** `engines` field SHALL require Node `^20.18.0 || >=22.0.0` and pnpm 10.27.0
 - **AND** `packageManager` SHALL specify pnpm 10.27.0
 - **AND** `publishConfig` SHALL set `access: "public"`
 - **AND** `publishConfig` SHALL use npm registry URL
 
 ### Requirement: JSR Publishing Configuration
 
-The package SHALL be configured for publishing to JSR (JavaScript Registry) with proper metadata.
+The package SHALL be configured for publishing to JSR (JavaScript Registry) via Deno workspace pattern.
 
 #### Scenario: JSR configuration file
 
 - **WHEN** setting up JSR publishing
-- **THEN** a `jsr.json` file SHALL exist in package root
-- **AND** it SHALL have name `@monolab/ts-types`
+- **THEN** a `deno.json` file SHALL exist in package root
+- **AND** it SHALL have name `@m0n0lab/ts-types`
 - **AND** version SHALL match `package.json` version
 - **AND** `license` field SHALL be set to `MIT`
 
 #### Scenario: JSR exports
 
 - **WHEN** JSR processes the package
-- **THEN** `jsr.json` SHALL have `exports` field pointing to `./src/index.ts`
+- **THEN** `deno.json` SHALL have `exports` field pointing to `./src/index.ts`
 - **AND** it SHALL export source TypeScript files (not compiled)
-- **AND** it SHALL include `imports` field for JSR dependencies (initially empty)
 
 ### Requirement: Documentation
 
