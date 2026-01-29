@@ -116,7 +116,6 @@ The system SHALL provide a `HttpResponse<T>` interface that represents a success
 - **THEN** it SHALL include:
   - `status`: numeric HTTP status code (200-299)
   - `statusText`: human-readable status message
-  - `ok`: boolean indicating success (true for 2xx)
 
 #### Scenario: Response includes headers
 
