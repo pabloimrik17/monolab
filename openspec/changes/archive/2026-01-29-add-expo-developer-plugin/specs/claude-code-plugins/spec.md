@@ -8,14 +8,14 @@ The plugin manifest SHALL include:
 - `name`: "expo-developer"
 - `version`: Semantic version starting at "0.1.0"
 - `description`: Clear description of Expo/React Native development assistance
-- `keywords`: ["expo", "react-native", "dependencies", "validation"]
+- `keywords`: ["expo", "react-native", "dependency-validation", "package-manager"]
 
 #### Scenario: Plugin directory structure
 
 - **GIVEN** a developer navigates to `claude-plugins/expo-developer/`
 - **WHEN** examining its structure
 - **THEN** it SHALL have `.claude-plugin/plugin.json` manifest
-- **AND** it SHALL have `skills/expo-dependency-check.md`
+- **AND** it SHALL have `skills/expo-dependency-check/SKILL.md`
 - **AND** it SHALL have `package.json` with `"private": true`
 - **AND** it SHALL have `README.md` documenting the plugin
 
@@ -28,7 +28,7 @@ The `expo-dependency-check` skill SHALL detect when `package.json` is modified i
 The skill SHALL:
 - Trigger when `package.json` changes are detected (writes, edits)
 - Verify the project is an Expo project (presence of `expo` in dependencies/devDependencies or `app.json`/`app.config.js`)
-- Detect the package manager used in the project (npm, yarn, pnpm, bun, deno)
+- Detect the package manager used in the project (npm, yarn, pnpm, bun)
 - Propose running `expo install --check` to validate versions
 - Offer `expo install --fix` as an alternative to auto-fix issues
 
@@ -43,15 +43,15 @@ The skill SHALL:
 
 - **GIVEN** an Expo project with `pnpm-lock.yaml` present
 - **WHEN** the skill proposes validation commands
-- **THEN** it SHALL use `pnpm exec expo install --check`
-- **AND** it SHALL use `pnpm exec expo install --fix` for auto-fix
+- **THEN** it SHALL use `pnpx expo install --check`
+- **AND** it SHALL use `pnpx expo install --fix` for auto-fix
 
 #### Scenario: Package manager detection - yarn
 
 - **GIVEN** an Expo project with `yarn.lock` present
 - **WHEN** the skill proposes validation commands
-- **THEN** it SHALL use `yarn expo install --check`
-- **AND** it SHALL use `yarn expo install --fix` for auto-fix
+- **THEN** it SHALL use `npx expo install --check` (yarn classic) or `yarn dlx expo install --check` (yarn 2+)
+- **AND** it SHALL use the corresponding `--fix` variant for auto-fix
 
 #### Scenario: Package manager detection - npm
 
@@ -66,13 +66,6 @@ The skill SHALL:
 - **WHEN** the skill proposes validation commands
 - **THEN** it SHALL use `bunx expo install --check`
 - **AND** it SHALL use `bunx expo install --fix` for auto-fix
-
-#### Scenario: Package manager detection - deno
-
-- **GIVEN** an Expo project with `deno.lock` present
-- **WHEN** the skill proposes validation commands
-- **THEN** it SHALL use `deno run -A npm:expo install --check`
-- **AND** it SHALL use `deno run -A npm:expo install --fix` for auto-fix
 
 #### Scenario: Non-Expo project ignored
 

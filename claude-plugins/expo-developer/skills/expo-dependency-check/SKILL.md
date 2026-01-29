@@ -23,7 +23,7 @@ Check for lock files (first match wins):
 | Lock File                 | Package Manager | Command Prefix                         |
 | ------------------------- | --------------- | -------------------------------------- |
 | `bun.lockb` or `bun.lock` | bun             | `bunx`                                 |
-| `pnpm-lock.yaml`          | pnpm            | `pnpm dlx`                             |
+| `pnpm-lock.yaml`          | pnpm            | `pnpx`                                 |
 | `yarn.lock`               | yarn            | `yarn dlx` (yarn 2+) or `npx` (yarn 1) |
 | `package-lock.json`       | npm             | `npx`                                  |
 | (none)                    | npm (default)   | `npx`                                  |
@@ -50,8 +50,8 @@ npx expo install --fix
 **pnpm project:**
 
 ```bash
-pnpm dlx expo install --check
-pnpm dlx expo install --fix
+pnpx expo install --check
+pnpx expo install --fix
 ```
 
 **bun project:**

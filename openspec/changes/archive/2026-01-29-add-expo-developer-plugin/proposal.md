@@ -11,7 +11,7 @@ A Claude Code skill can automatically detect `package.json` dependency modificat
 - New plugin: `claude-plugins/expo-developer/`
 - New skill: `expo-dependency-check` (skill file in `skills/` directory)
 - Skill triggers when `package.json` is modified in Expo/React Native projects
-- Detects project's package manager (npm, yarn, pnpm, bun, deno)
+- Detects project's package manager (npm, yarn, pnpm, bun)
 - Offers to run `expo install --check` or `expo install --fix`
 
 ## Impact
