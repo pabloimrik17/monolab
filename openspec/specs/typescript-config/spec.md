@@ -120,7 +120,7 @@ The monorepo SHALL provide a TypeScript configuration file (`tsconfig.node.lib.j
 - **AND** incremental builds work correctly across library dependencies
 
 #### Scenario: Compatible with utility libraries
-- **WHEN** utility libraries (is-even, is-odd) use this configuration
+- **WHEN** utility libraries (ts-types) use this configuration
 - **THEN** they compile successfully with proper type definitions
 - **AND** pass @arethetypeswrong/cli validation
 - **AND** produce Node.js-compatible, tree-shakeable output

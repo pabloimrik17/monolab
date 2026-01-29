@@ -50,10 +50,10 @@ Individual packages MUST be able to display their specific coverage using flag-f
 
 #### Scenario: Per-package badges show independent coverage
 
-**Given** react-hooks has 85% coverage and is-even has 100% coverage
+**Given** react-hooks has 85% coverage and ts-types has 100% coverage
 **When** their respective flag badges are rendered
 **Then** the react-hooks badge shows 85%
-**And** the is-even badge shows 100%
+**And** the ts-types badge shows 100%
 **And** each badge is independent of other packages' coverage
 
 #### Scenario: Package READMEs can include their specific badge

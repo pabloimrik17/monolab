@@ -70,7 +70,7 @@ Test results MUST be uploaded with the same per-package flags used for coverage 
 
 #### Scenario: Each package flag associates test results with package
 
-**Given** test results are uploaded with flags (react-hooks, react-clean, is-even, is-odd, ts-configs)
+**Given** test results are uploaded with flags (react-hooks, react-clean, ts-configs, ts-types)
 **When** a user views Test Analytics in Codecov dashboard
 **Then** test results are organized by package flags
 **And** each package's test metrics are displayed independently
@@ -208,12 +208,12 @@ The test results upload MUST use a single bash script that loops through package
 
 #### Scenario: Single script uploads multiple affected package test results
 
-**Given** react-hooks and is-even are affected by a pull request
+**Given** react-hooks and ts-types are affected by a pull request
 **When** the test results upload script runs
-**Then** the script processes all 5 packages in a loop
-**And** uploads test results for react-hooks and is-even
-**And** skips test results for react-clean, is-odd, and ts-configs
-**And** logs a summary: "Uploaded test results for 2 packages, skipped 3 packages"
+**Then** the script processes all 4 packages in a loop
+**And** uploads test results for react-hooks and ts-types
+**And** skips test results for react-clean and ts-configs
+**And** logs a summary: "Uploaded test results for 2 packages, skipped 2 packages"
 
 #### Scenario: Script uses codecov test-results CLI
 
@@ -250,8 +250,8 @@ The packages uploading test results MUST be identical to the packages uploading 
 
 #### Scenario: Non-affected packages skip both uploads
 
-**Given** is-odd is not affected and skipped coverage upload
+**Given** ts-configs is not affected and skipped coverage upload
 **When** the test results upload script runs
-**Then** is-odd also skips test results upload
+**Then** ts-configs also skips test results upload
 **And** consistency is maintained across all Codecov data types
 

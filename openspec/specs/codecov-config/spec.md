@@ -68,7 +68,7 @@ Codecov MUST support separate coverage tracking for each package in the monorepo
 
 **Given** coverage reports are uploaded from multiple packages
 **When** Codecov processes the reports
-**Then** each package is tagged with a flag (e.g., `react-hooks`, `react-clean`, `is-even`, `is-odd`, `ts-configs`)
+**Then** each package is tagged with a flag (e.g., `react-hooks`, `react-clean`, `ts-configs`, `ts-types`)
 **And** coverage can be filtered by package flag in the Codecov dashboard
 **And** per-package coverage trends are visible
 
@@ -79,9 +79,8 @@ Codecov MUST support separate coverage tracking for each package in the monorepo
 **Then** Codecov automatically assigns coverage to flags based on file paths
 **And** files in `packages/react-hooks/` are assigned to the `react-hooks` flag
 **And** files in `packages/react-clean/` are assigned to the `react-clean` flag
-**And** files in `packages/is-even/` are assigned to the `is-even` flag
-**And** files in `packages/is-odd/` are assigned to the `is-odd` flag
 **And** files in `packages/ts-configs/` are assigned to the `ts-configs` flag
+**And** files in `packages/ts-types/` are assigned to the `ts-types` flag
 
 #### Scenario: Flags enable independent coverage views
 

@@ -189,7 +189,7 @@ All publishable packages SHALL be properly configured for dual registry publishi
 
 #### Scenario: Package inclusion
 - **WHEN** determining which packages to release
-- **THEN** all packages in packages/ directory SHALL be included (is-even, is-odd, react-clean, react-hooks, ts-configs)
+- **THEN** all packages in packages/ directory SHALL be included (react-clean, react-hooks, ts-configs, ts-types)
 - **AND** ts-configs SHALL be included in automated releases
 - **AND** packages MAY be excluded via configuration if needed in the future
 
