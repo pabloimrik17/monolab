@@ -69,7 +69,7 @@ jobs:
                   # Parse paths_released to get package names (using env var to prevent script injection)
                   echo "Released paths: $PATHS_RELEASED"
 
-                  # Extract package names from paths (packages/is-even -> is-even)
+                  # Extract package names from paths (packages/ts-types -> ts-types)
                   # Convert to space-separated single line for GitHub Actions output
                   PACKAGES=$(echo "$PATHS_RELEASED" | jq -r '.[] | select(startswith("packages/")) | sub("packages/"; "")' | tr '\n' ' ')
                   echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
