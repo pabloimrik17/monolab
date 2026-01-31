@@ -6,12 +6,12 @@ This delta modifies the `types-package` specification to reflect the package ren
 
 ### Requirement: Package Structure
 
-The `@monolab/ts-types` package SHALL provide a standard library structure for sharing TypeScript type definitions across the monorepo.
+The `@m0n0lab/ts-types` package SHALL provide a standard library structure for sharing TypeScript type definitions across the monorepo.
 
 #### Scenario: Package metadata is correctly configured
 
 - **GIVEN** the types package directory at `packages/ts-types/`
-- **THEN** `package.json` SHALL have name `@monolab/ts-types`
+- **THEN** `package.json` SHALL have name `@m0n0lab/ts-types`
 - **AND** it SHALL have `type: "module"` for ESM support
 - **AND** it SHALL have `sideEffects: false` for tree-shaking
 - **AND** it SHALL export types through `exports` field with proper paths
@@ -19,14 +19,14 @@ The `@monolab/ts-types` package SHALL provide a standard library structure for s
 #### Scenario: JSR configuration
 
 - **GIVEN** the types package has JSR publishing enabled
-- **THEN** `jsr.json` SHALL exist at the package root
-- **AND** it SHALL have name `@monolab/ts-types`
+- **THEN** `deno.json` SHALL exist at the package root
+- **AND** it SHALL have name `@m0n0lab/ts-types`
 - **AND** it SHALL have a valid exports configuration
 
 #### Scenario: Nx project configuration
 
 - **GIVEN** the types package is part of the Nx workspace
-- **THEN** `project.json` SHALL have name `@monolab/ts-types`
+- **THEN** `project.json` SHALL have name `@m0n0lab/ts-types`
 - **AND** it SHALL be tagged with `npm:public`
 - **AND** it SHALL have appropriate build, lint, and test targets
 
@@ -44,8 +44,8 @@ The package SHALL include comprehensive documentation for consumers.
 #### Scenario: Source code comments reference correct package
 
 - **GIVEN** generated type declarations from the build
-- **THEN** the index.ts header comment SHALL mention `@monolab/ts-types`
-- **AND** test files SHALL reference `@monolab/ts-types` in describe blocks
+- **THEN** the index.ts header comment SHALL mention `@m0n0lab/ts-types`
+- **AND** test files SHALL reference `@m0n0lab/ts-types` in describe blocks
 
 ### Requirement: Release Configuration
 
@@ -56,7 +56,7 @@ The package SHALL be configured for automated releases with the new name.
 - **GIVEN** Release Please manages package versions
 - **THEN** `release-please-config.json` SHALL have an entry for `packages/ts-types`
 - **AND** the entry SHALL specify `package-name: "@m0n0lab/ts-types"`
-- **AND** it SHALL include `extra-files: ["jsr.json"]` for synchronized versioning
+- **AND** it SHALL include `extra-files: ["deno.json"]` for synchronized versioning
 
 ### Requirement: Code Coverage Integration
 
@@ -122,6 +122,6 @@ The package SHALL be included in continuous integration workflows for coverage, 
 
 **Migration**:
 - Update all references from `@m0n0lab/types` to `@m0n0lab/ts-types`
-- Update all references from `@monolab/types` to `@monolab/ts-types`
+- Update all references from `@m0n0lab/types` to `@m0n0lab/ts-types`
 - Update directory references from `packages/types/` to `packages/ts-types/`
 - The old package `@m0n0lab/types` is deprecated on NPM and JSR with migration instructions

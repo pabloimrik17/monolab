@@ -16,7 +16,7 @@ This change is being made now because:
 
 - **BREAKING**: Rename NPM package from `@m0n0lab/types` to `@m0n0lab/ts-types`
 - **BREAKING**: Rename JSR package from `@m0n0lab/types` to `@m0n0lab/ts-types`
-- **BREAKING**: Rename Nx project from `@monolab/types` to `@monolab/ts-types`
+- **BREAKING**: Rename Nx project from `@m0n0lab/types` to `@m0n0lab/ts-types`
 - Rename directory from `packages/types/` to `packages/ts-types/` (preserving git history)
 - Update Release Please configuration for the new package path and name
 - Update Codecov configuration with new flag name `ts-types` and path
@@ -34,7 +34,7 @@ This change is being made now because:
 - `release-please-config.json` - Release configuration
 - `codecov.yaml` - Coverage flags and paths
 - `.github/workflows/ci.yml` - CI coverage, test uploads, and bundle analysis
-- `openspec/changes/add-types-package/` - Historical documentation
+- `openspec/changes/add-types-package/` - Historical documentation (archived)
 
 **Migration for external users:**
 ```bash

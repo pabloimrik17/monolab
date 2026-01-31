@@ -1,6 +1,6 @@
 # Types Package Specification
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Package Structure
 
@@ -18,6 +18,28 @@ The `@m0n0lab/ts-types` package SHALL provide a standard library structure for s
 - **WHEN** types are added to the package
 - **THEN** they SHALL be exported through `src/index.ts` entry point
 - **AND** the package SHALL support tree-shaking via `sideEffects: false`
+
+#### Scenario: Package metadata is correctly configured
+
+- **GIVEN** the types package directory at `packages/ts-types/`
+- **THEN** `package.json` SHALL have name `@m0n0lab/ts-types`
+- **AND** it SHALL have `type: "module"` for ESM support
+- **AND** it SHALL have `sideEffects: false` for tree-shaking
+- **AND** it SHALL export types through `exports` field with proper paths
+
+#### Scenario: JSR configuration
+
+- **GIVEN** the types package has JSR publishing enabled
+- **THEN** `deno.json` SHALL exist at the package root
+- **AND** it SHALL have name `@m0n0lab/ts-types`
+- **AND** it SHALL have a valid exports configuration
+
+#### Scenario: Nx project configuration
+
+- **GIVEN** the types package is part of the Nx workspace
+- **THEN** `project.json` SHALL have name `@m0n0lab/ts-types`
+- **AND** it SHALL be tagged with `npm:public`
+- **AND** it SHALL have appropriate build, lint, and test targets
 
 ### Requirement: TypeScript Configuration
 
@@ -114,7 +136,7 @@ The package SHALL be configured for publishing to JSR (JavaScript Registry) via 
 
 ### Requirement: Documentation
 
-The package SHALL provide comprehensive documentation for consumers and contributors.
+The package SHALL include comprehensive documentation for consumers.
 
 #### Scenario: README documentation
 
@@ -130,3 +152,83 @@ The package SHALL provide comprehensive documentation for consumers and contribu
 - **THEN** a `CHANGELOG.md` file SHALL exist
 - **AND** it SHALL follow conventional changelog format
 - **AND** it SHALL track version history
+
+#### Scenario: README includes correct package name
+
+- **GIVEN** a consumer reads the package README
+- **THEN** the README SHALL reference `@m0n0lab/ts-types` in installation instructions
+- **AND** it SHALL show import examples using `@m0n0lab/ts-types`
+- **AND** it SHALL include npm and JSR installation commands with correct package name
+
+#### Scenario: Source code comments reference correct package
+
+- **GIVEN** generated type declarations from the build
+- **THEN** the index.ts header comment SHALL mention `@m0n0lab/ts-types`
+- **AND** test files SHALL reference `@m0n0lab/ts-types` in describe blocks
+
+### Requirement: Release Configuration
+
+The package SHALL be configured for automated releases with the new name.
+
+#### Scenario: Release Please configuration
+
+- **GIVEN** Release Please manages package versions
+- **THEN** `release-please-config.json` SHALL have an entry for `packages/ts-types`
+- **AND** the entry SHALL specify `package-name: "@m0n0lab/ts-types"`
+- **AND** it SHALL include `extra-files: ["deno.json"]` for synchronized versioning
+
+### Requirement: Code Coverage Integration
+
+The package SHALL be integrated with Codecov for coverage tracking using the `ts-types` flag.
+
+#### Scenario: Codecov project coverage
+
+- **GIVEN** code coverage is collected for the types package
+- **THEN** `codecov.yaml` SHALL define a `coverage.status.project.ts-types` section
+- **AND** it SHALL reference the flag `ts-types`
+- **AND** it SHALL set `target: auto` and `threshold: 2%`
+
+#### Scenario: Codecov patch coverage
+
+- **GIVEN** new code is added to the types package
+- **THEN** `codecov.yaml` SHALL define a `coverage.status.patch.ts-types` section
+- **AND** it SHALL reference the flag `ts-types`
+- **AND** it SHALL set `target: 50%` and `threshold: 10%`
+
+#### Scenario: Codecov flag definition
+
+- **GIVEN** coverage reports are uploaded with flags
+- **THEN** `codecov.yaml` SHALL define a flag `ts-types`
+- **AND** it SHALL specify `paths: - packages/ts-types/`
+- **AND** it SHALL enable `carryforward: true`
+
+### Requirement: CI/CD Integration
+
+The package SHALL be included in continuous integration workflows for coverage, testing, and bundle analysis.
+
+#### Scenario: Affected package detection
+
+- **GIVEN** CI runs on pull requests
+- **THEN** `.github/workflows/ci.yml` SHALL include `ts-types` in the affected packages detection list
+- **AND** it SHALL check for `@m0n0lab/ts-types` when determining which packages to process
+
+#### Scenario: Coverage upload
+
+- **GIVEN** unit tests with coverage have completed
+- **THEN** CI SHALL upload coverage for `ts-types` to Codecov
+- **AND** it SHALL use the flag `ts-types`
+- **AND** it SHALL read from `./packages/ts-types/coverage/lcov.info`
+
+#### Scenario: Test results upload
+
+- **GIVEN** unit tests have completed (pass or fail)
+- **THEN** CI SHALL upload test results for `ts-types` to Codecov
+- **AND** it SHALL use the flag `ts-types`
+- **AND** it SHALL read from `./packages/ts-types/test-results.junit.xml`
+
+#### Scenario: Bundle size analysis
+
+- **GIVEN** the package has been built
+- **THEN** CI SHALL analyze the bundle size for `ts-types`
+- **AND** it SHALL upload results to Codecov with bundle-name `ts-types`
+- **AND** it SHALL check for `packages/ts-types/dist` directory

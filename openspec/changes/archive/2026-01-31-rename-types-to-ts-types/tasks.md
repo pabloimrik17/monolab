@@ -8,7 +8,7 @@
 ## 2. Package Configuration Updates
 
 - [x] 2.1 Update `packages/ts-types/package.json` name field to `@m0n0lab/ts-types`
-- [x] 2.2 Update `packages/ts-types/jsr.json` name field to `@m0n0lab/ts-types`
+- [x] 2.2 Update `packages/ts-types/deno.json` name field to `@m0n0lab/ts-types`
 - [x] 2.3 Update `packages/ts-types/project.json` name field to `@monolab/ts-types`
 - [x] 2.4 Update `packages/ts-types/README.md` with new package name in all references
 - [x] 2.5 Update package name in `packages/ts-types/src/index.ts` header comment
@@ -52,13 +52,13 @@
 
 ## 8. NPM Package Management
 
-- [ ] 8.1 Publish `@m0n0lab/ts-types@0.1.0` to NPM
-- [ ] 8.2 Deprecate `@m0n0lab/types` on NPM with message: "DEPRECATED: This package has been renamed to @m0n0lab/ts-types. Please update your dependencies."
-- [ ] 8.3 Update `@m0n0lab/ts-types` on JSR
-- [ ] 8.4 Deprecate `@m0n0lab/types` on JSR with migration message
+- [x] 8.1 Publish `@m0n0lab/ts-types` to NPM (published v1.0.6)
+- [x] 8.2 ~~Deprecate `@m0n0lab/types` on NPM~~ N/A - old package never published
+- [x] 8.3 Update `@m0n0lab/ts-types` on JSR (published v1.0.6)
+- [x] 8.4 ~~Deprecate `@m0n0lab/types` on JSR~~ N/A - old package never published
 
 ## 9. Documentation and Communication
 
-- [ ] 9.1 Add migration note to `packages/ts-types/CHANGELOG.md`
-- [ ] 9.2 Create GitHub release with rename explanation
-- [ ] 9.3 Update `packages/ts-types/README.md` with migration notice (if needed)
+- [x] 9.1 Add migration note to `packages/ts-types/CHANGELOG.md` (v1.0.0 entry mentions rename)
+- [x] 9.2 Create GitHub release with rename explanation (ts-types-v1.0.0 through v1.0.6 exist)
+- [x] 9.3 Update `packages/ts-types/README.md` with migration notice (N/A - no external users of old name)
