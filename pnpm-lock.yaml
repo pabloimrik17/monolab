@@ -170,6 +170,8 @@ importers:
 
     claude-plugins/demo: {}
 
+    claude-plugins/expo-developer: {}
+
     packages/http-client:
         dependencies:
             tslib:
