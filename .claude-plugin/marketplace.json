@@ -11,12 +11,6 @@
     },
     "plugins": [
         {
-            "name": "demo",
-            "source": "./claude-plugins/demo",
-            "version": "0.1.0",
-            "description": "Demo plugin with hello-world command"
-        },
-        {
             "name": "expo-developer",
             "source": "./claude-plugins/expo-developer",
             "version": "0.1.0",
