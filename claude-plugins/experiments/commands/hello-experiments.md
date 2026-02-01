@@ -12,7 +12,13 @@ Features in this plugin are experimental. They're being tested and refined befor
 
 ## Current Experiments
 
-No experimental features are currently available. Check back later or contribute your own!
+### `/experiments:ralph`
+
+Generate Ralph loop infrastructure for autonomous AI coding. Creates PRD, prompt template, and bash scripts from a project description.
+
+```bash
+/experiments:ralph "Build auth system with login and logout"
+```
 
 ## Beta Disclaimer
 
