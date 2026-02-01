@@ -21,6 +21,12 @@
             "source": "./claude-plugins/expo-developer",
             "version": "0.1.0",
             "description": "Expo/React Native developer tools with dependency validation"
+        },
+        {
+            "name": "experiments",
+            "source": "./claude-plugins/experiments",
+            "version": "0.1.0",
+            "description": "Beta skills and commands staging area for monolab"
         }
     ]
 }
