@@ -11,7 +11,7 @@
 ## 2. Testing Infrastructure
 
 - [x] 2.1 Create `packages/http-client/vitest.config.ts` with coverage and JUnit reporting
-- [x] 2.2 Create initial `packages/http-client/src/index.spec.ts` test file
+- [x] 2.2 Create initial `packages/http-client/src/index.test.ts` test file
 - [x] 2.3 Add http-client to `vitest.workspace.ts` at root (auto-discovered via projects pattern)
 - [x] 2.4 Verify tests run successfully with `pnpm exec nx run http-client:test:unit`
 

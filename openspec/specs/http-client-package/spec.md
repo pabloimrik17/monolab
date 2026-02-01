@@ -28,7 +28,7 @@ The system SHALL provide an `@m0n0lab/http-client` package with complete directo
   - Type: `"module"` (ESM only)
   - Exports field pointing to `./dist/index.js` and `./dist/index.d.ts`
   - Repository metadata with directory field
-  - Node.js engine: `24.12.0`
+  - Node.js engine: `^20.18.0 || >=22.0.0`
   - pnpm version: `10.27.0`
   - Scripts for build, lint, test, typecheck
   - publishConfig with JSR and npm registry information
@@ -94,7 +94,7 @@ The system SHALL configure Vitest for unit testing with coverage reporting, JUni
 #### Scenario: Initial test file exists
 
 - **WHEN** the package is created
-- **THEN** it SHALL include `src/index.spec.ts` with at least one passing test
+- **THEN** it SHALL include `src/index.test.ts` with at least one passing test
 - **AND** running `nx run http-client:test:unit` SHALL execute successfully
 
 #### Scenario: Package is included in workspace test configuration
@@ -191,7 +191,7 @@ The system SHALL provide minimal source code that compiles, tests, and publishes
 
 #### Scenario: Placeholder has corresponding tests
 
-- **WHEN** `packages/http-client/src/index.spec.ts` is created
+- **WHEN** `packages/http-client/src/index.test.ts` is created
 - **THEN** it SHALL include at least one test that validates the placeholder export
 - **AND** tests SHALL pass with 100% coverage of placeholder code
 - **AND** coverage report SHALL generate successfully
