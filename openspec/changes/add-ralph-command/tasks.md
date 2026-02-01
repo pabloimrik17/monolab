@@ -21,7 +21,7 @@
 
 - [x] 4.1 Add ralph-once.sh template (HITL single iteration)
 - [x] 4.2 Add ralph.sh template (AFK loop with max iterations)
-- [x] 4.3 Include Docker sandbox commands: `docker sandbox create claude .` and `docker sandbox run ralph-sandbox --`
+- [x] 4.3 Include Docker sandbox command: `docker sandbox run claude . --`
 - [x] 4.4 Include completion detection for `<promise>COMPLETE</promise>`
 - [x] 4.5 Add instructions to make scripts executable
 

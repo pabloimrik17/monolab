@@ -147,7 +147,7 @@ while [ $ITERATION -lt $MAX_ITERATIONS ]; do
     if echo "$OUTPUT" | grep -q "docker sandbox.*not found\|command not found"; then
         echo ""
         echo "=== ERROR: Docker Sandbox not available ==="
-        echo "Requires Docker Desktop 4.50+ with Sandbox feature enabled."
+        echo "Requires Docker Desktop 4.58+ with Sandbox feature enabled."
         exit 1
     fi
 
