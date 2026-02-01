@@ -100,7 +100,7 @@ The system SHALL generate scripts that use Docker Sandbox exclusively.
 
 #### Scenario: Sandbox API usage
 - **WHEN** scripts are generated
-- **THEN** scripts use `docker sandbox create claude .` and `docker sandbox run <name> --`
+- **THEN** scripts use `docker sandbox create claude .` and `docker sandbox run ralph-sandbox --`
 
 #### Scenario: No non-Docker option
 - **WHEN** command runs
