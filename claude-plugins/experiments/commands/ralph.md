@@ -20,6 +20,10 @@ If ARGUMENTS is empty or not provided, use the **AskUserQuestion** tool to promp
 
 Wait for the user's response before proceeding.
 
+## Critical: Output Location
+
+**Create ALL files directly in the current working directory.** Do NOT create a `ralph/` subdirectory or any other folder. If user runs `/ralph` in `/home/user/myproject`, files go directly in `/home/user/myproject`.
+
 ## Step 1: Generate PRD
 
 Analyze the user's description and extract distinct features/tasks. For each feature:
@@ -177,7 +181,7 @@ chmod +x ralph-once.sh ralph.sh
 
 ## Output
 
-After running this command, the current directory will contain:
+After running this command, the current directory (NOT a subdirectory) will contain:
 
 1. `prd.json` - PRD items extracted from your description
 2. `progress.txt` - Empty file for tracking between iterations
