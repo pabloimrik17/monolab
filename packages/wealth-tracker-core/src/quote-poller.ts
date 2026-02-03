@@ -27,6 +27,7 @@ export function createQuotePoller(
     let tickers: string[] = [];
     let timerId: ReturnType<typeof setTimeout> | null = null;
     let polling = false;
+    let generation = 0;
 
     const { onUpdate, onError } = options;
 
@@ -34,22 +35,26 @@ export function createQuotePoller(
         return Math.min(Math.max(ms, MIN_INTERVAL), MAX_INTERVAL);
     }
 
-    async function poll(): Promise<void> {
+    async function poll(pollGeneration: number): Promise<void> {
         if (tickers.length === 0) {
             return;
         }
 
         try {
             const quotes = await client.getQuotes(tickers);
-            onUpdate(quotes);
+            if (polling && pollGeneration === generation) {
+                onUpdate(quotes);
+            }
         } catch (error) {
-            onError?.(
-                error instanceof Error ? error : new Error(String(error))
-            );
+            if (polling && pollGeneration === generation) {
+                onError?.(
+                    error instanceof Error ? error : new Error(String(error))
+                );
+            }
         }
 
-        if (polling) {
-            timerId = setTimeout(() => void poll(), interval);
+        if (polling && pollGeneration === generation) {
+            timerId = setTimeout(() => void poll(pollGeneration), interval);
         }
     }
 
@@ -59,14 +64,16 @@ export function createQuotePoller(
                 return;
             }
 
+            generation++;
             tickers = initialTickers.map((t) => t.toUpperCase());
             polling = true;
 
-            void poll();
+            void poll(generation);
         },
 
         stop(): void {
             polling = false;
+            generation++;
             if (timerId !== null) {
                 clearTimeout(timerId);
                 timerId = null;

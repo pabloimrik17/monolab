@@ -20,6 +20,24 @@ describe("createFinnhubClient", () => {
         expect(() => createFinnhubClient("")).toThrow("API key is required");
     });
 
+    it("throws if concurrency is zero", () => {
+        expect(() =>
+            createFinnhubClient("test-key", { concurrency: 0 })
+        ).toThrow("Concurrency must be a positive integer");
+    });
+
+    it("throws if concurrency is negative", () => {
+        expect(() =>
+            createFinnhubClient("test-key", { concurrency: -1 })
+        ).toThrow("Concurrency must be a positive integer");
+    });
+
+    it("throws if concurrency is not an integer", () => {
+        expect(() =>
+            createFinnhubClient("test-key", { concurrency: 1.5 })
+        ).toThrow("Concurrency must be a positive integer");
+    });
+
     it("creates client with API key", () => {
         const client = createFinnhubClient("test-key");
         expect(client).toBeDefined();

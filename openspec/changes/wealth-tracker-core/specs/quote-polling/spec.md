@@ -17,7 +17,7 @@ The system SHALL stop periodic fetching when stop() is called.
 
 #### Scenario: Stop active polling
 - **WHEN** poller.stop() is called while polling
-- **THEN** cancels pending fetch and stops interval
+- **THEN** stops scheduling further polls (in-flight requests may still complete)
 
 #### Scenario: Stop inactive polling
 - **WHEN** poller.stop() is called when not polling

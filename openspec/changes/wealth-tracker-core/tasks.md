@@ -2,9 +2,9 @@
 
 - [x] 1.1 Create `packages/wealth-tracker-core/` directory structure
 - [x] 1.2 Configure package.json with name `@m0n0lab/wealth-tracker-core`, ESM-only
-- [x] 1.3 Setup tsconfig.json extending workspace ts-configs
+- [x] 1.3 Set up tsconfig.json extending workspace ts-configs
 - [x] 1.4 Configure tsdown for bundling
-- [x] 1.5 Setup vitest.config.ts for testing
+- [x] 1.5 Set up vitest.config.ts for testing
 - [x] 1.6 Add package to pnpm-workspace.yaml
 
 ## 2. Types

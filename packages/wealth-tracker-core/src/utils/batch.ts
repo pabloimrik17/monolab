@@ -10,6 +10,10 @@ export async function batchExecute<T, R>(
     const results = new Map<T, R>();
     const { concurrency } = options;
 
+    if (!Number.isInteger(concurrency) || concurrency <= 0) {
+        throw new Error("concurrency must be a positive integer");
+    }
+
     for (let i = 0; i < items.length; i += concurrency) {
         const batch = items.slice(i, i + concurrency);
         const batchResults = await Promise.allSettled(batch.map(fn));

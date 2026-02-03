@@ -146,6 +146,45 @@ describe("createQuotePoller", () => {
 
             expect(client.getQuotes).not.toHaveBeenCalled();
         });
+
+        it("invalidates in-flight poll when stop then start is called", async () => {
+            const client = createMockClient();
+            let resolveFirst: (value: Map<string, Quote>) => void;
+            const firstCallPromise = new Promise<Map<string, Quote>>((r) => {
+                resolveFirst = r;
+            });
+
+            client.getQuotes
+                .mockReturnValueOnce(firstCallPromise)
+                .mockResolvedValue(
+                    new Map([["MSFT", createMockQuote("MSFT")]])
+                );
+
+            const onUpdate = vi.fn();
+            const poller = createQuotePoller(client, {
+                onUpdate,
+                interval: 15000,
+            });
+
+            // Start first poll (will hang on firstCallPromise)
+            poller.start(["AAPL"]);
+
+            // Stop and start again while first poll is in-flight
+            poller.stop();
+            poller.start(["MSFT"]);
+            await vi.advanceTimersByTimeAsync(0);
+
+            // Resolve the stale first poll
+            resolveFirst!(new Map([["AAPL", createMockQuote("AAPL")]]));
+            await vi.advanceTimersByTimeAsync(0);
+
+            // onUpdate should only be called with MSFT (new poll), not AAPL (stale)
+            expect(onUpdate).toHaveBeenCalledTimes(1);
+            expect(onUpdate).toHaveBeenCalledWith(
+                new Map([["MSFT", createMockQuote("MSFT")]])
+            );
+            poller.stop();
+        });
     });
 
     describe("setInterval", () => {

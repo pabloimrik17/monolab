@@ -9,7 +9,7 @@ The system SHALL fetch current quote data for a single ticker symbol from Finnhu
 
 #### Scenario: Fetch invalid ticker
 - **WHEN** getQuote("INVALID123") is called
-- **THEN** throws error or returns null (configurable)
+- **THEN** throws error with message "No data for symbol: INVALID123"
 
 ### Requirement: Fetch quotes in batch
 The system SHALL fetch quotes for multiple tickers efficiently using parallel requests with concurrency control.
