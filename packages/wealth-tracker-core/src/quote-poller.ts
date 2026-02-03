@@ -37,6 +37,9 @@ export function createQuotePoller(
 
     async function poll(pollGeneration: number): Promise<void> {
         if (tickers.length === 0) {
+            if (polling && pollGeneration === generation) {
+                timerId = setTimeout(() => void poll(pollGeneration), interval);
+            }
             return;
         }
 

@@ -24,7 +24,7 @@ The system SHALL fetch quotes for multiple tickers efficiently using parallel re
 
 #### Scenario: Partial failure in batch
 - **WHEN** getQuotes(["AAPL", "INVALID", "MSFT"]) is called
-- **THEN** returns Map with AAPL and MSFT quotes, INVALID excluded or null
+- **THEN** returns Map with AAPL and MSFT quotes, INVALID excluded
 
 ### Requirement: Respect rate limits
 The system SHALL enforce concurrency limits to avoid exceeding Finnhub API rate limits (60 req/min).

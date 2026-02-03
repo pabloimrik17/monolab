@@ -154,11 +154,10 @@ describe("createQuotePoller", () => {
                 resolveFirst = r;
             });
 
+            const msftQuotes = new Map([["MSFT", createMockQuote("MSFT")]]);
             client.getQuotes
                 .mockReturnValueOnce(firstCallPromise)
-                .mockResolvedValue(
-                    new Map([["MSFT", createMockQuote("MSFT")]])
-                );
+                .mockResolvedValue(msftQuotes);
 
             const onUpdate = vi.fn();
             const poller = createQuotePoller(client, {
@@ -180,9 +179,7 @@ describe("createQuotePoller", () => {
 
             // onUpdate should only be called with MSFT (new poll), not AAPL (stale)
             expect(onUpdate).toHaveBeenCalledTimes(1);
-            expect(onUpdate).toHaveBeenCalledWith(
-                new Map([["MSFT", createMockQuote("MSFT")]])
-            );
+            expect(onUpdate).toHaveBeenCalledWith(msftQuotes);
             poller.stop();
         });
     });
@@ -284,6 +281,35 @@ describe("createQuotePoller", () => {
                 "GOOGL",
                 "TSLA",
             ]);
+        });
+
+        it("continues polling when tickers become empty and resumes when re-added", async () => {
+            const client = createMockClient();
+            const onUpdate = vi.fn();
+            const poller = createQuotePoller(client, {
+                onUpdate,
+                interval: 15000,
+            });
+
+            poller.start(["AAPL"]);
+            await vi.advanceTimersByTimeAsync(0);
+            expect(client.getQuotes).toHaveBeenCalledTimes(1);
+
+            // Set tickers to empty - should not stop polling loop
+            poller.setTickers([]);
+            client.getQuotes.mockClear();
+            await vi.advanceTimersByTimeAsync(15000);
+
+            // Should not have called getQuotes (no tickers)
+            expect(client.getQuotes).not.toHaveBeenCalled();
+            expect(poller.isPolling()).toBe(true);
+
+            // Re-add tickers - should resume fetching
+            poller.setTickers(["MSFT"]);
+            await vi.advanceTimersByTimeAsync(15000);
+
+            expect(client.getQuotes).toHaveBeenCalledWith(["MSFT"]);
+            poller.stop();
         });
     });
 
