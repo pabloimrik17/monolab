@@ -1,7 +1,7 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-    name: "@m0n0lab/react-hooks",
+    name: "@m0n0lab/wealth-tracker-core",
     entry: ["src/index.ts"],
     format: ["esm"],
     outDir: "dist",
@@ -15,5 +15,4 @@ export default defineConfig({
     clean: true,
     minify: false,
     target: "ES2023",
-    external: ["react"],
 });
