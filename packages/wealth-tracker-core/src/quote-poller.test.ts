@@ -209,17 +209,22 @@ describe("createQuotePoller", () => {
             poller.stop();
         });
 
-        it("clamps interval to minimum 15s", () => {
+        it("clamps interval to minimum 15s", async () => {
             const client = createMockClient();
             const onUpdate = vi.fn();
             const poller = createQuotePoller(client, { onUpdate });
 
             poller.setInterval(5000);
             poller.start(["AAPL"]);
+            await vi.advanceTimersByTimeAsync(0);
+            client.getQuotes.mockClear();
 
-            // The interval should be clamped internally
-            // We can verify by checking the timing behavior
-            expect(poller.isPolling()).toBe(true);
+            await vi.advanceTimersByTimeAsync(14999);
+            expect(client.getQuotes).not.toHaveBeenCalled();
+
+            await vi.advanceTimersByTimeAsync(1);
+            expect(client.getQuotes).toHaveBeenCalledTimes(1);
+            poller.stop();
         });
 
         it("clamps interval to maximum 60s", async () => {
