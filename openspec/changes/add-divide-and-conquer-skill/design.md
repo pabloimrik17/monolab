@@ -1,94 +1,92 @@
 ## Context
 
-Users have implementation plans (OpenSpec tasks.md or similar) with many tasks. Executing linearly wastes time when independent tasks could run in parallel across Claude Code sessions. The challenge: detecting which tasks can safely parallelize without file conflicts.
+Users have implementation plans (OpenSpec tasks.md or similar) with many tasks. Claude Code offers three execution mechanisms:
+- **Sequential**: single session, linear execution
+- **Subagents**: parallel Task tool calls within one session, results return to caller
+- **Team agents**: independent Claude Code sessions with shared task list, messaging, self-coordination
 
-Current state: No tooling exists. Users manually guess parallelization, risking merge conflicts.
+No tooling exists to analyze a plan and choose the right strategy. Team agents specifically lack file conflict detection ("last write wins" = destructive overwrites).
 
 ## Goals / Non-Goals
 
 **Goals:**
-- Analyze existing plans to identify parallelization opportunities
-- Generate phase-based division where sessions within a phase don't conflict
-- Provide ready-to-use `claude -p` commands
-- Only recommend parallelization when speedup justifies complexity (~20%+)
+- Analyze plans: parse tasks, infer files, build deps, detect conflicts
+- Route to optimal strategy based on plan characteristics
+- Execute directly using appropriate tool calls
+- Protect against file conflicts via deps + ownership constraints
 
 **Non-Goals:**
 - Generating the plan itself (plan already exists)
-- Automatic session launching (output is instructions, not scripts)
-- Automatic verification between phases (human controls transitions)
-- Recovery from failed sessions (human assists in that session)
+- Recovery from failed sessions/agents
+- Multi-plan orchestration
 
 ## Decisions
 
-### 1. Phase-based execution model
-**Decision:** Organize tasks into sequential phases, with parallel sessions within each phase.
+### 1. Three-strategy routing model
+**Decision:** Analyze plan → decide between sequential / subagents / team agents → execute directly.
 
 **Rationale:**
-- Phases provide natural synchronization points
-- Human can verify before advancing
-- Simpler than full DAG scheduling
+- Each mechanism has different tradeoffs (cost, coordination, communication)
+- No one-size-fits-all; plan characteristics determine best strategy
+- Direct execution removes human coordination overhead
 
-**Alternatives considered:**
-- Full DAG with dynamic scheduling → Too complex, requires automation
-- Pure linear with optional parallelism → Loses structure, harder to reason about
+**Decision criteria:**
+
+| Signal            | Sequential     | Subagents           | Team Agents          |
+|-------------------|----------------|---------------------|----------------------|
+| # independent groups | ≤1          | 2-4                 | 3+                   |
+| File conflicts    | High overlap   | Low-moderate        | Low, clear ownership |
+| Inter-task comms  | N/A            | Not needed          | Needed               |
+| Task complexity   | Any            | Focused, scoped     | Complex, open-ended  |
+| Token cost        | 1x             | ~1.5-2x             | ~3-4x                |
 
 ### 2. File conflict detection via inference + codebase analysis
-**Decision:** Infer files per task from task text + grep codebase for existing references.
+**Decision:** Infer files per task from task text + grep codebase for references. (Unchanged from v1)
 
 **Rationale:**
-- Task text often mentions entities ("Add UserService") → infer path
+- Task text mentions entities ("Add UserService") → infer path
 - Grep finds where entities are defined/imported
-- Hybrid catches both new files and modifications
+- Critical for team agents where "last write wins" is destructive
+
+### 3. Relative complexity units (1-5)
+**Decision:** Assign relative complexity per task, not absolute time. (Unchanged from v1)
+
+### 4. File conflict → automatic dependency injection
+**Decision:** When two tasks share files and route to subagents/teams, automatically add `addBlockedBy` constraint between them.
+
+**Rationale:**
+- Team agents have no built-in file conflict prevention
+- Forcing sequential execution of conflicting tasks is safe default
+- Better than hoping spawn prompts prevent overwrites
+
+### 5. File ownership in spawn prompts
+**Decision:** When routing to team agents, include explicit file ownership per teammate in spawn prompt.
+
+**Rationale:**
+- Team agents docs recommend "each teammate owns different files"
+- D&C has the file-to-task mapping to formalize this
+- Spawn prompt: "You own src/auth/*. Do NOT modify src/api/*."
+
+### 6. Direct execution via tool calls
+**Decision:** D&C executes the chosen strategy directly instead of generating instructions.
+
+**Rationale:**
+- Subagents: spawn Task tools in parallel
+- Team agents: TeamCreate → TaskCreate ×N (with addBlockedBy) → Task spawn ×M (with file ownership)
+- Removes human coordination, which was the bottleneck in v1
 
 **Alternatives considered:**
-- Require explicit file lists in plan → Burden on plan author
-- Pure text inference → Misses modifications to existing files
-- Execute dry-run → Too expensive, not practical
-
-### 3. Relative complexity units (1-5) instead of time estimates
-**Decision:** Assign relative complexity (1-5 units) per task, not absolute time.
-
-**Rationale:**
-- Absolute time highly variable and unpredictable
-- Relative comparison sufficient for balancing sessions
-- Enables speedup calculation without false precision
-
-### 4. Session addition threshold: 30% phase time reduction
-**Decision:** Only add parallel session if it reduces phase time by ≥30%.
-
-**Rationale:**
-- Avoids "orphan" sessions (1 unit while others have 8)
-- Each session has operational overhead (terminal, monitoring)
-- 30% ensures meaningful contribution
-
-### 5. Plan file passed to all sessions, with task subset instruction
-**Decision:** Each session receives full plan file + instruction "implement tasks X, Y, Z".
-
-**Rationale:**
-- Full plan provides context (what came before, what comes after)
-- Subset instruction keeps focus
-- Avoids creating separate plan fragments
-
-### 6. Output format: Instructions with `claude -p` commands
-**Decision:** Output human-readable instructions with copy-paste commands.
-
-**Rationale:**
-- Simple, no automation required
-- User controls when/how to launch
-- Easy to adjust if needed
-
-**Alternatives considered:**
-- Generate shell script → Adds complexity, less flexible
-- Integration with tmux/screen → Platform-specific, over-engineered
+- Generate instructions for human → v1 approach, too much friction
+- Generate `claude -p` commands → superseded by team agents
 
 ## Risks / Trade-offs
 
-**[Risk] File inference is imprecise** → Mitigated by conservative grouping. When uncertain, keep tasks in same session. User can override.
+**[Risk] File inference imprecise** → Conservative: when uncertain, add dependency (sequential fallback for those tasks).
 
-**[Risk] Dependency detection misses implicit deps** → Mitigated by analyzing task order (earlier tasks likely dependencies). User validates division.
+**[Risk] Strategy selection wrong** → Mitigated by clear criteria. Worst case: subagents when teams would be better = slightly less coordination, still parallel.
 
-**[Risk] Complexity estimates inaccurate** → Mitigated by relative units, not absolute. Balance matters more than precision.
+**[Risk] Team agents experimental** → Feature flag gated. Subagents as fallback if teams unavailable.
 
-**[Trade-off] No automation** → Simpler but requires human coordination. Acceptable for v1, automation can come later.
+**[Trade-off] Token cost of team agents** → D&C only routes to teams when analysis justifies the cost (enough independent tasks, clear ownership split).
 
-**[Trade-off] Single-change focus** → Designed for one plan at a time. Multi-plan orchestration out of scope.
+**[Trade-off] No inter-phase human verification** → v1 had phases with human checkpoints. Now DAG deps handle ordering automatically. Trade explicit human gates for smoother execution.

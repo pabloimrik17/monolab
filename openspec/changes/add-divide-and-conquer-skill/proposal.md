@@ -1,26 +1,25 @@
 ## Why
 
-Large implementation plans (>10 tasks) executed linearly waste time when tasks could run in parallel across multiple Claude Code sessions. Currently no tooling helps identify parallelization opportunities or guide multi-session execution safely.
+Large implementation plans executed linearly waste time when tasks could run in parallel. Claude Code now offers three execution mechanisms (sequential, subagents, team agents) but no tooling analyzes a plan to choose the optimal strategy or protect against file conflicts.
 
 ## What Changes
 
 - New skill `divide-and-conquer` in the `experiments` plugin
-- Analyzes existing implementation plans to identify parallelization opportunities
-- Generates phase-based execution strategy with parallel sessions per phase
-- Ensures zero file conflicts within a phase (different sessions don't touch same files)
-- Provides ready-to-use `claude -p` commands for each session
-- Evaluates if parallelization is worth it (minimum ~20% speedup threshold)
+- Analyzes existing implementation plans: parses tasks, infers files, builds dependency graph, detects file conflicts
+- Decides optimal execution strategy: sequential, subagents, or team agents
+- Executes directly using appropriate tool calls (Task for subagents, TeamCreate/TaskCreate/Task for teams)
+- Configures file ownership and dependency constraints to prevent destructive overwrites
 
 ## Capabilities
 
 ### New Capabilities
-- `divide-and-conquer-skill`: Skill that analyzes plans, detects dependencies and file conflicts, generates optimal phase/session division with execution instructions
+- `divide-and-conquer-skill`: Analyzes plans, detects conflicts, routes to optimal execution strategy, executes directly
 
 ### Modified Capabilities
-<!-- None - this is a new standalone skill -->
+<!-- None - standalone skill -->
 
 ## Impact
 
 - **Code**: New skill file in `claude-plugins/experiments/commands/divide-and-conquer.md`
-- **Dependencies**: None - uses existing Claude Code capabilities (plan reading, codebase analysis)
-- **Users**: Can parallelize large plans, potentially 2x+ speedup on suitable plans
+- **Dependencies**: Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` for team agents strategy (subagents/sequential work without it)
+- **Users**: Optimal parallelization with file conflict protection, 2-4x speedup on suitable plans
