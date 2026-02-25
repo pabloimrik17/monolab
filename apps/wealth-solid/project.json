@@ -1,0 +1,6 @@
+{
+    "name": "@m0n0lab/wealth-solid",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "apps/wealth-solid/src",
+    "projectType": "application"
+}
