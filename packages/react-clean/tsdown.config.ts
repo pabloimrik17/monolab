@@ -16,8 +16,6 @@ export default defineConfig({
         compilerOptions: {
             composite: false,
             outDir: "dist",
-            // @ts-expect-error: tsdown types
-            entry: ["src/index.ts"],
         },
     },
     sourcemap: true,
