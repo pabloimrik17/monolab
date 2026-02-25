@@ -20,6 +20,9 @@
         },
         {
             "path": "./packages/wealth-tracker-core"
+        },
+        {
+            "path": "./apps/wealth-react"
         }
     ]
 }

@@ -1,0 +1,32 @@
+import { useState } from "react";
+
+interface AddTickerProps {
+    onAdd: (symbol: string) => void;
+}
+
+export function AddTicker({ onAdd }: AddTickerProps) {
+    const [value, setValue] = useState("");
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        const trimmed = value.trim().toUpperCase();
+        if (!trimmed) return;
+        onAdd(trimmed);
+        setValue("");
+    }
+
+    return (
+        <form
+            className="add-form"
+            onSubmit={handleSubmit}
+        >
+            <input
+                type="text"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder="Enter ticker symbol"
+            />
+            <button type="submit">Add</button>
+        </form>
+    );
+}

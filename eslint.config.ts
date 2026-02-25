@@ -19,6 +19,8 @@ export default tseslint.config(
             "**/CHANGELOG.md",
             "**/CLAUDE.md",
             "**/AGENTS.md",
+            "**/build/**",
+            "**/.react-router/**",
         ],
     },
     eslint.configs.recommended,
