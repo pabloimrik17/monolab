@@ -135,8 +135,8 @@
             "dependsOn": ["^build", "build"],
             "inputs": [
                 "default",
-                "{workspaceRoot}/stryker.config.base.ts",
-                "{projectRoot}/stryker.config.ts",
+                "{workspaceRoot}/stryker.config.base.mjs",
+                "{projectRoot}/stryker.config.mjs",
                 "{projectRoot}/reports/stryker-incremental.json"
             ],
             "outputs": [
