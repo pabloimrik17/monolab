@@ -103,8 +103,8 @@
 - [ ] 7.10 Implement `createMenuRoutes(container)` — GET /menu, POST /menu, PATCH /menu/:id, DELETE /menu/:id
 - [ ] 7.11 Implement `createEventRoutes(container)` — GET /events/sessions/:code (SSE endpoint)
 - [ ] 7.12 Implement `createApp(container)` — mount all routes, CORS, error middleware
-- [ ] 7.13 Create `apiModule` (ContainerModule) — bind InMemoryEventBus as singleton, DB config
-- [ ] 7.14 Implement `createContainer()` composition root — load domainModule, dataModule, apiModule
+- [ ] 7.13 Create `apiModule` (ContainerModule) — bind InMemoryEventBus as singleton, API-specific services only
+- [ ] 7.14 Implement `createContainer()` composition root — read DB config from env, pass to dataModule, load domainModule, dataModule, apiModule
 - [ ] 7.15 Implement entry point (index.ts) — validate API_ADMIN_PIN, create container, start server
 - [ ] 7.16 Add Docker Compose file for local PostgreSQL
 - [ ] 7.17 Test full API flow: create session → create order → update status → SSE events

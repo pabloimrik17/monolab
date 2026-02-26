@@ -87,7 +87,7 @@ The system SHALL expose the following REST endpoints:
 
 ### Requirement: ContainerModule for API-specific bindings
 
-The system SHALL provide an `apiModule` as an Inversify `ContainerModule` that binds API-layer services: `InMemoryEventBus` → `TOKENS.EventBus` (singleton), database connection config, and any API-specific services.
+The system SHALL provide an `apiModule` as an Inversify `ContainerModule` that binds API-layer services: `InMemoryEventBus` → `TOKENS.EventBus` (singleton) and other API-specific services. Database connection config SHALL be owned by `dataModule` (`qup-data`). The composition root (`container.ts`) SHALL read connection config from environment variables and pass it to `dataModule`.
 
 #### Scenario: EventBus is singleton
 - **WHEN** the EventBus is resolved multiple times from the container
