@@ -51,7 +51,7 @@ Mapping:
 
 ### Requirement: CORS middleware
 
-The system SHALL configure CORS to allow requests from the SolidStart frontend origin. For SSE endpoints, the CORS headers SHALL include `Access-Control-Allow-Headers` for EventSource.
+The system SHALL configure CORS to allow requests from the SolidStart frontend origin. The response SHALL include `Access-Control-Allow-Origin` with the frontend origin. Native `EventSource` (SSE) does not send custom headers and does not trigger preflight — no `Access-Control-Allow-Headers` is needed for SSE endpoints.
 
 #### Scenario: Cross-origin request from SolidStart
 - **WHEN** the SolidStart frontend makes a request to the API from a different port

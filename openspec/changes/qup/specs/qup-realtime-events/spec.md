@@ -28,8 +28,8 @@ The system SHALL provide an `InMemoryEventBus` class in `qup-api` decorated with
 
 The system SHALL emit the following events from use cases via the EventBus:
 - `order:created` — emitted by CreateOrderUseCase after successful persistence, payload: `{ order: Order, sessionId: string }`
-- `order:status` — emitted by UpdateOrderStatusUseCase after successful transition, payload: `{ orderId: string, status: OrderStatus, updatedAt: Date }`
-- `order:cancelled` — emitted by CancelOrderUseCase after successful cancellation, payload: `{ orderId: string }`
+- `order:status` — emitted by UpdateOrderStatusUseCase after successful transition, payload: `{ orderId: string, sessionId: string, status: OrderStatus, updatedAt: Date }`
+- `order:cancelled` — emitted by CancelOrderUseCase after successful cancellation, payload: `{ orderId: string, sessionId: string }`
 - `session:closed` — emitted by CloseSessionUseCase after successful close, payload: `{ sessionId: string }`
 
 #### Scenario: Order creation emits event
@@ -38,11 +38,11 @@ The system SHALL emit the following events from use cases via the EventBus:
 
 #### Scenario: Order status change emits event
 - **WHEN** an order status is successfully updated
-- **THEN** the `order:status` event is emitted with orderId, new status, and updatedAt
+- **THEN** the `order:status` event is emitted with orderId, sessionId, new status, and updatedAt
 
 #### Scenario: Order cancellation emits event
 - **WHEN** an order is successfully cancelled
-- **THEN** the `order:cancelled` event is emitted with the orderId
+- **THEN** the `order:cancelled` event is emitted with the orderId and sessionId
 
 #### Scenario: Session close emits event
 - **WHEN** a session is successfully closed
