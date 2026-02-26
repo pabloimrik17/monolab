@@ -9,7 +9,7 @@ The system SHALL organize tests into separate Vitest projects (unit, integration
 
 #### Scenario: Execute unit tests only
 
-- **WHEN** developer runs `pnpm --filter @monolab/is-odd run test:unit`
+- **WHEN** developer runs `pnpm --filter @m0n0lab/ts-types run test:unit`
 - **THEN** only tests matching `**/*.test.ts` pattern are executed
 - **AND** integration tests (`*.integration.ts`) are not executed
 - **AND** coverage report is generated in `coverage/unit/` directory
@@ -135,7 +135,7 @@ The system SHALL provide real browser testing capabilities for React packages us
 
 - **WHEN** packages are checked for browser test support
 - **THEN** react-hooks and react-clean packages SHALL have browser test capability
-- **AND** utility packages (is-odd, is-even, ts-configs) SHALL NOT have browser test configurations
+- **AND** utility packages (ts-configs, ts-types) SHALL NOT have browser test configurations
 
 ### Requirement: Concurrent Test Execution
 

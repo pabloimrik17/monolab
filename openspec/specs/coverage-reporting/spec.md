@@ -14,7 +14,7 @@ The GitHub Actions CI workflow MUST automatically upload code coverage reports t
 **Then** the workflow uploads coverage reports from affected packages to Codecov
 **And** the upload includes only packages that were tested (affected)
 **And** the upload step uses the `CODECOV_TOKEN` secret for authentication
-**And** the upload includes flags for automatic package detection (react-hooks, react-clean, is-even, is-odd, ts-configs)
+**And** the upload includes flags for automatic package detection (react-hooks, react-clean, ts-configs, ts-types)
 
 #### Scenario: Upload coverage on main branch push
 
@@ -23,7 +23,7 @@ The GitHub Actions CI workflow MUST automatically upload code coverage reports t
 **Then** the workflow uploads coverage reports from all packages to Codecov
 **And** the upload includes coverage data from all packages in the monorepo
 **And** the upload step uses the `CODECOV_TOKEN` secret for authentication
-**And** the upload includes flags for automatic package detection (react-hooks, react-clean, is-even, is-odd, ts-configs)
+**And** the upload includes flags for automatic package detection (react-hooks, react-clean, ts-configs, ts-types)
 **And** Codecov associates coverage with appropriate flags based on file paths
 
 #### Scenario: Upload coverage on develop and pre branch push
@@ -114,7 +114,7 @@ The GitHub Actions CI workflow MUST query Nx to determine which packages are aff
 **Given** a pull request triggers the CI workflow
 **When** tests complete
 **Then** the workflow runs `nx show projects --affected` to determine affected packages
-**And** the detection step generates boolean outputs for each package (react-hooks, react-clean, is-even, is-odd, ts-configs)
+**And** the detection step generates boolean outputs for each package (react-hooks, react-clean, ts-configs, ts-types)
 **And** the outputs indicate "true" for affected packages and "false" for non-affected packages
 **And** subsequent upload steps reference these outputs to make upload decisions
 
@@ -128,11 +128,11 @@ The GitHub Actions CI workflow MUST query Nx to determine which packages are aff
 
 #### Scenario: Non-affected package skips coverage upload
 
-**Given** the detection step identified is-even as not affected
+**Given** the detection step identified ts-configs as not affected
 **When** the coverage upload script runs
-**Then** the script skips upload for is-even
-**And** the workflow logs indicate "Skipping coverage upload for is-even (not affected by PR)"
-**And** Codecov uses carryforward to fill in is-even coverage from the baseline
+**Then** the script skips upload for ts-configs
+**And** the workflow logs indicate "Skipping coverage upload for ts-configs (not affected by PR)"
+**And** Codecov uses carryforward to fill in ts-configs coverage from the baseline
 
 #### Scenario: Protected branches upload all packages
 
@@ -159,12 +159,12 @@ The coverage upload MUST use a single bash script that loops through packages in
 
 #### Scenario: Single script uploads multiple affected packages
 
-**Given** react-hooks and is-odd are affected by a pull request
+**Given** react-hooks and ts-types are affected by a pull request
 **When** the coverage upload script runs
-**Then** the script processes all 5 packages in a loop
-**And** uploads coverage for react-hooks and is-odd
-**And** skips coverage for react-clean, is-even, and ts-configs
-**And** logs a summary: "Uploaded coverage for 2 packages, skipped 3 packages"
+**Then** the script processes all 4 packages in a loop
+**And** uploads coverage for react-hooks and ts-types
+**And** skips coverage for react-clean and ts-configs
+**And** logs a summary: "Uploaded coverage for 2 packages, skipped 2 packages"
 
 #### Scenario: Script uses codecov CLI directly
 

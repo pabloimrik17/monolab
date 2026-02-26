@@ -22,7 +22,7 @@ Each plugin directory SHALL follow the Claude Code plugin structure:
 
 #### Scenario: Plugin follows structure conventions
 
-- **GIVEN** a plugin named `demo` in `claude-plugins/demo/`
+- **GIVEN** a plugin named `expo-developer` in `claude-plugins/expo-developer/`
 - **WHEN** examining its structure
 - **THEN** it SHALL have `.claude-plugin/plugin.json` at minimum
 - **AND** any component directories (commands/, skills/, etc.) SHALL be at the plugin root, NOT inside `.claude-plugin/`
@@ -48,16 +48,16 @@ The marketplace manifest SHALL include:
 #### Scenario: Users can add marketplace
 
 - **GIVEN** a user with Claude Code installed
-- **WHEN** they run `/plugin marketplace add m0n0t3ch/monolab`
+- **WHEN** they run `/plugin marketplace add pabloimrrik17/monolab`
 - **THEN** the monolab marketplace SHALL be registered in their Claude Code configuration
 - **AND** plugins from monolab SHALL appear in the Discover tab
 
 #### Scenario: Plugin installation from marketplace
 
 - **GIVEN** a user has added the monolab marketplace
-- **WHEN** they run `/plugin install demo@monolab`
-- **THEN** the demo plugin SHALL be installed
-- **AND** its commands SHALL be available as `/demo:command-name`
+- **WHEN** they run `/plugin install expo-developer@monolab`
+- **THEN** the expo-developer plugin SHALL be installed
+- **AND** its skills SHALL be available
 
 ---
 
@@ -72,64 +72,15 @@ The package.json SHALL:
 
 #### Scenario: Plugin included in workspace
 
-- **GIVEN** a plugin with `package.json` at `claude-plugins/demo/package.json`
+- **GIVEN** a plugin with `package.json` at `claude-plugins/expo-developer/package.json`
 - **WHEN** running `pnpm install` from root
 - **THEN** the plugin SHALL be recognized as a workspace member
 
 #### Scenario: Plugin linting works
 
-- **GIVEN** a plugin with markdown files in `commands/`
+- **GIVEN** a plugin with markdown files in `skills/`
 - **WHEN** running markdownlint on the repository
-- **THEN** plugin command files SHALL be linted according to project standards
-
----
-
-### Requirement: Demo Plugin Hello World Command
-
-The `demo` plugin SHALL provide a `/demo:hello-world` slash command.
-
-When invoked, the command SHALL:
-- Output "Hello World" in one of exactly 25 different languages
-- Select the language randomly (non-deterministic)
-- Output only the greeting, with no additional text
-
-#### Scenario: Hello world command invocation
-
-- **GIVEN** the demo plugin is installed
-- **WHEN** a user types `/demo:hello-world`
-- **THEN** Claude SHALL respond with "Hello World" in a randomly selected language
-- **AND** the response SHALL contain only the greeting phrase
-
-#### Scenario: Language variety
-
-- **GIVEN** the hello-world command
-- **WHEN** examining the command definition
-- **THEN** it SHALL include exactly 25 language options including:
-  - English: "Hello World"
-  - Spanish: "Hola Mundo"
-  - French: "Bonjour le Monde"
-  - German: "Hallo Welt"
-  - Italian: "Ciao Mondo"
-  - Portuguese: "Olá Mundo"
-  - Japanese: "こんにちは世界"
-  - Chinese (Simplified): "你好世界"
-  - Korean: "안녕하세요 세계"
-  - Russian: "Привет мир"
-  - Arabic: "مرحبا بالعالم"
-  - Hindi: "नमस्ते दुनिया"
-  - Dutch: "Hallo Wereld"
-  - Swedish: "Hej Världen"
-  - Norwegian: "Hei Verden"
-  - Danish: "Hej Verden"
-  - Finnish: "Hei Maailma"
-  - Polish: "Witaj Świecie"
-  - Czech: "Ahoj Světe"
-  - Greek: "Γειά σου Κόσμε"
-  - Turkish: "Merhaba Dünya"
-  - Hebrew: "שלום עולם"
-  - Thai: "สวัสดีโลก"
-  - Vietnamese: "Xin chào Thế giới"
-  - Indonesian: "Halo Dunia"
+- **THEN** plugin skill files SHALL be linted according to project standards
 
 ---
 
@@ -148,4 +99,114 @@ The pnpm workspace configuration SHALL include the `claude-plugins/*` pattern.
 - **GIVEN** plugins may contain TypeScript files in the future
 - **WHEN** TypeScript configuration is needed
 - **THEN** plugin tsconfig files SHALL extend the base configuration from `@m0n0lab/ts-configs`
+
+---
+
+### Requirement: Expo Developer Plugin Structure
+
+The `expo-developer` plugin SHALL follow the standard Claude Code plugin structure at `claude-plugins/expo-developer/`.
+
+The plugin manifest SHALL include:
+- `name`: "expo-developer"
+- `version`: Semantic version starting at "0.1.0"
+- `description`: Clear description of Expo/React Native development assistance
+- `keywords`: ["expo", "react-native", "dependency-validation", "package-manager"]
+
+#### Scenario: Plugin directory structure
+
+- **GIVEN** a developer navigates to `claude-plugins/expo-developer/`
+- **WHEN** examining its structure
+- **THEN** it SHALL have `.claude-plugin/plugin.json` manifest
+- **AND** it SHALL have `skills/expo-dependency-check/SKILL.md`
+- **AND** it SHALL have `package.json` with `"private": true`
+- **AND** it SHALL have `README.md` documenting the plugin
+
+---
+
+### Requirement: Validating Expo Dependencies Skill
+
+The `expo-dependency-check` skill SHALL detect when `package.json` is modified in Expo/React Native projects and propose dependency validation.
+
+The skill SHALL:
+- Trigger when `package.json` changes are detected (writes, edits)
+- Verify the project is an Expo project (presence of `expo` in dependencies/devDependencies or `app.json`/`app.config.js`)
+- Detect the package manager used in the project (npm, yarn, pnpm, bun)
+- Propose running `expo install --check` to validate versions
+- Offer `expo install --fix` as an alternative to auto-fix issues
+
+#### Scenario: Skill triggers on package.json modification
+
+- **GIVEN** an Expo project with `expo` in dependencies
+- **WHEN** Claude modifies `package.json` (adding, updating, or removing dependencies)
+- **THEN** the skill SHALL activate
+- **AND** it SHALL propose validating dependency versions with `expo install --check`
+
+#### Scenario: Package manager detection - pnpm
+
+- **GIVEN** an Expo project with `pnpm-lock.yaml` present
+- **WHEN** the skill proposes validation commands
+- **THEN** it SHALL use `pnpx expo install --check`
+- **AND** it SHALL use `pnpx expo install --fix` for auto-fix
+
+#### Scenario: Package manager detection - yarn
+
+- **GIVEN** an Expo project with `yarn.lock` present
+- **WHEN** the skill proposes validation commands
+- **THEN** it SHALL use `npx expo install --check` (yarn classic) or `yarn dlx expo install --check` (yarn 2+)
+- **AND** it SHALL use the corresponding `--fix` variant for auto-fix
+
+#### Scenario: Package manager detection - npm
+
+- **GIVEN** an Expo project with `package-lock.json` present (or no lock file)
+- **WHEN** the skill proposes validation commands
+- **THEN** it SHALL use `npx expo install --check`
+- **AND** it SHALL use `npx expo install --fix` for auto-fix
+
+#### Scenario: Package manager detection - bun
+
+- **GIVEN** an Expo project with `bun.lockb` or `bun.lock` present
+- **WHEN** the skill proposes validation commands
+- **THEN** it SHALL use `bunx expo install --check`
+- **AND** it SHALL use `bunx expo install --fix` for auto-fix
+
+#### Scenario: Non-Expo project ignored
+
+- **GIVEN** a project without `expo` in dependencies and no `app.json`/`app.config.js`
+- **WHEN** `package.json` is modified
+- **THEN** the skill SHALL NOT activate
+
+#### Scenario: User chooses to fix
+
+- **GIVEN** the skill has detected dependency modifications
+- **WHEN** user confirms they want to fix versions
+- **THEN** the skill SHALL run the appropriate `expo install --fix` command
+- **AND** it SHALL report the results to the user
+
+#### Scenario: User chooses to only check
+
+- **GIVEN** the skill has detected dependency modifications
+- **WHEN** user wants to only validate without fixing
+- **THEN** the skill SHALL run `expo install --check`
+- **AND** it SHALL report any version mismatches found
+- **AND** it SHALL NOT modify any files
+
+---
+
+### Requirement: Expo Developer Plugin Marketplace Registration
+
+The `expo-developer` plugin SHALL be registered in the monolab marketplace.
+
+#### Scenario: Plugin appears in marketplace
+
+- **GIVEN** the root `.claude-plugin/marketplace.json`
+- **WHEN** examining the plugins array
+- **THEN** it SHALL include an entry for `expo-developer`
+- **AND** the entry SHALL have `name`, `source`, `version`, and `description` fields
+
+#### Scenario: Plugin installable from marketplace
+
+- **GIVEN** a user has added the monolab marketplace
+- **WHEN** they run `/plugin install expo-developer@monolab`
+- **THEN** the expo-developer plugin SHALL be installed
+- **AND** the `expo-dependency-check` skill SHALL be available
 

@@ -1,0 +1,18 @@
+{
+    "name": "expo-developer",
+    "version": "0.1.0",
+    "description": "Expo/React Native developer tools with dependency validation",
+    "author": {
+        "name": "Pablo F.G.",
+        "email": "pabloimrik17@users.noreply.github.com"
+    },
+    "license": "MIT",
+    "repository": "https://github.com/pabloimrik17/monolab",
+    "homepage": "https://github.com/pabloimrik17/monolab/tree/main/claude-plugins/expo-developer",
+    "keywords": [
+        "expo",
+        "react-native",
+        "dependency-validation",
+        "package-manager"
+    ]
+}

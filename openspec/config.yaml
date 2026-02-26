@@ -1,0 +1,28 @@
+schema: spec-driven
+
+context: |
+  Nx monorepo publishing ESM-only libs to JSR + npm (dual publish).
+
+  Stack: TypeScript 5.9, pnpm workspaces, tsdown bundler, Vitest
+  Packages: react-hooks, react-clean (MVVM w/ Inversify+RxJS), ts-configs
+
+  Critical constraints:
+  - Run tasks via `nx run`/`nx run-many`, never underlying tools directly
+  - Peer deps for React/Inversify/RxJS—never bundle them
+  - Exports validated with `attw --pack`
+  - Composite TS builds, output to dist/
+  - workspace:* protocol for internal deps
+  - Conventional commits, kebab-case files (use-did-mount.hook.ts)
+
+  CI: Affected-only on PRs, full suite on main. Knip max 70 issues.
+
+rules:
+  specs:
+    - Include acceptance criteria as testable conditions
+    - Note which existing packages/patterns to leverage
+  tasks:
+    - Reference nx targets (nx run <project>:<target>)
+    - Mark tasks that affect exports—require attw validation
+  delta-spec:
+    - Specify peer dep changes explicitly
+    - Note if new package or modification to existing

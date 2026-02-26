@@ -4,8 +4,13 @@
 /.nx/cache
 /.nx/workspace-data
 /openspec
+/.agent
 /.claude
+/.codex
+/.cursor
 /.opencode
+CLAUDE.md
+AGENTS.md
 
 # Ignore auto-generated changelog files
 **/CHANGELOG.md

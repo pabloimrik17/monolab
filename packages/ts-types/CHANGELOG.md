@@ -48,7 +48,12 @@
 
 ### Features
 
-* **@m0n0lab/ts-types:** renamed package and added StringKeyOf type([#90](https://github.com/pabloimrik17/monolab/issues/90)) ([1ecf78c](https://github.com/pabloimrik17/monolab/commit/1ecf78c502d133b99f1089983ea79b2d57f1522d))
+* **@m0n0lab/ts-types:** renamed package and added utility types ([#90](https://github.com/pabloimrik17/monolab/issues/90)) ([1ecf78c](https://github.com/pabloimrik17/monolab/commit/1ecf78c502d133b99f1089983ea79b2d57f1522d))
+  * `Nullable<T>`, `NonNullable<T>` - null handling types and guards
+  * `Undefinable<T>`, `NonUndefinable<T>` - undefined handling types and guards
+  * `Nullish<T>`, `NonNullish<T>` - null | undefined handling types and guards
+  * `StrictOmit<T, K>` - omit with compile-time key validation
+  * `StringKeyOf<T>` - extract string keys from object types
 * migrate to Deno workspaces for JSR publishing ([3a987ac](https://github.com/pabloimrik17/monolab/commit/3a987acbd7dd66e58f08f430ff741a6ead2d3919))
 
 

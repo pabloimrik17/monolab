@@ -35,7 +35,7 @@ claude --plugin-dir ./claude-plugins/<plugin-name>
 
 ```bash
 # Add monolab as a marketplace
-/plugin marketplace add m0n0t3ch/monolab
+/plugin marketplace add pabloimrik17/monolab
 
 # Install a plugin
 /plugin install <plugin-name>@monolab

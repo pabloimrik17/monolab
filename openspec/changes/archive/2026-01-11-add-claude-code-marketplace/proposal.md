@@ -24,7 +24,7 @@ Users install plugins by adding the monolab repository as a marketplace:
 
 ```bash
 # Add marketplace
-/plugin marketplace add m0n0t3ch/monolab
+/plugin marketplace add pabloimrrik17/monolab
 
 # Install specific plugin
 /plugin install demo@monolab
