@@ -1,10 +1,11 @@
 /** @type {import('@stryker-mutator/api/core').PartialStrykerOptions} */
 const config = {
     packageManager: "pnpm",
-    testRunner: "command",
-    commandRunner: {
-        command: "pnpm run test:unit",
-    },
+    plugins: [
+        "@stryker-mutator/vitest-runner",
+        "@stryker-mutator/typescript-checker",
+    ],
+    testRunner: "vitest",
     mutate: [
         "src/**/*.ts",
         "src/**/*.tsx",
@@ -23,7 +24,7 @@ const config = {
         // Ignore type test
         "packages/**/src/**/*.test-d.ts",
     ],
-    coverageAnalysis: "off",
+    coverageAnalysis: "perTest",
     incremental: true,
     incrementalFile: "reports/stryker-incremental.json",
     inPlace: true,
