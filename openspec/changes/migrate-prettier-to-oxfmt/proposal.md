@@ -1,6 +1,6 @@
 ## Why
 
-Prettier 2.8.8 is two major versions behind (current: 3.8.x). Rather than upgrading Prettier, we migrate to [oxfmt](https://oxc.rs/blog/2026-02-24-oxfmt-beta) — a Rust-powered, Prettier-compatible formatter that's 30x faster, has 100% JS/TS conformance, and ships built-in replacements for both prettier plugins we use (`prettier-plugin-packagejson`, `prettier-plugin-organize-imports`).
+Prettier 2.8.8 is one major version behind (current stable: 3.x). Rather than upgrading Prettier, we migrate to [oxfmt](https://oxc.rs/blog/2026-02-24-oxfmt-beta) — a Rust-powered, Prettier-compatible formatter that's 30x faster, has 100% JS/TS conformance, and ships built-in replacements for both prettier plugins we use (`prettier-plugin-packagejson`, `prettier-plugin-organize-imports`).
 
 ## What Changes
 

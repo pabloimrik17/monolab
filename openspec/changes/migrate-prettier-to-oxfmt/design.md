@@ -62,11 +62,11 @@ oxfmt is a Rust-based Prettier-compatible formatter (100% JS/TS conformance) wit
         "internalPattern": ["@m0n0lab/"],
         "newlinesBetween": false,
         "groups": [
-            "builtin",
-            "external",
-            ["internal", "subpath"],
-            ["parent", "sibling", "index"],
-            "type",
+            "value-builtin",
+            "value-external",
+            ["value-internal", "value-subpath"],
+            ["value-parent", "value-sibling", "value-index"],
+            "type-import",
             "unknown"
         ]
     },
@@ -83,7 +83,7 @@ Only non-default values are specified. Defaults we rely on: `printWidth: 100`, `
 - `singleAttributePerLine: true` — override default of false, matches current prettier config
 - `sortImports.internalPattern: ["@m0n0lab/"]` — classifies workspace packages as internal, not external
 - `sortImports.newlinesBetween: false` — flat import style, matches current codebase convention
-- `sortImports.groups` — differs from default by using `"type"` instead of `"style"` to group type-only imports
+- `sortImports.groups` — uses qualified selectors (`value-builtin`, `value-external`, `type-import`, etc.) per oxfmt docs. Differs from default by collapsing type imports into a single `type-import` group at the end
 - `.nvmrc` override — preserves the existing `.prettierrc` override for this file
 
 ### 4. Keep `eslint-config-prettier`
@@ -135,7 +135,7 @@ oxfmt already ignores unknown file types and writes in-place by default.
 
 **`printWidth` 80→100 causes mass reformatting** → Mitigated by: `.git-blame-ignore-revs` preserves blame history. Two-step migration isolates the diff.
 
-**`prettier-plugin-organize-imports` removal loses unused import auto-removal in formatter** → Mitigated by: `@typescript-eslint/no-unused-vars` with `enableAutofixRemoval.imports: true` covers the same behavior via `eslint --fix`. lint-staged runs eslint fix before formatter.
+**`prettier-plugin-organize-imports` removal loses unused import auto-removal in formatter** → Mitigated by: `@typescript-eslint/no-unused-vars` with `enableAutofixRemoval.imports: true` covers the same behavior via `eslint --fix`. lint-staged already runs `nx affected -t lint:eslint:fix` before the formatter command, so unused imports are removed before formatting on commit.
 
 **Root-only target breaks `nx affected` per-project formatting** → Trade-off accepted: formatting the whole workspace is fast enough with oxfmt (30x speedup). No need for per-project granularity.
 

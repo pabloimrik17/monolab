@@ -24,7 +24,7 @@
 ## 3. Update tooling
 
 - [ ] 3.1 Remove `lint:prettier` and `lint:prettier:fix` scripts from all per-project `package.json` files
-- [ ] 3.2 Add root-level `lint:oxfmt` (`oxfmt --check`) and `lint:oxfmt:fix` (`oxfmt`) targets (root `package.json` or `nx.json`)
+- [ ] 3.2 Add `lint:oxfmt` (`oxfmt --check`) and `lint:oxfmt:fix` (`oxfmt`) scripts to root `package.json`
 - [ ] 3.3 Update `nx.json`: remove `lint:prettier` target defaults, remove `^lint:prettier` from `lint` dependsOn, add `lint:oxfmt` target config with appropriate inputs
 - [ ] 3.4 Update `lint-staged.config.ts`: replace `prettier --write --ignore-unknown` with `oxfmt`
 - [ ] 3.5 Update `eslint.config.ts`: add `@typescript-eslint/no-unused-vars` rule with `enableAutofixRemoval: { imports: true }`
