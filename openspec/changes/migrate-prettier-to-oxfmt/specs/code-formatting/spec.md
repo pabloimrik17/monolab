@@ -45,19 +45,19 @@ The formatter SHALL sort imports with `@m0n0lab/*` packages classified as intern
 - **THEN** type-only imports are grouped after value imports
 
 ### Requirement: Root-level Nx targets
-The workspace SHALL define `lint:oxcfmt` and `lint:oxcfmt:fix` as root-level Nx targets. No per-project formatter targets SHALL exist.
+The workspace SHALL define `lint:oxfmt` and `lint:oxfmt:fix` as root-level Nx targets. No per-project formatter targets SHALL exist.
 
-#### Scenario: lint:oxcfmt runs from root
-- **WHEN** `pnpm nx lint:oxcfmt` is run
+#### Scenario: lint:oxfmt runs from root
+- **WHEN** `pnpm nx lint:oxfmt` is run
 - **THEN** `oxfmt --check` executes against the entire workspace
 
-#### Scenario: lint:oxcfmt:fix runs from root
-- **WHEN** `pnpm nx lint:oxcfmt:fix` is run
+#### Scenario: lint:oxfmt:fix runs from root
+- **WHEN** `pnpm nx lint:oxfmt:fix` is run
 - **THEN** `oxfmt` executes and reformats all eligible files
 
 #### Scenario: No per-project formatter scripts
 - **WHEN** any project's `package.json` is inspected
-- **THEN** no `lint:prettier`, `lint:prettier:fix`, `lint:oxcfmt`, or `lint:oxcfmt:fix` scripts exist
+- **THEN** no `lint:prettier`, `lint:prettier:fix`, `lint:oxfmt`, or `lint:oxfmt:fix` scripts exist
 
 ### Requirement: ESLint-formatter conflict detection
 The workspace SHALL keep `eslint-config-prettier` and per-project `lint:eslint:config-check` scripts to detect ESLint rules that conflict with the formatter.

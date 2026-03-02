@@ -35,7 +35,7 @@ oxfmt is a Rust-based Prettier-compatible formatter (100% JS/TS conformance) wit
 
 **Why**: oxfmt runs from root against the whole workspace. Per-project scripts add maintenance overhead with no benefit — the root `.oxfmtrc.json` with `ignorePatterns` handles everything. The per-project `.prettierignore` files are all identical to root patterns.
 
-**Nx integration**: Define `lint:oxcfmt` as a root-level target in `nx.json` (or root `package.json` scripts), not as per-project targets. This simplifies the target dependency graph — `lint` no longer depends on `^lint:prettier` chain.
+**Nx integration**: Define `lint:oxfmt` as a root-level target in `nx.json` (or root `package.json` scripts), not as per-project targets. This simplifies the target dependency graph — `lint` no longer depends on `^lint:prettier` chain.
 
 **Alternative**: Keep per-project targets. Rejected — unnecessary duplication, oxfmt doesn't benefit from per-project runs.
 
@@ -165,7 +165,7 @@ oxfmt already ignores unknown file types and writes in-place by default.
 ### Phase 3: Update tooling
 
 1. Update all per-project `package.json`: remove `lint:prettier`, `lint:prettier:fix` scripts
-2. Update `nx.json`: remove `lint:prettier` target defaults, add root `lint:oxcfmt` target
+2. Update `nx.json`: remove `lint:prettier` target defaults, add root `lint:oxfmt` target
 3. Update `lint-staged.config.ts`: `prettier --write --ignore-unknown` → `oxfmt`
 4. Update `eslint.config.ts`: add `enableAutofixRemoval.imports` to `no-unused-vars`
 5. Commit: `chore: migrate tooling from prettier to oxfmt`
