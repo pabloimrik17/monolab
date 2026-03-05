@@ -65,7 +65,7 @@
         "playwright": "1.56.1",
         "prettier": "2.8.8",
         "prettier-plugin-organize-imports": "4.2.0",
-        "prettier-plugin-packagejson": "2.5.19",
+        "prettier-plugin-packagejson": "2.5.22",
         "stylelint": "16.25.0",
         "stylelint-config-standard": "38.0.0",
         "tslib": "2.8.1",
