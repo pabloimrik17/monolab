@@ -37,6 +37,7 @@
                 "^lint:eslint",
                 "^lint:knip",
                 "^lint:markdownlint",
+                "^lint:oxfmt",
                 "^lint:publint",
                 "^lint:stylelint"
             ]
@@ -63,7 +64,11 @@
             "dependsOn": ["^lint:markdownlint"],
             "inputs": ["default", "{workspaceRoot}/.markdownlint*", "{projectRoot}/.markdownlint*"]
         },
-
+        "lint:oxfmt": {
+            "cache": true,
+            "dependsOn": ["^lint:eslint", "^lint:oxfmt"],
+            "inputs": ["default", "{workspaceRoot}/.oxfmtrc.json"]
+        },
         "lint:publint": {
             "cache": true,
             "dependsOn": ["^build", "build", "^lint:publint"],
