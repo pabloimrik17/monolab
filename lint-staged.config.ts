@@ -7,7 +7,7 @@ const KNIP_MAX_ISSUES = 40;
 function toRelativePaths(absoluteFilenames: string[]): string[] {
     const workspaceRoot = process.env.NX_WORKSPACE_ROOT ?? process.cwd();
     return absoluteFilenames.map((filename) =>
-        relative(workspaceRoot, filename).replace(/\\/g, "/")
+        relative(workspaceRoot, filename).replace(/\\/g, "/"),
     );
 }
 

@@ -14,7 +14,7 @@ import { useEffect } from "react";
  * handle any necessary resource release, cleanup, or other teardown logic.
  */
 export const useWillUnmount = (
-    willIUnmountFn: () => Promise<void> | void
+    willIUnmountFn: () => Promise<void> | void,
 ): void => {
     useEffect(() => (): void => void willIUnmountFn(), []);
 };

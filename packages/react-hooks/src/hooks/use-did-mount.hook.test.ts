@@ -13,7 +13,7 @@ describe("useDidMount", () => {
             () => {
                 expect(callback).toHaveBeenCalledTimes(1);
             },
-            { timeout: 100 }
+            { timeout: 100 },
         );
     });
 
@@ -26,7 +26,7 @@ describe("useDidMount", () => {
             () => {
                 expect(callback).toHaveBeenCalledTimes(1);
             },
-            { timeout: 100 }
+            { timeout: 100 },
         );
 
         rerender();
@@ -46,7 +46,7 @@ describe("useDidMount", () => {
             () => {
                 expect(callback).toHaveBeenCalledTimes(1);
             },
-            { timeout: 100 }
+            { timeout: 100 },
         );
     });
 
@@ -64,10 +64,10 @@ describe("useDidMount", () => {
                 expect(callback).toHaveBeenCalledTimes(1);
                 expect(consoleErrorSpy).toHaveBeenCalledWith(
                     "[useDidMount] error",
-                    error
+                    error,
                 );
             },
-            { timeout: 100 }
+            { timeout: 100 },
         );
 
         consoleErrorSpy.mockRestore();

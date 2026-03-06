@@ -19,7 +19,7 @@ describe("useWillUnmount", () => {
         const callback = vi.fn();
 
         const { rerender, unmount } = renderHook(() =>
-            useWillUnmount(callback)
+            useWillUnmount(callback),
         );
 
         expect(callback).not.toHaveBeenCalled();

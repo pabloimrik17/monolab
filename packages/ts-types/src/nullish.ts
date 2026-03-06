@@ -40,7 +40,7 @@ export type NonNullish<T> = Exclude<T, null | undefined>;
  * ```
  */
 export function isNullish<T>(
-    value: T | null | undefined
+    value: T | null | undefined,
 ): value is null | undefined {
     return value === null || value === undefined;
 }
@@ -56,7 +56,7 @@ export function isNullish<T>(
  * ```
  */
 export function isNonNullish<T>(
-    value: T | null | undefined
+    value: T | null | undefined,
 ): value is NonNullish<T> {
     return value !== null && value !== undefined;
 }

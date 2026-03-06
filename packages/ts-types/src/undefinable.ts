@@ -51,7 +51,7 @@ export function isUndefinable<T>(value: T | undefined): value is undefined {
  * ```
  */
 export function isNonUndefinable<T>(
-    value: T | undefined
+    value: T | undefined,
 ): value is NonUndefinable<T> {
     return value !== undefined;
 }
