@@ -11,6 +11,8 @@
         "lint:eslint:fix": "eslint --cache --max-warnings 60 --fix .",
         "lint:knip": "knip --max-issues 100",
         "lint:knip:fix": "knip --fix",
+        "lint:oxfmt": "oxfmt --check .",
+        "lint:oxfmt:fix": "oxfmt .",
         "preview": "vite preview"
     },
     "dependencies": {

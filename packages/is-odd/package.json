@@ -36,6 +36,8 @@
         "lint:eslint:fix": "eslint --cache --max-warnings 40 --fix .",
         "lint:knip": "knip --max-issues 40",
         "lint:knip:fix": "knip --fix",
+        "lint:oxfmt": "oxfmt --check .",
+        "lint:oxfmt:fix": "oxfmt .",
         "test:integration": "vitest run **/*.integration.ts",
         "test:integration:watch": "vitest **/*.integration.ts",
         "test:mutation": "stryker run",
