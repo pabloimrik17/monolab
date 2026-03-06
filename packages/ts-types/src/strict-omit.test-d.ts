@@ -47,9 +47,7 @@ describe("StrictOmit type", () => {
 
         // Verify the key constraint works
         type ValidKeys = keyof User;
-        expectTypeOf<ValidKeys>().toEqualTypeOf<
-            "id" | "name" | "email" | "age"
-        >();
+        expectTypeOf<ValidKeys>().toEqualTypeOf<"id" | "name" | "email" | "age">();
     });
 
     it("should work with complex nested types", () => {

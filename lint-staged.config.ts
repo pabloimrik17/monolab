@@ -1,5 +1,5 @@
-import type { Configuration } from "lint-staged";
 import { relative } from "path";
+import type { Configuration } from "lint-staged";
 
 const ESLINT_MAX_WARNINGS = 40;
 const KNIP_MAX_ISSUES = 40;

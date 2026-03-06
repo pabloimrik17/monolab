@@ -1,24 +1,17 @@
+import { resolve } from "node:path";
 import react from "@vitejs/plugin-react-swc";
 import { playwright } from "@vitest/browser-playwright";
-import { resolve } from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
     plugins: [react({ tsDecorators: true })],
     resolve: {
         alias: {
-            "@m0n0lab/react-hooks": resolve(
-                __dirname,
-                "../react-hooks/src/index.ts",
-            ),
+            "@m0n0lab/react-hooks": resolve(__dirname, "../react-hooks/src/index.ts"),
         },
     },
     test: {
-        include: [
-            "**/*.{test,spec}.{ts,tsx}",
-            "**/*.browser.test.{ts,tsx}",
-            "**/*.integration.ts",
-        ],
+        include: ["**/*.{test,spec}.{ts,tsx}", "**/*.browser.test.{ts,tsx}", "**/*.integration.ts"],
         reporters: ["default", "junit"],
         outputFile: {
             junit: "./test-results.junit.xml",

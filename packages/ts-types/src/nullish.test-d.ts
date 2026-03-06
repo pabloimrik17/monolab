@@ -1,18 +1,12 @@
 import { describe, expectTypeOf, it } from "vitest";
-import type { NonNullish, Nullish } from "./nullish.ts";
 import { isNonNullish, isNullish } from "./nullish.ts";
+import type { NonNullish, Nullish } from "./nullish.ts";
 
 describe("Nullish type", () => {
     it("should allow T, null, or undefined", () => {
-        expectTypeOf<Nullish<string>>().toEqualTypeOf<
-            string | null | undefined
-        >();
-        expectTypeOf<Nullish<number>>().toEqualTypeOf<
-            number | null | undefined
-        >();
-        expectTypeOf<Nullish<boolean>>().toEqualTypeOf<
-            boolean | null | undefined
-        >();
+        expectTypeOf<Nullish<string>>().toEqualTypeOf<string | null | undefined>();
+        expectTypeOf<Nullish<number>>().toEqualTypeOf<number | null | undefined>();
+        expectTypeOf<Nullish<boolean>>().toEqualTypeOf<boolean | null | undefined>();
     });
 
     it("should work with complex types", () => {
@@ -23,12 +17,8 @@ describe("Nullish type", () => {
 
 describe("NonNullish type", () => {
     it("should exclude both null and undefined from union types", () => {
-        expectTypeOf<
-            NonNullish<string | null | undefined>
-        >().toEqualTypeOf<string>();
-        expectTypeOf<
-            NonNullish<number | null | undefined>
-        >().toEqualTypeOf<number>();
+        expectTypeOf<NonNullish<string | null | undefined>>().toEqualTypeOf<string>();
+        expectTypeOf<NonNullish<number | null | undefined>>().toEqualTypeOf<number>();
     });
 
     it("should preserve non-nullish types unchanged", () => {
@@ -37,9 +27,9 @@ describe("NonNullish type", () => {
     });
 
     it("should work with union types", () => {
-        expectTypeOf<
-            NonNullish<string | number | null | undefined>
-        >().toEqualTypeOf<string | number>();
+        expectTypeOf<NonNullish<string | number | null | undefined>>().toEqualTypeOf<
+            string | number
+        >();
     });
 
     it("should exclude only null when undefined is not present", () => {
@@ -78,12 +68,7 @@ describe("isNonNullish type guard", () => {
     });
 
     it("should narrow array filter return type correctly", () => {
-        const values: (string | null | undefined)[] = [
-            "hello",
-            null,
-            undefined,
-            "world",
-        ];
+        const values: (string | null | undefined)[] = ["hello", null, undefined, "world"];
         const filtered = values.filter(isNonNullish);
         expectTypeOf(filtered).toEqualTypeOf<string[]>();
     });

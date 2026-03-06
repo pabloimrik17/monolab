@@ -100,12 +100,7 @@ if (isNonNullish(value)) {
 }
 
 // Filter arrays
-const items: (string | null | undefined)[] = [
-    "hello",
-    null,
-    undefined,
-    "world",
-];
+const items: (string | null | undefined)[] = ["hello", null, undefined, "world"];
 const validItems = items.filter(isNonNullish); // string[]
 ```
 
