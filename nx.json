@@ -37,7 +37,6 @@
                 "^lint:eslint",
                 "^lint:knip",
                 "^lint:markdownlint",
-                "^lint:prettier",
                 "^lint:publint",
                 "^lint:stylelint"
             ]
@@ -64,16 +63,7 @@
             "dependsOn": ["^lint:markdownlint"],
             "inputs": ["default", "{workspaceRoot}/.markdownlint*", "{projectRoot}/.markdownlint*"]
         },
-        "lint:prettier": {
-            "cache": true,
-            "dependsOn": ["^lint:eslint", "^lint:prettier"],
-            "inputs": [
-                "default",
-                "{projectRoot}/.prettierignore",
-                "{workspaceRoot}/.prettierrc",
-                "{workspaceRoot}/.prettierignore"
-            ]
-        },
+
         "lint:publint": {
             "cache": true,
             "dependsOn": ["^build", "build", "^lint:publint"],

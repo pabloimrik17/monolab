@@ -30,8 +30,6 @@
         "lint:eslint:fix": "eslint --cache --max-warnings 40 --fix .",
         "lint:knip": "knip --max-issues 40",
         "lint:knip:fix": "knip --fix",
-        "lint:prettier": "prettier . --check",
-        "lint:prettier:fix": "prettier . --write",
         "test:mutation": "stryker run",
         "test:mutation:report": "open reports/mutation/index.html",
         "test:types": "vitest --typecheck.enabled --run",
