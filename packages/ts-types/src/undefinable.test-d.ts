@@ -1,14 +1,12 @@
 import { describe, expectTypeOf, it } from "vitest";
-import type { NonUndefinable, Undefinable } from "./undefinable.ts";
 import { isNonUndefinable, isUndefinable } from "./undefinable.ts";
+import type { NonUndefinable, Undefinable } from "./undefinable.ts";
 
 describe("Undefinable type", () => {
     it("should allow T or undefined", () => {
         expectTypeOf<Undefinable<string>>().toEqualTypeOf<string | undefined>();
         expectTypeOf<Undefinable<number>>().toEqualTypeOf<number | undefined>();
-        expectTypeOf<Undefinable<boolean>>().toEqualTypeOf<
-            boolean | undefined
-        >();
+        expectTypeOf<Undefinable<boolean>>().toEqualTypeOf<boolean | undefined>();
     });
 
     it("should work with complex types", () => {
@@ -19,12 +17,8 @@ describe("Undefinable type", () => {
 
 describe("NonUndefinable type", () => {
     it("should exclude undefined from union types", () => {
-        expectTypeOf<
-            NonUndefinable<string | undefined>
-        >().toEqualTypeOf<string>();
-        expectTypeOf<
-            NonUndefinable<number | undefined>
-        >().toEqualTypeOf<number>();
+        expectTypeOf<NonUndefinable<string | undefined>>().toEqualTypeOf<string>();
+        expectTypeOf<NonUndefinable<number | undefined>>().toEqualTypeOf<number>();
     });
 
     it("should preserve non-undefined types unchanged", () => {
@@ -33,9 +27,9 @@ describe("NonUndefinable type", () => {
     });
 
     it("should work with union types", () => {
-        expectTypeOf<
-            NonUndefinable<string | number | undefined>
-        >().toEqualTypeOf<string | number>();
+        expectTypeOf<NonUndefinable<string | number | undefined>>().toEqualTypeOf<
+            string | number
+        >();
     });
 });
 

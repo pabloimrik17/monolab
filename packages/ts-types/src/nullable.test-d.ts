@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from "vitest";
-import type { NonNullable, Nullable } from "./nullable.ts";
 import { isNonNullable, isNullable } from "./nullable.ts";
+import type { NonNullable, Nullable } from "./nullable.ts";
 
 describe("Nullable type", () => {
     it("should allow T or null", () => {
@@ -27,9 +27,7 @@ describe("NonNullable type", () => {
     });
 
     it("should work with union types", () => {
-        expectTypeOf<NonNullable<string | number | null>>().toEqualTypeOf<
-            string | number
-        >();
+        expectTypeOf<NonNullable<string | number | null>>().toEqualTypeOf<string | number>();
     });
 });
 

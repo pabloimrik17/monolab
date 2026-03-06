@@ -9,17 +9,13 @@ packagesWithJsr.forEach((packagePath) => {
     const jsrJsonPath = path.join(packagePath, "jsr.json");
 
     if (fs.existsSync(packageJsonPath) && fs.existsSync(jsrJsonPath)) {
-        const packageJson = JSON.parse(
-            fs.readFileSync(packageJsonPath, "utf8"),
-        );
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
         const jsrJson = JSON.parse(fs.readFileSync(jsrJsonPath, "utf8"));
 
         // Sincronizar versión
         jsrJson.version = packageJson.version;
 
         fs.writeFileSync(jsrJsonPath, JSON.stringify(jsrJson, null, 4) + "\n");
-        console.log(
-            `✅ Synced version ${packageJson.version} to ${jsrJsonPath}`,
-        );
+        console.log(`✅ Synced version ${packageJson.version} to ${jsrJsonPath}`);
     }
 });

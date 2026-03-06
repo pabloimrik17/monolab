@@ -63,10 +63,8 @@
         "lint-staged": "16.2.6",
         "markdownlint-cli": "0.45.0",
         "nx": "22.0.2",
+        "oxfmt": "^0.36.0",
         "playwright": "1.56.1",
-        "prettier": "3.8.1",
-        "prettier-plugin-organize-imports": "4.3.0",
-        "prettier-plugin-packagejson": "3.0.2",
         "stylelint": "16.25.0",
         "stylelint-config-standard": "38.0.0",
         "tslib": "2.8.1",
@@ -76,12 +74,6 @@
         "vite-tsconfig-paths": "catalog:",
         "vitest": "catalog:",
         "vitest-browser-react": "2.0.2"
-    },
-    "packageManager": "pnpm@10.19.0",
-    "engines": {
-        "deno": "2.5.6",
-        "node": "24.11.0",
-        "pnpm": "10.19.0"
     },
     "devEngines": {
         "runtime": [
@@ -96,5 +88,11 @@
                 "onFail": "download"
             }
         ]
-    }
+    },
+    "engines": {
+        "deno": "2.5.6",
+        "node": "24.11.0",
+        "pnpm": "10.19.0"
+    },
+    "packageManager": "pnpm@10.19.0"
 }

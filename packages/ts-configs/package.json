@@ -7,18 +7,6 @@
         "url": "https://github.com/pabloimrik17/monolab.git",
         "directory": "packages/ts-configs"
     },
-    "sideEffects": false,
-    "type": "module",
-    "exports": {
-        "./tsconfig.base.json": "./tsconfig.base.json",
-        "./tsconfig.node.base.json": "./tsconfig.node.base.json",
-        "./tsconfig.node.app.json": "./tsconfig.node.app.json",
-        "./tsconfig.node.lib.json": "./tsconfig.node.lib.json",
-        "./tsconfig.web.base.json": "./tsconfig.web.base.json",
-        "./tsconfig.web.app.json": "./tsconfig.web.app.json",
-        "./tsconfig.web.lib.json": "./tsconfig.web.lib.json",
-        "./package.json": "./package.json"
-    },
     "files": [
         "tsconfig.base.json",
         "tsconfig.node.base.json",
@@ -32,6 +20,23 @@
         "CHANGELOG.md",
         "LICENSE"
     ],
+    "type": "module",
+    "sideEffects": false,
+    "exports": {
+        "./tsconfig.base.json": "./tsconfig.base.json",
+        "./tsconfig.node.base.json": "./tsconfig.node.base.json",
+        "./tsconfig.node.app.json": "./tsconfig.node.app.json",
+        "./tsconfig.node.lib.json": "./tsconfig.node.lib.json",
+        "./tsconfig.web.base.json": "./tsconfig.web.base.json",
+        "./tsconfig.web.app.json": "./tsconfig.web.app.json",
+        "./tsconfig.web.lib.json": "./tsconfig.web.lib.json",
+        "./package.json": "./package.json"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true,
+        "registry": "https://registry.npmjs.org/"
+    },
     "scripts": {
         "build": "pnpm run build:typecheck",
         "build:typecheck": "tsc --noEmit",
@@ -55,14 +60,9 @@
         "typescript": "5.9.3",
         "vitest": "catalog:"
     },
-    "packageManager": "pnpm@10.19.0+sha512.c9fc7236e92adf5c8af42fd5bf1612df99c2ceb62f27047032f4720b33f8eacdde311865e91c411f2774f618d82f320808ecb51718bfa82c060c4ba7c76a32b8",
     "engines": {
         "node": "24.11.0",
         "pnpm": "10.19.0"
     },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true,
-        "registry": "https://registry.npmjs.org/"
-    }
+    "packageManager": "pnpm@10.19.0+sha512.c9fc7236e92adf5c8af42fd5bf1612df99c2ceb62f27047032f4720b33f8eacdde311865e91c411f2774f618d82f320808ecb51718bfa82c060c4ba7c76a32b8"
 }

@@ -62,11 +62,7 @@
         "lint:markdownlint": {
             "cache": true,
             "dependsOn": ["^lint:markdownlint"],
-            "inputs": [
-                "default",
-                "{workspaceRoot}/.markdownlint*",
-                "{projectRoot}/.markdownlint*"
-            ]
+            "inputs": ["default", "{workspaceRoot}/.markdownlint*", "{projectRoot}/.markdownlint*"]
         },
         "lint:prettier": {
             "cache": true,
@@ -86,11 +82,7 @@
         "lint:stylelint": {
             "cache": true,
             "dependsOn": ["^lint:stylelint"],
-            "inputs": [
-                "default",
-                "{workspaceRoot}/.stylelintrc*",
-                "{projectRoot}/.stylelintrc*"
-            ]
+            "inputs": ["default", "{workspaceRoot}/.stylelintrc*", "{projectRoot}/.stylelintrc*"]
         },
         "test:unit": {
             "cache": true,
@@ -100,10 +92,7 @@
                 "{workspaceRoot}/vitest.workspace.ts",
                 "{projectRoot}/vitest.config.ts"
             ],
-            "outputs": [
-                "{projectRoot}/html",
-                "{projectRoot}/test-results.junit.xml"
-            ]
+            "outputs": ["{projectRoot}/html", "{projectRoot}/test-results.junit.xml"]
         },
         "test:unit:coverage": {
             "cache": true,

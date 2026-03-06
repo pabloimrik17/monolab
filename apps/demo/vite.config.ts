@@ -10,14 +10,8 @@ export default defineConfig({
 
     resolve: {
         alias: {
-            "@m0n0lab/is-odd": resolve(
-                __dirname,
-                "../../packages/is-odd/src/index.ts",
-            ),
-            "@m0n0lab/is-even": resolve(
-                __dirname,
-                "../../packages/is-even/src/index.ts",
-            ),
+            "@m0n0lab/is-odd": resolve(__dirname, "../../packages/is-odd/src/index.ts"),
+            "@m0n0lab/is-even": resolve(__dirname, "../../packages/is-even/src/index.ts"),
         },
     },
 });

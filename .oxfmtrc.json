@@ -1,0 +1,36 @@
+{
+    "$schema": "./node_modules/oxfmt/configuration_schema.json",
+    "tabWidth": 4,
+    "singleAttributePerLine": true,
+    "ignorePatterns": [
+        "dist",
+        "coverage",
+        ".nx",
+        "openspec",
+        ".claude",
+        ".opencode",
+        "CHANGELOG.md",
+        "reports"
+    ],
+    "sortImports": {
+        "internalPattern": ["@m0n0lab/"],
+        "newlinesBetween": false,
+        "groups": [
+            "value-builtin",
+            "value-external",
+            ["value-internal", "value-subpath"],
+            ["value-parent", "value-sibling", "value-index"],
+            "type-import",
+            "unknown"
+        ]
+    },
+    "sortPackageJson": {},
+    "overrides": [
+        {
+            "files": [".nvmrc"],
+            "options": {
+                "printWidth": 1
+            }
+        }
+    ]
+}

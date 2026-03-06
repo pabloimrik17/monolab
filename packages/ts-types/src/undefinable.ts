@@ -50,8 +50,6 @@ export function isUndefinable<T>(value: T | undefined): value is undefined {
  * const definedValues = values.filter(isNonUndefinable); // string[]
  * ```
  */
-export function isNonUndefinable<T>(
-    value: T | undefined,
-): value is NonUndefinable<T> {
+export function isNonUndefinable<T>(value: T | undefined): value is NonUndefinable<T> {
     return value !== undefined;
 }

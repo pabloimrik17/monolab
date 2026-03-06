@@ -1,21 +1,26 @@
 {
     "name": "@m0n0lab/is-even",
     "version": "2.1.4",
+    "author": "Pablo F.G.",
     "repository": {
         "type": "git",
         "url": "https://github.com/pabloimrik17/monolab.git",
         "directory": "packages/is-even"
     },
-    "author": "Pablo F.G.",
     "type": "module",
-    "exports": {
-        ".": {
-            "import": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
-    },
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true,
+        "registry": "https://registry.npmjs.org/"
+    },
     "scripts": {
         "build": "tsc -b",
         "lint:eslint": "eslint --cache --max-warnings 40 .",
@@ -45,14 +50,9 @@
         "typescript": "5.9.3",
         "vitest": "catalog:"
     },
-    "packageManager": "pnpm@10.19.0",
     "engines": {
         "node": "24.11.0",
         "pnpm": "10.19.0"
     },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true,
-        "registry": "https://registry.npmjs.org/"
-    }
+    "packageManager": "pnpm@10.19.0"
 }
