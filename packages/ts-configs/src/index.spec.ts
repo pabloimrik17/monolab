@@ -25,7 +25,7 @@ describe("ts-configs", () => {
 
         expect(packageJson.exports).toBeDefined();
         expect(packageJson.exports["./tsconfig.base.json"]).toBe(
-            "./tsconfig.base.json"
+            "./tsconfig.base.json",
         );
     });
 });

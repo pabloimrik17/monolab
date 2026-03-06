@@ -139,29 +139,29 @@ This project uses Vitest for testing with separate test types organized by purpo
 
 **Unit Tests** (`*.test.ts`, `*.test.tsx`)
 
--   Fast, isolated tests for individual functions/components
--   Run with: `pnpm run test:unit` or `pnpm run test:unit:affected`
--   Watch mode: `pnpm run test:unit:watch`
+- Fast, isolated tests for individual functions/components
+- Run with: `pnpm run test:unit` or `pnpm run test:unit:affected`
+- Watch mode: `pnpm run test:unit:watch`
 
 **Integration Tests** (`*.integration.ts`)
 
--   Tests for module interactions and integration points
--   Run with: `pnpm run test:integration` or `pnpm run test:integration:affected`
--   Watch mode: `pnpm run test:integration:watch`
+- Tests for module interactions and integration points
+- Run with: `pnpm run test:integration` or `pnpm run test:integration:affected`
+- Watch mode: `pnpm run test:integration:watch`
 
 **Type Tests** (`*.test-d.ts`)
 
--   Compile-time TypeScript type validation using `expectTypeOf`
--   Prevents type regressions without runtime execution
--   Run with: `pnpm run test:types` or `pnpm run test:types:affected`
--   Watch mode: `pnpm run test:types:watch`
+- Compile-time TypeScript type validation using `expectTypeOf`
+- Prevents type regressions without runtime execution
+- Run with: `pnpm run test:types` or `pnpm run test:types:affected`
+- Watch mode: `pnpm run test:types:watch`
 
 **Browser Tests** (`*.browser.test.ts`, `*.browser.test.tsx`) - React packages only
 
--   Real browser testing with Playwright (Chromium)
--   Tests actual DOM behavior, not jsdom simulation
--   Run with: `pnpm run test:browser` or `pnpm run test:browser:affected`
--   Watch mode: `pnpm run test:browser:watch`
+- Real browser testing with Playwright (Chromium)
+- Tests actual DOM behavior, not jsdom simulation
+- Run with: `pnpm run test:browser` or `pnpm run test:browser:affected`
+- Watch mode: `pnpm run test:browser:watch`
 
 ### Interactive UI Mode
 
@@ -245,18 +245,18 @@ test("hook executes in real browser", () => {
 
 ### Configuration
 
--   **Workspace config**: `vitest.workspace.ts` (shared settings)
--   **Package configs**: `packages/*/vitest.config.ts` (per-package overrides)
--   **Shared settings**: `clearMocks`, `restoreMocks`, `unstubEnvs`,
-    `unstubGlobals`, `maxConcurrency: 10`
+- **Workspace config**: `vitest.workspace.ts` (shared settings)
+- **Package configs**: `packages/*/vitest.config.ts` (per-package overrides)
+- **Shared settings**: `clearMocks`, `restoreMocks`, `unstubEnvs`,
+  `unstubGlobals`, `maxConcurrency: 10`
 
 ### CI Testing
 
 Tests run automatically in CI via Nx Cloud distribution:
 
--   Pull Requests: Affected tests only (coverage thresholds disabled)
--   Main/Develop: All tests with full coverage enforcement
--   Distributed across 3 agents for optimal performance
+- Pull Requests: Affected tests only (coverage thresholds disabled)
+- Main/Develop: All tests with full coverage enforcement
+- Distributed across 3 agents for optimal performance
 
 ## Quality & Testing
 
@@ -305,15 +305,15 @@ pnpm exec nx run @monolab/is-odd:test:mutation:report
 Mutation scores indicate the percentage of mutations that were detected
 (killed) by tests:
 
--   **High (80-100%)**: Excellent test quality, most edge cases covered
--   **Medium (60-79%)**: Good test quality, some improvements possible
--   **Low (0-59%)**: Weak test quality, significant gaps in test coverage
+- **High (80-100%)**: Excellent test quality, most edge cases covered
+- **Medium (60-79%)**: Good test quality, some improvements possible
+- **Low (0-59%)**: Weak test quality, significant gaps in test coverage
 
 Each package has graduated thresholds based on complexity:
 
--   **Utilities** (is-odd, is-even): 90% high / 75% low / 75% break
--   **React packages** (react-hooks, react-clean): 80% high / 65% low / 60% break
--   **Config packages** (ts-configs): 70% high / 50% low / 50% break
+- **Utilities** (is-odd, is-even): 90% high / 75% low / 75% break
+- **React packages** (react-hooks, react-clean): 80% high / 65% low / 60% break
+- **Config packages** (ts-configs): 70% high / 50% low / 50% break
 
 #### CI Behavior
 
@@ -321,15 +321,15 @@ Mutation testing runs automatically in CI with the following behavior:
 
 <!-- markdownlint-disable MD013 -->
 
--   **Execution**: Only on push to `main` or `develop` branches (skipped on PRs)
--   **Incremental Mode**: Reuses results from previous runs to minimize execution
-    time
--   **Caching**: Incremental cache is restored/saved with multi-level fallback
-    strategy
--   **Dashboard**: Results are uploaded to
-    [Stryker Dashboard](https://dashboard.stryker-mutator.io/reports/github.com/pabloimrik17/monolab/develop)
-    for historical tracking
--   **Artifacts**: Mutation reports are uploaded as CI artifacts for 30 days
+- **Execution**: Only on push to `main` or `develop` branches (skipped on PRs)
+- **Incremental Mode**: Reuses results from previous runs to minimize execution
+  time
+- **Caching**: Incremental cache is restored/saved with multi-level fallback
+  strategy
+- **Dashboard**: Results are uploaded to
+  [Stryker Dashboard](https://dashboard.stryker-mutator.io/reports/github.com/pabloimrik17/monolab/develop)
+  for historical tracking
+- **Artifacts**: Mutation reports are uploaded as CI artifacts for 30 days
 
 <!-- markdownlint-enable MD013 -->
 
@@ -360,16 +360,16 @@ must follow this format:
 
 #### Commit Types
 
--   **feat**: A new feature (triggers MINOR version bump)
--   **fix**: A bug fix (triggers PATCH version bump)
--   **docs**: Documentation only changes
--   **style**: Code style changes (formatting, missing semicolons, etc.)
--   **refactor**: Code changes that neither fix a bug nor add a feature
--   **perf**: Performance improvements
--   **test**: Adding or updating tests
--   **build**: Changes to build system or dependencies
--   **ci**: Changes to CI configuration files and scripts
--   **chore**: Other changes that don't modify src or test files
+- **feat**: A new feature (triggers MINOR version bump)
+- **fix**: A bug fix (triggers PATCH version bump)
+- **docs**: Documentation only changes
+- **style**: Code style changes (formatting, missing semicolons, etc.)
+- **refactor**: Code changes that neither fix a bug nor add a feature
+- **perf**: Performance improvements
+- **test**: Adding or updating tests
+- **build**: Changes to build system or dependencies
+- **ci**: Changes to CI configuration files and scripts
+- **chore**: Other changes that don't modify src or test files
 
 #### Breaking Changes
 
@@ -387,11 +387,11 @@ Use /v2/new-endpoint instead.
 
 The scope should be the package name without the `@m0n0lab/` prefix:
 
--   `is-odd`
--   `is-even`
--   `react-hooks`
--   `react-clean`
--   `ts-configs`
+- `is-odd`
+- `is-even`
+- `react-hooks`
+- `react-clean`
+- `ts-configs`
 
 #### Examples
 
@@ -433,11 +433,11 @@ to automate versioning and publishing.
 
 When commits are pushed to `main`, release-please automatically:
 
--   Calculates version bumps based on conventional commits
--   Updates `package.json` and `jsr.json` versions
--   Generates/updates `CHANGELOG.md` for each package
--   Updates `.release-please-manifest.json`
--   Creates or updates a single Release PR with all changes
+- Calculates version bumps based on conventional commits
+- Updates `package.json` and `jsr.json` versions
+- Generates/updates `CHANGELOG.md` for each package
+- Updates `.release-please-manifest.json`
+- Creates or updates a single Release PR with all changes
 
 The Release PR title follows the pattern: `chore(main): release packages`
 
@@ -458,10 +458,10 @@ When the Release PR is merged:
 
 **Important**:
 
--   Both npm and JSR use OIDC Trusted Publishers (no secrets/tokens needed)
--   JSR runs first to keep working directory clean (no `--allow-dirty` flag needed)
--   pnpm automatically transforms workspace protocol dependencies to proper semver
--   Both tools run full validation suites (no disabled checks)
+- Both npm and JSR use OIDC Trusted Publishers (no secrets/tokens needed)
+- JSR runs first to keep working directory clean (no `--allow-dirty` flag needed)
+- pnpm automatically transforms workspace protocol dependencies to proper semver
+- Both tools run full validation suites (no disabled checks)
 
 #### Workspace Protocol Dependencies
 
@@ -481,12 +481,12 @@ monorepo packages:
 
 **Why this works:**
 
--   **Development**: pnpm links packages locally for fast iteration
--   **Publishing to npm**: pnpm automatically transforms `workspace:*` →
-    `^X.Y.Z` (published version)
--   **Publishing to JSR**: Deno workspaces automatically resolve to JSR
-    registry URLs
--   **No manual updates**: Dependency versions stay in sync automatically
+- **Development**: pnpm links packages locally for fast iteration
+- **Publishing to npm**: pnpm automatically transforms `workspace:*` →
+  `^X.Y.Z` (published version)
+- **Publishing to JSR**: Deno workspaces automatically resolve to JSR
+  registry URLs
+- **No manual updates**: Dependency versions stay in sync automatically
 
 **Important**: Never manually update internal dependency versions - the
 workspace protocol and publishing tools handle this automatically.

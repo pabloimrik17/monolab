@@ -17,7 +17,7 @@ import { BaseViewModel } from "./base.viewmodel.ts";
  * @returns {T} The initialized `BaseViewModel` instance.
  */
 export const useViewModel = <T extends BaseViewModel>(
-    viewModel: () => T
+    viewModel: () => T,
 ): T => {
     const instanceRef = useRef<Nullable<T>>(null);
     if (instanceRef.current === null) {

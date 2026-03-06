@@ -8,14 +8,14 @@ A simple, well-tested utility to check if a number is even. Perfect for number v
 
 ## Features
 
--   🎯 Simple and intuitive API
--   ✅ Fully typed with TypeScript
--   🧪 100% test coverage
--   📦 Zero dependencies
--   ⚡ Lightweight and fast
--   🔒 Secure and reliable
--   🚀 Production ready
--   📘 Well documented
+- 🎯 Simple and intuitive API
+- ✅ Fully typed with TypeScript
+- 🧪 100% test coverage
+- 📦 Zero dependencies
+- ⚡ Lightweight and fast
+- 🔒 Secure and reliable
+- 🚀 Production ready
+- 📘 Well documented
 
 ## Installation
 

@@ -9,7 +9,7 @@ export default defineConfig({
         alias: {
             "@m0n0lab/react-hooks": resolve(
                 __dirname,
-                "../react-hooks/src/index.ts"
+                "../react-hooks/src/index.ts",
             ),
         },
     },

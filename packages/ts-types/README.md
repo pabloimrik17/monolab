@@ -8,14 +8,14 @@ A centralized package for sharing custom TypeScript type definitions, utilities,
 
 ## Features
 
--   🎯 Centralized type definitions
--   ✅ Fully typed with TypeScript
--   📦 Zero runtime dependencies
--   ⚡ Lightweight and tree-shakeable
--   🔒 Type-safe and reliable
--   📚 Comprehensive documentation
--   🚀 Production ready library
--   📘 Well documented
+- 🎯 Centralized type definitions
+- ✅ Fully typed with TypeScript
+- 📦 Zero runtime dependencies
+- ⚡ Lightweight and tree-shakeable
+- 🔒 Type-safe and reliable
+- 📚 Comprehensive documentation
+- 🚀 Production ready library
+- 📘 Well documented
 
 ## Installation
 

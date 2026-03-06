@@ -12,11 +12,11 @@ export default defineConfig({
         alias: {
             "@m0n0lab/is-odd": resolve(
                 __dirname,
-                "../../packages/is-odd/src/index.ts"
+                "../../packages/is-odd/src/index.ts",
             ),
             "@m0n0lab/is-even": resolve(
                 __dirname,
-                "../../packages/is-even/src/index.ts"
+                "../../packages/is-even/src/index.ts",
             ),
         },
     },

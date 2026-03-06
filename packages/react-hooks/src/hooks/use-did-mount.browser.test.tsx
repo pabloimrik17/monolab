@@ -51,7 +51,7 @@ test("useDidMount with async callback in browser", async () => {
         () => {
             expect(resolved).toBe(true);
         },
-        { timeout: 100 }
+        { timeout: 100 },
     );
 
     // Verify component mounted
