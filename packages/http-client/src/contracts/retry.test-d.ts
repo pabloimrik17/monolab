@@ -17,8 +17,6 @@ describe("HttpRetryConfig type safety", () => {
         expectTypeOf(config.delay).toMatchTypeOf<
             number | ((attempt: number, error: HttpError) => number)
         >();
-        expectTypeOf(config.condition).toEqualTypeOf<
-            ((error: HttpError) => boolean) | undefined
-        >();
+        expectTypeOf(config.condition).toEqualTypeOf<((error: HttpError) => boolean) | undefined>();
     });
 });

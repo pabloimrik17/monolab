@@ -12,14 +12,7 @@
  * const method: HttpMethod = 'GET';
  * ```
  */
-export type HttpMethod =
-    | "GET"
-    | "POST"
-    | "PUT"
-    | "PATCH"
-    | "DELETE"
-    | "HEAD"
-    | "OPTIONS";
+export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
 
 /**
  * HTTP headers represented as key-value pairs.
@@ -196,12 +189,7 @@ export type HttpErrorStatusCode =
  * });
  * ```
  */
-export type HttpResponseType =
-    | "json"
-    | "text"
-    | "blob"
-    | "arraybuffer"
-    | "stream";
+export type HttpResponseType = "json" | "text" | "blob" | "arraybuffer" | "stream";
 
 /**
  * Credentials mode for cross-origin requests.

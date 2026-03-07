@@ -21,9 +21,7 @@ describe("Error hierarchy type checking", () => {
 
         expectTypeOf(error.name).toEqualTypeOf<string>();
         expectTypeOf(error.message).toEqualTypeOf<string>();
-        expectTypeOf(error.request).toMatchTypeOf<
-            Readonly<HttpRequestConfig>
-        >();
+        expectTypeOf(error.request).toMatchTypeOf<Readonly<HttpRequestConfig>>();
         expectTypeOf(error.timestamp).toEqualTypeOf<string>();
     });
 
@@ -40,8 +38,7 @@ describe("Error hierarchy type checking", () => {
             details: string[];
         }
 
-        const error: HttpResponseError<ErrorResponse> =
-            {} as HttpResponseError<ErrorResponse>;
+        const error: HttpResponseError<ErrorResponse> = {} as HttpResponseError<ErrorResponse>;
 
         expectTypeOf(error.status).toEqualTypeOf<HttpErrorStatusCode>();
         expectTypeOf(error.statusText).toEqualTypeOf<string>();
@@ -67,8 +64,7 @@ describe("Error generic type inference", () => {
             code: number;
         }
 
-        const error: HttpResponseError<ErrorResponse> =
-            {} as HttpResponseError<ErrorResponse>;
+        const error: HttpResponseError<ErrorResponse> = {} as HttpResponseError<ErrorResponse>;
 
         expectTypeOf(error.data).toEqualTypeOf<ErrorResponse>();
     });
@@ -78,8 +74,6 @@ describe("Error readonly enforcement", () => {
     test("error request property is readonly", () => {
         const error: HttpError = {} as HttpError;
 
-        expectTypeOf(error.request).toMatchTypeOf<
-            Readonly<HttpRequestConfig>
-        >();
+        expectTypeOf(error.request).toMatchTypeOf<Readonly<HttpRequestConfig>>();
     });
 });
