@@ -1,12 +1,12 @@
 ## 1. Scaffold packages and apps
 
-- [ ] 1.1 Scaffold `packages/solid-clean` — package.json (peerDep: solid-js), tsconfig (experimentalDecorators: false), tsdown.config, vitest.config, src/index.ts
-- [ ] 1.2 Scaffold `packages/qup-domain` — package.json (deps: inversify, neverthrow), tsconfig (experimentalDecorators: true, emitDecoratorMetadata: true), tsdown.config, vitest.config, src/index.ts
-- [ ] 1.3 Scaffold `packages/qup-shared` — package.json (dep: neverthrow for types), tsconfig, tsdown.config, src/index.ts
-- [ ] 1.4 Scaffold `packages/qup-data` — package.json (deps: qup-domain via workspace:*, drizzle-orm, pg), tsconfig, tsdown.config, vitest.config, src/index.ts
-- [ ] 1.5 Scaffold `apps/qup-api` — package.json (deps: qup-domain, qup-data, qup-shared via workspace:*, hono, inversify), tsconfig, src/index.ts
-- [ ] 1.6 Scaffold `apps/qup-web` — SolidStart project with Tailwind CSS, Solid UI, file-based routing, tsconfig (experimentalDecorators: true), deps: qup-shared via workspace:*, solid-clean via workspace:*, inversify
-- [ ] 1.7 Run `pnpm install` and verify all workspace links resolve
+- [x] 1.1 Scaffold `packages/solid-clean` — package.json (peerDep: solid-js), tsconfig (experimentalDecorators: false), tsdown.config, vitest.config, src/index.ts
+- [x] 1.2 Scaffold `packages/qup-domain` — package.json (deps: inversify, neverthrow), tsconfig (experimentalDecorators: true, emitDecoratorMetadata: true), tsdown.config, vitest.config, src/index.ts
+- [x] 1.3 Scaffold `packages/qup-shared` — package.json (dep: neverthrow for types), tsconfig, tsdown.config, src/index.ts
+- [x] 1.4 Scaffold `packages/qup-data` — package.json (deps: qup-domain via workspace:*, drizzle-orm, pg), tsconfig, tsdown.config, vitest.config, src/index.ts
+- [x] 1.5 Scaffold `apps/qup-api` — package.json (deps: qup-domain, qup-data, qup-shared via workspace:*, hono, inversify), tsconfig, src/index.ts
+- [x] 1.6 Scaffold `apps/qup-web` — SolidStart project with Tailwind CSS, Solid UI, file-based routing, tsconfig (experimentalDecorators: true), deps: qup-shared via workspace:*, solid-clean via workspace:*, inversify
+- [x] 1.7 Run `pnpm install` and verify all workspace links resolve
 - [ ] 1.8 Verify `nx run-many --target=build` succeeds for all new projects (may need nx project.json or package.json targets)
 
 ## 2. solid-clean package

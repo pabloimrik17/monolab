@@ -1,0 +1,41 @@
+{
+    "name": "@m0n0lab/qup-data",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "pnpm run build:typecheck && pnpm run build:lib",
+        "build:lib": "tsdown",
+        "build:typecheck": "tsc --noEmit",
+        "db:generate": "drizzle-kit generate",
+        "db:migrate": "drizzle-kit migrate",
+        "test:unit": "vitest run",
+        "test:unit:watch": "vitest"
+    },
+    "dependencies": {
+        "@m0n0lab/qup-domain": "workspace:*",
+        "drizzle-orm": "0.44.2",
+        "pg": "8.16.0"
+    },
+    "devDependencies": {
+        "drizzle-kit": "0.31.4",
+        "tsdown": "0.15.9",
+        "typescript": "5.9.3",
+        "vitest": "catalog:"
+    },
+    "packageManager": "pnpm@10.27.0",
+    "engines": {
+        "node": "^20.18.0 || >=22.0.0",
+        "pnpm": "10.27.0"
+    }
+}
