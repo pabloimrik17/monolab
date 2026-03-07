@@ -21,10 +21,7 @@ export type {
 } from "./contracts/types.js";
 
 // Request types
-export type {
-    HttpRequestBody,
-    HttpRequestConfig,
-} from "./contracts/request.js";
+export type { HttpRequestBody, HttpRequestConfig } from "./contracts/request.js";
 
 // Response types
 export type { HttpResponse } from "./contracts/response.js";
@@ -65,11 +62,7 @@ export type {
     HttpRetryHook,
 } from "./contracts/retry.js";
 
-export {
-    exponentialBackoff,
-    jitterBackoff,
-    linearBackoff,
-} from "./contracts/retry.js";
+export { exponentialBackoff, jitterBackoff, linearBackoff } from "./contracts/retry.js";
 
 // Deduplication types
 export type {

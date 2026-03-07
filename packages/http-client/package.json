@@ -1,22 +1,12 @@
 {
     "name": "@m0n0lab/http-client",
     "version": "0.1.0",
+    "author": "Pablo F.G.",
     "repository": {
         "type": "git",
         "url": "https://github.com/pabloimrik17/monolab.git",
         "directory": "packages/http-client"
     },
-    "author": "Pablo F.G.",
-    "sideEffects": false,
-    "type": "module",
-    "exports": {
-        ".": {
-            "import": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
-    },
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
     "files": [
         "dist",
         "package.json",
@@ -24,6 +14,21 @@
         "CHANGELOG.md",
         "LICENSE"
     ],
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true,
+        "registry": "https://registry.npmjs.org/"
+    },
     "scripts": {
         "build": "tsc -b",
         "lint:eslint": "eslint --cache --max-warnings 40 .",
@@ -31,8 +36,8 @@
         "lint:eslint:fix": "eslint --cache --max-warnings 40 --fix .",
         "lint:knip": "knip --max-issues 70",
         "lint:knip:fix": "knip --fix",
-        "lint:prettier": "prettier . --check",
-        "lint:prettier:fix": "prettier . --write",
+        "lint:oxfmt": "oxfmt --check .",
+        "lint:oxfmt:fix": "oxfmt .",
         "test:integration": "vitest run **/*.integration.ts",
         "test:integration:watch": "vitest **/*.integration.ts",
         "test:mutation": "stryker run",
@@ -52,14 +57,9 @@
         "typescript": "5.9.3",
         "vitest": "catalog:"
     },
-    "packageManager": "pnpm@10.27.0",
     "engines": {
         "node": "^20.18.0 || >=22.0.0",
         "pnpm": "10.27.0"
     },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true,
-        "registry": "https://registry.npmjs.org/"
-    }
+    "packageManager": "pnpm@10.27.0"
 }

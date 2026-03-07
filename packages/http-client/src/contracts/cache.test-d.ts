@@ -23,9 +23,7 @@ describe("CacheEntry type safety", () => {
         };
 
         expectTypeOf(entry.data).toEqualTypeOf<unknown>();
-        expectTypeOf(entry.headers).toMatchTypeOf<
-            Record<string, string | string[]>
-        >();
+        expectTypeOf(entry.headers).toMatchTypeOf<Record<string, string | string[]>>();
         expectTypeOf(entry.timestamp).toEqualTypeOf<number>();
         expectTypeOf(entry.ttl).toEqualTypeOf<number>();
     });
@@ -47,15 +45,11 @@ describe("HttpCache interface", () => {
     test("HttpCache has all required methods", () => {
         const cache: HttpCache = {} as HttpCache;
 
-        expectTypeOf(cache.get).toMatchTypeOf<
-            (key: string) => Promise<CacheEntry | null>
-        >();
+        expectTypeOf(cache.get).toMatchTypeOf<(key: string) => Promise<CacheEntry | null>>();
         expectTypeOf(cache.set).toMatchTypeOf<
             (key: string, value: CacheEntry, ttl?: number) => Promise<void>
         >();
-        expectTypeOf(cache.delete).toMatchTypeOf<
-            (key: string) => Promise<void>
-        >();
+        expectTypeOf(cache.delete).toMatchTypeOf<(key: string) => Promise<void>>();
         expectTypeOf(cache.clear).toMatchTypeOf<() => Promise<void>>();
     });
 
@@ -76,9 +70,7 @@ describe("HttpCache interface", () => {
 
 describe("HttpCacheKeyGenerator type safety", () => {
     test("HttpCacheKeyGenerator accepts config and returns string", () => {
-        const keyGenerator: HttpCacheKeyGenerator = (
-            config: HttpRequestConfig
-        ): string => {
+        const keyGenerator: HttpCacheKeyGenerator = (config: HttpRequestConfig): string => {
             expectTypeOf(config).toMatchTypeOf<HttpRequestConfig>();
             return "cache-key";
         };
@@ -92,9 +84,7 @@ describe("HttpCacheKeyGenerator type safety", () => {
 
 describe("HttpCacheInvalidationPattern type safety", () => {
     test("HttpCacheInvalidationPattern accepts config and returns string array", () => {
-        const pattern: HttpCacheInvalidationPattern = (
-            config: HttpRequestConfig
-        ): string[] => {
+        const pattern: HttpCacheInvalidationPattern = (config: HttpRequestConfig): string[] => {
             expectTypeOf(config).toMatchTypeOf<HttpRequestConfig>();
             return ["/users/*"];
         };
@@ -111,16 +101,10 @@ describe("HttpCacheConfig type safety", () => {
         const config: HttpCacheConfig = {};
 
         expectTypeOf(config.cache).toEqualTypeOf<HttpCache | undefined>();
-        expectTypeOf(config.keyGenerator).toEqualTypeOf<
-            HttpCacheKeyGenerator | undefined
-        >();
+        expectTypeOf(config.keyGenerator).toEqualTypeOf<HttpCacheKeyGenerator | undefined>();
         expectTypeOf(config.ttl).toEqualTypeOf<number | undefined>();
-        expectTypeOf(config.respectCacheHeaders).toEqualTypeOf<
-            boolean | undefined
-        >();
-        expectTypeOf(config.staleWhileRevalidate).toEqualTypeOf<
-            boolean | undefined
-        >();
+        expectTypeOf(config.respectCacheHeaders).toEqualTypeOf<boolean | undefined>();
+        expectTypeOf(config.staleWhileRevalidate).toEqualTypeOf<boolean | undefined>();
     });
 
     test("HttpCacheConfig accepts cache implementation", () => {

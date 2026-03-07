@@ -51,9 +51,7 @@ describe("StringKeyOf type", () => {
         }
 
         type OnlyStringKeys = StringKeyOf<ComplexMixed>;
-        expectTypeOf<OnlyStringKeys>().toEqualTypeOf<
-            "stringKey1" | "stringKey2"
-        >();
+        expectTypeOf<OnlyStringKeys>().toEqualTypeOf<"stringKey1" | "stringKey2">();
     });
 
     it("should return never for objects with no string keys", () => {
@@ -115,8 +113,6 @@ describe("StringKeyOf type", () => {
         }
 
         type AllKeys = StringKeyOf<OptionalProps>;
-        expectTypeOf<AllKeys>().toEqualTypeOf<
-            "required" | "optional" | "anotherOptional"
-        >();
+        expectTypeOf<AllKeys>().toEqualTypeOf<"required" | "optional" | "anotherOptional">();
     });
 });

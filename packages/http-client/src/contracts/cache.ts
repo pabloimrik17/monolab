@@ -133,9 +133,7 @@ export interface HttpCache {
  * };
  * ```
  */
-export type HttpCacheKeyGenerator = (
-    config: Readonly<HttpRequestConfig>
-) => string;
+export type HttpCacheKeyGenerator = (config: Readonly<HttpRequestConfig>) => string;
 
 /**
  * Cache invalidation pattern matcher.
@@ -155,9 +153,7 @@ export type HttpCacheKeyGenerator = (
  * };
  * ```
  */
-export type HttpCacheInvalidationPattern = (
-    config: Readonly<HttpRequestConfig>
-) => string[];
+export type HttpCacheInvalidationPattern = (config: Readonly<HttpRequestConfig>) => string[];
 
 /**
  * HTTP cache configuration.

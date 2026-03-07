@@ -18,9 +18,7 @@ function TestComponent({ onMount }: { onMount: () => void }) {
         onMount();
     });
 
-    return (
-        <div data-testid="status">{mounted ? "mounted" : "not-mounted"}</div>
-    );
+    return <div data-testid="status">{mounted ? "mounted" : "not-mounted"}</div>;
 }
 
 test("useDidMount executes callback once after mount in real browser", () => {
@@ -51,7 +49,7 @@ test("useDidMount with async callback in browser", async () => {
         () => {
             expect(resolved).toBe(true);
         },
-        { timeout: 100 }
+        { timeout: 100 },
     );
 
     // Verify component mounted

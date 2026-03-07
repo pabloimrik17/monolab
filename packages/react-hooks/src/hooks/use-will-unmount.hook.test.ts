@@ -18,9 +18,7 @@ describe("useWillUnmount", () => {
     it("should not call callback on mount or re-render", () => {
         const callback = vi.fn();
 
-        const { rerender, unmount } = renderHook(() =>
-            useWillUnmount(callback)
-        );
+        const { rerender, unmount } = renderHook(() => useWillUnmount(callback));
 
         expect(callback).not.toHaveBeenCalled();
 

@@ -30,7 +30,7 @@ export type DeduplicationKey = string;
  * ```
  */
 export type HttpDeduplicationKeyGenerator = (
-    config: Readonly<HttpRequestConfig>
+    config: Readonly<HttpRequestConfig>,
 ) => DeduplicationKey;
 
 /**

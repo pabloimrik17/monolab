@@ -85,7 +85,7 @@ export interface HttpClient {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     get<TResponse, _TError = unknown>(
         url: string,
-        config?: HttpRequestConfig
+        config?: HttpRequestConfig,
     ): Promise<HttpResponse<TResponse>>;
 
     /**
@@ -123,7 +123,7 @@ export interface HttpClient {
     post<TResponse, TBody = unknown, _TError = unknown>(
         url: string,
         body?: TBody,
-        config?: HttpRequestConfig
+        config?: HttpRequestConfig,
     ): Promise<HttpResponse<TResponse>>;
 
     /**
@@ -160,7 +160,7 @@ export interface HttpClient {
     put<TResponse, TBody = unknown, _TError = unknown>(
         url: string,
         body?: TBody,
-        config?: HttpRequestConfig
+        config?: HttpRequestConfig,
     ): Promise<HttpResponse<TResponse>>;
 
     /**
@@ -191,7 +191,7 @@ export interface HttpClient {
     patch<TResponse, TBody = unknown, _TError = unknown>(
         url: string,
         body?: TBody,
-        config?: HttpRequestConfig
+        config?: HttpRequestConfig,
     ): Promise<HttpResponse<TResponse>>;
 
     /**
@@ -220,7 +220,7 @@ export interface HttpClient {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     delete<TResponse = void, _TError = unknown>(
         url: string,
-        config?: HttpRequestConfig
+        config?: HttpRequestConfig,
     ): Promise<HttpResponse<TResponse>>;
 
     /**
@@ -241,10 +241,7 @@ export interface HttpClient {
      * ```
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    head<_TError = unknown>(
-        url: string,
-        config?: HttpRequestConfig
-    ): Promise<HttpResponse<void>>;
+    head<_TError = unknown>(url: string, config?: HttpRequestConfig): Promise<HttpResponse<void>>;
 
     /**
      * Perform an OPTIONS request to discover allowed methods.
@@ -266,7 +263,7 @@ export interface HttpClient {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     options<_TError = unknown>(
         url: string,
-        config?: HttpRequestConfig
+        config?: HttpRequestConfig,
     ): Promise<HttpResponse<void>>;
 
     /**
@@ -299,7 +296,7 @@ export interface HttpClient {
      */
     addRequestInterceptor(
         onFulfilled: RequestOnFulfilled,
-        onRejected?: RequestOnRejected
+        onRejected?: RequestOnRejected,
     ): InterceptorHandle;
 
     /**
@@ -333,7 +330,7 @@ export interface HttpClient {
      */
     addResponseInterceptor(
         onFulfilled: ResponseOnFulfilled,
-        onRejected?: ResponseOnRejected
+        onRejected?: ResponseOnRejected,
     ): InterceptorHandle;
 
     /**
