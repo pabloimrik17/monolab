@@ -39,8 +39,15 @@ export type HttpMethod =
 export type HttpHeaders = Record<string, string | string[]>;
 
 /**
- * Common HTTP status codes categorized by type.
+ * HTTP status codes.
  *
+ * Represents any valid HTTP status code (100-599).
+ * Using `number` instead of literal union allows for:
+ * - Custom/non-standard status codes from servers
+ * - Better compatibility with HTTP libraries
+ * - Runtime flexibility without type casting
+ *
+ * Common ranges:
  * - Informational (100-199): Request received, continuing process
  * - Success (200-299): The action was successfully received, understood, and accepted
  * - Redirection (300-399): Further action must be taken to complete the request
@@ -49,124 +56,25 @@ export type HttpHeaders = Record<string, string | string[]>;
  *
  * @public
  */
-export type HttpStatusCode =
-    // Informational (100-199)
-    | 100 // Continue
-    | 101 // Switching Protocols
-    | 102 // Processing
-    | 103 // Early Hints
-    // Success (200-299)
-    | 200 // OK
-    | 201 // Created
-    | 202 // Accepted
-    | 203 // Non-Authoritative Information
-    | 204 // No Content
-    | 205 // Reset Content
-    | 206 // Partial Content
-    | 207 // Multi-Status
-    | 208 // Already Reported
-    | 226 // IM Used
-    // Redirection (300-399)
-    | 300 // Multiple Choices
-    | 301 // Moved Permanently
-    | 302 // Found
-    | 303 // See Other
-    | 304 // Not Modified
-    | 305 // Use Proxy
-    | 307 // Temporary Redirect
-    | 308 // Permanent Redirect
-    // Client Error (400-499)
-    | 400 // Bad Request
-    | 401 // Unauthorized
-    | 402 // Payment Required
-    | 403 // Forbidden
-    | 404 // Not Found
-    | 405 // Method Not Allowed
-    | 406 // Not Acceptable
-    | 407 // Proxy Authentication Required
-    | 408 // Request Timeout
-    | 409 // Conflict
-    | 410 // Gone
-    | 411 // Length Required
-    | 412 // Precondition Failed
-    | 413 // Payload Too Large
-    | 414 // URI Too Long
-    | 415 // Unsupported Media Type
-    | 416 // Range Not Satisfiable
-    | 417 // Expectation Failed
-    | 418 // I'm a teapot
-    | 421 // Misdirected Request
-    | 422 // Unprocessable Entity
-    | 423 // Locked
-    | 424 // Failed Dependency
-    | 425 // Too Early
-    | 426 // Upgrade Required
-    | 428 // Precondition Required
-    | 429 // Too Many Requests
-    | 431 // Request Header Fields Too Large
-    | 451 // Unavailable For Legal Reasons
-    // Server Error (500-599)
-    | 500 // Internal Server Error
-    | 501 // Not Implemented
-    | 502 // Bad Gateway
-    | 503 // Service Unavailable
-    | 504 // Gateway Timeout
-    | 505 // HTTP Version Not Supported
-    | 506 // Variant Also Negotiates
-    | 507 // Insufficient Storage
-    | 508 // Loop Detected
-    | 510 // Not Extended
-    | 511; // Network Authentication Required
+export type HttpStatusCode = number;
 
 /**
  * HTTP error status codes (4xx and 5xx).
  * Used for error responses in {@link HttpResponseError}.
  *
+ * Represents any HTTP error status code, typically in the 400-599 range.
+ * Using `number` instead of literal union allows for:
+ * - Custom/non-standard error codes from servers
+ * - Better compatibility with HTTP libraries
+ * - Runtime flexibility without type casting
+ *
+ * Common ranges:
+ * - Client Error (400-499): The request contains bad syntax or cannot be fulfilled
+ * - Server Error (500-599): The server failed to fulfill a valid request
+ *
  * @public
  */
-export type HttpErrorStatusCode =
-    // Client Error (400-499)
-    | 400 // Bad Request
-    | 401 // Unauthorized
-    | 402 // Payment Required
-    | 403 // Forbidden
-    | 404 // Not Found
-    | 405 // Method Not Allowed
-    | 406 // Not Acceptable
-    | 407 // Proxy Authentication Required
-    | 408 // Request Timeout
-    | 409 // Conflict
-    | 410 // Gone
-    | 411 // Length Required
-    | 412 // Precondition Failed
-    | 413 // Payload Too Large
-    | 414 // URI Too Long
-    | 415 // Unsupported Media Type
-    | 416 // Range Not Satisfiable
-    | 417 // Expectation Failed
-    | 418 // I'm a teapot
-    | 421 // Misdirected Request
-    | 422 // Unprocessable Entity
-    | 423 // Locked
-    | 424 // Failed Dependency
-    | 425 // Too Early
-    | 426 // Upgrade Required
-    | 428 // Precondition Required
-    | 429 // Too Many Requests
-    | 431 // Request Header Fields Too Large
-    | 451 // Unavailable For Legal Reasons
-    // Server Error (500-599)
-    | 500 // Internal Server Error
-    | 501 // Not Implemented
-    | 502 // Bad Gateway
-    | 503 // Service Unavailable
-    | 504 // Gateway Timeout
-    | 505 // HTTP Version Not Supported
-    | 506 // Variant Also Negotiates
-    | 507 // Insufficient Storage
-    | 508 // Loop Detected
-    | 510 // Not Extended
-    | 511; // Network Authentication Required
+export type HttpErrorStatusCode = number;
 
 /**
  * Expected response type format.

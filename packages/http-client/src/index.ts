@@ -96,3 +96,20 @@ export type {
     HttpClientOptions,
     HttpInterceptors,
 } from "./contracts/factory.js";
+
+// Axios adapter
+export { createAxiosHttpClient } from "./axios/adapter.js";
+export type { AxiosHttpClientOptions } from "./axios/adapter.js";
+
+// Axios factory
+export { createHttpClientFactory } from "./axios/factory.js";
+
+// Axios deduplication
+export {
+    DeduplicationManager,
+    generateDeduplicationKey,
+    setupDeduplication,
+} from "./axios/deduplication.js";
+
+// Axios cache
+export { CacheManager, generateCacheKey, setupCache } from "./axios/cache.js";

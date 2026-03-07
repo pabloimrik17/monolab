@@ -1,0 +1,159 @@
+import type { AxiosError } from "axios";
+import {
+    HttpAbortError,
+    HttpBadRequestError,
+    HttpConflictError,
+    HttpError,
+    HttpForbiddenError,
+    HttpInternalServerError,
+    HttpNetworkError,
+    HttpNotFoundError,
+    HttpResponseError,
+    HttpServiceUnavailableError,
+    HttpTimeoutError,
+    HttpTooManyRequestsError,
+    HttpUnauthorizedError,
+    HttpUnprocessableEntityError,
+} from "../contracts/errors.js";
+import type { HttpRequestConfig } from "../contracts/request.js";
+import { normalizeHeaders } from "./headers.js";
+
+/**
+ * Type guard to check if an error is an AxiosError.
+ *
+ * @param error - The error to check
+ * @returns True if the error is an AxiosError
+ */
+function isAxiosError(error: unknown): error is AxiosError {
+    return (
+        error !== null &&
+        typeof error === "object" &&
+        "isAxiosError" in error &&
+        error.isAxiosError === true
+    );
+}
+
+/**
+ * Transform an AxiosError into contract-compliant HTTP error classes.
+ *
+ * @param error - The error to transform (validated as AxiosError)
+ * @param config - The original request configuration
+ * @returns Transformed HttpError subclass
+ */
+export function transformAxiosError(
+    error: unknown,
+    config: HttpRequestConfig
+): HttpError {
+    // Validate that it's an AxiosError
+    if (!isAxiosError(error)) {
+        // Fallback for non-Axios errors
+        const message =
+            error instanceof Error ? error.message : "Unknown error";
+        return new HttpNetworkError(message, "UNKNOWN", config);
+    }
+    // Timeout errors
+    if (
+        error.code === "ECONNABORTED" &&
+        error.message.toLowerCase().includes("timeout")
+    ) {
+        return new HttpTimeoutError(error.message, config);
+    }
+
+    // Abort/cancel errors
+    if (error.code === "ERR_CANCELED") {
+        return new HttpAbortError("Request aborted", config);
+    }
+
+    // Response errors (4xx, 5xx)
+    if (error.response) {
+        const { status, statusText, data, headers } = error.response;
+        const normalizedHeaders = normalizeHeaders(headers);
+
+        switch (status) {
+            case 400:
+                return new HttpBadRequestError(
+                    error.message,
+                    statusText,
+                    data,
+                    normalizedHeaders,
+                    config
+                );
+            case 401:
+                return new HttpUnauthorizedError(
+                    error.message,
+                    statusText,
+                    data,
+                    normalizedHeaders,
+                    config
+                );
+            case 403:
+                return new HttpForbiddenError(
+                    error.message,
+                    statusText,
+                    data,
+                    normalizedHeaders,
+                    config
+                );
+            case 404:
+                return new HttpNotFoundError(
+                    error.message,
+                    statusText,
+                    data,
+                    normalizedHeaders,
+                    config
+                );
+            case 409:
+                return new HttpConflictError(
+                    error.message,
+                    statusText,
+                    data,
+                    normalizedHeaders,
+                    config
+                );
+            case 422:
+                return new HttpUnprocessableEntityError(
+                    error.message,
+                    statusText,
+                    data,
+                    normalizedHeaders,
+                    config
+                );
+            case 429:
+                return new HttpTooManyRequestsError(
+                    error.message,
+                    statusText,
+                    data,
+                    normalizedHeaders,
+                    config
+                );
+            case 500:
+                return new HttpInternalServerError(
+                    error.message,
+                    statusText,
+                    data,
+                    normalizedHeaders,
+                    config
+                );
+            case 503:
+                return new HttpServiceUnavailableError(
+                    error.message,
+                    statusText,
+                    data,
+                    normalizedHeaders,
+                    config
+                );
+            default:
+                return new HttpResponseError(
+                    error.message,
+                    status,
+                    statusText,
+                    data,
+                    normalizedHeaders,
+                    config
+                );
+        }
+    }
+
+    // Network errors (no response received)
+    return new HttpNetworkError(error.message, error.code || "UNKNOWN", config);
+}

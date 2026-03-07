@@ -167,6 +167,7 @@ export type HttpCacheInvalidationPattern = (
  * @example
  * ```ts
  * const cacheConfig: HttpCacheConfig = {
+ *   enabled: true,
  *   cache: new MemoryCache(),
  *   ttl: 60000, // 1 minute default TTL
  *   respectCacheHeaders: true,
@@ -183,6 +184,18 @@ export type HttpCacheInvalidationPattern = (
  * ```
  */
 export interface HttpCacheConfig {
+    /**
+     * Whether caching is enabled for this request.
+     * Allows opt-out of caching on a per-request basis.
+     *
+     * @defaultValue true
+     * @example
+     * ```ts
+     * enabled: false // Disable cache for this request
+     * ```
+     */
+    readonly enabled?: boolean;
+
     /**
      * The cache implementation to use.
      * If not provided, caching is disabled.
