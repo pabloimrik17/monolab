@@ -25,6 +25,8 @@
     "dependencies": {
         "@m0n0lab/qup-domain": "workspace:*",
         "drizzle-orm": "0.44.2",
+        "inversify": "7.11.0",
+        "neverthrow": "8.2.0",
         "pg": "8.16.0"
     },
     "devDependencies": {
