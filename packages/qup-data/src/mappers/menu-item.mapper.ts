@@ -1,5 +1,4 @@
 import { Category, MenuItem } from "@m0n0lab/qup-domain";
-
 import type { menuItems } from "../schema/menu-items.ts";
 
 type MenuItemRow = typeof menuItems.$inferSelect;

@@ -1,14 +1,13 @@
-import type { OrderRepository } from "@m0n0lab/qup-domain";
-import { PersistenceError, type Order } from "@m0n0lab/qup-domain";
 import { eq, inArray } from "drizzle-orm";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { inject, injectable } from "inversify";
 import { ResultAsync } from "neverthrow";
-
+import { PersistenceError, type Order } from "@m0n0lab/qup-domain";
 import { orderItemToRow, orderToDomain, orderToRow } from "../mappers/order.mapper.ts";
 import { orderItems } from "../schema/order-items.ts";
 import { orders } from "../schema/orders.ts";
 import { DATA_TOKENS } from "../tokens.ts";
+import type { OrderRepository } from "@m0n0lab/qup-domain";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 @injectable()
 export class PgOrderRepository implements OrderRepository {
@@ -17,10 +16,7 @@ export class PgOrderRepository implements OrderRepository {
     save(order: Order): ResultAsync<Order, PersistenceError> {
         return ResultAsync.fromPromise(
             this.db.transaction(async (tx) => {
-                const [orderRow] = await tx
-                    .insert(orders)
-                    .values(orderToRow(order))
-                    .returning();
+                const [orderRow] = await tx.insert(orders).values(orderToRow(order)).returning();
 
                 const itemRows = order.items.map((item) => orderItemToRow(order.id, item));
                 const insertedItems =
@@ -37,10 +33,7 @@ export class PgOrderRepository implements OrderRepository {
     findById(id: string): ResultAsync<Order | null, PersistenceError> {
         return ResultAsync.fromPromise(
             (async () => {
-                const rows = await this.db
-                    .select()
-                    .from(orders)
-                    .where(eq(orders.id, id));
+                const rows = await this.db.select().from(orders).where(eq(orders.id, id));
 
                 if (rows.length === 0) return null;
 
@@ -78,9 +71,7 @@ export class PgOrderRepository implements OrderRepository {
                     itemsByOrderId.set(item.orderId, list);
                 }
 
-                return orderRows.map((row) =>
-                    orderToDomain(row, itemsByOrderId.get(row.id) ?? []),
-                );
+                return orderRows.map((row) => orderToDomain(row, itemsByOrderId.get(row.id) ?? []));
             })(),
             (e) => new PersistenceError(e),
         );

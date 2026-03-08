@@ -1,5 +1,4 @@
 import { integer, pgTable, text, uuid, varchar } from "drizzle-orm/pg-core";
-
 import { menuItems } from "./menu-items.ts";
 import { orders } from "./orders.ts";
 

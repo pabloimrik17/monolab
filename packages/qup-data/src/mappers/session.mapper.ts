@@ -1,5 +1,4 @@
 import { Session, SessionCode, SessionStatus } from "@m0n0lab/qup-domain";
-
 import type { sessions } from "../schema/sessions.ts";
 
 type SessionRow = typeof sessions.$inferSelect;
