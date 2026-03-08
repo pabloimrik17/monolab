@@ -1,15 +1,10 @@
 import { inject, injectable } from "inversify";
 import { type ResultAsync, errAsync } from "neverthrow";
-
-import type {
-    OrderNotCancellableError,
-    OrderNotFoundError,
-    PersistenceError,
-} from "../errors.ts";
 import { OrderNotFoundError as OrderNotFoundErrorClass } from "../errors.ts";
+import { TOKENS } from "../tokens.ts";
+import type { OrderNotCancellableError, OrderNotFoundError, PersistenceError } from "../errors.ts";
 import type { EventBus } from "../ports/event-bus.ts";
 import type { OrderRepository } from "../ports/order.repository.ts";
-import { TOKENS } from "../tokens.ts";
 
 @injectable()
 export class CancelOrderUseCase {

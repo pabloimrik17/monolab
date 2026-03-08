@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-
 import { SessionCode } from "./session-code.ts";
 
 describe("SessionCode", () => {

@@ -1,11 +1,10 @@
 import { okAsync } from "neverthrow";
 import { describe, expect, it, vi } from "vitest";
-
 import { Order } from "../entities/order.ts";
-import type { OrderRepository } from "../ports/order.repository.ts";
 import { OrderItem } from "../value-objects/order-item.ts";
 import { OrderStatus } from "../value-objects/order-status.ts";
 import { GetSessionOrdersUseCase } from "./get-session-orders.use-case.ts";
+import type { OrderRepository } from "../ports/order.repository.ts";
 
 describe("GetSessionOrdersUseCase", () => {
     it("returns orders for session", async () => {

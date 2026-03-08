@@ -1,5 +1,4 @@
 import { ContainerModule } from "inversify";
-
 import { TOKENS } from "./tokens.ts";
 import { CancelOrderUseCase } from "./use-cases/cancel-order.use-case.ts";
 import { CloseSessionUseCase } from "./use-cases/close-session.use-case.ts";

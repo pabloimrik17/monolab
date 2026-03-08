@@ -1,5 +1,4 @@
 import { err, ok, type Result } from "neverthrow";
-
 import { InvalidCodeError } from "../errors.ts";
 
 const CODE_PATTERN = /^[A-Z0-9]{6}$/;

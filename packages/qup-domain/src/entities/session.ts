@@ -1,5 +1,4 @@
 import { err, ok, type Result } from "neverthrow";
-
 import { SessionAlreadyClosedError, ValidationError } from "../errors.ts";
 import { SessionCode } from "../value-objects/session-code.ts";
 import { SessionStatus } from "../value-objects/session-status.ts";

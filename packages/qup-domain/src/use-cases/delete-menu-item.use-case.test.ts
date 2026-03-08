@@ -1,10 +1,9 @@
 import { okAsync } from "neverthrow";
 import { describe, expect, it, vi } from "vitest";
-
 import { MenuItem } from "../entities/menu-item.ts";
-import type { MenuItemRepository } from "../ports/menu-item.repository.ts";
 import { Category } from "../value-objects/category.ts";
 import { DeleteMenuItemUseCase } from "./delete-menu-item.use-case.ts";
+import type { MenuItemRepository } from "../ports/menu-item.repository.ts";
 
 describe("DeleteMenuItemUseCase", () => {
     it("deletes an existing menu item", async () => {

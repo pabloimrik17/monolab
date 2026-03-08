@@ -1,5 +1,4 @@
 import { err, ok, type Result } from "neverthrow";
-
 import {
     EmptyOrderError,
     InvalidTransitionError,

@@ -1,12 +1,11 @@
 import { okAsync } from "neverthrow";
 import { describe, expect, it, vi } from "vitest";
-
 import { Order } from "../entities/order.ts";
-import type { EventBus } from "../ports/event-bus.ts";
-import type { OrderRepository } from "../ports/order.repository.ts";
 import { OrderItem } from "../value-objects/order-item.ts";
 import { OrderStatus } from "../value-objects/order-status.ts";
 import { UpdateOrderStatusUseCase } from "./update-order-status.use-case.ts";
+import type { EventBus } from "../ports/event-bus.ts";
+import type { OrderRepository } from "../ports/order.repository.ts";
 
 const makeOrder = (status: OrderStatus = OrderStatus.PENDING) =>
     Order.reconstitute({

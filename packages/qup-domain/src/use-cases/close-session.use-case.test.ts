@@ -1,10 +1,9 @@
 import { okAsync } from "neverthrow";
 import { describe, expect, it, vi } from "vitest";
-
 import { Session } from "../entities/session.ts";
+import { CloseSessionUseCase } from "./close-session.use-case.ts";
 import type { EventBus } from "../ports/event-bus.ts";
 import type { SessionRepository } from "../ports/session.repository.ts";
-import { CloseSessionUseCase } from "./close-session.use-case.ts";
 
 const createMocks = () => {
     const session = Session.create({ name: "Test" });

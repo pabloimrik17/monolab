@@ -1,7 +1,14 @@
 import { inject, injectable } from "inversify";
 import { type ResultAsync, errAsync } from "neverthrow";
-
 import { Order } from "../entities/order.ts";
+import {
+    MenuItemNotAvailableError as MenuItemNotAvailableErrorClass,
+    MenuItemNotFoundError as MenuItemNotFoundErrorClass,
+    SessionClosedError as SessionClosedErrorClass,
+    SessionNotFoundError as SessionNotFoundErrorClass,
+} from "../errors.ts";
+import { TOKENS } from "../tokens.ts";
+import { OrderItem } from "../value-objects/order-item.ts";
 import type {
     EmptyOrderError,
     MenuItemNotAvailableError,
@@ -11,18 +18,10 @@ import type {
     SessionNotFoundError,
     ValidationError,
 } from "../errors.ts";
-import {
-    MenuItemNotAvailableError as MenuItemNotAvailableErrorClass,
-    MenuItemNotFoundError as MenuItemNotFoundErrorClass,
-    SessionClosedError as SessionClosedErrorClass,
-    SessionNotFoundError as SessionNotFoundErrorClass,
-} from "../errors.ts";
 import type { EventBus } from "../ports/event-bus.ts";
 import type { MenuItemRepository } from "../ports/menu-item.repository.ts";
 import type { OrderRepository } from "../ports/order.repository.ts";
 import type { SessionRepository } from "../ports/session.repository.ts";
-import { TOKENS } from "../tokens.ts";
-import { OrderItem } from "../value-objects/order-item.ts";
 
 export interface CreateOrderInput {
     sessionId: string;
@@ -69,9 +68,7 @@ export class CreateOrderUseCase {
                         return errAsync(new MenuItemNotFoundErrorClass(itemInput.menuItemId));
                     }
                     if (!menuItem.available) {
-                        return errAsync(
-                            new MenuItemNotAvailableErrorClass(itemInput.menuItemId),
-                        );
+                        return errAsync(new MenuItemNotAvailableErrorClass(itemInput.menuItemId));
                     }
                     orderItems.push(
                         OrderItem.create({

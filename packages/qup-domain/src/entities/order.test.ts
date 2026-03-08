@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-
 import { OrderItem } from "../value-objects/order-item.ts";
 import { OrderStatus } from "../value-objects/order-status.ts";
 import { Order } from "./order.ts";
 
-const makeItem = (overrides?: Partial<{ menuItemId: string; menuItemName: string; quantity: number }>) =>
+const makeItem = (
+    overrides?: Partial<{ menuItemId: string; menuItemName: string; quantity: number }>,
+) =>
     OrderItem.create({
         menuItemId: overrides?.menuItemId ?? "item-1",
         menuItemName: overrides?.menuItemName ?? "Espresso",

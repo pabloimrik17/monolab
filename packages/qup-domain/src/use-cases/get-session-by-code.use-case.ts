@@ -1,12 +1,11 @@
 import { inject, injectable } from "inversify";
 import { type ResultAsync, errAsync, okAsync } from "neverthrow";
-
-import type { Session } from "../entities/session.ts";
-import type { InvalidCodeError, PersistenceError, SessionNotFoundError } from "../errors.ts";
 import { SessionNotFoundError as SessionNotFoundErrorClass } from "../errors.ts";
-import type { SessionRepository } from "../ports/session.repository.ts";
 import { TOKENS } from "../tokens.ts";
 import { SessionCode } from "../value-objects/session-code.ts";
+import type { Session } from "../entities/session.ts";
+import type { InvalidCodeError, PersistenceError, SessionNotFoundError } from "../errors.ts";
+import type { SessionRepository } from "../ports/session.repository.ts";
 
 @injectable()
 export class GetSessionByCodeUseCase {

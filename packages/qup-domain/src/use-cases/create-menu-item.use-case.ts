@@ -1,10 +1,9 @@
 import { inject, injectable } from "inversify";
 import { type ResultAsync, errAsync } from "neverthrow";
-
 import { MenuItem } from "../entities/menu-item.ts";
+import { TOKENS } from "../tokens.ts";
 import type { PersistenceError, ValidationError } from "../errors.ts";
 import type { MenuItemRepository } from "../ports/menu-item.repository.ts";
-import { TOKENS } from "../tokens.ts";
 import type { Category } from "../value-objects/category.ts";
 
 @injectable()

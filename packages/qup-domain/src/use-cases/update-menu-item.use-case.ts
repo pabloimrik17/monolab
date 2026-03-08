@@ -1,14 +1,9 @@
 import { inject, injectable } from "inversify";
 import { type ResultAsync, errAsync } from "neverthrow";
-
-import type {
-    MenuItemNotFoundError,
-    PersistenceError,
-    ValidationError,
-} from "../errors.ts";
 import { MenuItemNotFoundError as MenuItemNotFoundErrorClass } from "../errors.ts";
-import type { MenuItemRepository } from "../ports/menu-item.repository.ts";
 import { TOKENS } from "../tokens.ts";
+import type { MenuItemNotFoundError, PersistenceError, ValidationError } from "../errors.ts";
+import type { MenuItemRepository } from "../ports/menu-item.repository.ts";
 import type { Category } from "../value-objects/category.ts";
 
 @injectable()

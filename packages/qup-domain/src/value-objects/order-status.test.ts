@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-
 import { OrderStatus } from "./order-status.ts";
 
 describe("OrderStatus", () => {

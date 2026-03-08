@@ -1,10 +1,9 @@
 import { okAsync } from "neverthrow";
 import { describe, expect, it, vi } from "vitest";
-
+import { CreateSessionUseCase } from "./create-session.use-case.ts";
 import type { Session } from "../entities/session.ts";
 import type { EventBus } from "../ports/event-bus.ts";
 import type { SessionRepository } from "../ports/session.repository.ts";
-import { CreateSessionUseCase } from "./create-session.use-case.ts";
 
 const mockSessionRepo: SessionRepository = {
     save: vi.fn((session: Session) => okAsync(session)),

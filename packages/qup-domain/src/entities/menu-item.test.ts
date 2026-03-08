@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-
 import { Category } from "../value-objects/category.ts";
 import { MenuItem } from "./menu-item.ts";
 

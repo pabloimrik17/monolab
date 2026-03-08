@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-
 import { SessionCode } from "../value-objects/session-code.ts";
 import { SessionStatus } from "../value-objects/session-status.ts";
 import { Session } from "./session.ts";

@@ -1,7 +1,6 @@
-import type { ResultAsync } from "neverthrow";
-
 import type { MenuItem } from "../entities/menu-item.ts";
 import type { PersistenceError } from "../errors.ts";
+import type { ResultAsync } from "neverthrow";
 
 export interface MenuItemRepository {
     save(menuItem: MenuItem): ResultAsync<MenuItem, PersistenceError>;

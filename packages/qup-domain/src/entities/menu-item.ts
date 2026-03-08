@@ -1,5 +1,4 @@
 import { err, ok, type Result } from "neverthrow";
-
 import { ValidationError } from "../errors.ts";
 import { Category } from "../value-objects/category.ts";
 

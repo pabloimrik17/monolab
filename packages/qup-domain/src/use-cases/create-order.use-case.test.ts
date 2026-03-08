@@ -1,15 +1,14 @@
 import { okAsync } from "neverthrow";
 import { describe, expect, it, vi } from "vitest";
-
 import { MenuItem } from "../entities/menu-item.ts";
-import type { Order } from "../entities/order.ts";
 import { Session } from "../entities/session.ts";
+import { Category } from "../value-objects/category.ts";
+import { CreateOrderUseCase } from "./create-order.use-case.ts";
+import type { Order } from "../entities/order.ts";
 import type { EventBus } from "../ports/event-bus.ts";
 import type { MenuItemRepository } from "../ports/menu-item.repository.ts";
 import type { OrderRepository } from "../ports/order.repository.ts";
 import type { SessionRepository } from "../ports/session.repository.ts";
-import { Category } from "../value-objects/category.ts";
-import { CreateOrderUseCase } from "./create-order.use-case.ts";
 
 const createMocks = () => {
     const session = Session.create({ name: "Test" });
@@ -62,9 +61,21 @@ const createMocks = () => {
 
 describe("CreateOrderUseCase", () => {
     it("creates an order for open session with available items", async () => {
-        const { session, menuItem, mockSessionRepo, mockOrderRepo, mockMenuItemRepo, mockEventBus } = createMocks();
+        const {
+            session,
+            menuItem,
+            mockSessionRepo,
+            mockOrderRepo,
+            mockMenuItemRepo,
+            mockEventBus,
+        } = createMocks();
 
-        const useCase = new CreateOrderUseCase(mockSessionRepo, mockOrderRepo, mockMenuItemRepo, mockEventBus);
+        const useCase = new CreateOrderUseCase(
+            mockSessionRepo,
+            mockOrderRepo,
+            mockMenuItemRepo,
+            mockEventBus,
+        );
         const result = await useCase.execute({
             sessionId: session.id,
             guestName: "Alice",
@@ -75,9 +86,12 @@ describe("CreateOrderUseCase", () => {
         if (result.isOk()) {
             expect(result.value.guestName).toBe("Alice");
             expect(result.value.items).toHaveLength(1);
-            expect(mockEventBus.emit).toHaveBeenCalledWith("order:created", expect.objectContaining({
-                orderId: result.value.id,
-            }));
+            expect(mockEventBus.emit).toHaveBeenCalledWith(
+                "order:created",
+                expect.objectContaining({
+                    orderId: result.value.id,
+                }),
+            );
         }
     });
 
@@ -91,7 +105,12 @@ describe("CreateOrderUseCase", () => {
             updateStatus: vi.fn(),
         };
 
-        const useCase = new CreateOrderUseCase(mockSessionRepo, mockOrderRepo, mockMenuItemRepo, mockEventBus);
+        const useCase = new CreateOrderUseCase(
+            mockSessionRepo,
+            mockOrderRepo,
+            mockMenuItemRepo,
+            mockEventBus,
+        );
         const result = await useCase.execute({
             sessionId: "unknown",
             guestName: "Alice",
@@ -115,7 +134,12 @@ describe("CreateOrderUseCase", () => {
             updateStatus: vi.fn(),
         };
 
-        const useCase = new CreateOrderUseCase(mockSessionRepo, mockOrderRepo, mockMenuItemRepo, mockEventBus);
+        const useCase = new CreateOrderUseCase(
+            mockSessionRepo,
+            mockOrderRepo,
+            mockMenuItemRepo,
+            mockEventBus,
+        );
         const result = await useCase.execute({
             sessionId: session.id,
             guestName: "Alice",
@@ -140,7 +164,12 @@ describe("CreateOrderUseCase", () => {
             delete: vi.fn(),
         };
 
-        const useCase = new CreateOrderUseCase(mockSessionRepo, mockOrderRepo, mockMenuItemRepo, mockEventBus);
+        const useCase = new CreateOrderUseCase(
+            mockSessionRepo,
+            mockOrderRepo,
+            mockMenuItemRepo,
+            mockEventBus,
+        );
         const result = await useCase.execute({
             sessionId: session.id,
             guestName: "Alice",
@@ -174,7 +203,12 @@ describe("CreateOrderUseCase", () => {
             delete: vi.fn(),
         };
 
-        const useCase = new CreateOrderUseCase(mockSessionRepo, mockOrderRepo, mockMenuItemRepo, mockEventBus);
+        const useCase = new CreateOrderUseCase(
+            mockSessionRepo,
+            mockOrderRepo,
+            mockMenuItemRepo,
+            mockEventBus,
+        );
         const result = await useCase.execute({
             sessionId: session.id,
             guestName: "Alice",

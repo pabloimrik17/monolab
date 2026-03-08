@@ -1,10 +1,9 @@
 import { inject, injectable } from "inversify";
-import type { ResultAsync } from "neverthrow";
-
+import { TOKENS } from "../tokens.ts";
 import type { MenuItem } from "../entities/menu-item.ts";
 import type { PersistenceError } from "../errors.ts";
 import type { MenuItemRepository } from "../ports/menu-item.repository.ts";
-import { TOKENS } from "../tokens.ts";
+import type { ResultAsync } from "neverthrow";
 
 @injectable()
 export class GetMenuUseCase {

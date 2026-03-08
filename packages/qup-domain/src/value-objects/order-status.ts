@@ -1,5 +1,4 @@
 import { err, ok, type Result } from "neverthrow";
-
 import { InvalidTransitionError } from "../errors.ts";
 
 const VALID_TRANSITIONS: ReadonlyMap<string, ReadonlySet<string>> = new Map([

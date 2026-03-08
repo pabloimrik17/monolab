@@ -1,9 +1,8 @@
 import { okAsync } from "neverthrow";
 import { describe, expect, it, vi } from "vitest";
-
 import { Session } from "../entities/session.ts";
-import type { SessionRepository } from "../ports/session.repository.ts";
 import { GetSessionByCodeUseCase } from "./get-session-by-code.use-case.ts";
+import type { SessionRepository } from "../ports/session.repository.ts";
 
 describe("GetSessionByCodeUseCase", () => {
     it("returns session for valid code", async () => {

@@ -1,15 +1,14 @@
 import { inject, injectable } from "inversify";
 import { type ResultAsync, errAsync } from "neverthrow";
-
+import { SessionNotFoundError as SessionNotFoundErrorClass } from "../errors.ts";
+import { TOKENS } from "../tokens.ts";
 import type {
     PersistenceError,
     SessionAlreadyClosedError,
     SessionNotFoundError,
 } from "../errors.ts";
-import { SessionNotFoundError as SessionNotFoundErrorClass } from "../errors.ts";
 import type { EventBus } from "../ports/event-bus.ts";
 import type { SessionRepository } from "../ports/session.repository.ts";
-import { TOKENS } from "../tokens.ts";
 
 @injectable()
 export class CloseSessionUseCase {

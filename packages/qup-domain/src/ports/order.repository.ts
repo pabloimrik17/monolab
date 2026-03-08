@@ -1,7 +1,6 @@
-import type { ResultAsync } from "neverthrow";
-
 import type { Order } from "../entities/order.ts";
 import type { PersistenceError } from "../errors.ts";
+import type { ResultAsync } from "neverthrow";
 
 export interface OrderRepository {
     save(order: Order): ResultAsync<Order, PersistenceError>;
