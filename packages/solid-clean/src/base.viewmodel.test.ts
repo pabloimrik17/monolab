@@ -1,7 +1,6 @@
-import type { Owner } from "solid-js";
 import { describe, expect, it, vi } from "vitest";
-
 import { BaseViewModel } from "./base.viewmodel.ts";
+import type { Owner } from "solid-js";
 
 class TestViewModel extends BaseViewModel {}
 

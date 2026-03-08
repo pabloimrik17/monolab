@@ -1,9 +1,8 @@
-import type { Owner } from "solid-js";
 import { createRoot } from "solid-js";
 import { describe, expect, it, vi } from "vitest";
-
 import { BaseViewModel } from "./base.viewmodel.ts";
 import { useViewModel } from "./use-view-model.hook.ts";
+import type { Owner } from "solid-js";
 
 class TestViewModel extends BaseViewModel {
     mountedOwner: Owner | undefined;
