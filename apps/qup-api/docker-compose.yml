@@ -1,0 +1,33 @@
+services:
+    postgres:
+        image: postgres:17-alpine
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_USER: qup
+            POSTGRES_PASSWORD: qup
+            POSTGRES_DB: qup
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U qup"]
+            interval: 5s
+            timeout: 3s
+            retries: 5
+
+    api:
+        build:
+            context: ../..
+            dockerfile: apps/qup-api/Dockerfile
+        ports:
+            - "3001:3001"
+        environment:
+            API_ADMIN_PIN: ${API_ADMIN_PIN:-change-me}
+            DATABASE_URL: postgres://qup:qup@postgres:5432/qup
+            PORT: "3001"
+        depends_on:
+            postgres:
+                condition: service_healthy
+
+volumes:
+    pgdata:
