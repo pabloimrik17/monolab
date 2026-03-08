@@ -13,12 +13,7 @@
         "jsxImportSource": "solid-js"
     },
     "include": ["src/**/*"],
-    "exclude": [
-        "**/*.test.ts",
-        "**/*.test.tsx",
-        "**/*.spec.ts",
-        "**/*.spec.tsx"
-    ],
+    "exclude": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
     "references": [
         {
             "path": "../../packages/qup-shared"
