@@ -11,6 +11,22 @@ The hookify skill SHALL exist at `claude-plugins/experiments/skills/hookify/SKIL
 
 ---
 
+### Requirement: Once per session
+
+The skill SHALL only execute its analysis once per session. If invoked again in the same session, it SHALL skip analysis and inform the user it already ran.
+
+#### Scenario: First invocation
+
+- **WHEN** the skill is invoked for the first time in a session
+- **THEN** it SHALL proceed with full analysis
+
+#### Scenario: Repeated invocation
+
+- **WHEN** the skill is invoked a second time in the same session
+- **THEN** it SHALL respond that it already ran this session and take no further action
+
+---
+
 ### Requirement: Read project instruction files
 
 The skill SHALL read CLAUDE.md and AGENTS.md from the project root (`$CLAUDE_PROJECT_DIR`).
