@@ -18,4 +18,4 @@
 
 - [ ] 3.1 Verify skill appears in `/experiments:hookify` after plugin reload
 - [ ] 3.2 Test against project CLAUDE.md (should report nothing — all managed sections)
-- [ ] 3.3 Test against `~/CLAUDE.md` bun rule (should propose hookifying it)
+- [ ] 3.3 Test against project-root CLAUDE.md with a hookifiable rule (should propose hookifying it)

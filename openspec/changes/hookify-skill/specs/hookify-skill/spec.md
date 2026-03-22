@@ -46,6 +46,11 @@ The skill SHALL read CLAUDE.md and AGENTS.md from the project root (`$CLAUDE_PRO
 - **WHEN** the skill is invoked and only CLAUDE.md exists
 - **THEN** only CLAUDE.md SHALL be analyzed without error
 
+#### Scenario: Only AGENTS.md exists
+
+- **WHEN** the skill is invoked and only AGENTS.md exists
+- **THEN** only AGENTS.md SHALL be analyzed without error
+
 #### Scenario: Neither file exists
 
 - **WHEN** the skill is invoked and neither file exists
