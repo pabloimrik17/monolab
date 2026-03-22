@@ -23,11 +23,7 @@
         },
         "memory": {
             "type": "local",
-            "command": [
-                "npx",
-                "-y",
-                "@modelcontextprotocol/server-memory@2026.1.26"
-            ],
+            "command": ["npx", "-y", "@modelcontextprotocol/server-memory@2026.1.26"],
             "enabled": true
         },
         "playwright": {
