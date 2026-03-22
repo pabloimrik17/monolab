@@ -1,8 +1,10 @@
 # Ignore markdown files in these directories
 openspec/
 .agent/
+.agents/
 .claude/
 .codex/
+.junie/
 .cursor/
 .opencode/
 node_modules/

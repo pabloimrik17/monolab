@@ -7,7 +7,9 @@
         "coverage",
         ".nx",
         "openspec",
+        ".agents",
         ".claude",
+        ".junie",
         ".opencode",
         "CHANGELOG.md",
         "reports"
