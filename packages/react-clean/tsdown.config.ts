@@ -6,12 +6,7 @@ export default defineConfig({
     format: ["esm"],
     outDir: "dist",
     // Prevent bundling peer deps; rely on consumer to provide them.
-    external: [
-        /^react($|\/)/,
-        /^inversify($|\/)/,
-        /^rxjs($|\/)/,
-        /^@m0n0lab\/react-hooks($|\/)/,
-    ],
+    external: [/^react($|\/)/, /^inversify($|\/)/, /^rxjs($|\/)/, /^@m0n0lab\/react-hooks($|\/)/],
     dts: {
         compilerOptions: {
             composite: false,

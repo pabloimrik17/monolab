@@ -23,11 +23,7 @@ describe("HttpRequestConfig readonly enforcement", () => {
             timeout: 5000,
         };
 
-        expectTypeOf(config)
-            .toHaveProperty("baseUrl")
-            .toMatchTypeOf<string | undefined>();
-        expectTypeOf(config)
-            .toHaveProperty("timeout")
-            .toMatchTypeOf<number | undefined>();
+        expectTypeOf(config).toHaveProperty("baseUrl").toMatchTypeOf<string | undefined>();
+        expectTypeOf(config).toHaveProperty("timeout").toMatchTypeOf<number | undefined>();
     });
 });

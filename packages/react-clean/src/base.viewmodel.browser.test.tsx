@@ -1,9 +1,9 @@
-import { useDidMount, useWillUnmount } from "@m0n0lab/react-hooks";
 import { render } from "@testing-library/react";
 import { Container, injectable } from "inversify";
 import { useState } from "react";
 import { BehaviorSubject } from "rxjs";
 import { expect, test } from "vitest";
+import { useDidMount, useWillUnmount } from "@m0n0lab/react-hooks";
 import { BaseViewModel } from "./base.viewmodel.ts";
 
 // Concrete ViewModel for testing

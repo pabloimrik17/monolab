@@ -8,8 +8,8 @@ A collection of React lifecycle hooks for functional components. Simplify your R
 
 ## Features
 
--   🚀 Production ready
--   📘 Well documented
+- 🚀 Production ready
+- 📘 Well documented
 
 ## Installation
 

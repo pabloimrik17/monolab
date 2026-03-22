@@ -115,11 +115,7 @@ export class HttpNetworkError extends HttpError {
      * @param code - Network error code
      * @param request - The original request configuration
      */
-    constructor(
-        message: string,
-        code: string,
-        request: Readonly<HttpRequestConfig>
-    ) {
+    constructor(message: string, code: string, request: Readonly<HttpRequestConfig>) {
         super(message, request);
         this.name = "HttpNetworkError";
         this.code = code;
@@ -195,7 +191,7 @@ export class HttpResponseError<T = unknown> extends HttpError {
         statusText: string,
         data: T,
         headers: HttpHeaders,
-        request: Readonly<HttpRequestConfig>
+        request: Readonly<HttpRequestConfig>,
     ) {
         super(message, request);
         this.name = "HttpResponseError";
@@ -233,7 +229,7 @@ export class HttpBadRequestError<T = unknown> extends HttpResponseError<T> {
         statusText: string,
         data: T,
         headers: HttpHeaders,
-        request: Readonly<HttpRequestConfig>
+        request: Readonly<HttpRequestConfig>,
     ) {
         super(message, 400, statusText, data, headers, request);
         this.name = "HttpBadRequestError";
@@ -267,7 +263,7 @@ export class HttpUnauthorizedError<T = unknown> extends HttpResponseError<T> {
         statusText: string,
         data: T,
         headers: HttpHeaders,
-        request: Readonly<HttpRequestConfig>
+        request: Readonly<HttpRequestConfig>,
     ) {
         super(message, 401, statusText, data, headers, request);
         this.name = "HttpUnauthorizedError";
@@ -301,7 +297,7 @@ export class HttpForbiddenError<T = unknown> extends HttpResponseError<T> {
         statusText: string,
         data: T,
         headers: HttpHeaders,
-        request: Readonly<HttpRequestConfig>
+        request: Readonly<HttpRequestConfig>,
     ) {
         super(message, 403, statusText, data, headers, request);
         this.name = "HttpForbiddenError";
@@ -335,7 +331,7 @@ export class HttpNotFoundError<T = unknown> extends HttpResponseError<T> {
         statusText: string,
         data: T,
         headers: HttpHeaders,
-        request: Readonly<HttpRequestConfig>
+        request: Readonly<HttpRequestConfig>,
     ) {
         super(message, 404, statusText, data, headers, request);
         this.name = "HttpNotFoundError";
@@ -369,7 +365,7 @@ export class HttpConflictError<T = unknown> extends HttpResponseError<T> {
         statusText: string,
         data: T,
         headers: HttpHeaders,
-        request: Readonly<HttpRequestConfig>
+        request: Readonly<HttpRequestConfig>,
     ) {
         super(message, 409, statusText, data, headers, request);
         this.name = "HttpConflictError";
@@ -394,9 +390,7 @@ export class HttpConflictError<T = unknown> extends HttpResponseError<T> {
  * }
  * ```
  */
-export class HttpUnprocessableEntityError<
-    T = unknown
-> extends HttpResponseError<T> {
+export class HttpUnprocessableEntityError<T = unknown> extends HttpResponseError<T> {
     override readonly name = "HttpUnprocessableEntityError" as const;
     override readonly status = 422 as const;
 
@@ -405,7 +399,7 @@ export class HttpUnprocessableEntityError<
         statusText: string,
         data: T,
         headers: HttpHeaders,
-        request: Readonly<HttpRequestConfig>
+        request: Readonly<HttpRequestConfig>,
     ) {
         super(message, 422, statusText, data, headers, request);
         this.name = "HttpUnprocessableEntityError";
@@ -431,9 +425,7 @@ export class HttpUnprocessableEntityError<
  * }
  * ```
  */
-export class HttpTooManyRequestsError<
-    T = unknown
-> extends HttpResponseError<T> {
+export class HttpTooManyRequestsError<T = unknown> extends HttpResponseError<T> {
     override readonly name = "HttpTooManyRequestsError" as const;
     override readonly status = 429 as const;
 
@@ -442,7 +434,7 @@ export class HttpTooManyRequestsError<
         statusText: string,
         data: T,
         headers: HttpHeaders,
-        request: Readonly<HttpRequestConfig>
+        request: Readonly<HttpRequestConfig>,
     ) {
         super(message, 429, statusText, data, headers, request);
         this.name = "HttpTooManyRequestsError";
@@ -476,7 +468,7 @@ export class HttpInternalServerError<T = unknown> extends HttpResponseError<T> {
         statusText: string,
         data: T,
         headers: HttpHeaders,
-        request: Readonly<HttpRequestConfig>
+        request: Readonly<HttpRequestConfig>,
     ) {
         super(message, 500, statusText, data, headers, request);
         this.name = "HttpInternalServerError";
@@ -502,9 +494,7 @@ export class HttpInternalServerError<T = unknown> extends HttpResponseError<T> {
  * }
  * ```
  */
-export class HttpServiceUnavailableError<
-    T = unknown
-> extends HttpResponseError<T> {
+export class HttpServiceUnavailableError<T = unknown> extends HttpResponseError<T> {
     override readonly name = "HttpServiceUnavailableError" as const;
     override readonly status = 503 as const;
 
@@ -513,7 +503,7 @@ export class HttpServiceUnavailableError<
         statusText: string,
         data: T,
         headers: HttpHeaders,
-        request: Readonly<HttpRequestConfig>
+        request: Readonly<HttpRequestConfig>,
     ) {
         super(message, 503, statusText, data, headers, request);
         this.name = "HttpServiceUnavailableError";
@@ -592,11 +582,7 @@ export class HttpAbortError extends HttpError {
      * @param request - The original request configuration
      * @param reason - Optional reason for cancellation
      */
-    constructor(
-        message: string,
-        request: Readonly<HttpRequestConfig>,
-        reason?: string
-    ) {
+    constructor(message: string, request: Readonly<HttpRequestConfig>, reason?: string) {
         super(message, request);
         this.name = "HttpAbortError";
         this.reason = reason;

@@ -29,9 +29,7 @@ describe("HttpError", () => {
         expect(error.name).toBe("HttpError");
         expect(error.message).toBe("Test error");
         expect(error.request).toEqual(request);
-        expect(error.timestamp).toMatch(
-            /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
-        );
+        expect(error.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     });
 
     it("should be instanceof HttpError and Error", () => {
@@ -51,19 +49,13 @@ describe("HttpError", () => {
 describe("HttpNetworkError", () => {
     it("should create error with code property", () => {
         const request = { baseUrl: "https://api.example.com" };
-        const error = new HttpNetworkError(
-            "Connection refused",
-            "ECONNREFUSED",
-            request
-        );
+        const error = new HttpNetworkError("Connection refused", "ECONNREFUSED", request);
 
         expect(error.name).toBe("HttpNetworkError");
         expect(error.message).toBe("Connection refused");
         expect(error.code).toBe("ECONNREFUSED");
         expect(error.request).toEqual(request);
-        expect(error.timestamp).toMatch(
-            /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
-        );
+        expect(error.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
         expect(error.stack).toBeDefined();
     });
 
@@ -87,7 +79,7 @@ describe("HttpResponseError", () => {
             "Bad Request",
             data,
             headers,
-            request
+            request,
         );
 
         expect(error.name).toBe("HttpResponseError");
@@ -97,21 +89,12 @@ describe("HttpResponseError", () => {
         expect(error.data).toEqual(data);
         expect(error.headers).toEqual(headers);
         expect(error.request).toEqual(request);
-        expect(error.timestamp).toMatch(
-            /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
-        );
+        expect(error.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
         expect(error.stack).toBeDefined();
     });
 
     it("should be instanceof HttpResponseError, HttpError, and Error", () => {
-        const error = new HttpResponseError(
-            "Test",
-            500,
-            "Internal Server Error",
-            {},
-            {},
-            {}
-        );
+        const error = new HttpResponseError("Test", 500, "Internal Server Error", {}, {}, {});
 
         expect(error).toBeInstanceOf(HttpResponseError);
         expect(error).toBeInstanceOf(HttpError);
@@ -131,7 +114,7 @@ describe("HttpResponseError", () => {
             "Bad Request",
             data,
             {},
-            {}
+            {},
         );
 
         expect(error.data.code).toBe("ERR_001");
@@ -141,13 +124,7 @@ describe("HttpResponseError", () => {
 
 describe("Specific HTTP error classes", () => {
     it("HttpBadRequestError should have status 400", () => {
-        const error = new HttpBadRequestError(
-            "Bad request",
-            "Bad Request",
-            {},
-            {},
-            {}
-        );
+        const error = new HttpBadRequestError("Bad request", "Bad Request", {}, {}, {});
 
         expect(error.name).toBe("HttpBadRequestError");
         expect(error.status).toBe(400);
@@ -158,13 +135,7 @@ describe("Specific HTTP error classes", () => {
     });
 
     it("HttpUnauthorizedError should have status 401", () => {
-        const error = new HttpUnauthorizedError(
-            "Unauthorized",
-            "Unauthorized",
-            {},
-            {},
-            {}
-        );
+        const error = new HttpUnauthorizedError("Unauthorized", "Unauthorized", {}, {}, {});
 
         expect(error.name).toBe("HttpUnauthorizedError");
         expect(error.status).toBe(401);
@@ -173,13 +144,7 @@ describe("Specific HTTP error classes", () => {
     });
 
     it("HttpForbiddenError should have status 403", () => {
-        const error = new HttpForbiddenError(
-            "Forbidden",
-            "Forbidden",
-            {},
-            {},
-            {}
-        );
+        const error = new HttpForbiddenError("Forbidden", "Forbidden", {}, {}, {});
 
         expect(error.name).toBe("HttpForbiddenError");
         expect(error.status).toBe(403);
@@ -188,13 +153,7 @@ describe("Specific HTTP error classes", () => {
     });
 
     it("HttpNotFoundError should have status 404", () => {
-        const error = new HttpNotFoundError(
-            "Not found",
-            "Not Found",
-            {},
-            {},
-            {}
-        );
+        const error = new HttpNotFoundError("Not found", "Not Found", {}, {}, {});
 
         expect(error.name).toBe("HttpNotFoundError");
         expect(error.status).toBe(404);
@@ -217,7 +176,7 @@ describe("Specific HTTP error classes", () => {
             "Unprocessable Entity",
             {},
             {},
-            {}
+            {},
         );
 
         expect(error.name).toBe("HttpUnprocessableEntityError");
@@ -232,7 +191,7 @@ describe("Specific HTTP error classes", () => {
             "Too Many Requests",
             {},
             { "retry-after": "60" },
-            {}
+            {},
         );
 
         expect(error.name).toBe("HttpTooManyRequestsError");
@@ -248,7 +207,7 @@ describe("Specific HTTP error classes", () => {
             "Internal Server Error",
             {},
             {},
-            {}
+            {},
         );
 
         expect(error.name).toBe("HttpInternalServerError");
@@ -263,7 +222,7 @@ describe("Specific HTTP error classes", () => {
             "Service Unavailable",
             {},
             { "retry-after": "120" },
-            {}
+            {},
         );
 
         expect(error.name).toBe("HttpServiceUnavailableError");
@@ -306,11 +265,7 @@ describe("HttpAbortError", () => {
 
     it("should create error with reason", () => {
         const request = { baseUrl: "https://api.example.com" };
-        const error = new HttpAbortError(
-            "Request aborted",
-            request,
-            "User cancelled"
-        );
+        const error = new HttpAbortError("Request aborted", request, "User cancelled");
 
         expect(error.name).toBe("HttpAbortError");
         expect(error.message).toBe("Request aborted");
@@ -331,21 +286,8 @@ describe("Error prototype chain integrity", () => {
         // Create errors at different inheritance levels
         const baseError = new HttpError("Base", {});
         const networkError = new HttpNetworkError("Network", "ENETWORK", {});
-        const responseError = new HttpResponseError(
-            "Response",
-            400,
-            "Bad Request",
-            {},
-            {},
-            {}
-        );
-        const notFoundError = new HttpNotFoundError(
-            "Not found",
-            "Not Found",
-            {},
-            {},
-            {}
-        );
+        const responseError = new HttpResponseError("Response", 400, "Bad Request", {}, {}, {});
+        const notFoundError = new HttpNotFoundError("Not found", "Not Found", {}, {}, {});
 
         // Base error checks
         expect(baseError).toBeInstanceOf(HttpError);

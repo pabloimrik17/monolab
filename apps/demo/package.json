@@ -11,8 +11,8 @@
         "lint:eslint:fix": "eslint --cache --max-warnings 60 --fix .",
         "lint:knip": "knip --max-issues 100",
         "lint:knip:fix": "knip --fix",
-        "lint:prettier": "prettier . --check",
-        "lint:prettier:fix": "prettier . --write",
+        "lint:oxfmt": "oxfmt --check .",
+        "lint:oxfmt:fix": "oxfmt .",
         "preview": "vite preview"
     },
     "dependencies": {
@@ -23,9 +23,9 @@
         "vite": "6.4.1",
         "vite-plugin-solid": "2.11.10"
     },
-    "packageManager": "pnpm@10.27.0",
     "engines": {
         "node": "^20.18.0 || >=22.0.0",
         "pnpm": "10.27.0"
-    }
+    },
+    "packageManager": "pnpm@10.27.0"
 }

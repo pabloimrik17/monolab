@@ -13,7 +13,7 @@ describe("useDidMount", () => {
             () => {
                 expect(callback).toHaveBeenCalledTimes(1);
             },
-            { timeout: 100 }
+            { timeout: 100 },
         );
     });
 
@@ -26,7 +26,7 @@ describe("useDidMount", () => {
             () => {
                 expect(callback).toHaveBeenCalledTimes(1);
             },
-            { timeout: 100 }
+            { timeout: 100 },
         );
 
         rerender();
@@ -46,14 +46,12 @@ describe("useDidMount", () => {
             () => {
                 expect(callback).toHaveBeenCalledTimes(1);
             },
-            { timeout: 100 }
+            { timeout: 100 },
         );
     });
 
     it("should catch and log errors from callback", async () => {
-        const consoleErrorSpy = vi
-            .spyOn(console, "error")
-            .mockImplementation(() => {});
+        const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
         const error = new Error("Test error");
         const callback = vi.fn().mockRejectedValue(error);
 
@@ -62,12 +60,9 @@ describe("useDidMount", () => {
         await vi.waitFor(
             () => {
                 expect(callback).toHaveBeenCalledTimes(1);
-                expect(consoleErrorSpy).toHaveBeenCalledWith(
-                    "[useDidMount] error",
-                    error
-                );
+                expect(consoleErrorSpy).toHaveBeenCalledWith("[useDidMount] error", error);
             },
-            { timeout: 100 }
+            { timeout: 100 },
         );
 
         consoleErrorSpy.mockRestore();

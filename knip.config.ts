@@ -2,6 +2,7 @@ import { type KnipConfig } from "knip";
 
 export default {
     ignore: ["coverage/**/*", "html", "validate-branch-name.config.cjs"],
+    ignoreWorkspaces: [".claude/worktrees/**"],
     ignoreDependencies: [
         "@hookform/devtools",
         "@storybook/blocks",

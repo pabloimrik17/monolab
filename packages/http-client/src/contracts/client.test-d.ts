@@ -90,9 +90,7 @@ describe("HttpClient type inference", () => {
         const client = {} as HttpClient;
         const response = client.delete<DeleteResult>("/users/1");
 
-        expectTypeOf(response).toEqualTypeOf<
-            Promise<HttpResponse<DeleteResult>>
-        >();
+        expectTypeOf(response).toEqualTypeOf<Promise<HttpResponse<DeleteResult>>>();
     });
 
     test("HEAD returns void response", () => {
