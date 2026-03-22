@@ -28,11 +28,11 @@ Implemented as `skills/hookify/SKILL.md`, not a command. The skill is a prompt t
 
 **Why over command**: Skills can be invoked by name and have richer trigger descriptions. The skill content IS the prompt (like Matt's cmd.md but discoverable).
 
-### D2: One proposal per session
+### D2: One proposal per invocation, auto-trigger once per session
 
-Each `/experiments:hookify` run proposes at most one instruction to convert, and the skill only triggers once per session. Subsequent invocations in the same session are no-ops.
+Each run proposes at most one instruction to convert. The skill's autonomous trigger (description-based) fires at most once per session. Explicit user invocations (`/experiments:hookify`) are never blocked — user can run it as many times as they want.
 
-**Why**: Reduces noise, lets user integrate incrementally, avoids overwhelming settings.json with hooks in one shot. One-per-session ensures the skill doesn't nag — user processes the proposal, next session gets the next one.
+**Why**: Auto-trigger once avoids nagging. Explicit invocations are always honored because the user asked for it.
 
 ### D3: Prioritization by gain
 

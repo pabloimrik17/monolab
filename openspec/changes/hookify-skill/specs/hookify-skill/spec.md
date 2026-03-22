@@ -11,19 +11,24 @@ The hookify skill SHALL exist at `claude-plugins/experiments/skills/hookify/SKIL
 
 ---
 
-### Requirement: Once per session
+### Requirement: Auto-trigger once per session
 
-The skill SHALL only execute its analysis once per session. If invoked again in the same session, it SHALL skip analysis and inform the user it already ran.
+The skill's autonomous trigger (via description match) SHALL fire at most once per session. Explicit user invocations (`/experiments:hookify`) SHALL always execute regardless of prior runs.
 
-#### Scenario: First invocation
+#### Scenario: First autonomous trigger
 
-- **WHEN** the skill is invoked for the first time in a session
+- **WHEN** the skill auto-triggers for the first time in a session
 - **THEN** it SHALL proceed with full analysis
 
-#### Scenario: Repeated invocation
+#### Scenario: Second autonomous trigger attempt
 
-- **WHEN** the skill is invoked a second time in the same session
-- **THEN** it SHALL respond that it already ran this session and take no further action
+- **WHEN** the skill would auto-trigger a second time in the same session
+- **THEN** it SHALL skip and take no action
+
+#### Scenario: Explicit invocation after auto-trigger
+
+- **WHEN** the user explicitly runs `/experiments:hookify` after the skill already auto-triggered
+- **THEN** it SHALL proceed with full analysis normally
 
 ---
 
