@@ -76,8 +76,13 @@ The skill SHALL query currently installed skills using `bunx skills list --json`
 
 #### Scenario: No skills installed
 
-- **WHEN** `bunx skills list --json` returns an empty array or no skills-lock.json exists
+- **WHEN** `bunx skills list --json` returns an empty array
 - **THEN** all applicable skills from the manifest SHALL be marked as pending installation
+
+#### Scenario: Lock file missing
+
+- **WHEN** `skills-lock.json` does not exist but skills are installed
+- **THEN** the skill SHOULD warn about missing lock-file persistence
 
 #### Scenario: Some skills already installed
 

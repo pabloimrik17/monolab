@@ -30,7 +30,7 @@
 ## 6. Plugin Metadata Update
 
 - [ ] 6.1 Bump `claude-plugins/experiments/.claude-plugin/plugin.json` version
-- [ ] 6.2 Update `.claude-plugin/marketplace.json` version if needed
+- [ ] 6.2 Update `.claude-plugin/marketplace.json` to same version as `plugin.json`
 
 ## 7. Validation
 

@@ -73,6 +73,6 @@ Todas las skills se instalan con `--agent claude-code` ya que es el único agent
 ## Risks / Trade-offs
 
 - **[Lentitud al inicio]** → `bunx skills list --json` y detección de stack son rápidos. Solo se ejecuta `skills add` si hay pendientes.
-- **[CLI cambia experimental_install]** → Es experimental. Mitigación: si falla, fallback a `bunx skills update`.
+- **[CLI cambia experimental_install]** → Es experimental. Mitigación: si falla, advertir al usuario para instalación manual desde lock file en lugar de degradar silenciosamente a `skills update` (que no restaura desde lock file).
 - **[Lista curada se desactualiza]** → Aceptable: actualizar la skill es trivial. Mejor que over-engineering un sistema de config.
 - **[skills-lock.json en git]** → Debe commitearse para que `experimental_install` funcione en clones frescos. Similar a lock files de paquetes.
