@@ -1,6 +1,6 @@
 ## 1. Fix Current State
 
-- [ ] 1.1 Fix marketplace.json staleness — update experiments version from 0.1.0 to 0.2.1 to match plugin.json
+- [ ] 1.1 Verify marketplace.json/plugin.json version consistency for all plugins (no-op if already in sync)
 
 ## 2. Create Skill
 

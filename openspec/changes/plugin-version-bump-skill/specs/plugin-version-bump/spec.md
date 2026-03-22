@@ -21,8 +21,8 @@ The skill SHALL activate when the agent completes modifications to any plugin un
 
 The skill SHALL NOT activate:
 - During ongoing work (mid-task)
-- For changes outside `claude-plugins/`
-- For changes that only affect non-plugin files (e.g., openspec/, packages/)
+- For tasks that do not modify files under `claude-plugins/`
+- For tasks that only affect non-plugin files (e.g., openspec/, packages/)
 
 #### Scenario: Agent finishes adding a new skill to a plugin
 
