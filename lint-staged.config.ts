@@ -20,8 +20,7 @@ export default {
 
             return `nx affected --files=${filesCsv} -t lint:eslint:fix -- --max-warnings=${ESLINT_MAX_WARNINGS}`;
         },
-        // oxfmt handles file chunking automatically
-        "oxfmt",
+        "oxfmt --no-error-on-unmatched-pattern",
         // knip runs on the whole project, not per file
         () => `knip --max-issues ${KNIP_MAX_ISSUES}`,
     ],
