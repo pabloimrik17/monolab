@@ -21,47 +21,58 @@ The `skill-terraformer` skill SHALL exist at `claude-plugins/experiments/skills/
 The skill SHALL detect the project's technology stack by examining project files.
 
 Detection signals:
-- `package.json` dependencies and devDependencies
-- Presence of `nx.json` (Nx monorepo)
-- Presence of `app.json` or `app.config.js` (Expo)
-- Presence of framework config files (next.config.*, vite.config.*, etc.)
+- `package.json` dependencies and devDependencies (`react`, `next`)
+- Presence of `components.json` (shadcn/ui)
+- Presence of any frontend dependency (triggers universal frontend skills)
 
 #### Scenario: React project detected
 
 - **WHEN** `package.json` contains `react` in dependencies
-- **THEN** the skill SHALL mark React-related skills as applicable
+- **THEN** the skill SHALL mark as applicable: `vercel-react-best-practices`, `vercel-composition-patterns`
 
-#### Scenario: Expo project detected
+#### Scenario: React + shadcn project detected
 
-- **WHEN** `package.json` contains `expo` in dependencies OR `app.json`/`app.config.js` exists
-- **THEN** the skill SHALL mark Expo-related skills as applicable
+- **WHEN** `package.json` contains `react` in dependencies AND `components.json` exists
+- **THEN** the skill SHALL additionally mark as applicable: `shadcn`
 
-#### Scenario: Nx monorepo detected
+#### Scenario: Next.js project detected
 
-- **WHEN** `nx.json` exists in the project root
-- **THEN** the skill SHALL mark Nx-related skills as applicable
+- **WHEN** `package.json` contains `next` in dependencies
+- **THEN** the skill SHALL mark as applicable: `next-best-practices`
+
+#### Scenario: Frontend project detected
+
+- **WHEN** the project has any frontend dependency (`react`, `next`, `vue`, `svelte`, etc.)
+- **THEN** the skill SHALL mark as applicable: `web-design-guidelines`, `frontend-design`
 
 #### Scenario: No matching stack
 
 - **WHEN** no detection rules match the project
-- **THEN** only universal skills (applicable to all projects) SHALL be marked as applicable
+- **THEN** no skills SHALL be marked as applicable
 
 ---
 
 ### Requirement: Curated Skills Manifest
 
-The skill SHALL contain an embedded curated list mapping technology stacks to skills.sh repositories and skill names.
+The skill SHALL contain the following embedded curated list:
 
-Each entry SHALL specify:
-- Detection condition (what triggers applicability)
-- skills.sh repository (`owner/repo`)
-- Skill name(s) within that repository
-- Whether it's universal (always applicable) or conditional
+| Condición | Repo | Skill |
+|-----------|------|-------|
+| `react` en deps | `vercel-labs/agent-skills` | `vercel-react-best-practices` |
+| `react` en deps | `vercel-labs/agent-skills` | `vercel-composition-patterns` |
+| `react` en deps + `components.json` | `shadcn/ui` | `shadcn` |
+| `next` en deps | `vercel-labs/next-skills` | `next-best-practices` |
+| frontend (universal) | `vercel-labs/agent-skills` | `web-design-guidelines` |
+| frontend (universal) | `anthropics/skills` | `frontend-design` |
 
-#### Scenario: Manifest contains entries
+Each entry SHALL map to a `bunx skills add <repo> --skill <name> --agent claude-code -y` command.
+
+Skills from the same repo MAY be batched in a single `skills add` with multiple `--skill` flags.
+
+#### Scenario: Manifest contains all 6 skills
 
 - **WHEN** the skill is read
-- **THEN** it SHALL contain at least one universal entry and at least one conditional entry
+- **THEN** it SHALL contain exactly the 6 skills listed above
 
 #### Scenario: Entry format is actionable
 

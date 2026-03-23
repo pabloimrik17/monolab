@@ -30,14 +30,18 @@ La skill se activa automáticamente via "using-superpowers" al inicio de sesión
 
 ### D2: Lista curada embebida en SKILL.md
 
-El mapeo detector→skills vive directamente en el markdown de la skill. Reglas tipo:
+El mapeo detector→skills vive directamente en el markdown de la skill. Lista curada inicial:
 
-```
-Si package.json tiene "react" en deps → instalar shadcn/ui, vercel-react-best-practices
-Si package.json tiene "expo" en deps → instalar expo/skills
-Si existe nx.json → instalar nx-related skills
-Siempre → find-skills, frontend-design (si hay frontend)
-```
+| Condición | Repo | Skill | Comando |
+|-----------|------|-------|---------|
+| `react` en deps | `vercel-labs/agent-skills` | `vercel-react-best-practices` | `bunx skills add vercel-labs/agent-skills --skill vercel-react-best-practices --agent claude-code -y` |
+| `react` en deps | `vercel-labs/agent-skills` | `vercel-composition-patterns` | `bunx skills add vercel-labs/agent-skills --skill vercel-composition-patterns --agent claude-code -y` |
+| `react` en deps + `components.json` existe | `shadcn/ui` | `shadcn` | `bunx skills add shadcn/ui --skill shadcn --agent claude-code -y` |
+| `next` en deps | `vercel-labs/next-skills` | `next-best-practices` | `bunx skills add vercel-labs/next-skills --skill next-best-practices --agent claude-code -y` |
+| universal (frontend) | `vercel-labs/agent-skills` | `web-design-guidelines` | `bunx skills add vercel-labs/agent-skills --skill web-design-guidelines --agent claude-code -y` |
+| universal (frontend) | `anthropics/skills` | `frontend-design` | `bunx skills add anthropics/skills --skill frontend-design --agent claude-code -y` |
+
+Skills del mismo repo se pueden batchar: `bunx skills add vercel-labs/agent-skills --skill vercel-react-best-practices --skill web-design-guidelines --skill vercel-composition-patterns --agent claude-code -y`
 
 **Alternativa descartada:** Fichero de config separado — añade complejidad sin beneficio para un solo proyecto.
 
