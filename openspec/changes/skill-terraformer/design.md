@@ -32,16 +32,17 @@ La skill se activa automáticamente via "using-superpowers" al inicio de sesión
 
 El mapeo detector→skills vive directamente en el markdown de la skill. Lista curada inicial:
 
-| Condición | Repo | Skill | Comando |
-|-----------|------|-------|---------|
-| `react` en deps | `vercel-labs/agent-skills` | `vercel-react-best-practices` | `bunx skills add vercel-labs/agent-skills --skill vercel-react-best-practices --agent claude-code -y` |
-| `react` en deps | `vercel-labs/agent-skills` | `vercel-composition-patterns` | `bunx skills add vercel-labs/agent-skills --skill vercel-composition-patterns --agent claude-code -y` |
-| `react` en deps + `components.json` existe | `shadcn/ui` | `shadcn` | `bunx skills add shadcn/ui --skill shadcn --agent claude-code -y` |
-| `next` en deps | `vercel-labs/next-skills` | `next-best-practices` | `bunx skills add vercel-labs/next-skills --skill next-best-practices --agent claude-code -y` |
-| universal (frontend) | `vercel-labs/agent-skills` | `web-design-guidelines` | `bunx skills add vercel-labs/agent-skills --skill web-design-guidelines --agent claude-code -y` |
-| universal (frontend) | `anthropics/skills` | `frontend-design` | `bunx skills add anthropics/skills --skill frontend-design --agent claude-code -y` |
+| Condición | Repo | Skill |
+|-----------|------|-------|
+| `react` en deps | `vercel-labs/agent-skills` | `vercel-react-best-practices` |
+| `react` en deps | `vercel-labs/agent-skills` | `vercel-composition-patterns` |
+| `react` en deps + `components.json` | `shadcn/ui` | `shadcn` |
+| `next` en deps | `vercel-labs/next-skills` | `next-best-practices` |
+| frontend (universal) | `vercel-labs/agent-skills` | `web-design-guidelines` |
+| frontend (universal) | `anthropics/skills` | `frontend-design` |
 
-Skills del mismo repo se pueden batchar: `bunx skills add vercel-labs/agent-skills --skill vercel-react-best-practices --skill web-design-guidelines --skill vercel-composition-patterns --agent claude-code -y`
+Plantilla: `bunx skills add <Repo> --skill <Skill> --agent claude-code -y`
+Batch por repo con múltiples `--skill` flags.
 
 **Alternativa descartada:** Fichero de config separado — añade complejidad sin beneficio para un solo proyecto.
 
@@ -58,7 +59,9 @@ El script postinstall usa `bunx skills experimental_install`, que restaura skill
 
 Solo ejecuta si existe lock file. Si falla, no bloquea `pnpm install`.
 
-Si ya existe un postinstall, se encadena con `&&`.
+Si ya existe un postinstall, se encadena con `&&` aislando el fallback:
+`<postinstall-existente> && ( [ -f skills-lock.json ] && bunx skills experimental_install || true )`.
+Los paréntesis limitan el `|| true` a la parte de skills, sin enmascarar fallos del postinstall original.
 
 ### D4: Flujo de la skill
 

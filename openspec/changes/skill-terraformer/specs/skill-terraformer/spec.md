@@ -147,7 +147,7 @@ The postinstall command SHALL be `[ -f skills-lock.json ] && bunx skills experim
 #### Scenario: Postinstall exists without skills command
 
 - **WHEN** `package.json` has a `postinstall` script that does NOT include `skills experimental_install`
-- **THEN** the skill SHALL propose appending `&& [ -f skills-lock.json ] && bunx skills experimental_install || true` to the existing script
+- **THEN** the skill SHALL propose appending `&& ( [ -f skills-lock.json ] && bunx skills experimental_install || true )` to the existing script (parenthesized to avoid masking failures from the original postinstall)
 
 #### Scenario: Postinstall already includes skills command
 
