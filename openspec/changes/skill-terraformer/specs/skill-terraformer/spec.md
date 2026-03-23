@@ -126,17 +126,17 @@ All installations SHALL be project-level (no `-g` flag).
 
 The skill SHALL verify and ensure a `postinstall` script in the root `package.json` when skills are managed (installed now or previously).
 
-The postinstall command SHALL be `bunx skills experimental_install`.
+The postinstall command SHALL be `[ -f skills-lock.json ] && bunx skills experimental_install || true` (graceful degradation: only runs if lock file exists, does not block install on failure).
 
 #### Scenario: No postinstall exists
 
 - **WHEN** `package.json` has no `postinstall` script AND skills are managed
-- **THEN** the skill SHALL propose adding `"postinstall": "bunx skills experimental_install"`
+- **THEN** the skill SHALL propose adding `"postinstall": "[ -f skills-lock.json ] && bunx skills experimental_install || true"`
 
 #### Scenario: Postinstall exists without skills command
 
-- **WHEN** `package.json` has a `postinstall` script that does NOT include `bunx skills experimental_install`
-- **THEN** the skill SHALL propose appending `&& bunx skills experimental_install` to the existing script
+- **WHEN** `package.json` has a `postinstall` script that does NOT include `skills experimental_install`
+- **THEN** the skill SHALL propose appending `&& [ -f skills-lock.json ] && bunx skills experimental_install || true` to the existing script
 
 #### Scenario: Postinstall already includes skills command
 

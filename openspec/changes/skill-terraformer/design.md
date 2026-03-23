@@ -43,14 +43,16 @@ Siempre → find-skills, frontend-design (si hay frontend)
 
 ### D3: `experimental_install` en postinstall
 
-El script postinstall usa `bunx skills experimental_install` que restaura del `skills-lock.json`. Esto asegura que `pnpm install` tras `git clone` reconstituye las skills.
+El script postinstall usa `bunx skills experimental_install`, que restaura skills desde `skills-lock.json`. Ambos comandos (`update` y `experimental_install`) requieren el lock file — sin él no hacen nada. Por eso el lock file **debe commitearse** para que funcione en clones frescos.
 
-`skills update` no funciona sin lock file previo. `experimental_install` sí lo hace.
+`experimental_install` es preferible a `update` porque restaura las versiones exactas del lock file en lugar de actualizar a latest.
 
-**Formato del postinstall:**
+**Formato del postinstall (con graceful degradation):**
 ```json
-"postinstall": "bunx skills experimental_install"
+"postinstall": "[ -f skills-lock.json ] && bunx skills experimental_install || true"
 ```
+
+Solo ejecuta si existe lock file. Si falla, no bloquea `pnpm install`.
 
 Si ya existe un postinstall, se encadena con `&&`.
 
