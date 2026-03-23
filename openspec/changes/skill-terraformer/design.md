@@ -34,10 +34,10 @@ El mapeo detector→skills vive directamente en el markdown de la skill. Lista c
 
 | Condición | Repo | Skill |
 |-----------|------|-------|
-| `react` en deps | `vercel-labs/agent-skills` | `vercel-react-best-practices` |
-| `react` en deps | `vercel-labs/agent-skills` | `vercel-composition-patterns` |
-| `react` en deps + `components.json` | `shadcn/ui` | `shadcn` |
-| `next` en deps | `vercel-labs/next-skills` | `next-best-practices` |
+| `react` en dependencies/devDependencies | `vercel-labs/agent-skills` | `vercel-react-best-practices` |
+| `react` en dependencies/devDependencies | `vercel-labs/agent-skills` | `vercel-composition-patterns` |
+| `react` en dependencies/devDependencies + `components.json` | `shadcn/ui` | `shadcn` |
+| `next` en dependencies/devDependencies | `vercel-labs/next-skills` | `next-best-practices` |
 | frontend (universal) | `vercel-labs/agent-skills` | `web-design-guidelines` |
 | frontend (universal) | `anthropics/skills` | `frontend-design` |
 

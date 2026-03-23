@@ -27,17 +27,17 @@ Detection signals:
 
 #### Scenario: React project detected
 
-- **WHEN** `package.json` contains `react` in dependencies
+- **WHEN** `package.json` contains `react` in dependencies or devDependencies
 - **THEN** the skill SHALL mark as applicable: `vercel-react-best-practices`, `vercel-composition-patterns`
 
 #### Scenario: React + shadcn project detected
 
-- **WHEN** `package.json` contains `react` in dependencies AND `components.json` exists
+- **WHEN** `package.json` contains `react` in dependencies or devDependencies AND `components.json` exists
 - **THEN** the skill SHALL additionally mark as applicable: `shadcn`
 
 #### Scenario: Next.js project detected
 
-- **WHEN** `package.json` contains `next` in dependencies
+- **WHEN** `package.json` contains `next` in dependencies or devDependencies
 - **THEN** the skill SHALL mark as applicable: `next-best-practices`
 
 #### Scenario: Frontend project detected
@@ -104,6 +104,13 @@ The skill SHALL query currently installed skills using `bunx skills list --json`
 
 - **WHEN** all applicable skills from the manifest are already installed
 - **THEN** the skill SHALL report that no installation is needed and proceed to postinstall verification
+
+#### Scenario: Installed skills query fails
+
+- **WHEN** `bunx skills list --json` fails or returns invalid JSON
+- **THEN** the skill SHALL report the detection state as unknown
+- **AND** the skill SHALL NOT assume all applicable skills are pending
+- **AND** the skill SHOULD require explicit user confirmation before attempting installations
 
 ---
 
