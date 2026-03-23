@@ -14,7 +14,9 @@
 ## 3. Plugin Updates
 
 - [ ] 3.1 Update `README.md` to document the new skill
-- [ ] 3.2 Bump plugin version in `.claude-plugin/plugin.json`
+- [ ] 3.2 Bump plugin version in `plugin.json`
+- [ ] 3.3 Bump plugin version in `marketplace.json`
+- [ ] 3.4 Bump plugin version in `package.json`
 
 ## 4. Validation
 
