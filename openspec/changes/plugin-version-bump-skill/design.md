@@ -1,8 +1,8 @@
 ## Context
 
-Plugin versioning is manual across 3 files per plugin: `.claude-plugin/plugin.json` (source of truth, read by Claude Code), `package.json` (workspace tooling), and root `.claude-plugin/marketplace.json` (discovery catalog). marketplace.json is already stale for experiments (0.1.0 vs 0.2.1). Anthropic's plugin-dev skills offer zero automation — "update version manually" is the official guidance.
+Plugin versioning is manual across 3 files per plugin: `.claude-plugin/plugin.json` (source of truth, read by Claude Code), `package.json` (workspace tooling), and root `.claude-plugin/marketplace.json` (discovery catalog). Anthropic's plugin-dev skills offer zero automation — "update version manually" is the official guidance.
 
-The skill lives in the `experiments` plugin and targets this monorepo's plugin ecosystem, but is designed to be portable to any repo with Claude Code plugins.
+The skill lives in the `experiments` plugin but is designed to be fully portable — it identifies plugins by structure (presence of `.claude-plugin/plugin.json`), not by hardcoded path.
 
 ## Goals / Non-Goals
 
@@ -10,7 +10,7 @@ The skill lives in the `experiments` plugin and targets this monorepo's plugin e
 - Skill that the AI agent uses when finishing work on a plugin to bump version + sync all files
 - Determine semver level from change type (new skill/command = minor, edit existing = patch, breaking = major)
 - Update plugin.json, package.json, and marketplace.json atomically
-- Work for any plugin in `claude-plugins/`
+- Work for any Claude Code plugin (detected by `.claude-plugin/plugin.json` presence, not hardcoded path)
 
 **Non-Goals:**
 - CHANGELOG generation (deferred — no official plugin CHANGELOG convention exists)
@@ -62,13 +62,23 @@ Match plugin in marketplace.json by `name` field, not array index.
 
 **Rationale:** Array indices are fragile. Plugin names are unique identifiers.
 
-### Decision 5: Multi-Plugin Awareness
+### Decision 5: Plugin Detection by Structure
+
+Identify plugins by the presence of `.claude-plugin/plugin.json` in any ancestor directory of the modified files, not by a hardcoded path like `claude-plugins/`.
+
+**Rationale:** Makes the skill portable to any repo layout. A plugin is a plugin regardless of where it lives. The agent should recognize it's editing a plugin when any modified file has a `.claude-plugin/plugin.json` in its directory tree.
+
+**Alternatives considered:**
+- Hardcode `claude-plugins/` path → breaks portability, excludes plugins in other locations
+- Check only working directory → misses nested plugin structures
+
+### Decision 6: Multi-Plugin Awareness
 
 If a single task modifies multiple plugins, the skill instructs the agent to bump each independently.
 
 **Rationale:** Each plugin has its own version lifecycle. A change to experiments shouldn't bump expo-developer.
 
-### Decision 6: Skill Location
+### Decision 7: Skill Location
 
 Place in `experiments` plugin: `claude-plugins/experiments/skills/plugin-version-bump/SKILL.md`
 

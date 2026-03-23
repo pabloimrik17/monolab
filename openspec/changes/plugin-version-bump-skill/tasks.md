@@ -14,7 +14,11 @@
 - [ ] 3.2 Sync delta specs to `openspec/specs/claude-code-plugins/spec.md` (modified — version consistency requirement)
 - [ ] 3.3 Sync delta specs to `openspec/specs/experiments-plugin/spec.md` (added — skill registration)
 
-## 4. Verify
+## 4. Bump Plugin Version
 
-- [ ] 4.1 Verify skill appears in Claude Code available skills list after plugin reload
-- [ ] 4.2 Verify all 3 version files are in sync for both plugins
+- [ ] 4.1 Bump experiments plugin version (minor — new skill added): update `plugin.json`, `package.json`, and `marketplace.json`
+
+## 5. Verify
+
+- [ ] 5.1 Verify skill appears in Claude Code available skills list after plugin reload
+- [ ] 5.2 Verify all 3 version files are in sync for both plugins

@@ -15,23 +15,44 @@ The SKILL.md SHALL include frontmatter with:
 
 ---
 
+### Requirement: Plugin Detection
+
+The skill SHALL identify a Claude Code plugin by the presence of `.claude-plugin/plugin.json` in the directory tree of any modified file. The skill SHALL NOT rely on a hardcoded directory path.
+
+#### Scenario: Plugin in standard location
+
+- **WHEN** agent modifies files under a directory containing `.claude-plugin/plugin.json`
+- **THEN** the skill SHALL recognize that directory as a plugin root
+
+#### Scenario: Plugin in non-standard location
+
+- **WHEN** agent modifies files under `tools/my-plugin/` which contains `.claude-plugin/plugin.json`
+- **THEN** the skill SHALL recognize `tools/my-plugin/` as a plugin root
+
+#### Scenario: No plugin structure present
+
+- **WHEN** agent modifies files in a directory without `.claude-plugin/plugin.json` in its tree
+- **THEN** the skill SHALL NOT activate
+
+---
+
 ### Requirement: Trigger Conditions
 
-The skill SHALL activate when the agent completes modifications to any plugin under `claude-plugins/`.
+The skill SHALL activate when the agent completes modifications to any Claude Code plugin (any directory containing `.claude-plugin/plugin.json`).
 
 The skill SHALL NOT activate:
 - During ongoing work (mid-task)
-- For tasks that do not modify files under `claude-plugins/`
+- For tasks that do not modify files within a plugin directory
 - For tasks that only affect non-plugin files (e.g., openspec/, packages/)
 
 #### Scenario: Agent finishes adding a new skill to a plugin
 
-- **WHEN** agent completes creating a new skill file under `claude-plugins/<plugin>/skills/`
+- **WHEN** agent completes creating a new skill file under a plugin's `skills/` directory
 - **THEN** the skill SHALL activate and guide version bumping
 
-#### Scenario: Agent edits files outside claude-plugins
+#### Scenario: Agent edits files outside any plugin
 
-- **WHEN** agent modifies files only in `packages/` or `apps/`
+- **WHEN** agent modifies files only in directories without `.claude-plugin/plugin.json`
 - **THEN** the skill SHALL NOT activate
 
 #### Scenario: Agent is mid-task in a plugin
@@ -73,11 +94,11 @@ The skill SHALL instruct the agent to classify changes and determine the semver 
 
 The skill SHALL instruct the agent to update ALL version-bearing files for the affected plugin:
 
-1. `.claude-plugin/plugin.json` — `version` field (source of truth)
-2. `package.json` — `version` field
-3. Root `.claude-plugin/marketplace.json` — `plugins[].version` for the matching plugin entry (matched by `name` field)
+1. `.claude-plugin/plugin.json` — `version` field (source of truth, always present)
+2. `package.json` — `version` field (if present in plugin root)
+3. Marketplace `marketplace.json` — `plugins[].version` for the matching entry (if a marketplace.json exists and contains the plugin, matched by `name` field)
 
-All three files SHALL contain the same version string after the bump.
+All updated files SHALL contain the same version string after the bump.
 
 #### Scenario: All files updated after bump
 
@@ -105,7 +126,7 @@ When a task modifies multiple plugins, the skill SHALL guide the agent to bump e
 
 #### Scenario: Two plugins modified in same task
 
-- **WHEN** agent modifies files in both `claude-plugins/experiments/` and `claude-plugins/expo-developer/`
+- **WHEN** agent modifies files in two different plugin directories (each containing `.claude-plugin/plugin.json`)
 - **THEN** the skill SHALL guide separate version bumps for each plugin
 - **AND** each bump SHALL reflect only that plugin's changes
 

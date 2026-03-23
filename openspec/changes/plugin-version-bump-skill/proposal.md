@@ -13,7 +13,7 @@ Plugin versioning is fully manual — version lives in 3 files (`plugin.json`, `
 ## Capabilities
 
 ### New Capabilities
-- `plugin-version-bump`: Skill that detects plugin changes, determines semver bump type, and synchronizes version across all version-bearing files (`plugin.json`, `package.json`, `marketplace.json`)
+- `plugin-version-bump`: Skill that detects plugin changes (identified by `.claude-plugin/plugin.json` presence, not hardcoded path), determines semver bump type, and synchronizes version across all version-bearing files (`plugin.json`, `package.json`, `marketplace.json`)
 
 ### Modified Capabilities
 - `claude-code-plugins`: marketplace.json version field policy — require and sync version with plugin.json
