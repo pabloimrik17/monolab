@@ -11,16 +11,18 @@ Detect the project's tech stack, compare against a curated skills manifest, inst
 
 Read the project's `package.json` (root) and check for these signals:
 
-| Signal    | How to detect                                                | Tag      |
-| --------- | ------------------------------------------------------------ | -------- |
-| React     | `react` in dependencies or devDependencies                   | `react`  |
-| Next.js   | `next` in dependencies or devDependencies                    | `next`   |
-| shadcn/ui | `react` in deps AND `components.json` exists in project root | `shadcn` |
-| Vue       | `vue` in dependencies or devDependencies                     | `vue`    |
-| Svelte    | `svelte` in dependencies or devDependencies                  | `svelte` |
-| Nx        | `nx.json` exists in project root                             | `nx`     |
-| Expo      | `expo` in dependencies or devDependencies                    | `expo`   |
-| Vite      | `vite` in dependencies or devDependencies                    | `vite`   |
+| Signal    | How to detect                                                | Tag        |
+| --------- | ------------------------------------------------------------ | ---------- |
+| React     | `react` in dependencies or devDependencies                   | `react`    |
+| Next.js   | `next` in dependencies or devDependencies                    | `next`     |
+| shadcn/ui | `react` in deps AND `components.json` exists in project root | `shadcn`   |
+| Vue       | `vue` in dependencies or devDependencies                     | `vue`      |
+| Svelte    | `svelte` in dependencies or devDependencies                  | `svelte`   |
+| Nx        | `nx.json` exists in project root                             | `nx`       |
+| Expo      | `expo` in dependencies or devDependencies                    | `expo`     |
+| Vite      | `vite` in dependencies or devDependencies                    | `vite`     |
+| Solid.js  | `solid-js` in dependencies or devDependencies                | `solid-js` |
+| Angular   | `@angular/core` in dependencies or devDependencies           | `angular`  |
 
 **Frontend universal**: If ANY of `react`, `next`, `vue`, `svelte`, `solid-js`, `angular` is detected, the project is a frontend project (tag: `frontend`).
 
