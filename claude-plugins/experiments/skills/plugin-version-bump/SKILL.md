@@ -34,7 +34,7 @@ For each affected plugin:
 2. **Compute** new version using the semver level determined above
 3. **Update** `.claude-plugin/plugin.json` `version` field
 4. **Update** `package.json` `version` field (if present in plugin root)
-5. **Update** root `marketplace.json` — find the plugin entry by `name` field (not array index) and update its `version`
+5. **Update** root `.claude-plugin/marketplace.json` (registry file) — find the plugin entry by `name` field (not array index) and update its `version`
     - If the plugin has no marketplace entry, add one with `name`, `source`, `version`, and `description`
 
 All files MUST contain the same version string after the bump.

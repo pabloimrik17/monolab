@@ -102,7 +102,7 @@ The skill SHALL instruct the agent to update ALL version-bearing files for the a
 
 1. `.claude-plugin/plugin.json` — `version` field (source of truth, always present)
 2. `package.json` — `version` field (if present in plugin root)
-3. Marketplace `marketplace.json` — `plugins[].version` for the matching entry (if a marketplace.json exists and contains the plugin, matched by `name` field)
+3. Root `.claude-plugin/marketplace.json` — `plugins[].version` for the matching entry (if the root marketplace exists and contains the plugin, matched by `name` field)
 
 All updated files SHALL contain the same version string after the bump.
 
@@ -119,9 +119,9 @@ All updated files SHALL contain the same version string after the bump.
 - **THEN** the agent SHALL find the marketplace entry where `name` equals "expo-developer"
 - **AND** update that entry's `version` field
 
-#### Scenario: Plugin not in marketplace
+#### Scenario: Plugin not in root marketplace registry
 
-- **WHEN** agent bumps a plugin that has no entry in marketplace.json
+- **WHEN** agent bumps a plugin that has no entry in `.claude-plugin/marketplace.json`
 - **THEN** the agent SHALL add a new entry to the `plugins` array with `name`, `source`, `version`, and `description`
 
 ---
