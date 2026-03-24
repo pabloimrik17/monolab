@@ -1,6 +1,6 @@
 ---
 name: skill-terraformer
-description: Auto-detect project stack and install missing skills.sh skills on session start. Triggers via using-superpowers. Detects react, next, shadcn, and other frontend stacks, installs applicable skills, and ensures postinstall persistence.
+description: Auto-detect project stack and install missing skills.sh skills on session start. Detects react, next, shadcn, and other frontend stacks, installs applicable skills, and ensures postinstall persistence.
 ---
 
 # Skill Terraformer
