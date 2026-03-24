@@ -46,11 +46,13 @@ The skill runs inside Claude Code sessions where the available package runner va
 
 **Rationale**: Lockfile presence is the most reliable indicator of project intent. Global binary check handles cases with no project context (e.g., opening Claude Code in home dir).
 
-### D3: Once-per-session via prompt instruction
+### D3: Once-per-session via temp file guard
 
-**Choice**: Instruct in skill text: "Execute only once per session. If already executed, do not repeat."
+**Choice**: Use a session-scoped temp file (`/tmp/skills-check-<session-id>`) as a guard. The skill checks for the file before running; if it exists, skip. After successful execution, create the file.
 
-**Alternative considered**: Temp file flag (`/tmp/skills-check-<session-id>`) — over-engineered for a prompt-driven skill. LLM naturally avoids repeating completed background checks.
+**Rationale**: Prompt-only instructions ("do not repeat") are non-deterministic — the LLM may forget or re-trigger across long conversations. A temp file is a concrete, reliable mechanism that survives context compaction.
+
+**Fallback**: If session-id is unavailable, use a per-day file (`/tmp/skills-check-<date>`) to limit to once daily.
 
 ### D4: Three output states
 

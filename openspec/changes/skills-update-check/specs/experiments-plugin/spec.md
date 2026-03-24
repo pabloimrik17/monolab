@@ -25,3 +25,13 @@ The plugin directory SHALL contain:
 
 - **WHEN** examining the plugin structure
 - **THEN** `skills/` directory SHALL exist at the plugin root
+
+#### Scenario: package.json is private
+
+- **WHEN** examining `package.json` at the plugin root
+- **THEN** it SHALL contain `"private": true`
+
+#### Scenario: README exists
+
+- **WHEN** examining the plugin root at `claude-plugins/experiments/`
+- **THEN** `README.md` SHALL exist

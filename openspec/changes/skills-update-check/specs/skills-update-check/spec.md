@@ -18,11 +18,28 @@ The skill SHALL detect the appropriate package runner for the current session us
 - **WHEN** `pnpm-lock.yaml` exists in the current working directory
 - **THEN** the skill SHALL use `pnpx` as the runner
 
+#### Scenario: Project with yarn lockfile
+
+- **WHEN** `yarn.lock` exists in the current working directory
+- **THEN** the skill SHALL use `npx` as the runner
+
+#### Scenario: Project with package-lock.json
+
+- **WHEN** `package-lock.json` exists in the current working directory
+- **THEN** the skill SHALL use `npx` as the runner
+
 #### Scenario: No lockfile but bun globally available
 
 - **WHEN** no lockfile exists in CWD
 - **AND** `bun` is available via `command -v bun`
 - **THEN** the skill SHALL use `bunx` as the runner
+
+#### Scenario: No lockfile but pnpm globally available
+
+- **WHEN** no lockfile exists in CWD
+- **AND** `pnpm` is available via `command -v pnpm`
+- **AND** `bun` is NOT available
+- **THEN** the skill SHALL use `pnpx` as the runner
 
 #### Scenario: No lockfile and no preferred runner
 
