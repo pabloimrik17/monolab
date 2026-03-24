@@ -9,23 +9,7 @@ Check for updates to globally-installed skills.sh skills. Run this **once per se
 
 ## Once-Per-Session Guard
 
-Before running the check, verify it hasn't already run this session:
-
-```bash
-SESSION_GUARD="/tmp/skills-check-${CLAUDE_SESSION_ID:-$(date +%Y%m%d)}"
-if [ -f "$SESSION_GUARD" ]; then
-  echo "SKIP: already checked this session"
-  exit 0
-fi
-```
-
-If the guard file exists, **stop** — report "Already checked this session" and do nothing more.
-
-After a successful check, create the guard file:
-
-```bash
-touch "$SESSION_GUARD"
-```
+Before running the check, review your conversation context for any prior `skills check -g` output. If you already ran this check earlier in this session, **skip** — do not re-run.
 
 ## Package Runner Detection
 
