@@ -69,6 +69,7 @@ Los paréntesis limitan el `|| true` a la parte de skills, sin enmascarar fallos
 1. Leer project indicators (package.json, nx.json, configs)
 2. Evaluar reglas curadas → lista de skills aplicables
 3. bunx skills list --json → skills ya instaladas
+   (Si falla: reportar error, pedir confirmación al usuario antes de continuar)
 4. Diff: aplicables - instaladas = pendientes
 5. Para cada pendiente: bunx skills add <repo> --skill <name> --agent claude-code -y
 6. Si se instaló ≥1 skill (ahora o antes): verificar postinstall en package.json
