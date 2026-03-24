@@ -59,6 +59,8 @@ bunx skills list --json
 
 Parse the JSON output to get the list of already-installed skill names.
 
+**If skills are installed but `skills-lock.json` does not exist:** Warn: "Skills are installed but `skills-lock.json` is missing. Run `bunx skills update` to generate it, then commit the file."
+
 **If the command fails or returns invalid JSON:**
 
 - Report: "Could not query installed skills — `bunx skills list --json` failed."
