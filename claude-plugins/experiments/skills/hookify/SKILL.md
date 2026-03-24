@@ -54,6 +54,8 @@ Matching rules:
 - Case-insensitive (`<!-- NX Configuration Start -->` matches)
 - Flexible whitespace around the tag name and start/end keywords
 - The `X` can be any identifier (e.g., `nx configuration`, `auto-generated`, `plugin managed`)
+- Same-label pairing: `<!-- X start -->` pairs with the nearest subsequent `<!-- X end -->` where `X` is identical (case-insensitive)
+- Non-greedy: stop at the first matching end delimiter — don't span across multiple blocks
 - Remove the delimiters AND everything between them from analysis
 
 Only analyze content **outside** these managed sections.
