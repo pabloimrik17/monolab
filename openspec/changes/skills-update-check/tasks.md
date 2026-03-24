@@ -15,7 +15,7 @@
 
 - [x] 3.1 Update `README.md` to document the new skill
 - [x] 3.2 Bump plugin version in `plugin.json`
-- [x] 3.3 Bump plugin version in `marketplace.json` (N/A — file doesn't exist)
+- [x] 3.3 Bump plugin version in `marketplace.json`
 - [x] 3.4 Bump plugin version in `package.json`
 
 ## 4. Validation
