@@ -9,7 +9,7 @@ Check for updates to globally-installed skills.sh skills. Run this **once per se
 
 ## Once-Per-Session Guard
 
-Before running the check, review your conversation context for any prior `skills check -g` output. If you already ran this check earlier in this session, **skip** — do not re-run.
+Before running the check, search your conversation history for the marker phrase "Skills update check completed". If found, **skip** — do not re-run. After successfully executing the check workflow, always output the marker phrase to confirm completion.
 
 ## Package Runner Detection
 
@@ -26,6 +26,8 @@ Detect the runner using lockfile priority, then global binary, then fallback:
 | 7        | fallback                         | `npx`  |
 
 Check lockfiles in the current working directory first. Only fall through to global binary detection if no lockfile matches.
+
+**Note:** If multiple lockfiles exist, use the first match in priority order (e.g., if both `bun.lockb` and `pnpm-lock.yaml` are present, use `bunx`).
 
 ## Update Check Workflow
 
