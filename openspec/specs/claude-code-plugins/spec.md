@@ -39,6 +39,8 @@ The marketplace manifest SHALL include:
 - `metadata`: Object with `description`, `version`, and `pluginRoot`
 - `plugins`: Array of plugin entries with `name`, `source`, `version`, and `description`
 
+Plugin entry `version` fields SHALL be kept in sync with each plugin's `.claude-plugin/plugin.json` version. The `plugin.json` is the source of truth; marketplace.json versions are informational for discovery.
+
 #### Scenario: Marketplace manifest exists
 
 - **GIVEN** the monolab repository
@@ -58,6 +60,11 @@ The marketplace manifest SHALL include:
 - **WHEN** they run `/plugin install expo-developer@monolab`
 - **THEN** the expo-developer plugin SHALL be installed
 - **AND** its skills SHALL be available
+
+#### Scenario: Version consistency
+
+- **WHEN** examining marketplace.json plugin entries
+- **THEN** each entry's `version` SHALL match the corresponding `claude-plugins/<name>/.claude-plugin/plugin.json` version
 
 ---
 
