@@ -200,7 +200,7 @@ Read `.claude/settings.json` (or create if missing). Add the hook entry under `h
 }
 ```
 
-If `hooks.PreToolUse` already has entries, append the new matcher. If an existing entry already matches `Bash`, append to its `hooks` array. Preserve all existing settings.
+If `hooks.PreToolUse` already has entries, append the new matcher only when no existing matcher applies. If an existing entry already matches `Bash`, append to its `hooks` array **only if** the same command path is not already present (dedupe by command string). Preserve all existing settings.
 
 ### 8c. Remove the hookified instruction from source
 
