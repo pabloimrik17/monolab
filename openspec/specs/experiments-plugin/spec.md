@@ -5,6 +5,7 @@ The `experiments` plugin SHALL exist at `claude-plugins/experiments/` and follow
 The plugin directory SHALL contain:
 - `.claude-plugin/plugin.json` manifest
 - `commands/` directory for slash commands
+- `skills/` directory for agent skills
 - `package.json` with `"private": true`
 - `README.md` documenting the plugin
 
@@ -17,6 +18,21 @@ The plugin directory SHALL contain:
 
 - **WHEN** examining `.claude-plugin/plugin.json`
 - **THEN** it SHALL include `name: "experiments"`, `version`, `description`, and `keywords`
+
+#### Scenario: Skills directory exists
+
+- **WHEN** examining the plugin structure
+- **THEN** `skills/` directory SHALL exist at the plugin root
+
+#### Scenario: package.json is private
+
+- **WHEN** examining `package.json` at the plugin root
+- **THEN** it SHALL contain `"private": true`
+
+#### Scenario: README exists
+
+- **WHEN** examining the plugin root at `claude-plugins/experiments/`
+- **THEN** `README.md` SHALL exist
 
 ---
 
