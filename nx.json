@@ -37,7 +37,7 @@
                 "^lint:eslint",
                 "^lint:knip",
                 "^lint:markdownlint",
-                "^lint:prettier",
+                "^lint:oxfmt",
                 "^lint:publint",
                 "^lint:stylelint"
             ]
@@ -62,21 +62,12 @@
         "lint:markdownlint": {
             "cache": true,
             "dependsOn": ["^lint:markdownlint"],
-            "inputs": [
-                "default",
-                "{workspaceRoot}/.markdownlint*",
-                "{projectRoot}/.markdownlint*"
-            ]
+            "inputs": ["default", "{workspaceRoot}/.markdownlint*", "{projectRoot}/.markdownlint*"]
         },
-        "lint:prettier": {
+        "lint:oxfmt": {
             "cache": true,
-            "dependsOn": ["^lint:eslint", "^lint:prettier"],
-            "inputs": [
-                "default",
-                "{projectRoot}/.prettierignore",
-                "{workspaceRoot}/.prettierrc",
-                "{workspaceRoot}/.prettierignore"
-            ]
+            "dependsOn": ["^lint:oxfmt"],
+            "inputs": ["default", "{workspaceRoot}/.oxfmtrc.json"]
         },
         "lint:publint": {
             "cache": true,
@@ -86,11 +77,7 @@
         "lint:stylelint": {
             "cache": true,
             "dependsOn": ["^lint:stylelint"],
-            "inputs": [
-                "default",
-                "{workspaceRoot}/.stylelintrc*",
-                "{projectRoot}/.stylelintrc*"
-            ]
+            "inputs": ["default", "{workspaceRoot}/.stylelintrc*", "{projectRoot}/.stylelintrc*"]
         },
         "test:unit": {
             "cache": true,
@@ -100,10 +87,7 @@
                 "{workspaceRoot}/vitest.config.ts",
                 "{projectRoot}/vitest.config.ts"
             ],
-            "outputs": [
-                "{projectRoot}/html",
-                "{projectRoot}/test-results.junit.xml"
-            ]
+            "outputs": ["{projectRoot}/html", "{projectRoot}/test-results.junit.xml"]
         },
         "test:unit:coverage": {
             "cache": true,

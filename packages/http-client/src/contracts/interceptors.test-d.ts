@@ -16,9 +16,7 @@ import type {
 
 describe("Interceptor type signatures", () => {
     test("RequestOnFulfilled accepts and returns config", () => {
-        const onFulfilled: RequestOnFulfilled = (
-            config: HttpRequestConfig
-        ): HttpRequestConfig => {
+        const onFulfilled: RequestOnFulfilled = (config: HttpRequestConfig): HttpRequestConfig => {
             expectTypeOf(config).toMatchTypeOf<HttpRequestConfig>();
             return config;
         };
@@ -28,7 +26,7 @@ describe("Interceptor type signatures", () => {
 
     test("RequestOnFulfilled can be async", () => {
         const onFulfilled: RequestOnFulfilled = async (
-            config: HttpRequestConfig
+            config: HttpRequestConfig,
         ): Promise<HttpRequestConfig> => {
             return config;
         };
@@ -47,7 +45,7 @@ describe("Interceptor type signatures", () => {
 
     test("ResponseOnFulfilled accepts and returns response", () => {
         const onFulfilled: ResponseOnFulfilled = (
-            response: HttpResponse<unknown>
+            response: HttpResponse<unknown>,
         ): HttpResponse<unknown> => {
             expectTypeOf(response).toMatchTypeOf<HttpResponse<unknown>>();
             return response;

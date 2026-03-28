@@ -351,3 +351,6 @@ sketch
 # Stryker mutation testing reports
 **/reports/
 .stryker-tmp/
+
+.nx/polygraph
+.claude/worktrees

@@ -10,10 +10,10 @@ Type-safe HTTP client contracts for web and Node.js environments.
 
 This package provides TypeScript interfaces and types that define the contract for HTTP client implementations. It enables:
 
--   **Abstraction over implementation**: Write code once, swap HTTP libraries (axios, ky) without changes
--   **Type safety**: Full generic support for request/response/error types
--   **Extensibility**: Interceptors, retry hooks, and cache plugins for customization
--   **Familiar patterns**: onFulfilled/onRejected pattern mirrors Promise.then() for easy adoption
+- **Abstraction over implementation**: Write code once, swap HTTP libraries (axios, ky) without changes
+- **Type safety**: Full generic support for request/response/error types
+- **Extensibility**: Interceptors, retry hooks, and cache plugins for customization
+- **Familiar patterns**: onFulfilled/onRejected pattern mirrors Promise.then() for easy adoption
 
 **Note**: This is a **contract-only package** (pure TypeScript types and interfaces). Concrete implementations (axios adapter, ky adapter) are provided in separate packages.
 
@@ -43,24 +43,24 @@ The package defines interfaces for all aspects of HTTP communication:
 
 ### Core Interfaces
 
--   `HttpClient` - Main client interface with HTTP methods (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)
--   `HttpRequestConfig` - Request configuration with headers, timeout, retry, cache, etc.
--   `HttpResponse<T>` - Typed response with data, status, headers, and metadata
--   `HttpClientFactory` - Factory function for creating client instances
+- `HttpClient` - Main client interface with HTTP methods (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)
+- `HttpRequestConfig` - Request configuration with headers, timeout, retry, cache, etc.
+- `HttpResponse<T>` - Typed response with data, status, headers, and metadata
+- `HttpClientFactory` - Factory function for creating client instances
 
 ### Error Hierarchy
 
--   `HttpError` - Base error class
--   `HttpNetworkError` - Network-level failures (connection refused, DNS, timeout)
--   `HttpResponseError<T>` - HTTP error responses with typed data
--   Specific error classes: `HttpBadRequestError`, `HttpUnauthorizedError`, `HttpNotFoundError`, etc.
+- `HttpError` - Base error class
+- `HttpNetworkError` - Network-level failures (connection refused, DNS, timeout)
+- `HttpResponseError<T>` - HTTP error responses with typed data
+- Specific error classes: `HttpBadRequestError`, `HttpUnauthorizedError`, `HttpNotFoundError`, etc.
 
 ### Advanced Features
 
--   **Interceptors**: Transform requests/responses using onFulfilled/onRejected pattern
--   **Retry**: Configurable retry logic with exponential/linear/jitter backoff
--   **Deduplication**: Prevent redundant concurrent requests
--   **Cache**: Pluggable cache layer with stale-while-revalidate support
+- **Interceptors**: Transform requests/responses using onFulfilled/onRejected pattern
+- **Retry**: Configurable retry logic with exponential/linear/jitter backoff
+- **Deduplication**: Prevent redundant concurrent requests
+- **Cache**: Pluggable cache layer with stale-while-revalidate support
 
 ## Usage Examples
 
@@ -144,10 +144,7 @@ try {
 ### Interceptor Usage
 
 ```typescript
-import type {
-    RequestOnFulfilled,
-    ResponseOnRejected,
-} from "@m0n0lab/http-client";
+import type { RequestOnFulfilled, ResponseOnRejected } from "@m0n0lab/http-client";
 
 // Add authentication to all requests
 const authInterceptor: RequestOnFulfilled = async (config) => ({
@@ -284,27 +281,27 @@ const user = response.data; // Type-safe!
 
 ## Roadmap
 
--   ✅ Package foundation and infrastructure
--   ✅ Core HTTP client contracts (types and interfaces)
--   🚧 Axios adapter implementation
--   🚧 Ky adapter implementation
--   🚧 neverthrow (ResultAsync) wrapper for functional error handling
--   🚧 effect-ts integration for advanced effect systems
+- ✅ Package foundation and infrastructure
+- ✅ Core HTTP client contracts (types and interfaces)
+- 🚧 Axios adapter implementation
+- 🚧 Ky adapter implementation
+- 🚧 neverthrow (ResultAsync) wrapper for functional error handling
+- 🚧 effect-ts integration for advanced effect systems
 
 ## Features
 
--   🎯 Clean abstraction over popular HTTP libraries (axios, ky)
--   ✅ Fully typed with TypeScript
--   🔄 Pluggable HTTP client implementations
--   🛡️ Type-safe error handling
--   ⚡ Interceptors with onFulfilled/onRejected pattern
--   🔁 Configurable retry with backoff strategies
--   🚫 Request deduplication
--   💾 Pluggable cache layer
--   🌐 Works in browser and Node.js environments
--   📦 Zero runtime dependencies (pure types)
--   🧪 Comprehensive type-level tests
--   📘 Well documented
+- 🎯 Clean abstraction over popular HTTP libraries (axios, ky)
+- ✅ Fully typed with TypeScript
+- 🔄 Pluggable HTTP client implementations
+- 🛡️ Type-safe error handling
+- ⚡ Interceptors with onFulfilled/onRejected pattern
+- 🔁 Configurable retry with backoff strategies
+- 🚫 Request deduplication
+- 💾 Pluggable cache layer
+- 🌐 Works in browser and Node.js environments
+- 📦 Zero runtime dependencies (pure types)
+- 🧪 Comprehensive type-level tests
+- 📘 Well documented
 
 ## License
 

@@ -13,8 +13,6 @@ import { useEffect } from "react";
  * unmounted. The provided callback function is invoked during the unmounting process to
  * handle any necessary resource release, cleanup, or other teardown logic.
  */
-export const useWillUnmount = (
-    willIUnmountFn: () => Promise<void> | void
-): void => {
+export const useWillUnmount = (willIUnmountFn: () => Promise<void> | void): void => {
     useEffect(() => (): void => void willIUnmountFn(), []);
 };

@@ -5,11 +5,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
     plugins: [react()],
     test: {
-        include: [
-            "**/*.{test,spec}.{ts,tsx}",
-            "**/*.browser.test.{ts,tsx}",
-            "**/*.integration.ts",
-        ],
+        include: ["**/*.{test,spec}.{ts,tsx}", "**/*.browser.test.{ts,tsx}", "**/*.integration.ts"],
         reporters: ["default", "junit"],
         outputFile: {
             junit: "./test-results.junit.xml",

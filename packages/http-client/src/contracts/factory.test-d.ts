@@ -13,12 +13,8 @@ import type {
 
 describe("Factory type checking", () => {
     test("HttpClientFactory accepts options and returns client", () => {
-        const factory: HttpClientFactory = (
-            options?: HttpClientOptions
-        ): HttpClient => {
-            expectTypeOf(options).toEqualTypeOf<
-                HttpClientOptions | undefined
-            >();
+        const factory: HttpClientFactory = (options?: HttpClientOptions): HttpClient => {
+            expectTypeOf(options).toEqualTypeOf<HttpClientOptions | undefined>();
             return {} as HttpClient;
         };
 
