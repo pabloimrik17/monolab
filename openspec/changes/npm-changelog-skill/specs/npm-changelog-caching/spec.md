@@ -104,7 +104,7 @@ The version filename SHALL use the exact semver string without `v` prefix (e.g.,
 Each version SHALL have a corresponding `{version}.meta.json` containing:
 - `version`: semver string
 - `status`: one of `verified`, `failed`
-- `source`: retrieval method used (`raw_changelog`, `github_release`, `cdn`)
+- `source`: retrieval method used (`raw_changelog`, `github_releases`, `cdn`)
 - `sourceUrl`: exact URL fetched
 - `fetchedAt`: ISO 8601 timestamp
 - `sha256`: SHA256 hash of the written `.md` file

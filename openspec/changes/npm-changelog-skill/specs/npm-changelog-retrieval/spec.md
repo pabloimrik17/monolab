@@ -64,14 +64,14 @@ The skill SHALL enumerate all published versions using `npm view {pkg} versions 
 
 The skill SHALL exclude all prerelease versions (any version with a prerelease tag per semver).
 
-For range queries, the skill SHALL include versions where `from < version <= to` (exclusive start, inclusive end).
+For range queries, the skill SHALL include versions where `from <= version <= to` (both-inclusive, aligning with npm hyphen range semantics).
 
 The skill SHALL sort versions in ascending semver order.
 
 #### Scenario: Range enumeration
 
 - **WHEN** enumerating versions for `react 18.0.0..19.0.0`
-- **THEN** the skill SHALL return all stable versions where `18.0.0 < version <= 19.0.0`, sorted ascending
+- **THEN** the skill SHALL return all stable versions where `18.0.0 <= version <= 19.0.0`, sorted ascending
 
 #### Scenario: Prerelease exclusion
 
@@ -151,7 +151,7 @@ The skill SHALL rate-limit requests: max 30 per batch with 100ms delay between r
 #### Scenario: Rate limiting
 
 - **WHEN** fetching releases for 40 versions
-- **THEN** the skill SHALL batch into groups of 30 with 100ms delay between individual requests
+- **THEN** the skill SHALL batch into groups of 30, with a 100ms delay between each request within and across batches
 
 ---
 
