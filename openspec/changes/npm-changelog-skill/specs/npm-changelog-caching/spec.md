@@ -151,5 +151,5 @@ For each version in the requested range:
 
 #### Scenario: All versions cached
 
-- **WHEN** every version in the range has `status: "verified"` in cache
+- **WHEN** every version in the range has `status: "verified"` in cache and all SHA256 checksums match
 - **THEN** the skill SHALL skip all fetching and proceed directly to the output summary
