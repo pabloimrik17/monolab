@@ -67,6 +67,8 @@ The skill SHALL also store `_source/{filename}.sha256` containing the SHA256 has
 
 The skill SHALL reuse an existing `_source/{filename}` if it was fetched less than 24 hours ago (based on file modification time).
 
+Before reuse, the skill SHALL recompute SHA256 for `_source/{filename}` and compare it to `_source/{filename}.sha256`. If the checksum is missing or does not match, the cached file SHALL be treated as invalid and re-fetched.
+
 If the file is older than 24 hours, the skill SHALL re-fetch from the remote source.
 
 #### Scenario: Fresh source reused
@@ -134,6 +136,7 @@ Before fetching any version from remote sources, the skill SHALL check the local
 For each version in the requested range:
 - If `{version}.meta.json` exists with `status: "verified"` → skip (already cached)
 - If `{version}.meta.json` exists with `status: "failed"` and `retryable: true` → add to fetch list
+- If `{version}.meta.json` exists with `status: "failed"` and `retryable: false` → skip and report as permanently unavailable
 - If `{version}.meta.json` does not exist → add to fetch list
 
 #### Scenario: Verified version skipped

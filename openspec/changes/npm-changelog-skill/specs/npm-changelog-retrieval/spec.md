@@ -95,6 +95,8 @@ For repos with known split patterns (Vue-style), the skill SHALL also try `chang
 
 For repos with archive files (Angular-style), the skill SHALL also try `CHANGELOG_ARCHIVE.md`.
 
+The skill SHALL resolve `{default_branch}` via `gh api /repos/{owner}/{repo}` → `default_branch` field before Strategy A requests. If resolution fails, the version SHALL proceed to Strategy B with failure context recorded.
+
 The skill SHALL fetch via `curl -sL https://raw.githubusercontent.com/{owner}/{repo}/{default_branch}/{filename}`.
 
 The skill SHALL always fetch from the repo root, never from a monorepo subdirectory.
@@ -129,7 +131,7 @@ The skill SHALL use `gh api /repos/{owner}/{repo}/releases/tags/{tag}` to fetch 
 
 The skill SHALL try tag format `v{version}` first, then `{version}` (without prefix) if 404.
 
-The skill SHALL extract the `body` field as the changelog content.
+The skill SHALL extract the `body` field as the changelog content. For Strategy B, the fetched release `body` corresponds to the requested tag/version and SHALL be treated as the final version entry directly — no heading-pattern detection or section extraction is required. If `body` is non-empty, the version is considered retrieved.
 
 The skill SHALL rate-limit requests: max 30 per batch with 100ms delay between requests.
 
