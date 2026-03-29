@@ -5,7 +5,7 @@ export interface BatchOptions {
 export async function batchExecute<T, R>(
     items: T[],
     fn: (item: T) => Promise<R>,
-    options: BatchOptions
+    options: BatchOptions,
 ): Promise<Map<T, R>> {
     const results = new Map<T, R>();
     const { concurrency } = options;

@@ -19,10 +19,7 @@ export interface QuotePoller {
     isPolling(): boolean;
 }
 
-export function createQuotePoller(
-    client: FinnhubClient,
-    options: QuotePollerOptions
-): QuotePoller {
+export function createQuotePoller(client: FinnhubClient, options: QuotePollerOptions): QuotePoller {
     let interval = clampInterval(options.interval ?? DEFAULT_INTERVAL);
     let tickers: string[] = [];
     let timerId: ReturnType<typeof setTimeout> | null = null;
@@ -50,9 +47,7 @@ export function createQuotePoller(
             }
         } catch (error) {
             if (polling && pollGeneration === generation) {
-                onError?.(
-                    error instanceof Error ? error : new Error(String(error))
-                );
+                onError?.(error instanceof Error ? error : new Error(String(error)));
             }
         }
 

@@ -46,9 +46,7 @@ describe("createTickerStore", () => {
             store.add("AAPL");
 
             expect(storage.setItem).toHaveBeenCalled();
-            const stored = JSON.parse(
-                storage.data.get("wealth-tracker-tickers") ?? "[]"
-            );
+            const stored = JSON.parse(storage.data.get("wealth-tracker-tickers") ?? "[]");
             expect(stored).toHaveLength(1);
             expect(stored[0].symbol).toBe("AAPL");
         });
@@ -98,11 +96,7 @@ describe("createTickerStore", () => {
 
             const tickers = store.getTickers();
 
-            expect(tickers.map((t) => t.symbol)).toEqual([
-                "AAPL",
-                "GOOGL",
-                "MSFT",
-            ]);
+            expect(tickers.map((t) => t.symbol)).toEqual(["AAPL", "GOOGL", "MSFT"]);
         });
 
         it("returns empty array when no tickers", () => {
@@ -119,7 +113,7 @@ describe("createTickerStore", () => {
                 JSON.stringify([
                     { symbol: "AAPL", addedAt: "2024-01-01T00:00:00.000Z" },
                     { symbol: "MSFT", addedAt: "2024-01-02T00:00:00.000Z" },
-                ])
+                ]),
             );
 
             const store = createTickerStore(storage);
@@ -127,9 +121,7 @@ describe("createTickerStore", () => {
 
             expect(tickers).toHaveLength(2);
             expect(tickers[0].symbol).toBe("AAPL");
-            expect(tickers[0].addedAt).toEqual(
-                new Date("2024-01-01T00:00:00.000Z")
-            );
+            expect(tickers[0].addedAt).toEqual(new Date("2024-01-01T00:00:00.000Z"));
         });
 
         it("handles corrupted storage gracefully", () => {

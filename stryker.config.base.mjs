@@ -1,10 +1,7 @@
 /** @type {import('@stryker-mutator/api/core').PartialStrykerOptions} */
 const config = {
     packageManager: "pnpm",
-    plugins: [
-        "@stryker-mutator/vitest-runner",
-        "@stryker-mutator/typescript-checker",
-    ],
+    plugins: ["@stryker-mutator/vitest-runner", "@stryker-mutator/typescript-checker"],
     testRunner: "vitest",
     mutate: [
         "src/**/*.ts",

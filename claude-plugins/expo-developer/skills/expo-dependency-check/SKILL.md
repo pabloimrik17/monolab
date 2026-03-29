@@ -11,8 +11,8 @@ Use this skill when `package.json` has been modified in an Expo/React Native pro
 
 **Is this an Expo project?** Check for:
 
--   `expo` in dependencies/devDependencies in `package.json`
--   `app.json`, `app.config.js`, or `app.config.ts` in project root
+- `expo` in dependencies/devDependencies in `package.json`
+- `app.json`, `app.config.js`, or `app.config.ts` in project root
 
 If neither indicator exists, skip this workflow.
 
@@ -31,7 +31,6 @@ Check for lock files (first match wins):
 ## Workflow
 
 1. Ask the user which action to take:
-
     - **Check only**: Run `<prefix> expo install --check` to see incompatible versions
     - **Auto-fix**: Run `<prefix> expo install --fix` to update to compatible versions
     - **Skip**: Do nothing

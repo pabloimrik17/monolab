@@ -50,10 +50,10 @@ Create `prd.json` with this structure:
 
 **Guidelines:**
 
--   Extract 3-10 items depending on scope
--   Each item should be independently completable
--   Success criteria should be concrete and verifiable
--   All items start with `passes: false`
+- Extract 3-10 items depending on scope
+- Each item should be independently completable
+- Success criteria should be concrete and verifiable
+- All items start with `passes: false`
 
 ## Step 2: Create Progress File
 
@@ -208,4 +208,4 @@ After running this command, the current directory (NOT a subdirectory) will cont
 
 ## Requirements
 
--   Docker Desktop 4.58+ with Docker Sandbox feature enabled
+- Docker Desktop 4.58+ with Docker Sandbox feature enabled
