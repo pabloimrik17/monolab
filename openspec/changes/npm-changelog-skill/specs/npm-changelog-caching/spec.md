@@ -32,9 +32,9 @@ The skill SHALL maintain a `_meta.json` file in each package's cache directory c
 - `repository`: GitHub `owner/repo`
 - `isMonorepo`: boolean, true if `repository.directory` was present
 - `monorepoDirectory`: the `repository.directory` value (or null)
-- `tagFormat`: detected tag format (`v{version}` or `{version}`)
+- `tagFormat`: detected tag format (`v{version}` or `{version}`); set during the first successful Strategy B fetch by recording which format matched
 - `changelogSource`: primary source that worked (`raw_changelog`, `github_releases`, `cdn`, or null)
-- `changelogFiles`: array of filenames found (e.g., `["CHANGELOG.md"]`)
+- `changelogFiles`: array of successfully discovered changelog filenames from Strategy A (e.g., `["CHANGELOG.md"]`), or empty array if Strategy A was not used; on subsequent fetches, newly successful filenames SHALL be unioned into the existing array
 - `lastUpdated`: ISO 8601 timestamp of last metadata update
 
 #### Scenario: Metadata written on first fetch
