@@ -16,21 +16,28 @@ export class PgSessionRepository implements SessionRepository {
         return ResultAsync.fromPromise(
             this.db.insert(sessions).values(sessionToRow(session)).returning(),
             (e) => new PersistenceError(e),
-        ).map((rows) => sessionToDomain(rows[0]));
+        ).map((rows) => sessionToDomain(rows[0]!));
     }
 
     findByCode(code: SessionCode): ResultAsync<Session | null, PersistenceError> {
         return ResultAsync.fromPromise(
             this.db.select().from(sessions).where(eq(sessions.code, code.value)),
             (e) => new PersistenceError(e),
-        ).map((rows) => (rows.length > 0 ? sessionToDomain(rows[0]) : null));
+        ).map((rows) => (rows.length > 0 ? sessionToDomain(rows[0]!) : null));
+    }
+
+    findActive(): ResultAsync<Session[], PersistenceError> {
+        return ResultAsync.fromPromise(
+            this.db.select().from(sessions).where(eq(sessions.status, "OPEN")),
+            (e) => new PersistenceError(e),
+        ).map((rows) => rows.map(sessionToDomain));
     }
 
     findById(id: string): ResultAsync<Session | null, PersistenceError> {
         return ResultAsync.fromPromise(
             this.db.select().from(sessions).where(eq(sessions.id, id)),
             (e) => new PersistenceError(e),
-        ).map((rows) => (rows.length > 0 ? sessionToDomain(rows[0]) : null));
+        ).map((rows) => (rows.length > 0 ? sessionToDomain(rows[0]!) : null));
     }
 
     updateStatus(session: Session): ResultAsync<void, PersistenceError> {

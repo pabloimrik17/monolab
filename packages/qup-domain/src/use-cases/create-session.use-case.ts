@@ -1,5 +1,5 @@
 import { inject, injectable } from "inversify";
-import { type ResultAsync, errAsync, okAsync } from "neverthrow";
+import { type ResultAsync, errAsync } from "neverthrow";
 import { Session } from "../entities/session.ts";
 import { TOKENS } from "../tokens.ts";
 import type { PersistenceError, ValidationError } from "../errors.ts";

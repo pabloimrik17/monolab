@@ -6,7 +6,7 @@ export interface MenuItemProps {
     id: string;
     name: string;
     category: Category;
-    description?: string;
+    description?: string | undefined;
     available: boolean;
     sortOrder: number;
 }
@@ -15,7 +15,7 @@ export class MenuItem {
     readonly id: string;
     private _name: string;
     private _category: Category;
-    private _description?: string;
+    private _description?: string | undefined;
     private _available: boolean;
     private _sortOrder: number;
 
@@ -23,7 +23,9 @@ export class MenuItem {
         this.id = props.id;
         this._name = props.name;
         this._category = props.category;
-        this._description = props.description;
+        if (props.description != null) {
+            this._description = props.description;
+        }
         this._available = props.available;
         this._sortOrder = props.sortOrder;
     }
@@ -59,7 +61,7 @@ export class MenuItem {
             id: crypto.randomUUID(),
             name: props.name.trim(),
             category: props.category,
-            description: props.description,
+            ...(props.description != null && { description: props.description }),
             available: props.available ?? true,
             sortOrder: props.sortOrder ?? 0,
         });

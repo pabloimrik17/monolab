@@ -2,18 +2,20 @@ export class OrderItem {
     readonly menuItemId: string;
     readonly menuItemName: string;
     readonly quantity: number;
-    readonly customization?: string;
+    readonly customization?: string | undefined;
 
     private constructor(props: {
         menuItemId: string;
         menuItemName: string;
         quantity: number;
-        customization?: string;
+        customization?: string | undefined;
     }) {
         this.menuItemId = props.menuItemId;
         this.menuItemName = props.menuItemName;
         this.quantity = props.quantity;
-        this.customization = props.customization;
+        if (props.customization != null) {
+            this.customization = props.customization;
+        }
     }
 
     static create(props: {

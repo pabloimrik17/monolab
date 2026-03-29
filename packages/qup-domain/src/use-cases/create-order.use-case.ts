@@ -75,7 +75,9 @@ export class CreateOrderUseCase {
                             menuItemId: menuItem.id,
                             menuItemName: menuItem.name,
                             quantity: itemInput.quantity,
-                            customization: itemInput.customization,
+                            ...(itemInput.customization != null && {
+                                customization: itemInput.customization,
+                            }),
                         }),
                     );
                 }
@@ -84,7 +86,7 @@ export class CreateOrderUseCase {
                     sessionId: input.sessionId,
                     guestName: input.guestName,
                     items: orderItems,
-                    notes: input.notes,
+                    ...(input.notes != null && { notes: input.notes }),
                 });
 
                 if (orderResult.isErr()) {

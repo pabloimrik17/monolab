@@ -24,7 +24,7 @@ export class PgOrderRepository implements OrderRepository {
                         ? await tx.insert(orderItems).values(itemRows).returning()
                         : [];
 
-                return orderToDomain(orderRow, insertedItems);
+                return orderToDomain(orderRow!, insertedItems);
             }),
             (e) => new PersistenceError(e),
         );
@@ -42,7 +42,7 @@ export class PgOrderRepository implements OrderRepository {
                     .from(orderItems)
                     .where(eq(orderItems.orderId, id));
 
-                return orderToDomain(rows[0], items);
+                return orderToDomain(rows[0]!, items);
             })(),
             (e) => new PersistenceError(e),
         );

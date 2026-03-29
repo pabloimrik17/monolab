@@ -9,7 +9,7 @@ export interface SessionProps {
     code: SessionCode;
     status: SessionStatus;
     createdAt: Date;
-    closedAt?: Date;
+    closedAt?: Date | undefined;
 }
 
 export class Session {
@@ -18,7 +18,7 @@ export class Session {
     readonly code: SessionCode;
     private _status: SessionStatus;
     readonly createdAt: Date;
-    private _closedAt?: Date;
+    private _closedAt?: Date | undefined;
 
     private constructor(props: SessionProps) {
         this.id = props.id;
@@ -26,7 +26,9 @@ export class Session {
         this.code = props.code;
         this._status = props.status;
         this.createdAt = props.createdAt;
-        this._closedAt = props.closedAt;
+        if (props.closedAt != null) {
+            this._closedAt = props.closedAt;
+        }
     }
 
     get status(): SessionStatus {

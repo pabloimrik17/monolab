@@ -13,7 +13,7 @@ export function orderToDomain(row: OrderRow, itemRows: OrderItemRow[]): Order {
             menuItemId: ir.menuItemId,
             menuItemName: ir.menuItemName,
             quantity: ir.quantity,
-            customization: ir.customization ?? undefined,
+            ...(ir.customization != null && { customization: ir.customization }),
         }),
     );
 
@@ -23,7 +23,7 @@ export function orderToDomain(row: OrderRow, itemRows: OrderItemRow[]): Order {
         guestName: row.guestName,
         items,
         status: OrderStatus.from(row.status),
-        notes: row.notes ?? undefined,
+        ...(row.notes != null && { notes: row.notes }),
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
     });

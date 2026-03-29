@@ -34,7 +34,7 @@ export function orderRoutes(container: Container) {
             sessionId: sessionResult.value.id,
             guestName: body.guestName,
             items: body.items,
-            notes: body.notes,
+            ...(body.notes != null && { notes: body.notes }),
         });
 
         return result.match(

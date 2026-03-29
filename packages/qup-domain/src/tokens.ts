@@ -6,6 +6,8 @@ export const TOKENS = {
     CreateSessionUseCase: Symbol.for("CreateSessionUseCase"),
     CloseSessionUseCase: Symbol.for("CloseSessionUseCase"),
     GetSessionByCodeUseCase: Symbol.for("GetSessionByCodeUseCase"),
+    GetSessionByIdUseCase: Symbol.for("GetSessionByIdUseCase"),
+    GetActiveSessionsUseCase: Symbol.for("GetActiveSessionsUseCase"),
     CreateOrderUseCase: Symbol.for("CreateOrderUseCase"),
     UpdateOrderStatusUseCase: Symbol.for("UpdateOrderStatusUseCase"),
     CancelOrderUseCase: Symbol.for("CancelOrderUseCase"),

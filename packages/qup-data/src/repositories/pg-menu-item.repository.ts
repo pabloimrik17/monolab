@@ -16,14 +16,14 @@ export class PgMenuItemRepository implements MenuItemRepository {
         return ResultAsync.fromPromise(
             this.db.insert(menuItems).values(menuItemToRow(menuItem)).returning(),
             (e) => new PersistenceError(e),
-        ).map((rows) => menuItemToDomain(rows[0]));
+        ).map((rows) => menuItemToDomain(rows[0]!));
     }
 
     findById(id: string): ResultAsync<MenuItem | null, PersistenceError> {
         return ResultAsync.fromPromise(
             this.db.select().from(menuItems).where(eq(menuItems.id, id)),
             (e) => new PersistenceError(e),
-        ).map((rows) => (rows.length > 0 ? menuItemToDomain(rows[0]) : null));
+        ).map((rows) => (rows.length > 0 ? menuItemToDomain(rows[0]!) : null));
     }
 
     findAll(): ResultAsync<MenuItem[], PersistenceError> {

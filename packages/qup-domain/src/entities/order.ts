@@ -14,7 +14,7 @@ export interface OrderProps {
     guestName: string;
     items: OrderItem[];
     status: OrderStatus;
-    notes?: string;
+    notes?: string | undefined;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -25,7 +25,7 @@ export class Order {
     readonly guestName: string;
     readonly items: readonly OrderItem[];
     private _status: OrderStatus;
-    readonly notes?: string;
+    readonly notes?: string | undefined;
     readonly createdAt: Date;
     private _updatedAt: Date;
 
@@ -35,7 +35,9 @@ export class Order {
         this.guestName = props.guestName;
         this.items = Object.freeze([...props.items]);
         this._status = props.status;
-        this.notes = props.notes;
+        if (props.notes != null) {
+            this.notes = props.notes;
+        }
         this.createdAt = props.createdAt;
         this._updatedAt = props.updatedAt;
     }
@@ -69,7 +71,7 @@ export class Order {
             guestName: props.guestName.trim(),
             items: props.items,
             status: OrderStatus.PENDING,
-            notes: props.notes,
+            ...(props.notes != null && { notes: props.notes }),
             createdAt: now,
             updatedAt: now,
         });
