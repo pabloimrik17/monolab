@@ -1,14 +1,6 @@
-import {
-    afterEach,
-    beforeEach,
-    describe,
-    expect,
-    it,
-    vi,
-    type Mock,
-} from "vitest";
-import type { FinnhubClient } from "./finnhub-client.js";
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { createQuotePoller } from "./quote-poller.js";
+import type { FinnhubClient } from "./finnhub-client.js";
 import type { Quote } from "./types.js";
 
 function createMockClient(): FinnhubClient & { getQuotes: Mock } {
@@ -155,9 +147,7 @@ describe("createQuotePoller", () => {
             });
 
             const msftQuotes = new Map([["MSFT", createMockQuote("MSFT")]]);
-            client.getQuotes
-                .mockReturnValueOnce(firstCallPromise)
-                .mockResolvedValue(msftQuotes);
+            client.getQuotes.mockReturnValueOnce(firstCallPromise).mockResolvedValue(msftQuotes);
 
             const onUpdate = vi.fn();
             const poller = createQuotePoller(client, {
@@ -262,10 +252,7 @@ describe("createQuotePoller", () => {
             poller.setTickers(["GOOGL", "TSLA"]);
             await vi.advanceTimersByTimeAsync(15000);
 
-            expect(client.getQuotes).toHaveBeenLastCalledWith([
-                "GOOGL",
-                "TSLA",
-            ]);
+            expect(client.getQuotes).toHaveBeenLastCalledWith(["GOOGL", "TSLA"]);
         });
 
         it("normalizes new tickers to uppercase", async () => {
@@ -282,10 +269,7 @@ describe("createQuotePoller", () => {
             poller.setTickers(["googl", "tsla"]);
             await vi.advanceTimersByTimeAsync(15000);
 
-            expect(client.getQuotes).toHaveBeenLastCalledWith([
-                "GOOGL",
-                "TSLA",
-            ]);
+            expect(client.getQuotes).toHaveBeenLastCalledWith(["GOOGL", "TSLA"]);
         });
 
         it("continues polling when tickers become empty and resumes when re-added", async () => {
@@ -339,9 +323,7 @@ describe("createQuotePoller", () => {
             const client = createMockClient();
             client.getQuotes
                 .mockRejectedValueOnce(new Error("Network error"))
-                .mockResolvedValue(
-                    new Map([["AAPL", createMockQuote("AAPL")]])
-                );
+                .mockResolvedValue(new Map([["AAPL", createMockQuote("AAPL")]]));
 
             const onUpdate = vi.fn();
             const onError = vi.fn();

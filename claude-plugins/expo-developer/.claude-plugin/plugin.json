@@ -9,10 +9,5 @@
     "license": "MIT",
     "repository": "https://github.com/pabloimrik17/monolab",
     "homepage": "https://github.com/pabloimrik17/monolab/tree/main/claude-plugins/expo-developer",
-    "keywords": [
-        "expo",
-        "react-native",
-        "dependency-validation",
-        "package-manager"
-    ]
+    "keywords": ["expo", "react-native", "dependency-validation", "package-manager"]
 }

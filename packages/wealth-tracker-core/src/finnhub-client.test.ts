@@ -39,7 +39,7 @@ describe("createFinnhubClient", () => {
                     o: 149.0,
                     pc: 147.5,
                     t: 1234567890,
-                })
+                }),
             );
 
             const client = createFinnhubClient("test-key");
@@ -63,16 +63,14 @@ describe("createFinnhubClient", () => {
                     o: 0,
                     pc: 0,
                     t: 0,
-                })
+                }),
             );
 
             const client = createFinnhubClient("test-key");
             const quote = await client.getQuote("aapl");
 
             expect(quote.symbol).toBe("AAPL");
-            expect(fetch).toHaveBeenCalledWith(
-                expect.stringContaining("symbol=AAPL")
-            );
+            expect(fetch).toHaveBeenCalledWith(expect.stringContaining("symbol=AAPL"));
         });
 
         it("throws on invalid symbol (zero data)", async () => {
@@ -86,26 +84,24 @@ describe("createFinnhubClient", () => {
                     o: 0,
                     pc: 0,
                     t: 0,
-                })
+                }),
             );
 
             const client = createFinnhubClient("test-key");
 
             await expect(client.getQuote("INVALID123")).rejects.toThrow(
-                "No data for symbol: INVALID123"
+                "No data for symbol: INVALID123",
             );
         });
 
         it("throws on HTTP error", async () => {
             vi.mocked(fetch).mockResolvedValueOnce(
-                new Response(null, { status: 401, statusText: "Unauthorized" })
+                new Response(null, { status: 401, statusText: "Unauthorized" }),
             );
 
             const client = createFinnhubClient("test-key");
 
-            await expect(client.getQuote("AAPL")).rejects.toThrow(
-                "Failed to fetch quote for AAPL"
-            );
+            await expect(client.getQuote("AAPL")).rejects.toThrow("Failed to fetch quote for AAPL");
         });
 
         it("includes API key in request", async () => {
@@ -119,15 +115,13 @@ describe("createFinnhubClient", () => {
                     o: 0,
                     pc: 0,
                     t: 0,
-                })
+                }),
             );
 
             const client = createFinnhubClient("my-secret-key");
             await client.getQuote("AAPL");
 
-            expect(fetch).toHaveBeenCalledWith(
-                expect.stringContaining("token=my-secret-key")
-            );
+            expect(fetch).toHaveBeenCalledWith(expect.stringContaining("token=my-secret-key"));
         });
     });
 
@@ -144,7 +138,7 @@ describe("createFinnhubClient", () => {
                         o: 0,
                         pc: 0,
                         t: 0,
-                    })
+                    }),
                 )
                 .mockResolvedValueOnce(
                     mockFinnhubResponse({
@@ -156,7 +150,7 @@ describe("createFinnhubClient", () => {
                         o: 0,
                         pc: 0,
                         t: 0,
-                    })
+                    }),
                 );
 
             const client = createFinnhubClient("test-key");
@@ -179,7 +173,7 @@ describe("createFinnhubClient", () => {
                         o: 0,
                         pc: 0,
                         t: 0,
-                    })
+                    }),
                 )
                 .mockResolvedValueOnce(
                     mockFinnhubResponse({
@@ -191,7 +185,7 @@ describe("createFinnhubClient", () => {
                         o: 0,
                         pc: 0,
                         t: 0,
-                    })
+                    }),
                 )
                 .mockResolvedValueOnce(
                     mockFinnhubResponse({
@@ -203,7 +197,7 @@ describe("createFinnhubClient", () => {
                         o: 0,
                         pc: 0,
                         t: 0,
-                    })
+                    }),
                 );
 
             const client = createFinnhubClient("test-key");
