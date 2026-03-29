@@ -106,12 +106,12 @@ The version filename SHALL use the exact semver string without `v` prefix (e.g.,
 Each version SHALL have a corresponding `{version}.meta.json` containing:
 - `version`: semver string
 - `status`: one of `verified`, `failed`
-- `source`: retrieval method used (`raw_changelog`, `github_releases`, `cdn`)
-- `sourceUrl`: exact URL fetched
+- `source`: retrieval method used (`raw_changelog`, `github_releases`, `cdn`), or null when no source produced content
+- `sourceUrl`: exact URL fetched, or null if no remote content was fetched
 - `fetchedAt`: ISO 8601 timestamp
-- `sha256`: SHA256 hash of the written `.md` file
-- `remoteSha256`: SHA256 hash of the content as received from remote
-- `byteSize`: file size in bytes
+- `sha256`: SHA256 hash of the written `.md` file (null if no file written)
+- `remoteSha256`: SHA256 hash of the content as received from remote (null if no remote content)
+- `byteSize`: file size in bytes (null if no file written)
 - `failReason`: null if verified, or one of: `no_entry_found`, `empty_release_body`, `no_changelog_source`, `fetch_error`, `write_verification_failed`
 - `retryable`: boolean, whether the skill should reattempt on future invocations
 - `attempts`: number of fetch attempts made
@@ -134,7 +134,7 @@ Each version SHALL have a corresponding `{version}.meta.json` containing:
 Before fetching any version from remote sources, the skill SHALL check the local cache.
 
 For each version in the requested range:
-- If `{version}.meta.json` exists with `status: "verified"` → skip (already cached)
+- If `{version}.meta.json` exists with `status: "verified"` → recompute SHA256 for `{version}.md` and compare with stored `sha256`; if match → skip (already cached), if file missing or mismatch → add to fetch list
 - If `{version}.meta.json` exists with `status: "failed"` and `retryable: true` → add to fetch list
 - If `{version}.meta.json` exists with `status: "failed"` and `retryable: false` → skip and report as permanently unavailable
 - If `{version}.meta.json` does not exist → add to fetch list
