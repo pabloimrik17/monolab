@@ -7,18 +7,6 @@
         "url": "https://github.com/pabloimrik17/monolab.git",
         "directory": "packages/ts-configs"
     },
-    "sideEffects": false,
-    "type": "module",
-    "exports": {
-        "./tsconfig.base.json": "./tsconfig.base.json",
-        "./tsconfig.node.base.json": "./tsconfig.node.base.json",
-        "./tsconfig.node.app.json": "./tsconfig.node.app.json",
-        "./tsconfig.node.lib.json": "./tsconfig.node.lib.json",
-        "./tsconfig.web.base.json": "./tsconfig.web.base.json",
-        "./tsconfig.web.app.json": "./tsconfig.web.app.json",
-        "./tsconfig.web.lib.json": "./tsconfig.web.lib.json",
-        "./package.json": "./package.json"
-    },
     "files": [
         "tsconfig.base.json",
         "tsconfig.node.base.json",
@@ -32,26 +20,38 @@
         "CHANGELOG.md",
         "LICENSE"
     ],
+    "type": "module",
+    "sideEffects": false,
+    "exports": {
+        "./tsconfig.base.json": "./tsconfig.base.json",
+        "./tsconfig.node.base.json": "./tsconfig.node.base.json",
+        "./tsconfig.node.app.json": "./tsconfig.node.app.json",
+        "./tsconfig.node.lib.json": "./tsconfig.node.lib.json",
+        "./tsconfig.web.base.json": "./tsconfig.web.base.json",
+        "./tsconfig.web.app.json": "./tsconfig.web.app.json",
+        "./tsconfig.web.lib.json": "./tsconfig.web.lib.json",
+        "./package.json": "./package.json"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true,
+        "registry": "https://registry.npmjs.org/"
+    },
     "scripts": {
         "lint:eslint": "eslint --cache --max-warnings 40 .",
         "lint:eslint:config-check": "eslint-config-prettier src/index.ts",
         "lint:eslint:fix": "eslint --cache --max-warnings 40 --fix .",
         "lint:knip": "knip --max-issues 40",
         "lint:knip:fix": "knip --fix",
-        "lint:prettier": "prettier . --check",
-        "lint:prettier:fix": "prettier . --write"
+        "lint:oxfmt": "oxfmt --check .",
+        "lint:oxfmt:fix": "oxfmt ."
     },
     "devDependencies": {
         "typescript": "5.9.3"
     },
-    "packageManager": "pnpm@10.27.0",
     "engines": {
         "node": "^20.18.0 || >=22.0.0",
         "pnpm": "10.27.0"
     },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true,
-        "registry": "https://registry.npmjs.org/"
-    }
+    "packageManager": "pnpm@10.27.0"
 }

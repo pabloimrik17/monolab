@@ -32,7 +32,7 @@ import type { HttpResponse } from "./response.js";
  * ```
  */
 export type RequestOnFulfilled = (
-    config: HttpRequestConfig
+    config: HttpRequestConfig,
 ) => HttpRequestConfig | Promise<HttpRequestConfig>;
 
 /**
@@ -66,7 +66,7 @@ export type RequestOnFulfilled = (
  * ```
  */
 export type RequestOnRejected = (
-    error: Error
+    error: Error,
 ) => HttpRequestConfig | Promise<HttpRequestConfig> | Promise<never> | never;
 
 /**
@@ -97,7 +97,7 @@ export type RequestOnRejected = (
  * ```
  */
 export type ResponseOnFulfilled = (
-    response: HttpResponse<unknown>
+    response: HttpResponse<unknown>,
 ) => HttpResponse<unknown> | Promise<HttpResponse<unknown>>;
 
 /**
@@ -127,7 +127,7 @@ export type ResponseOnFulfilled = (
  * ```
  */
 export type ResponseOnRejected = (
-    error: HttpError
+    error: HttpError,
 ) =>
     | HttpResponse<unknown>
     | HttpError

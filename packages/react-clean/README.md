@@ -8,8 +8,8 @@ MVVM pattern library using Inversify (IoC) and RxJS for reactive state managemen
 
 ## Features
 
--   🚀 Production ready
--   📘 Well documented
+- 🚀 Production ready
+- 📘 Well documented
 
 ## Installation
 

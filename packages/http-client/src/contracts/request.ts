@@ -1,11 +1,7 @@
 import type { HttpCacheConfig } from "./cache.js";
 import type { HttpDeduplicationConfig } from "./deduplication.js";
 import type { HttpRetryConfig } from "./retry.js";
-import type {
-    HttpCredentialsMode,
-    HttpHeaders,
-    HttpResponseType,
-} from "./types.js";
+import type { HttpCredentialsMode, HttpHeaders, HttpResponseType } from "./types.js";
 
 /**
  * HTTP request configuration interfaces and types.

@@ -5,6 +5,7 @@ The `experiments` plugin SHALL exist at `claude-plugins/experiments/` and follow
 The plugin directory SHALL contain:
 - `.claude-plugin/plugin.json` manifest
 - `commands/` directory for slash commands
+- `skills/` directory for agent skills
 - `package.json` with `"private": true`
 - `README.md` documenting the plugin
 
@@ -17,6 +18,21 @@ The plugin directory SHALL contain:
 
 - **WHEN** examining `.claude-plugin/plugin.json`
 - **THEN** it SHALL include `name: "experiments"`, `version`, `description`, and `keywords`
+
+#### Scenario: Skills directory exists
+
+- **WHEN** examining the plugin structure
+- **THEN** `skills/` directory SHALL exist at the plugin root
+
+#### Scenario: package.json is private
+
+- **WHEN** examining `package.json` at the plugin root
+- **THEN** it SHALL contain `"private": true`
+
+#### Scenario: README exists
+
+- **WHEN** examining the plugin root at `claude-plugins/experiments/`
+- **THEN** `README.md` SHALL exist
 
 ---
 
@@ -85,3 +101,24 @@ The plugin SHALL be recognized as a pnpm workspace member.
 
 - **WHEN** running `pnpm install` from root
 - **THEN** the experiments plugin SHALL be recognized as workspace member
+
+---
+
+### Requirement: Plugin Version Bump Skill
+
+The experiments plugin SHALL include a `plugin-version-bump` skill at `skills/plugin-version-bump/SKILL.md`.
+
+The skill SHALL:
+- Guide the AI agent to bump plugin versions after completing plugin modifications
+- Provide a semver classification table for determining bump level
+- Instruct synchronization of version across plugin.json, package.json, and marketplace.json
+
+#### Scenario: Skill directory exists
+
+- **WHEN** examining `claude-plugins/experiments/skills/`
+- **THEN** `plugin-version-bump/SKILL.md` SHALL exist
+
+#### Scenario: Skill discoverable by Claude Code
+
+- **WHEN** the experiments plugin is installed
+- **THEN** the `plugin-version-bump` skill SHALL appear in the available skills list

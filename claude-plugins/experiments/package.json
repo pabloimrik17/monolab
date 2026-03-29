@@ -1,6 +1,6 @@
 {
     "name": "@m0n0lab/plugin-experiments",
-    "version": "0.2.1",
+    "version": "0.4.1",
     "private": true,
     "description": "Beta skills and commands staging area for monolab"
 }

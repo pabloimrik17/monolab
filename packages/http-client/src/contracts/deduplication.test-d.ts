@@ -22,15 +22,13 @@ describe("DeduplicationKey type safety", () => {
 describe("HttpDeduplicationKeyGenerator type safety", () => {
     test("HttpDeduplicationKeyGenerator accepts config and returns DeduplicationKey", () => {
         const keyGenerator: HttpDeduplicationKeyGenerator = (
-            config: HttpRequestConfig
+            config: HttpRequestConfig,
         ): DeduplicationKey => {
             expectTypeOf(config).toMatchTypeOf<HttpRequestConfig>();
             return "dedup-key";
         };
 
-        expectTypeOf(
-            keyGenerator
-        ).toMatchTypeOf<HttpDeduplicationKeyGenerator>();
+        expectTypeOf(keyGenerator).toMatchTypeOf<HttpDeduplicationKeyGenerator>();
 
         const result = keyGenerator({});
         expectTypeOf(result).toEqualTypeOf<DeduplicationKey>();
@@ -58,8 +56,7 @@ describe("HttpDeduplicationConfig type safety", () => {
     });
 
     test("HttpDeduplicationConfig has optional keyGenerator", () => {
-        const keyGenerator: HttpDeduplicationKeyGenerator = (config) =>
-            `${config.baseUrl}`;
+        const keyGenerator: HttpDeduplicationKeyGenerator = (config) => `${config.baseUrl}`;
 
         const config: HttpDeduplicationConfig = {
             enabled: true,
@@ -86,9 +83,7 @@ describe("HttpDeduplicationConfig type safety", () => {
             criticalHeaders: ["Authorization", "Content-Type"],
         };
 
-        expectTypeOf(config.criticalHeaders).toEqualTypeOf<
-            string[] | undefined
-        >();
+        expectTypeOf(config.criticalHeaders).toEqualTypeOf<string[] | undefined>();
     });
 
     test("HttpDeduplicationConfig accepts full configuration", () => {

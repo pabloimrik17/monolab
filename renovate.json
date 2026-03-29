@@ -34,5 +34,21 @@
             "rangeStrategy": "tilde",
             "matchPackageNames": ["/^expo($|-)/", "/^@expo//"]
         }
+    ],
+    "customManagers": [
+        {
+            "customType": "regex",
+            "description": "Update pinned MCP server versions in opencode.json",
+            "fileMatch": ["^opencode\\.json$"],
+            "matchStrings": ["\"(?<depName>@?[^\"@]+)@(?<currentValue>[^\"]+)\""],
+            "datasourceTemplate": "npm"
+        },
+        {
+            "customType": "regex",
+            "description": "Update pinned MCP server versions in .mcp.json",
+            "fileMatch": ["^\\.mcp\\.json$"],
+            "matchStrings": ["\"(?<depName>@?[^\"@]+)@(?<currentValue>[^\"]+)\""],
+            "datasourceTemplate": "npm"
+        }
     ]
 }
