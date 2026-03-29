@@ -32,7 +32,7 @@ The skill SHALL maintain a `_meta.json` file in each package's cache directory c
 - `repository`: GitHub `owner/repo`
 - `isMonorepo`: boolean, true if `repository.directory` was present
 - `monorepoDirectory`: the `repository.directory` value (or null)
-- `tagFormat`: detected tag format (`v{version}` or `{version}`); set during the first successful Strategy B fetch by recording which format matched
+- `tagFormat`: detected tag format (`v{version}`, `{version}`, or null); set during the first successful Strategy B fetch by recording which format matched, null until Strategy B runs
 - `changelogSource`: primary source that worked (`raw_changelog`, `github_releases`, `cdn`, or null)
 - `changelogFiles`: array of successfully discovered changelog filenames from Strategy A (e.g., `["CHANGELOG.md"]`), or empty array if Strategy A was not used; on subsequent fetches, newly successful filenames SHALL be unioned into the existing array
 - `lastUpdated`: ISO 8601 timestamp of last metadata update
@@ -141,7 +141,7 @@ For each version in the requested range:
 
 #### Scenario: Verified version skipped
 
-- **WHEN** `19.0.0.meta.json` exists with `status: "verified"`
+- **WHEN** `19.0.0.meta.json` exists with `status: "verified"` and `19.0.0.md` exists with matching SHA256
 - **THEN** the skill SHALL NOT re-fetch version 19.0.0
 
 #### Scenario: Failed retryable version re-fetched
