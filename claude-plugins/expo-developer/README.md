@@ -10,9 +10,9 @@ Automatically detects when `package.json` is modified in Expo projects and offer
 
 **Features:**
 
--   Detects Expo projects (expo in dependencies, app.json/app.config.js)
--   Identifies package manager (npm, yarn, pnpm, bun)
--   Offers check-only or auto-fix validation
+- Detects Expo projects (expo in dependencies, app.json/app.config.js)
+- Identifies package manager (npm, yarn, pnpm, bun)
+- Offers check-only or auto-fix validation
 
 ## Testing
 

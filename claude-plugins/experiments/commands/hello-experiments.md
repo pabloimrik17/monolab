@@ -24,8 +24,8 @@ Generate Ralph loop infrastructure for autonomous AI coding. Creates PRD, prompt
 
 Features here may:
 
--   Change without notice
--   Have incomplete documentation
--   Be removed if they don't work out
+- Change without notice
+- Have incomplete documentation
+- Be removed if they don't work out
 
 Stable features will graduate to their own dedicated plugins.
