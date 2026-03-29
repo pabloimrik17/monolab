@@ -16,7 +16,7 @@ function createMockQuote(symbol: string): Quote {
         price: 100,
         change: 1,
         changePercent: 1,
-        updatedAt: new Date("2024-01-01T00:00:00Z"),
+        updatedAt: new Date(),
     };
 }
 

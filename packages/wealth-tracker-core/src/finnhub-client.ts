@@ -33,6 +33,9 @@ export function createFinnhubClient(
     }
 
     const concurrency = options.concurrency ?? DEFAULT_CONCURRENCY;
+    if (!Number.isInteger(concurrency) || concurrency <= 0) {
+        throw new Error("Concurrency must be a positive integer");
+    }
 
     const fetchQuote = async (symbol: string): Promise<Quote> => {
         const url = `${FINNHUB_BASE_URL}/quote?symbol=${encodeURIComponent(

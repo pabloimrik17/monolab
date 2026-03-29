@@ -11,7 +11,7 @@ export async function batchExecute<T, R>(
     const { concurrency } = options;
 
     if (!Number.isInteger(concurrency) || concurrency <= 0) {
-        throw new Error("Concurrency must be a positive integer");
+        throw new Error("concurrency must be a positive integer");
     }
 
     for (let i = 0; i < items.length; i += concurrency) {
