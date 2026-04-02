@@ -22,9 +22,6 @@
             "path": "./packages/wealth-tracker-core"
         },
         {
-            "path": "./apps/wealth-react"
-        },
-        {
             "path": "./packages/solid-clean"
         },
         {
