@@ -25,7 +25,7 @@ export function createTickerStore(storage: Storage): TickerStore {
                     stored.map((t) => [
                         t.symbol,
                         { symbol: t.symbol, addedAt: new Date(t.addedAt) },
-                    ])
+                    ]),
                 );
             } catch {
                 tickers = new Map();
@@ -34,12 +34,10 @@ export function createTickerStore(storage: Storage): TickerStore {
     };
 
     const save = (): void => {
-        const stored: StoredTicker[] = Array.from(tickers.values()).map(
-            (t) => ({
-                symbol: t.symbol,
-                addedAt: t.addedAt.toISOString(),
-            })
-        );
+        const stored: StoredTicker[] = Array.from(tickers.values()).map((t) => ({
+            symbol: t.symbol,
+            addedAt: t.addedAt.toISOString(),
+        }));
         storage.setItem(STORAGE_KEY, JSON.stringify(stored));
     };
 
@@ -68,9 +66,7 @@ export function createTickerStore(storage: Storage): TickerStore {
         },
 
         getTickers(): Ticker[] {
-            return Array.from(tickers.values()).sort((a, b) =>
-                a.symbol.localeCompare(b.symbol)
-            );
+            return Array.from(tickers.values()).sort((a, b) => a.symbol.localeCompare(b.symbol));
         },
     };
 }

@@ -1,5 +1,5 @@
-import type { Quote } from "./types.js";
 import { batchExecute } from "./utils/batch.js";
+import type { Quote } from "./types.js";
 
 const FINNHUB_BASE_URL = "https://finnhub.io/api/v1";
 const DEFAULT_CONCURRENCY = 10;
@@ -26,24 +26,25 @@ interface FinnhubQuoteResponse {
 
 export function createFinnhubClient(
     apiKey: string,
-    options: FinnhubClientOptions = {}
+    options: FinnhubClientOptions = {},
 ): FinnhubClient {
     if (!apiKey) {
         throw new Error("API key is required");
     }
 
     const concurrency = options.concurrency ?? DEFAULT_CONCURRENCY;
+    if (!Number.isInteger(concurrency) || concurrency <= 0) {
+        throw new Error("Concurrency must be a positive integer");
+    }
 
     const fetchQuote = async (symbol: string): Promise<Quote> => {
         const url = `${FINNHUB_BASE_URL}/quote?symbol=${encodeURIComponent(
-            symbol
+            symbol,
         )}&token=${apiKey}`;
         const response = await fetch(url);
 
         if (!response.ok) {
-            throw new Error(
-                `Failed to fetch quote for ${symbol}: ${response.statusText}`
-            );
+            throw new Error(`Failed to fetch quote for ${symbol}: ${response.statusText}`);
         }
 
         const data = (await response.json()) as FinnhubQuoteResponse;

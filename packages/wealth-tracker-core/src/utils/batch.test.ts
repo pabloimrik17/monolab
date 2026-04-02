@@ -5,22 +5,22 @@ describe("batchExecute", () => {
     it("throws if concurrency is zero", async () => {
         const fn = vi.fn(async (n: number) => n);
         await expect(batchExecute([1], fn, { concurrency: 0 })).rejects.toThrow(
-            "Concurrency must be a positive integer"
+            "concurrency must be a positive integer",
         );
     });
 
     it("throws if concurrency is negative", async () => {
         const fn = vi.fn(async (n: number) => n);
-        await expect(
-            batchExecute([1], fn, { concurrency: -1 })
-        ).rejects.toThrow("Concurrency must be a positive integer");
+        await expect(batchExecute([1], fn, { concurrency: -1 })).rejects.toThrow(
+            "concurrency must be a positive integer",
+        );
     });
 
     it("throws if concurrency is not an integer", async () => {
         const fn = vi.fn(async (n: number) => n);
-        await expect(
-            batchExecute([1], fn, { concurrency: 1.5 })
-        ).rejects.toThrow("Concurrency must be a positive integer");
+        await expect(batchExecute([1], fn, { concurrency: 1.5 })).rejects.toThrow(
+            "concurrency must be a positive integer",
+        );
     });
 
     it("executes all items and returns results", async () => {
