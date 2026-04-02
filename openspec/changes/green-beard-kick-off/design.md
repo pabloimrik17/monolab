@@ -33,13 +33,13 @@ SvelteKit generates `.svelte-kit/tsconfig.json` at sync time with paths, module 
 - `composite: false` — SvelteKit uses `noEmit: true`, incompatible with composite
 - `incremental: false` — no value without emit
 - `noEmit: true` — Vite handles build
-- `module: "preserve"` — keep from web.base, SvelteKit sets `esnext` but `preserve` works with bundler resolution
+Note: `.svelte-kit/tsconfig.json` sets `module: "esnext"` which is correct for Vite. No override needed.
 **Alternative**: Copy strictness flags inline — works but drifts from shared config.
 
-### 3. No `project.json` — Nx inference only
-**Choice**: Let Nx infer `dev`, `build`, `preview` from `package.json` scripts
-**Why**: User preference for manual control. SvelteKit scripts are standard (`vite dev`, `vite build`, `vite preview`). Nx crystal plugin handles inference.
-**Alternative**: Explicit `project.json` — unnecessary overhead for standard Vite scripts.
+### 3. Minimal `project.json` following monorepo pattern
+**Choice**: Add minimal `project.json` with `name`, `sourceRoot`, `projectType` (same as `apps/demo`). Targets inferred from `package.json` scripts.
+**Why**: Follows established monorepo pattern. Nx infers targets from `package.json` scripts via `nx:run-script`, `project.json` provides metadata only.
+**Alternative**: No `project.json` — Nx 18+ can discover from pnpm workspace alone, but deviates from existing pattern.
 
 ### 4. Package naming: `@m0n0lab/green-beard`
 **Choice**: Follow monorepo scope convention

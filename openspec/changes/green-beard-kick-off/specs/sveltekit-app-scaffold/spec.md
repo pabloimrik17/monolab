@@ -26,8 +26,8 @@ The tsconfig SHALL use TS 5.5+ array extends to inherit from both `.svelte-kit/t
 - **WHEN** TypeScript resolves the effective config
 - **THEN** `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`, `noPropertyAccessFromIndexSignature`, `noImplicitOverride`, `noImplicitReturns` are all `true`
 
-### Requirement: Nx discovers project via inference
-The app SHALL be discoverable by Nx through `package.json` scripts without a `project.json` file.
+### Requirement: Nx discovers project with minimal project.json
+The app SHALL have a minimal `project.json` following the `apps/demo` pattern, with targets inferred from `package.json` scripts.
 
 #### Scenario: Nx lists the project
 - **WHEN** running `pnpm nx show project @m0n0lab/green-beard`
@@ -37,9 +37,9 @@ The app SHALL be discoverable by Nx through `package.json` scripts without a `pr
 - **WHEN** running `pnpm nx run @m0n0lab/green-beard:dev`
 - **THEN** SvelteKit dev server starts successfully
 
-#### Scenario: No project.json exists
-- **WHEN** checking `apps/green-beard/`
-- **THEN** no `project.json` file exists
+#### Scenario: Minimal project.json exists
+- **WHEN** reading `apps/green-beard/project.json`
+- **THEN** it contains `name`, `sourceRoot`, `projectType` and no explicit targets
 
 ### Requirement: Hello World landing page
 The app SHALL display a Green Beard hello world on the root route.

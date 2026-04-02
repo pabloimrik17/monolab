@@ -8,7 +8,7 @@ Personal plant sales project needs an internal logistics dashboard for managing 
 - Integrate with monorepo tsconfig via array extends (`.svelte-kit/tsconfig.json` + `@m0n0lab/ts-configs/tsconfig.base.json`)
 - Override `composite`/`incremental` to `false` and keep `noEmit: true` for SvelteKit/Vite compatibility
 - Register as pnpm workspace package `@m0n0lab/green-beard`
-- Nx target inference from `package.json` scripts (no `project.json`, no Nx plugin)
+- Minimal `project.json` for Nx metadata (follows `apps/demo` pattern), targets inferred from `package.json` scripts, no Nx plugin
 - Hello World landing page confirming setup works
 
 ## Capabilities
@@ -23,5 +23,5 @@ Personal plant sales project needs an internal logistics dashboard for managing 
 
 - **New dependency tree**: `svelte`, `@sveltejs/kit`, `@sveltejs/adapter-auto`, `vite` added to workspace
 - **pnpm workspace**: new `apps/green-beard` package auto-discovered via `apps/*` glob
-- **Nx**: new project inferred, targets: `dev`, `build`, `preview`
+- **Nx**: new project with minimal `project.json`, targets inferred from scripts: `dev`, `build`, `preview`
 - **tsconfig**: monorepo strictness flags applied to SvelteKit app, potential `exactOptionalPropertyTypes` friction with Svelte types (accepted risk)

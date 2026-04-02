@@ -1,0 +1,12 @@
+{
+    "extends": ["./.svelte-kit/tsconfig.json", "@m0n0lab/ts-configs/tsconfig.base.json"],
+    "compilerOptions": {
+        "composite": false,
+        "incremental": false,
+        "noEmit": true,
+        "rewriteRelativeImportExtensions": true,
+        "checkJs": true,
+        "sourceMap": true,
+        "moduleResolution": "bundler"
+    }
+}
