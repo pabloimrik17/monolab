@@ -2,7 +2,7 @@
 
 import type { MenuItemDto, OrderDto, SessionDto } from "@m0n0lab/qup-shared";
 
-const API_URL = "http://localhost:3001";
+const API_URL = process.env["QUP_API_URL"] ?? "http://localhost:3001";
 
 export async function getSessionByCode(code: string): Promise<SessionDto> {
     const res = await fetch(`${API_URL}/sessions/code/${code}`);

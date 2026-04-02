@@ -37,7 +37,14 @@ export default function AdminLoginPage() {
                     onSubmit={handleSubmit}
                     class="space-y-4"
                 >
+                    <label
+                        for="admin-pin"
+                        class="sr-only"
+                    >
+                        PIN
+                    </label>
                     <input
+                        id="admin-pin"
                         type="password"
                         inputMode="numeric"
                         placeholder="PIN"

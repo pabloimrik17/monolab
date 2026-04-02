@@ -46,24 +46,38 @@ export class PgMenuItemRepository implements MenuItemRepository {
 
     update(menuItem: MenuItem): ResultAsync<void, PersistenceError> {
         return ResultAsync.fromPromise(
-            this.db
-                .update(menuItems)
-                .set({
-                    name: menuItem.name,
-                    category: menuItem.category,
-                    description: menuItem.description ?? null,
-                    available: menuItem.available,
-                    sortOrder: menuItem.sortOrder,
-                })
-                .where(eq(menuItems.id, menuItem.id)),
+            (async () => {
+                const updated = await this.db
+                    .update(menuItems)
+                    .set({
+                        name: menuItem.name,
+                        category: menuItem.category,
+                        description: menuItem.description ?? null,
+                        available: menuItem.available,
+                        sortOrder: menuItem.sortOrder,
+                    })
+                    .where(eq(menuItems.id, menuItem.id))
+                    .returning({ id: menuItems.id });
+                if (updated.length === 0) {
+                    throw new Error(`MenuItem ${menuItem.id} not found`);
+                }
+            })(),
             (e) => new PersistenceError(e),
-        ).map(() => undefined);
+        );
     }
 
     delete(id: string): ResultAsync<void, PersistenceError> {
         return ResultAsync.fromPromise(
-            this.db.delete(menuItems).where(eq(menuItems.id, id)),
+            (async () => {
+                const deleted = await this.db
+                    .delete(menuItems)
+                    .where(eq(menuItems.id, id))
+                    .returning({ id: menuItems.id });
+                if (deleted.length === 0) {
+                    throw new Error(`MenuItem ${id} not found`);
+                }
+            })(),
             (e) => new PersistenceError(e),
-        ).map(() => undefined);
+        );
     }
 }

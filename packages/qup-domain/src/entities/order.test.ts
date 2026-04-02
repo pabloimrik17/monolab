@@ -10,7 +10,7 @@ const makeItem = (
         menuItemId: overrides?.menuItemId ?? "item-1",
         menuItemName: overrides?.menuItemName ?? "Espresso",
         quantity: overrides?.quantity ?? 1,
-    });
+    })._unsafeUnwrap();
 
 describe("Order", () => {
     describe("create", () => {
@@ -60,6 +60,7 @@ describe("Order", () => {
                 guestName: "  Bob  ",
                 items: [makeItem()],
             });
+            expect(result.isOk()).toBe(true);
             if (result.isOk()) {
                 expect(result.value.guestName).toBe("Bob");
             }
@@ -73,6 +74,7 @@ describe("Order", () => {
                 guestName: "Alice",
                 items: [makeItem()],
             });
+            expect(order.isOk()).toBe(true);
             if (order.isOk()) {
                 const result = order.value.markPreparing();
                 expect(result.isOk()).toBe(true);
@@ -120,6 +122,7 @@ describe("Order", () => {
                 guestName: "Alice",
                 items: [makeItem()],
             });
+            expect(order.isOk()).toBe(true);
             if (order.isOk()) {
                 const result = order.value.markDone();
                 expect(result.isErr()).toBe(true);
@@ -134,6 +137,7 @@ describe("Order", () => {
                 guestName: "Alice",
                 items: [makeItem()],
             });
+            expect(order.isOk()).toBe(true);
             if (order.isOk()) {
                 const result = order.value.cancel();
                 expect(result.isOk()).toBe(true);

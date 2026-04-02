@@ -82,8 +82,15 @@ export function orderRoutes(container: Container) {
         const body = await c.req.json<UpdateOrderStatusRequest>();
         const uc = container.get<UpdateOrderStatusUseCase>(TOKENS.UpdateOrderStatusUseCase);
 
-        const action = body.status === "PREPARING" ? "preparing" : "done";
-        const result = await uc.execute(id, action as "preparing" | "done");
+        const action =
+            body.status === "PREPARING" ? "preparing" : body.status === "DONE" ? "done" : null;
+        if (action === null) {
+            return c.json(
+                { code: "VALIDATION_ERROR", message: "Invalid status value", statusCode: 422 },
+                422,
+            );
+        }
+        const result = await uc.execute(id, action);
 
         return result.match(
             () => c.json({ ok: true }),

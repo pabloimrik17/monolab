@@ -42,11 +42,17 @@ export class PgSessionRepository implements SessionRepository {
 
     updateStatus(session: Session): ResultAsync<void, PersistenceError> {
         return ResultAsync.fromPromise(
-            this.db
-                .update(sessions)
-                .set({ status: session.status, closedAt: session.closedAt ?? null })
-                .where(eq(sessions.id, session.id)),
+            (async () => {
+                const updated = await this.db
+                    .update(sessions)
+                    .set({ status: session.status, closedAt: session.closedAt ?? null })
+                    .where(eq(sessions.id, session.id))
+                    .returning({ id: sessions.id });
+                if (updated.length === 0) {
+                    throw new Error(`Session ${session.id} not found`);
+                }
+            })(),
             (e) => new PersistenceError(e),
-        ).map(() => undefined);
+        );
     }
 }

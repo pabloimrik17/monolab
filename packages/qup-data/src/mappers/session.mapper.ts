@@ -5,10 +5,14 @@ type SessionRow = typeof sessions.$inferSelect;
 type SessionInsert = typeof sessions.$inferInsert;
 
 export function sessionToDomain(row: SessionRow): Session {
+    const codeResult = SessionCode.from(row.code);
+    if (codeResult.isErr()) {
+        throw new Error(`Invalid persisted session code: ${row.id}`);
+    }
     return Session.reconstitute({
         id: row.id,
         name: row.name,
-        code: SessionCode.from(row.code)._unsafeUnwrap(),
+        code: codeResult.value,
         status: row.status as SessionStatus,
         createdAt: row.createdAt,
         closedAt: row.closedAt ?? undefined,

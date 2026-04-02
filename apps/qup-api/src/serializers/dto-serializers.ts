@@ -17,8 +17,8 @@ export function toOrderDto(order: Order): OrderDto {
         id: order.id,
         sessionId: order.sessionId,
         guestName: order.guestName,
-        items: order.items.map((item) => ({
-            id: crypto.randomUUID(),
+        items: order.items.map((item, index) => ({
+            id: `${order.id}:${item.menuItemId}:${index}`,
             menuItemId: item.menuItemId,
             menuItemName: item.menuItemName,
             quantity: item.quantity,

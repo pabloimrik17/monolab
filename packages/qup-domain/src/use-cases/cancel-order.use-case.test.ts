@@ -12,7 +12,13 @@ const makeOrder = (status: OrderStatus = OrderStatus.PENDING) =>
         id: "o1",
         sessionId: "s1",
         guestName: "Alice",
-        items: [OrderItem.create({ menuItemId: "mi1", menuItemName: "Espresso", quantity: 1 })],
+        items: [
+            OrderItem.create({
+                menuItemId: "mi1",
+                menuItemName: "Espresso",
+                quantity: 1,
+            })._unsafeUnwrap(),
+        ],
         status,
         createdAt: new Date(),
         updatedAt: new Date(),

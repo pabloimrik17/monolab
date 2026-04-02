@@ -94,7 +94,7 @@ export class MenuItem {
         if (props.category !== undefined) {
             this._category = props.category;
         }
-        if (props.description !== undefined) {
+        if ("description" in props) {
             this._description = props.description;
         }
         if (props.available !== undefined) {

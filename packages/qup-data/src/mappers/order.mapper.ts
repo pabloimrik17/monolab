@@ -8,14 +8,18 @@ type OrderItemRow = typeof orderItems.$inferSelect;
 type OrderItemInsert = typeof orderItems.$inferInsert;
 
 export function orderToDomain(row: OrderRow, itemRows: OrderItemRow[]): Order {
-    const items = itemRows.map((ir) =>
-        OrderItem.create({
+    const items = itemRows.map((ir) => {
+        const result = OrderItem.create({
             menuItemId: ir.menuItemId,
             menuItemName: ir.menuItemName,
             quantity: ir.quantity,
             ...(ir.customization != null && { customization: ir.customization }),
-        }),
-    );
+        });
+        if (result.isErr()) {
+            throw new Error(`Invalid persisted order item in order: ${row.id}`);
+        }
+        return result.value;
+    });
 
     return Order.reconstitute({
         id: row.id,

@@ -2,7 +2,12 @@ import { serve } from "@hono/node-server";
 import { createApp } from "./app.ts";
 import { createContainer } from "./container.ts";
 
-const port = Number(process.env["PORT"] ?? 3001);
+const parsedPort = Number(process.env["PORT"] ?? 3001);
+if (!Number.isInteger(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
+    console.error(`Invalid PORT: ${process.env["PORT"]}`);
+    process.exit(1);
+}
+const port = parsedPort;
 
 if (!process.env["API_ADMIN_PIN"]) {
     console.error("API_ADMIN_PIN env var is required");

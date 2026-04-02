@@ -10,7 +10,11 @@ export function createContainer(): Container {
     const container = new Container();
 
     // Database
-    const pool = new pg.Pool({ connectionString: process.env["DATABASE_URL"] });
+    const connectionString = process.env["DATABASE_URL"];
+    if (!connectionString) {
+        throw new Error("DATABASE_URL is required");
+    }
+    const pool = new pg.Pool({ connectionString });
     const db = drizzle(pool);
     container.bind(DATA_TOKENS.DrizzleDb).toConstantValue(db);
 

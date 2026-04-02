@@ -21,6 +21,7 @@ describe("Session", () => {
 
         it("trims the session name", () => {
             const result = Session.create({ name: "  Coffee Run  " });
+            expect(result.isOk()).toBe(true);
             if (result.isOk()) {
                 expect(result.value.name).toBe("Coffee Run");
             }
@@ -43,6 +44,7 @@ describe("Session", () => {
     describe("close", () => {
         it("closes an open session", () => {
             const session = Session.create({ name: "Test" });
+            expect(session.isOk()).toBe(true);
             if (session.isOk()) {
                 const result = session.value.close();
                 expect(result.isOk()).toBe(true);
@@ -53,6 +55,7 @@ describe("Session", () => {
 
         it("returns SessionAlreadyClosedError when closing a closed session", () => {
             const session = Session.create({ name: "Test" });
+            expect(session.isOk()).toBe(true);
             if (session.isOk()) {
                 session.value.close();
                 const result = session.value.close();
@@ -67,6 +70,7 @@ describe("Session", () => {
     describe("isOpen", () => {
         it("returns true for open session", () => {
             const session = Session.create({ name: "Test" });
+            expect(session.isOk()).toBe(true);
             if (session.isOk()) {
                 expect(session.value.isOpen()).toBe(true);
             }
@@ -74,6 +78,7 @@ describe("Session", () => {
 
         it("returns false for closed session", () => {
             const session = Session.create({ name: "Test" });
+            expect(session.isOk()).toBe(true);
             if (session.isOk()) {
                 session.value.close();
                 expect(session.value.isOpen()).toBe(false);

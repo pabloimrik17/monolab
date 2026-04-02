@@ -79,11 +79,17 @@ export class PgOrderRepository implements OrderRepository {
 
     updateStatus(order: Order): ResultAsync<void, PersistenceError> {
         return ResultAsync.fromPromise(
-            this.db
-                .update(orders)
-                .set({ status: order.status.value, updatedAt: order.updatedAt })
-                .where(eq(orders.id, order.id)),
+            (async () => {
+                const updated = await this.db
+                    .update(orders)
+                    .set({ status: order.status.value, updatedAt: order.updatedAt })
+                    .where(eq(orders.id, order.id))
+                    .returning({ id: orders.id });
+                if (updated.length === 0) {
+                    throw new Error(`Order ${order.id} not found`);
+                }
+            })(),
             (e) => new PersistenceError(e),
-        ).map(() => undefined);
+        );
     }
 }

@@ -28,6 +28,7 @@ describe("MenuItem", () => {
                 available: false,
                 sortOrder: 5,
             });
+            expect(result.isOk()).toBe(true);
             if (result.isOk()) {
                 expect(result.value.description).toBe("Milk coffee");
                 expect(result.value.available).toBe(false);
@@ -51,6 +52,7 @@ describe("MenuItem", () => {
                 name: "  Espresso  ",
                 category: Category.COFFEE,
             });
+            expect(result.isOk()).toBe(true);
             if (result.isOk()) {
                 expect(result.value.name).toBe("Espresso");
             }
@@ -63,6 +65,7 @@ describe("MenuItem", () => {
                 name: "Espresso",
                 category: Category.COFFEE,
             });
+            expect(result.isOk()).toBe(true);
             if (result.isOk()) {
                 result.value.toggleAvailability();
                 expect(result.value.available).toBe(false);
@@ -75,6 +78,7 @@ describe("MenuItem", () => {
                 category: Category.COFFEE,
                 available: false,
             });
+            expect(result.isOk()).toBe(true);
             if (result.isOk()) {
                 result.value.toggleAvailability();
                 expect(result.value.available).toBe(true);
@@ -88,6 +92,7 @@ describe("MenuItem", () => {
                 name: "Espresso",
                 category: Category.COFFEE,
             });
+            expect(result.isOk()).toBe(true);
             if (result.isOk()) {
                 const updateResult = result.value.update({
                     name: "Green Tea",
@@ -104,6 +109,7 @@ describe("MenuItem", () => {
                 name: "Espresso",
                 category: Category.COFFEE,
             });
+            expect(result.isOk()).toBe(true);
             if (result.isOk()) {
                 const updateResult = result.value.update({ name: "" });
                 expect(updateResult.isErr()).toBe(true);
@@ -119,6 +125,7 @@ describe("MenuItem", () => {
                 category: Category.COFFEE,
                 sortOrder: 1,
             });
+            expect(result.isOk()).toBe(true);
             if (result.isOk()) {
                 result.value.update({ sortOrder: 10 });
                 expect(result.value.name).toBe("Espresso");

@@ -2,7 +2,7 @@
     "name": "@m0n0lab/qup-api",
     "targets": {
         "dev": {
-            "dependsOn": ["^build", "^dev", "dev:migrate"]
+            "dependsOn": ["^build", "dev:migrate"]
         }
     }
 }

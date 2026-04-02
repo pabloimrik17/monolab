@@ -44,7 +44,7 @@ export default function StatusPage() {
                     <p class="text-center text-red-600">{vm.error()}</p>
                 </Show>
 
-                <Show when={vm.orders().length === 0 && !vm.loading()}>
+                <Show when={vm.orders().length === 0 && !vm.loading() && !vm.error()}>
                     <p class="text-center text-stone-500">No orders yet</p>
                 </Show>
 

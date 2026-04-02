@@ -35,9 +35,10 @@ export function errorToHttp(error: DomainError): number {
 }
 
 export function toApiError(error: DomainError): ApiErrorDto {
+    const statusCode = errorToHttp(error);
     return {
         code: error.code,
-        message: error.message,
-        statusCode: errorToHttp(error),
+        message: statusCode >= 500 ? "Internal server error" : error.message,
+        statusCode,
     };
 }

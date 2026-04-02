@@ -14,8 +14,9 @@ export class SessionCode {
 
     static generate(): SessionCode {
         let code = "";
+        const bytes = crypto.getRandomValues(new Uint32Array(CODE_LENGTH));
         for (let i = 0; i < CODE_LENGTH; i++) {
-            code += CODE_CHARS.charAt(Math.floor(Math.random() * CODE_CHARS.length));
+            code += CODE_CHARS.charAt(bytes[i]! % CODE_CHARS.length);
         }
         return new SessionCode(code);
     }

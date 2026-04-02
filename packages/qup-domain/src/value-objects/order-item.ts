@@ -1,3 +1,6 @@
+import { err, ok, type Result } from "neverthrow";
+import { ValidationError } from "../errors.ts";
+
 export class OrderItem {
     readonly menuItemId: string;
     readonly menuItemName: string;
@@ -23,11 +26,11 @@ export class OrderItem {
         menuItemName: string;
         quantity: number;
         customization?: string;
-    }): OrderItem {
+    }): Result<OrderItem, ValidationError> {
         if (props.quantity <= 0) {
-            throw new Error("Quantity must be greater than 0");
+            return err(new ValidationError("Quantity must be greater than 0"));
         }
-        return new OrderItem(props);
+        return ok(new OrderItem(props));
     }
 
     equals(other: OrderItem): boolean {

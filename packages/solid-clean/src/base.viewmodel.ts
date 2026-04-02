@@ -10,9 +10,17 @@ export abstract class BaseViewModel {
     didMount(_owner?: Owner): Promise<void> | void {}
 
     willUnmount(): void {
+        const errors: unknown[] = [];
         for (const cleanup of this.cleanups) {
-            cleanup();
+            try {
+                cleanup();
+            } catch (e) {
+                errors.push(e);
+            }
         }
         this.cleanups = [];
+        if (errors.length > 0) {
+            throw new AggregateError(errors, "Errors during cleanup");
+        }
     }
 }

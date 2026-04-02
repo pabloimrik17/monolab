@@ -70,16 +70,18 @@ export class CreateOrderUseCase {
                     if (!menuItem.available) {
                         return errAsync(new MenuItemNotAvailableErrorClass(itemInput.menuItemId));
                     }
-                    orderItems.push(
-                        OrderItem.create({
-                            menuItemId: menuItem.id,
-                            menuItemName: menuItem.name,
-                            quantity: itemInput.quantity,
-                            ...(itemInput.customization != null && {
-                                customization: itemInput.customization,
-                            }),
+                    const itemResult = OrderItem.create({
+                        menuItemId: menuItem.id,
+                        menuItemName: menuItem.name,
+                        quantity: itemInput.quantity,
+                        ...(itemInput.customization != null && {
+                            customization: itemInput.customization,
                         }),
-                    );
+                    });
+                    if (itemResult.isErr()) {
+                        return errAsync(itemResult.error);
+                    }
+                    orderItems.push(itemResult.value);
                 }
 
                 const orderResult = Order.create({
@@ -94,10 +96,14 @@ export class CreateOrderUseCase {
                 }
 
                 return this.orderRepo.save(orderResult.value).map((saved) => {
-                    this.eventBus.emit("order:created", {
-                        orderId: saved.id,
-                        sessionId: saved.sessionId,
-                    });
+                    try {
+                        this.eventBus.emit("order:created", {
+                            orderId: saved.id,
+                            sessionId: saved.sessionId,
+                        });
+                    } catch {
+                        // Event emission failure should not fail the operation
+                    }
                     return saved;
                 });
             });

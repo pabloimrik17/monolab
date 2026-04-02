@@ -11,11 +11,12 @@ import type {
     UpdateOrderStatusRequest,
 } from "@m0n0lab/qup-shared";
 
-const API_URL = "http://localhost:3001";
+const API_URL = process.env["QUP_API_URL"] ?? "http://localhost:3001";
 
 function adminHeaders(): Record<string, string> {
     const pin = process.env["API_ADMIN_PIN"];
-    return pin ? { "X-Admin-Pin": pin } : {};
+    if (!pin) throw new Error("API_ADMIN_PIN is required");
+    return { "X-Admin-Pin": pin };
 }
 
 async function post<T>(path: string, body?: unknown, admin = false): Promise<T> {

@@ -3,6 +3,7 @@ import { streamSSE } from "hono/streaming";
 import { type EventBus, type GetSessionByCodeUseCase, Order, TOKENS } from "@m0n0lab/qup-domain";
 import { toApiError } from "../errors/error-mapping.ts";
 import { toOrderDto } from "../serializers/dto-serializers.ts";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { Container } from "inversify";
 
 export function eventRoutes(container: Container) {
@@ -17,7 +18,7 @@ export function eventRoutes(container: Container) {
 
         if (sessionResult.isErr()) {
             const dto = toApiError(sessionResult.error);
-            return c.json(dto, dto.statusCode as 404);
+            return c.json(dto, dto.statusCode as ContentfulStatusCode);
         }
 
         const session = sessionResult.value;

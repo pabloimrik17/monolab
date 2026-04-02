@@ -12,7 +12,13 @@ describe("GetSessionOrdersUseCase", () => {
             id: "o1",
             sessionId: "s1",
             guestName: "Alice",
-            items: [OrderItem.create({ menuItemId: "mi1", menuItemName: "Espresso", quantity: 1 })],
+            items: [
+                OrderItem.create({
+                    menuItemId: "mi1",
+                    menuItemName: "Espresso",
+                    quantity: 1,
+                })._unsafeUnwrap(),
+            ],
             status: OrderStatus.PENDING,
             createdAt: new Date(),
             updatedAt: new Date(),
