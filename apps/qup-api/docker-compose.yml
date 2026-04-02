@@ -22,8 +22,8 @@ services:
         ports:
             - "3001:3001"
         environment:
-            API_ADMIN_PIN: ${API_ADMIN_PIN:-change-me}
-            DATABASE_URL: postgres://qup:qup@postgres:5432/qup
+            API_ADMIN_PIN: ${API_ADMIN_PIN:?API_ADMIN_PIN is required}
+            DATABASE_URL: postgres://${POSTGRES_USER:-qup}:${POSTGRES_PASSWORD:-qup}@postgres:5432/${POSTGRES_DB:-qup}
             PORT: "3001"
         depends_on:
             postgres:

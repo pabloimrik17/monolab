@@ -27,10 +27,14 @@ export class CancelOrderUseCase {
             }
 
             return this.orderRepo.updateStatus(order).map(() => {
-                this.eventBus.emit("order:cancelled", {
-                    orderId: order.id,
-                    sessionId: order.sessionId,
-                });
+                try {
+                    this.eventBus.emit("order:cancelled", {
+                        orderId: order.id,
+                        sessionId: order.sessionId,
+                    });
+                } catch {
+                    // Event emission failure should not fail the operation
+                }
             });
         });
     }

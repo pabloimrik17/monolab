@@ -94,6 +94,10 @@ export class CreateOrderViewModel extends BaseViewModel {
     }
 
     override async didMount(): Promise<void> {
+        if (!this._sessionCode) {
+            this._error[1]("Missing session code");
+            return;
+        }
         this._loading[1](true);
         try {
             const [session, menu] = await Promise.all([
@@ -112,6 +116,19 @@ export class CreateOrderViewModel extends BaseViewModel {
     }
 
     async submitOrder(): Promise<void> {
+        if (this._loading[0]() || this._submitted[0]()) return;
+        if (this._closed[0]()) {
+            this._error[1]("Session is closed");
+            return;
+        }
+        if (this._cart[0]().length === 0) {
+            this._error[1]("Cart is empty");
+            return;
+        }
+        if (!this._guestName[0]().trim()) {
+            this._error[1]("Guest name is required");
+            return;
+        }
         this._error[1]("");
         this._loading[1](true);
         try {

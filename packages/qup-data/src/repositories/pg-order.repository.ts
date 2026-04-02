@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { asc, eq, inArray } from "drizzle-orm";
 import { inject, injectable } from "inversify";
 import { ResultAsync } from "neverthrow";
 import { PersistenceError, type Order } from "@m0n0lab/qup-domain";
@@ -40,7 +40,8 @@ export class PgOrderRepository implements OrderRepository {
                 const items = await this.db
                     .select()
                     .from(orderItems)
-                    .where(eq(orderItems.orderId, id));
+                    .where(eq(orderItems.orderId, id))
+                    .orderBy(asc(orderItems.menuItemId));
 
                 return orderToDomain(rows[0]!, items);
             })(),
@@ -54,7 +55,8 @@ export class PgOrderRepository implements OrderRepository {
                 const orderRows = await this.db
                     .select()
                     .from(orders)
-                    .where(eq(orders.sessionId, sessionId));
+                    .where(eq(orders.sessionId, sessionId))
+                    .orderBy(asc(orders.createdAt));
 
                 if (orderRows.length === 0) return [];
 
@@ -62,7 +64,8 @@ export class PgOrderRepository implements OrderRepository {
                 const allItems = await this.db
                     .select()
                     .from(orderItems)
-                    .where(inArray(orderItems.orderId, orderIds));
+                    .where(inArray(orderItems.orderId, orderIds))
+                    .orderBy(asc(orderItems.menuItemId));
 
                 const itemsByOrderId = new Map<string, (typeof allItems)[number][]>();
                 for (const item of allItems) {

@@ -38,6 +38,10 @@ export class JoinSessionViewModel extends BaseViewModel {
     }
 
     override async didMount(): Promise<void> {
+        if (!this._code) {
+            this._error[1]("Session code is required");
+            return;
+        }
         this._loading[1](true);
         try {
             const [session, menu] = await Promise.all([getSessionByCode(this._code), getMenu()]);

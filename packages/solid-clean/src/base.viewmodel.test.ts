@@ -52,7 +52,7 @@ describe("BaseViewModel", () => {
     it("should call didMount without owner", () => {
         class MountVM extends BaseViewModel {
             mountCalled = false;
-            override didMount(_owner?: Owner): void {
+            override didMount(): void {
                 this.mountCalled = true;
             }
         }

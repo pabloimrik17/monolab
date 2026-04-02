@@ -1,7 +1,12 @@
 import { eq } from "drizzle-orm";
 import { inject, injectable } from "inversify";
 import { ResultAsync } from "neverthrow";
-import { PersistenceError, type Session, type SessionCode } from "@m0n0lab/qup-domain";
+import {
+    PersistenceError,
+    SessionStatus,
+    type Session,
+    type SessionCode,
+} from "@m0n0lab/qup-domain";
 import { sessionToDomain, sessionToRow } from "../mappers/session.mapper.ts";
 import { sessions } from "../schema/sessions.ts";
 import { DATA_TOKENS } from "../tokens.ts";
@@ -28,7 +33,7 @@ export class PgSessionRepository implements SessionRepository {
 
     findActive(): ResultAsync<Session[], PersistenceError> {
         return ResultAsync.fromPromise(
-            this.db.select().from(sessions).where(eq(sessions.status, "OPEN")),
+            this.db.select().from(sessions).where(eq(sessions.status, SessionStatus.OPEN)),
             (e) => new PersistenceError(e),
         ).map((rows) => rows.map(sessionToDomain));
     }

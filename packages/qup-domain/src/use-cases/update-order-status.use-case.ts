@@ -30,12 +30,16 @@ export class UpdateOrderStatusUseCase {
             }
 
             return this.orderRepo.updateStatus(order).map(() => {
-                this.eventBus.emit("order:status", {
-                    orderId: order.id,
-                    sessionId: order.sessionId,
-                    status: order.status.value,
-                    updatedAt: order.updatedAt,
-                });
+                try {
+                    this.eventBus.emit("order:status", {
+                        orderId: order.id,
+                        sessionId: order.sessionId,
+                        status: order.status.value,
+                        updatedAt: order.updatedAt,
+                    });
+                } catch {
+                    // Event emission failure should not fail the operation
+                }
             });
         });
     }

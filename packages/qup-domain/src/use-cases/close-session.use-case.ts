@@ -31,7 +31,11 @@ export class CloseSessionUseCase {
             }
 
             return this.sessionRepo.updateStatus(session).map(() => {
-                this.eventBus.emit("session:closed", { sessionId: session.id });
+                try {
+                    this.eventBus.emit("session:closed", { sessionId: session.id });
+                } catch {
+                    // Event emission failure should not fail the operation
+                }
             });
         });
     }

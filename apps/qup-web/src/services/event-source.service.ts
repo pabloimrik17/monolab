@@ -6,7 +6,11 @@ export class EventSourceService {
         const source = new EventSource(url);
         for (const [event, handler] of Object.entries(handlers)) {
             source.addEventListener(event, (e: MessageEvent) => {
-                handler(JSON.parse(e.data as string));
+                try {
+                    handler(JSON.parse(e.data as string));
+                } catch {
+                    // Ignore malformed SSE data
+                }
             });
         }
         return () => source.close();
