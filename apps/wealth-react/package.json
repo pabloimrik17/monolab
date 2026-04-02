@@ -1,0 +1,35 @@
+{
+    "name": "@m0n0lab/wealth-react",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "react-router build",
+        "dev": "react-router dev",
+        "lint:eslint": "eslint --cache --max-warnings 60 .",
+        "lint:knip": "knip --max-issues 100",
+        "lint:prettier": "prettier . --check",
+        "start": "react-router-serve ./build/server/index.js",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@m0n0lab/wealth-tracker-core": "workspace:*",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "react-router": "^7.6.0"
+    },
+    "devDependencies": {
+        "@react-router/dev": "^7.6.0",
+        "@react-router/node": "^7.6.0",
+        "@react-router/serve": "^7.6.0",
+        "@types/react": "^19.0.0",
+        "@types/react-dom": "^19.0.0",
+        "typescript": "5.9.3",
+        "vite": "6.4.1"
+    },
+    "packageManager": "pnpm@10.27.0",
+    "engines": {
+        "node": "^20.18.0 || >=22.0.0",
+        "pnpm": "10.27.0"
+    }
+}
