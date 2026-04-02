@@ -16,7 +16,7 @@
 - [x] 2.3 Implement `useViewModel` hook — factory call, getOwner(), onMount→didMount, onCleanup→willUnmount
 - [x] 2.4 Write integration tests for useViewModel with Solid testing environment
 - [x] 2.5 Export BaseViewModel and useViewModel from index.ts
-- [ ] 2.6 Verify build: `nx run @m0n0lab/solid-clean:build` and validate exports with `attw --pack`
+- [x] 2.6 Verify build: `nx run @m0n0lab/solid-clean:build` and validate exports with `attw --pack`
 
 ## 3. qup-domain — value objects and entities
 
@@ -69,7 +69,7 @@
 - [x] 5.3 Define request types: `CreateOrderRequest`, `CreateSessionRequest`, `CreateMenuItemRequest`, `UpdateMenuItemRequest`, `UpdateOrderStatusRequest`
 - [x] 5.4 Define SSE event payload types: `OrderCreatedEvent`, `OrderStatusEvent`, `OrderCancelledEvent`, `SessionClosedEvent`
 - [x] 5.5 Export all from index.ts
-- [ ] 5.6 Verify build: `nx run @m0n0lab/qup-shared:build` and validate exports with `attw --pack`
+- [x] 5.6 Verify build: `nx run @m0n0lab/qup-shared:build` and validate exports with `attw --pack`
 
 ## 6. qup-data — Drizzle schema and repositories
 
@@ -136,4 +136,4 @@
 - [x] 9.1 Verify `nx run-many --target=build` succeeds for all qup projects
 - [x] 9.2 Verify `nx run-many --target=test` passes for solid-clean, qup-domain, qup-api
 - [ ] 9.3 End-to-end manual test: full guest + admin flow on local network
-- [ ] 9.4 Verify `attw --pack` passes for solid-clean and qup-shared (publishable packages)
+- [x] 9.4 Verify `attw --pack` passes for solid-clean and qup-shared (publishable packages)
