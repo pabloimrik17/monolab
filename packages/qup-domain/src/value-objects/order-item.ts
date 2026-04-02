@@ -21,6 +21,15 @@ export class OrderItem {
         }
     }
 
+    static reconstitute(props: {
+        menuItemId: string;
+        menuItemName: string;
+        quantity: number;
+        customization?: string;
+    }): OrderItem {
+        return new OrderItem(props);
+    }
+
     static create(props: {
         menuItemId: string;
         menuItemName: string;

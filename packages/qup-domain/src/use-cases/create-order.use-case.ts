@@ -98,7 +98,7 @@ export class CreateOrderUseCase {
                 return this.orderRepo.save(orderResult.value).map((saved) => {
                     try {
                         this.eventBus.emit("order:created", {
-                            orderId: saved.id,
+                            order: saved,
                             sessionId: saved.sessionId,
                         });
                     } catch {

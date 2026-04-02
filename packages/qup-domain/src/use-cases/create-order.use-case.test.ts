@@ -89,7 +89,8 @@ describe("CreateOrderUseCase", () => {
             expect(mockEventBus.emit).toHaveBeenCalledWith(
                 "order:created",
                 expect.objectContaining({
-                    orderId: result.value.id,
+                    order: result.value,
+                    sessionId: result.value.sessionId,
                 }),
             );
         }

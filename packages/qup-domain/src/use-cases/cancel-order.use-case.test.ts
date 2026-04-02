@@ -39,7 +39,10 @@ describe("CancelOrderUseCase", () => {
         const result = await useCase.execute("o1");
 
         expect(result.isOk()).toBe(true);
-        expect(mockEventBus.emit).toHaveBeenCalledWith("order:cancelled", { orderId: "o1" });
+        expect(mockEventBus.emit).toHaveBeenCalledWith("order:cancelled", {
+            orderId: "o1",
+            sessionId: "s1",
+        });
     });
 
     it("returns OrderNotFoundError for unknown id", async () => {

@@ -18,8 +18,9 @@ export function menuRoutes(container: Container) {
 
     // GET /menu
     app.get("/", async (c) => {
+        const available = c.req.query("available");
         const uc = container.get<GetMenuUseCase>(TOKENS.GetMenuUseCase);
-        const result = await uc.execute();
+        const result = await uc.execute(available === "true" ? { availableOnly: true } : undefined);
 
         return result.match(
             (items) => c.json(items.map(toMenuItemDto)),
@@ -83,7 +84,7 @@ export function menuRoutes(container: Container) {
         const result = await uc.execute(id);
 
         return result.match(
-            () => c.json({ ok: true }),
+            () => c.body(null, 204),
             (error) => {
                 const dto = toApiError(error);
                 return c.json(dto, dto.statusCode as 404);

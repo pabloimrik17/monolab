@@ -7,7 +7,7 @@ export function adminOnly() {
 
         if (!pin || pin !== expected) {
             return c.json(
-                { code: "UNAUTHORIZED", message: "Invalid admin pin", statusCode: 401 },
+                { code: "UNAUTHORIZED", message: "Invalid admin PIN", statusCode: 401 },
                 401,
             );
         }

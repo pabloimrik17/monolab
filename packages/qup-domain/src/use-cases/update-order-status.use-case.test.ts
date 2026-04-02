@@ -41,7 +41,9 @@ describe("UpdateOrderStatusUseCase", () => {
         expect(result.isOk()).toBe(true);
         expect(mockEventBus.emit).toHaveBeenCalledWith("order:status", {
             orderId: "o1",
+            sessionId: "s1",
             status: "PREPARING",
+            updatedAt: expect.any(Date),
         });
     });
 
