@@ -27,7 +27,12 @@ export function AddTicker({ onAdd }: AddTickerProps) {
                 placeholder="Enter ticker symbol"
                 aria-label="Ticker symbol"
             />
-            <button type="submit">Add</button>
+            <button
+                type="submit"
+                disabled={!value.trim()}
+            >
+                Add
+            </button>
         </form>
     );
 }
