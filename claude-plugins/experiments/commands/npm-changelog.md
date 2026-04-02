@@ -48,7 +48,7 @@ Parse the JSON output:
 
 - Extract `url` field → strip `git+`, `ssh://`, `.git` suffix → extract `{owner}/{repo}` from the GitHub URL
 - Extract `directory` field (if present) → this indicates a **monorepo** sub-package
-- If `url` does not contain `github.com`, output error: **"Only GitHub-hosted packages are supported. Repository URL: {url}"** and **stop**.
+- Parse the URL hostname and verify it is exactly `github.com`. If not, output error: **"Only GitHub-hosted packages are supported. Repository URL: {url}"** and **stop**.
 
 Store: `OWNER`, `REPO`, `IS_MONOREPO` (boolean), `MONOREPO_DIR` (string or null).
 
@@ -162,7 +162,8 @@ If raw source is not cached (per TTL check), try filenames in order:
 For each filename:
 
 ```bash
-curl -sL -w "%{http_code}" -o /tmp/changelog_raw "https://raw.githubusercontent.com/{OWNER}/{REPO}/{DEFAULT_BRANCH}/{filename}"
+RAW_TMP="$(mktemp)"
+curl -sL -w "%{http_code}" -o "$RAW_TMP" "https://raw.githubusercontent.com/{OWNER}/{REPO}/{DEFAULT_BRANCH}/{filename}"
 ```
 
 If HTTP status is `200` → use this file. If `404` → try next filename. If all fail → proceed to split-archive check.
@@ -275,7 +276,8 @@ From the JSON response, extract the `body` field.
 For each version in `STRATEGY_C_VERSIONS`:
 
 ```bash
-curl -sL -w "%{http_code}" -o /tmp/changelog_cdn "https://unpkg.com/{PKG}@{ver}/CHANGELOG.md"
+CDN_TMP="$(mktemp)"
+curl -sL -w "%{http_code}" -o "$CDN_TMP" "https://unpkg.com/{PKG}@{ver}/CHANGELOG.md"
 ```
 
 - If HTTP `200` → read the content. If it's a monolithic file, parse the relevant version section using the same pattern detection and extraction from Step 5.
@@ -290,7 +292,7 @@ For every piece of changelog content obtained (from any strategy):
 Immediately upon receiving content, compute its SHA256:
 
 ```bash
-echo -n "{CONTENT}" | shasum -a 256 | cut -d' ' -f1
+printf '%s' "{CONTENT}" | shasum -a 256 | cut -d' ' -f1
 ```
 
 Store as `REMOTE_SHA256`.
