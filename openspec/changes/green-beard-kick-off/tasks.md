@@ -13,16 +13,16 @@
 
 ## 3. Install and verify
 
-- [ ] 3.1 Run `pnpm install` from workspace root
-- [ ] 3.2 Run `pnpm nx run @m0n0lab/green-beard:dev` — confirm dev server starts
-- [ ] 3.3 Run `pnpm nx show project @m0n0lab/green-beard` — confirm Nx inference works
+- [x] 3.1 Run `pnpm install` from workspace root
+- [x] 3.2 Run `pnpm nx run @m0n0lab/green-beard:dev` — confirm dev server starts
+- [x] 3.3 Run `pnpm nx show project @m0n0lab/green-beard` — confirm Nx inference works
 
 ## 4. Hello World page
 
-- [ ] 4.1 Update `src/routes/+page.svelte` with Green Beard greeting
-- [ ] 4.2 Verify page renders at `/`
+- [x] 4.1 Update `src/routes/+page.svelte` with Green Beard greeting
+- [x] 4.2 Verify page renders at `/`
 
 ## 5. Nx project metadata
 
-- [ ] 5.1 Create minimal `project.json` (name, sourceRoot, projectType) following `apps/demo` pattern
-- [ ] 5.2 Verify `pnpm ls --filter @m0n0lab/green-beard` resolves
+- [x] 5.1 Create minimal `project.json` (name, sourceRoot, projectType) following `apps/demo` pattern
+- [x] 5.2 Verify `pnpm ls --filter @m0n0lab/green-beard` resolves
