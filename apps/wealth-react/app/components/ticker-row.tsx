@@ -12,14 +12,8 @@ export function TickerRow({ ticker, quote, onRemove }: TickerRowProps) {
             <span className="ticker-symbol">{ticker.symbol}</span>
             {quote ? (
                 <>
-                    <span className="ticker-price">
-                        ${quote.price.toFixed(2)}
-                    </span>
-                    <span
-                        className={
-                            quote.changePercent >= 0 ? "positive" : "negative"
-                        }
-                    >
+                    <span className="ticker-price">${quote.price.toFixed(2)}</span>
+                    <span className={quote.changePercent >= 0 ? "positive" : "negative"}>
                         {quote.changePercent >= 0 ? "+" : ""}
                         {quote.changePercent.toFixed(2)}%
                     </span>
@@ -29,6 +23,8 @@ export function TickerRow({ ticker, quote, onRemove }: TickerRowProps) {
             )}
             <button
                 className="remove-btn"
+                aria-label={`Remove ${ticker.symbol}`}
+                title={`Remove ${ticker.symbol}`}
                 onClick={() => onRemove(ticker.symbol)}
             >
                 &times;

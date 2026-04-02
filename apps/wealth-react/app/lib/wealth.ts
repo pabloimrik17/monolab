@@ -9,15 +9,20 @@ import {
 
 export const tickerStore = createTickerStore(window.localStorage);
 
-export const finnhubClient: FinnhubClient = createFinnhubClient(
-    import.meta.env.VITE_FINNHUB_API_KEY
-);
+let finnhubClient: FinnhubClient | null = null;
+
+function getFinnhubClient(): FinnhubClient {
+    if (finnhubClient === null) {
+        finnhubClient = createFinnhubClient(import.meta.env.VITE_FINNHUB_API_KEY);
+    }
+    return finnhubClient;
+}
 
 export function createPoller(
     onUpdate: (quotes: Map<string, Quote>) => void,
-    onError?: (error: Error) => void
+    onError?: (error: Error) => void,
 ): QuotePoller {
-    return createQuotePoller(finnhubClient, {
+    return createQuotePoller(getFinnhubClient(), {
         interval: 30_000,
         onUpdate,
         onError,

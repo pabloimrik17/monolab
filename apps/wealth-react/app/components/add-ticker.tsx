@@ -25,6 +25,7 @@ export function AddTicker({ onAdd }: AddTickerProps) {
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 placeholder="Enter ticker symbol"
+                aria-label="Ticker symbol"
             />
             <button type="submit">Add</button>
         </form>

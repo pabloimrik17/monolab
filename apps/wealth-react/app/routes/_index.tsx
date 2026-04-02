@@ -2,16 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { AddTicker } from "../components/add-ticker";
 import { RefreshIndicator } from "../components/refresh-indicator";
 import { TickerList } from "../components/ticker-list";
-import type { Quote, Ticker } from "../lib/wealth";
 import { createPoller, tickerStore } from "../lib/wealth";
-import type { Route } from "./+types/_index";
-
-export default function Index(_props: Route.ComponentProps) {
-    const [tickers, setTickers] = useState<Ticker[]>(() =>
-        tickerStore.getTickers()
-    );
+import type { Quote, Ticker } from "../lib/wealth";
+export default function Index() {
+    const [tickers, setTickers] = useState<Ticker[]>(() => tickerStore.getTickers());
     const [quotes, setQuotes] = useState<Map<string, Quote>>(new Map());
     const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+    const [isPolling, setIsPolling] = useState(false);
     const pollerRef = useRef<ReturnType<typeof createPoller> | null>(null);
 
     useEffect(() => {
@@ -22,17 +19,19 @@ export default function Index(_props: Route.ComponentProps) {
             },
             (error) => {
                 console.error("Quote polling error:", error);
-            }
+            },
         );
         pollerRef.current = poller;
 
         const symbols = tickers.map((t) => t.symbol);
         if (symbols.length > 0) {
             poller.start(symbols);
+            setIsPolling(true);
         }
 
         return () => {
             poller.stop();
+            setIsPolling(false);
         };
     }, []);
 
@@ -43,10 +42,12 @@ export default function Index(_props: Route.ComponentProps) {
         const symbols = tickers.map((t) => t.symbol);
         if (symbols.length === 0) {
             poller.stop();
+            setIsPolling(false);
         } else if (poller.isPolling()) {
             poller.setTickers(symbols);
         } else {
             poller.start(symbols);
+            setIsPolling(true);
         }
     }, [tickers]);
 
@@ -66,7 +67,7 @@ export default function Index(_props: Route.ComponentProps) {
             <AddTicker onAdd={handleAdd} />
             <RefreshIndicator
                 lastUpdate={lastUpdate}
-                isPolling={pollerRef.current?.isPolling() ?? false}
+                isPolling={isPolling}
             />
             <TickerList
                 tickers={tickers}
