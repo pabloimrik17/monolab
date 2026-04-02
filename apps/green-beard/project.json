@@ -1,0 +1,6 @@
+{
+    "name": "@m0n0lab/green-beard",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "apps/green-beard/src",
+    "projectType": "application"
+}
