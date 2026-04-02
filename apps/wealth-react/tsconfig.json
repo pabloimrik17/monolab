@@ -15,5 +15,10 @@
         "isolatedModules": true,
         "resolveJsonModule": true,
         "types": ["vite/client"]
-    }
+    },
+    "references": [
+        {
+            "path": "../../packages/wealth-tracker-core"
+        }
+    ]
 }
