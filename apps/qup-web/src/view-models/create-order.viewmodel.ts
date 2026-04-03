@@ -117,6 +117,10 @@ export class CreateOrderViewModel extends BaseViewModel {
 
     async submitOrder(): Promise<void> {
         if (this._loading[0]() || this._submitted[0]()) return;
+        if (!this._sessionCode) {
+            this._error[1]("Missing session code");
+            return;
+        }
         if (this._closed[0]()) {
             this._error[1]("Session is closed");
             return;
@@ -125,7 +129,9 @@ export class CreateOrderViewModel extends BaseViewModel {
             this._error[1]("Cart is empty");
             return;
         }
-        if (!this._guestName[0]().trim()) {
+        const guestName = this._guestName[0]().trim();
+        const notes = this._notes[0]().trim();
+        if (!guestName) {
             this._error[1]("Guest name is required");
             return;
         }
@@ -133,16 +139,15 @@ export class CreateOrderViewModel extends BaseViewModel {
         this._loading[1](true);
         try {
             const cart = this._cart[0]();
-            const notes = this._notes[0]();
             await createOrder({
                 sessionCode: this._sessionCode,
-                guestName: this._guestName[0](),
+                guestName,
                 items: cart.map((c) => ({
                     menuItemId: c.menuItemId,
                     quantity: c.quantity,
                     ...(c.customization && { customization: c.customization }),
                 })),
-                ...(notes && { notes }),
+                ...(notes ? { notes } : {}),
             });
             this._submitted[1](true);
         } catch (e) {

@@ -30,7 +30,7 @@ export class JoinSessionViewModel extends BaseViewModel {
     }
 
     setCode(code: string): void {
-        this._code = code;
+        this._code = code.trim();
     }
 
     setGuestName(name: string): void {
@@ -38,6 +38,10 @@ export class JoinSessionViewModel extends BaseViewModel {
     }
 
     override async didMount(): Promise<void> {
+        this._error[1]("");
+        this._session[1](undefined);
+        this._menu[1]([]);
+
         if (!this._code) {
             this._error[1]("Session code is required");
             return;
