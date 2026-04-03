@@ -3,26 +3,41 @@
     "compileOnSave": false,
     "files": [],
     "references": [
-        {
-            "path": "./packages/react-clean"
-        },
-        {
-            "path": "./packages/react-hooks"
-        },
-        {
-            "path": "./packages/ts-configs"
-        },
-        {
-            "path": "./packages/ts-types"
-        },
-        {
-            "path": "./packages/http-client"
-        },
-        {
-            "path": "./packages/wealth-tracker-core"
-        },
-        {
-            "path": "./apps/wealth-react"
-        }
+      {
+        "path": "./packages/react-clean"
+      },
+      {
+        "path": "./packages/react-hooks"
+      },
+      {
+        "path": "./packages/ts-configs"
+      },
+      {
+        "path": "./packages/ts-types"
+      },
+      {
+        "path": "./packages/http-client"
+      },
+      {
+        "path": "./packages/wealth-tracker-core"
+      },
+      {
+        "path": "./packages/solid-clean"
+      },
+      {
+        "path": "./packages/qup-domain"
+      },
+      {
+        "path": "./packages/qup-shared"
+      },
+      {
+        "path": "./packages/qup-data"
+      },
+      {
+        "path": "./apps/qup-api"
+      },
+      {
+        "path": "./apps/qup-web"
+      }
     ]
 }
