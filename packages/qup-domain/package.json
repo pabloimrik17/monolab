@@ -1,0 +1,37 @@
+{
+    "name": "@m0n0lab/qup-domain",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "pnpm run build:typecheck && pnpm run build:lib",
+        "build:lib": "tsdown",
+        "build:typecheck": "tsc --noEmit",
+        "test:unit": "vitest run",
+        "test:unit:watch": "vitest"
+    },
+    "dependencies": {
+        "inversify": "7.11.0",
+        "neverthrow": "8.2.0"
+    },
+    "devDependencies": {
+        "tsdown": "0.15.9",
+        "typescript": "5.9.3",
+        "vitest": "catalog:"
+    },
+    "packageManager": "pnpm@10.27.0",
+    "engines": {
+        "node": "^20.18.0 || >=22.0.0",
+        "pnpm": "10.27.0"
+    }
+}
