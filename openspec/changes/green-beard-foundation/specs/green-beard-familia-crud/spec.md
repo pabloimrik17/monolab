@@ -43,6 +43,10 @@ The system SHALL provide injectable use cases:
 - `UpdateFamiliaUseCase`: validates existence + nombre uniqueness (excluding self), updates
 - `DeleteFamiliaUseCase`: validates existence, deletes
 
+#### Scenario: Get non-existent familia
+- **WHEN** `GetFamiliaByIdUseCase` is executed with an unknown id
+- **THEN** it returns `Err<NotFoundError>`
+
 #### Scenario: Create familia with duplicate nombre
 - **WHEN** `CreateFamiliaUseCase` is executed with nombre "Araceae" and "Araceae" already exists
 - **THEN** it returns `Err<DuplicateError>`

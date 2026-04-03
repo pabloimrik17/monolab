@@ -40,6 +40,14 @@ The system SHALL provide injectable use cases:
 - `UpdatePlantaUseCase`: validates existence, validates familiaId if changed, validates nombre uniqueness (excluding self), updates
 - `DeletePlantaUseCase`: validates existence, deletes
 
+#### Scenario: Get non-existent planta
+- **WHEN** `GetPlantaByIdUseCase` is executed with an unknown id
+- **THEN** it returns `Err<NotFoundError>`
+
+#### Scenario: Delete non-existent planta
+- **WHEN** `DeletePlantaUseCase` is executed with an unknown id
+- **THEN** it returns `Err<NotFoundError>`
+
 #### Scenario: Create planta with non-existent familia
 - **WHEN** `CreatePlantaUseCase` is executed with a familiaId that doesn't exist
 - **THEN** it returns `Err<NotFoundError>` referencing "Familia"
