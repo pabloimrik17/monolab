@@ -78,7 +78,7 @@ The system SHALL expose Hono routes:
 - `GET /plantas` → list all (optional query `?familiaId=<uuid>` to filter)
 - `GET /plantas/:id` → get by id
 - `POST /plantas` → create (body: `{ nombre, familiaId, fotoUrl? }`)
-- `PATCH /plantas/:id` → update (body: `{ nombre?, familiaId?, fotoUrl? }`)
+- `PATCH /plantas/:id` → update (body: `{ nombre?, familiaId?, fotoUrl?: string | null }`)
 - `DELETE /plantas/:id` → delete
 
 #### Scenario: Create planta via API
