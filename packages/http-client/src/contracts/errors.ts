@@ -117,7 +117,6 @@ export class HttpNetworkError extends HttpError {
      */
     constructor(message: string, code: string, request: Readonly<HttpRequestConfig>) {
         super(message, request);
-        this.name = "HttpNetworkError";
         this.code = code;
 
         // Fix prototype chain for proper instanceof checks
@@ -194,7 +193,6 @@ export class HttpResponseError<T = unknown> extends HttpError {
         request: Readonly<HttpRequestConfig>,
     ) {
         super(message, request);
-        this.name = "HttpResponseError";
         this.status = status;
         this.statusText = statusText;
         this.data = data;
@@ -540,7 +538,6 @@ export class HttpTimeoutError extends HttpError {
      */
     constructor(message: string, request: Readonly<HttpRequestConfig>) {
         super(message, request);
-        this.name = "HttpTimeoutError";
 
         // Fix prototype chain for proper instanceof checks
         Object.setPrototypeOf(this, HttpTimeoutError.prototype);
@@ -584,7 +581,6 @@ export class HttpAbortError extends HttpError {
      */
     constructor(message: string, request: Readonly<HttpRequestConfig>, reason?: string) {
         super(message, request);
-        this.name = "HttpAbortError";
         this.reason = reason;
 
         // Fix prototype chain for proper instanceof checks
