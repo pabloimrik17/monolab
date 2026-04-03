@@ -15,7 +15,9 @@ Retrieve changelogs for any npm package across a version range. Caches locally a
 1. If ARGUMENTS is empty → go to **Handle Missing Arguments**
 2. Split ARGUMENTS on whitespace into tokens
 3. First token = `PKG` (the npm package name; may be scoped like `@scope/name`)
-    - If the first token starts with `@` and does not contain `/`, concatenate with the second token separated by `/` to form the scoped name, then the version part is the next token
+    - If the first token starts with `@` and does not contain `/`:
+        - If a second token exists, concatenate as `{token1}/{token2}` to form the scoped package name, then treat the next token as `VERSION_PART`
+        - If a second token does not exist, treat input as unparseable and go to **Handle Missing Arguments**
 4. Remaining token(s) = `VERSION_PART`
 5. Parse `VERSION_PART`:
     - Contains `..` → split on `..` → `FROM_VER` and `TO_VER` (range query)
@@ -163,7 +165,8 @@ For each filename:
 
 ```bash
 RAW_TMP="$(mktemp)"
-curl -sL -w "%{http_code}" -o "$RAW_TMP" "https://raw.githubusercontent.com/{OWNER}/{REPO}/{DEFAULT_BRANCH}/{filename}"
+curl -sL --connect-timeout 10 --max-time 30 -w "%{http_code}" -o "$RAW_TMP" "https://raw.githubusercontent.com/{OWNER}/{REPO}/{DEFAULT_BRANCH}/{filename}"
+# Clean up after processing: rm -f "$RAW_TMP"
 ```
 
 If HTTP status is `200` → use this file. If `404` → try next filename. If all fail → proceed to split-archive check.
@@ -277,7 +280,8 @@ For each version in `STRATEGY_C_VERSIONS`:
 
 ```bash
 CDN_TMP="$(mktemp)"
-curl -sL -w "%{http_code}" -o "$CDN_TMP" "https://unpkg.com/{PKG}@{ver}/CHANGELOG.md"
+curl -sL --connect-timeout 10 --max-time 30 -w "%{http_code}" -o "$CDN_TMP" "https://unpkg.com/{PKG}@{ver}/CHANGELOG.md"
+# Clean up after processing: rm -f "$CDN_TMP"
 ```
 
 - If HTTP `200` → read the content. If it's a monolithic file, parse the relevant version section using the same pattern detection and extraction from Step 5.
