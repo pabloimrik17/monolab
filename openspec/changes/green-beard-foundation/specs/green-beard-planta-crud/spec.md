@@ -70,7 +70,7 @@ The system SHALL provide `toDomain(row)` and `toRow(entity)` mapper functions in
 
 #### Scenario: Round-trip mapping with nullable foto
 - **WHEN** a Planta with fotoUrl=null is mapped to row and back
-- **THEN** the resulting entity has fotoUrl as undefined/null
+- **THEN** the resulting entity preserves fotoUrl as null
 
 ### Requirement: Planta API routes
 
