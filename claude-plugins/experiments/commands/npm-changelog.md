@@ -48,9 +48,12 @@ npm view {PKG} repository --json
 
 Parse the JSON output:
 
-- Extract `url` field → strip `git+`, `ssh://`, `.git` suffix → extract `{owner}/{repo}` from the GitHub URL
+- Extract `url` field and normalize safely:
+    - If SCP-like form (`git@host:owner/repo.git`), convert to `ssh://git@host/owner/repo.git`
+    - Otherwise, strip only a leading `git+` prefix if present
+    - Parse the normalized URL and verify the hostname is exactly `github.com`. If not, output error: **"Only GitHub-hosted packages are supported. Repository URL: {url}"** and **stop**.
+    - Strip trailing `.git` suffix from the path, then extract `{owner}/{repo}` from path segments
 - Extract `directory` field (if present) → this indicates a **monorepo** sub-package
-- Parse the URL hostname and verify it is exactly `github.com`. If not, output error: **"Only GitHub-hosted packages are supported. Repository URL: {url}"** and **stop**.
 
 Store: `OWNER`, `REPO`, `IS_MONOREPO` (boolean), `MONOREPO_DIR` (string or null).
 
