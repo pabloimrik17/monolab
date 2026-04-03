@@ -35,9 +35,9 @@ The system SHALL define a `PlantaRepository` interface in `green-beard-domain` w
 
 The system SHALL provide injectable use cases:
 - `CreatePlantaUseCase`: validates familiaId exists (via FamiliaRepository), validates nombre uniqueness, creates entity, persists
-- `GetPlantasUseCase`: returns all plantas
+- `GetPlantasUseCase`: returns all plantas, accepts optional `familiaId` filter
 - `GetPlantaByIdUseCase`: returns planta or NotFoundError
-- `UpdatePlantaUseCase`: validates existence, validates familiaId if changed, validates nombre uniqueness, updates
+- `UpdatePlantaUseCase`: validates existence, validates familiaId if changed, validates nombre uniqueness (excluding self), updates
 - `DeletePlantaUseCase`: validates existence, deletes
 
 #### Scenario: Create planta with non-existent familia

@@ -40,7 +40,7 @@ The system SHALL provide injectable use cases:
 - `CreateFamiliaUseCase`: validates nombre uniqueness, creates entity, persists
 - `GetFamiliasUseCase`: returns all familias
 - `GetFamiliaByIdUseCase`: returns familia or NotFoundError
-- `UpdateFamiliaUseCase`: validates existence + nombre uniqueness, updates
+- `UpdateFamiliaUseCase`: validates existence + nombre uniqueness (excluding self), updates
 - `DeleteFamiliaUseCase`: validates existence, deletes
 
 #### Scenario: Create familia with duplicate nombre
