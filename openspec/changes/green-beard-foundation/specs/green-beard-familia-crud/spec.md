@@ -79,8 +79,9 @@ The system SHALL provide `toDomain(row)` and `toRow(entity)` mapper functions in
 
 The system SHALL expose Hono routes:
 - `GET /familias` → list all
+- `GET /familias/:id` → get by id
 - `POST /familias` → create (body: `{ nombre }`)
-- `PATCH /familias/:id` → update (body: `{ nombre }`)
+- `PATCH /familias/:id` → update (body: `{ nombre? }`)
 - `DELETE /familias/:id` → delete
 
 #### Scenario: Create familia via API
