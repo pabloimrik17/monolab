@@ -177,7 +177,11 @@ curl -sL --connect-timeout 10 --max-time 30 -w "%{http_code}" -o "$RAW_TMP" "htt
 # Clean up after processing: rm -f "$RAW_TMP"
 ```
 
-If HTTP status is `200` → use this file. If `404` → try next filename. If all fail → proceed to split-archive check.
+Capture both curl exit code and HTTP status:
+
+- If curl exit code != 0 OR HTTP is `000` / `5xx` / non-404 `4xx` → record `fetch_error` (retryable) for affected versions
+- If HTTP `200` → use this file
+- If HTTP `404` → try next filename; if all filenames exhausted → proceed to split-archive check
 
 **Always fetch from repo root**, never from a monorepo subdirectory.
 
@@ -259,14 +263,19 @@ Versions in `FETCH_VERSIONS` not found in the parsed file → add to `STRATEGY_B
 For each version in `STRATEGY_B_VERSIONS`:
 
 ```bash
-gh api /repos/{OWNER}/{REPO}/releases/tags/v{ver} 2>/dev/null
+gh api /repos/{OWNER}/{REPO}/releases/tags/v{ver}
 ```
 
-- If **404** → retry without `v` prefix:
+Check `gh api` exit code and response:
+
+- If **exit code 0** and valid JSON → success (use body)
+- If **HTTP 404** (exit code 1, message "Not Found") → retry without `v` prefix:
 
     ```bash
-    gh api /repos/{OWNER}/{REPO}/releases/tags/{ver} 2>/dev/null
+    gh api /repos/{OWNER}/{REPO}/releases/tags/{ver}
     ```
+
+- If **other error** (rate limit 403/429, 5xx, network failure) → mark `fetch_error` (retryable)
 
 - On first successful tag format, update `_meta.json.tagFormat` (e.g., `"v{version}"` or `"{version}"`)
 - Sleep 100ms between requests:
@@ -292,8 +301,11 @@ curl -sL --connect-timeout 10 --max-time 30 -w "%{http_code}" -o "$CDN_TMP" "htt
 # Clean up after processing: rm -f "$CDN_TMP"
 ```
 
-- If HTTP `200` → read the content. If it's a monolithic file, parse the relevant version section using the same pattern detection and extraction from Step 5.
+Capture both curl exit code and HTTP status:
+
+- If HTTP `200` → read the content. If monolithic, parse the relevant version section using the same pattern detection and extraction from Step 5.
 - If HTTP `404` → mark version as **failed** with `failReason: "no_changelog_source"`
+- If curl exit code != 0 OR HTTP `000` / `5xx` / non-404 `4xx` → mark `fetch_error` (retryable)
 
 ## Step 8: Verification and Storage
 
