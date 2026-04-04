@@ -87,7 +87,7 @@ On update, the existing `sustrato_materiales` rows are replaced entirely (delete
 
 ### 6. Decimal handling — Drizzle `numeric` type
 
-Prices, volumes, margins stored as `numeric(10,2)` in PostgreSQL. In TypeScript, Drizzle returns these as strings. Domain entities parse to `number` in `toDomain()` mappers.
+Prices, volumes, dimensions stored as `numeric(10,2)` in PostgreSQL. Margins stored as `numeric(5,2)` (0-1 range). In TypeScript, Drizzle returns these as strings. Domain entities parse to `number` in `toDomain()` mappers.
 
 **Why**: Avoids floating-point precision issues in DB. JavaScript `number` is fine for display/calculation at this scale.
 

@@ -32,7 +32,7 @@
 ## 4. Data layer
 
 - [ ] 4.1 Create `materiales` Drizzle schema — id, nombre (UNIQUE), precio_litro NUMERIC(10,2)
-- [ ] 4.2 Create `macetas` Drizzle schema — id, nombre (UNIQUE), material VARCHAR, diametro_cm, alto_cm, volumen_litros, coste, margen — all NUMERIC(10,2)
+- [ ] 4.2 Create `macetas` Drizzle schema — id, nombre (UNIQUE), material VARCHAR, diametro_cm, alto_cm, volumen_litros, coste NUMERIC(10,2), margen NUMERIC(5,2)
 - [ ] 4.3 Create `sustratos` Drizzle schema — id, nombre (UNIQUE), margen NUMERIC(5,2)
 - [ ] 4.4 Create `sustrato_materiales` schema — composite PK (sustrato_id, material_id), litros NUMERIC(10,2), FK with ON DELETE CASCADE on sustrato_id
 - [ ] 4.5 Generate migration via `pnpm nx run @m0n0lab/green-beard-data:db:generate`

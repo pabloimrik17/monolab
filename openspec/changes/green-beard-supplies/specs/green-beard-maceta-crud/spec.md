@@ -64,7 +64,7 @@ The system SHALL define: `MacetaDto` (`{ id, nombre, material, diametroCm, altoC
 
 ### Requirement: Maceta API routes
 
-The system SHALL expose: `GET /macetas`, `POST /macetas`, `PATCH /macetas/:id`, `DELETE /macetas/:id`.
+The system SHALL expose: `GET /macetas`, `GET /macetas/:id`, `POST /macetas`, `PATCH /macetas/:id`, `DELETE /macetas/:id`.
 
 #### Scenario: Create maceta via API
 - **WHEN** `POST /macetas` with valid body

@@ -56,7 +56,7 @@ The system SHALL define in `green-beard-shared`: `MaterialDto` (`{ id, nombre, p
 
 ### Requirement: Material API routes
 
-The system SHALL expose: `GET /materiales`, `POST /materiales`, `PATCH /materiales/:id`, `DELETE /materiales/:id`.
+The system SHALL expose: `GET /materiales`, `GET /materiales/:id`, `POST /materiales`, `PATCH /materiales/:id`, `DELETE /materiales/:id`.
 
 #### Scenario: Create material via API
 - **WHEN** `POST /materiales` with `{ "nombre": "Perlita", "precioLitro": 2.50 }`
