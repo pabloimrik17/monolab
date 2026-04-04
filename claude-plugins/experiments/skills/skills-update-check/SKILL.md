@@ -1,6 +1,6 @@
 ---
 name: skills-update-check
-description: Check for available updates to globally-installed skills.sh skills at session start. Detects package runner, runs skills check -g, and offers to update if needed. Execute once per session only.
+description: This skill should be used at session start to check for available updates to globally-installed skills.sh skills, or when the user asks to "check skill updates", "update skills", or "are my skills up to date". Execute once per session only.
 ---
 
 # Skills Update Check
