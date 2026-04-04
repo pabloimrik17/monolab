@@ -28,6 +28,6 @@ Depends on: `green-beard-foundation`, `green-beard-supplies`
 
 - **New tables**: `plantas_venta` (+ foto storage strategy TBD in design: JSONB array vs separate table)
 - **New routes**: `/plantas-venta` route group with photo upload endpoint
-- **Infrastructure**: Cloudflare R2 bucket required (free tier). Env vars: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME
+- **Infrastructure**: Cloudflare R2 bucket required (free tier). Env vars: R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL
 - **Domain complexity**: auto-numbering with gap reuse query, photo lifecycle (upload on create/update, cleanup on delete)
 - **Design decisions deferred to design.md**: foto storage schema (JSONB vs relation), R2 upload flow (direct vs presigned URLs), identifier uniqueness enforcement (DB constraint vs application logic)

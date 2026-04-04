@@ -150,7 +150,7 @@ The system SHALL expose:
 - `PATCH /plantas-venta/:id` → update
 - `DELETE /plantas-venta/:id` → delete (triggers R2 cleanup)
 - `POST /plantas-venta/:id/fotos` → upload photo(s) (multipart)
-- `DELETE /plantas-venta/:id/fotos/:key` → delete specific photo
+- `DELETE /plantas-venta/:id/fotos?key=<encoded-storage-key>` → delete specific photo
 
 #### Scenario: Create planta venta via API
 - **WHEN** `POST /plantas-venta` with valid body

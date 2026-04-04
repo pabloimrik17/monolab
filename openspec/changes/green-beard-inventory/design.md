@@ -37,13 +37,14 @@ SELECT COALESCE(
 ) AS next_id;
 ```
 
-This runs as part of `CreatePlantaVentaUseCase` within a transaction to prevent race conditions.
+This runs as part of `CreatePlantaVentaUseCase` within a transaction for atomicity.
+Concurrency safety enforced by `UNIQUE(planta_id, identificador)` — on conflict, use case retries.
 
-**Why**: Pure SQL, no application-level locking. `generate_series` + LEFT JOIN efficiently finds gaps. Transaction ensures atomicity.
+**Why**: Pure SQL, no application-level locking. `generate_series` + LEFT JOIN efficiently finds gaps. Transaction ensures atomicity; unique constraint + retry ensures correctness under concurrency.
 
 **Alternative**: Application-level sequence tracking table. More complex, same result.
 
-**Uniqueness constraint**: Composite UNIQUE on `(planta_id, identificador)` in DB as safety net.
+**Uniqueness constraint**: Composite UNIQUE on `(planta_id, identificador)` in DB — not just a safety net, it's the primary concurrency guard.
 
 ### 2. Photo storage — Cloudflare R2 via S3-compatible SDK
 
@@ -103,7 +104,7 @@ The public URL is used to construct foto URLs in DTOs. Bucket must have public a
 
 ## Risks / Trade-offs
 
-- **[Race condition on auto-numbering]** → Mitigated by transaction + composite UNIQUE constraint. Worst case: DB rejects duplicate and use case retries.
+- **[Race condition on auto-numbering]** → Transaction provides atomicity; `UNIQUE(planta_id, identificador)` is the concurrency guard. On conflict, use case retries with a new gap-search query.
 - **[R2 upload through API = larger request size]** → Acceptable for plant photos (~1-5MB). Hono's body limit should be configured (e.g., 10MB).
 - **[JSONB fotos = no referential integrity]** → If a photo is deleted from R2 but not from JSONB, URL 404s. Acceptable — UI can handle missing images gracefully.
 - **[No image optimization]** → Original images stored as-is. Could add Sharp/CDN resizing later. R2 + browser caching is sufficient for v1.
