@@ -19,6 +19,7 @@ Retrieve changelogs for any npm package across a version range. Caches locally a
         - If a second token exists, concatenate as `{token1}/{token2}` to form the scoped package name, then treat the next token as `VERSION_PART`
         - If a second token does not exist, treat input as unparseable and go to **Handle Missing Arguments**
 4. Remaining token(s) = `VERSION_PART`
+    - If `VERSION_PART` is empty → go to **Handle Missing Arguments**
 5. Parse `VERSION_PART`:
     - Contains `..` → split on `..` → `FROM_VER` and `TO_VER` (range query)
     - Equals `latest` → resolve to latest stable version from npm (single query)
@@ -48,7 +49,11 @@ npm view {PKG} repository --json
 
 Parse the JSON output:
 
-- Extract `url` field and normalize safely:
+- Resolve repository URL:
+    - If output is a plain string, use it directly as `url`
+    - If output is an object, read `url` field
+    - If neither is present, output error: **"No repository URL found for {PKG}"** and **stop**
+- Normalize `url` safely:
     - If SCP-like form (`git@host:owner/repo.git`), convert to `ssh://git@host/owner/repo.git`
     - Otherwise, strip only a leading `git+` prefix if present
     - Parse the normalized URL and verify the hostname is exactly `github.com`. If not, output error: **"Only GitHub-hosted packages are supported. Repository URL: {url}"** and **stop**.
