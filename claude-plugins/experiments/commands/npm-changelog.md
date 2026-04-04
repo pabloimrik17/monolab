@@ -179,7 +179,7 @@ curl -sL --connect-timeout 10 --max-time 30 -w "%{http_code}" -o "$RAW_TMP" "htt
 
 Capture both curl exit code and HTTP status:
 
-- If curl exit code != 0 OR HTTP is `000` / `5xx` / non-404 `4xx` → record `fetch_error` (retryable) for affected versions
+- If curl exit code != 0 OR HTTP is `000` / `5xx` / non-404 `4xx` → mark Strategy A attempt as `fetch_error` and continue to next strategy (do not finalize version failure yet)
 - If HTTP `200` → use this file
 - If HTTP `404` → try next filename; if all filenames exhausted → proceed to split-archive check
 
@@ -260,19 +260,19 @@ Versions in `FETCH_VERSIONS` not found in the parsed file → add to `STRATEGY_B
 
 ### Fetch Releases
 
-For each version in `STRATEGY_B_VERSIONS`:
+For each version in `STRATEGY_B_VERSIONS`, use `--include` to capture the HTTP status line:
 
 ```bash
-gh api /repos/{OWNER}/{REPO}/releases/tags/v{ver}
+gh api --include /repos/{OWNER}/{REPO}/releases/tags/v{ver}
 ```
 
-Check `gh api` exit code and response:
+Parse the first line of output for HTTP status code:
 
-- If **exit code 0** and valid JSON → success (use body)
-- If **HTTP 404** (exit code 1, message "Not Found") → retry without `v` prefix:
+- If HTTP **2xx** and valid JSON body → success (use body)
+- If HTTP **404** → retry without `v` prefix:
 
     ```bash
-    gh api /repos/{OWNER}/{REPO}/releases/tags/{ver}
+    gh api --include /repos/{OWNER}/{REPO}/releases/tags/{ver}
     ```
 
 - If **other error** (rate limit 403/429, 5xx, network failure) → mark `fetch_error` (retryable)
