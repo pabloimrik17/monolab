@@ -1,0 +1,38 @@
+{
+    "name": "@m0n0lab/qup-api",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "pnpm run build:typecheck && pnpm run build:lib",
+        "build:lib": "tsdown",
+        "build:typecheck": "tsc --noEmit",
+        "dev": "tsx watch src/index.ts",
+        "start": "node dist/index.js",
+        "test:unit": "vitest run",
+        "test:unit:watch": "vitest",
+        "test:unit:coverage": "vitest run --coverage"
+    },
+    "dependencies": {
+        "@hono/node-server": "1.14.3",
+        "@m0n0lab/qup-data": "workspace:*",
+        "@m0n0lab/qup-domain": "workspace:*",
+        "@m0n0lab/qup-shared": "workspace:*",
+        "drizzle-orm": "0.44.3",
+        "hono": "4.12.5",
+        "inversify": "7.11.0",
+        "pg": "8.16.0"
+    },
+    "devDependencies": {
+        "@types/node": "22.18.12",
+        "tsdown": "0.15.9",
+        "tsx": "4.21.0",
+        "typescript": "5.9.3",
+        "vitest": "catalog:"
+    },
+    "engines": {
+        "node": "^20.18.0 || >=22.0.0",
+        "pnpm": "10.27.0"
+    },
+    "packageManager": "pnpm@10.27.0"
+}

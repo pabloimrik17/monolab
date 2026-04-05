@@ -1,8 +1,8 @@
-import { createReadableStreamFromReadable } from "@react-router/node";
 import { PassThrough } from "node:stream";
+import { createReadableStreamFromReadable } from "@react-router/node";
 import { renderToPipeableStream } from "react-dom/server";
-import type { AppLoadContext, EntryContext } from "react-router";
 import { ServerRouter } from "react-router";
+import type { AppLoadContext, EntryContext } from "react-router";
 
 const ABORT_DELAY = 5_000;
 
@@ -11,7 +11,7 @@ export default function handleRequest(
     responseStatusCode: number,
     responseHeaders: Headers,
     routerContext: EntryContext,
-    _loadContext: AppLoadContext // eslint-disable-line @typescript-eslint/no-unused-vars
+    _loadContext: AppLoadContext, // eslint-disable-line @typescript-eslint/no-unused-vars
 ) {
     return new Promise((resolve, reject) => {
         let shellRendered = false;
@@ -30,7 +30,7 @@ export default function handleRequest(
                         new Response(stream, {
                             headers: responseHeaders,
                             status: responseStatusCode,
-                        })
+                        }),
                     );
                     pipe(body);
                 },
@@ -43,7 +43,7 @@ export default function handleRequest(
                         console.error(error);
                     }
                 },
-            }
+            },
         );
         setTimeout(abort, ABORT_DELAY);
     });
