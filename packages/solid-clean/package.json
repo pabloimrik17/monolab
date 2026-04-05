@@ -38,10 +38,16 @@
         "build:lib": "tsdown",
         "build:typecheck": "tsc --noEmit",
         "test:unit": "vitest run",
-        "test:unit:watch": "vitest"
+        "test:unit:watch": "vitest",
+        "test:unit:coverage": "vitest run --coverage",
+        "test:mutation": "stryker run",
+        "test:mutation:report": "open reports/mutation/index.html"
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "0.18.2",
+        "@stryker-mutator/core": "9.3.0",
+        "@stryker-mutator/typescript-checker": "9.3.0",
+        "@stryker-mutator/vitest-runner": "9.3.0",
         "jsdom": "catalog:",
         "solid-js": "1.9.11",
         "tsdown": "0.15.9",
