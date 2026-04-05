@@ -21,7 +21,7 @@ Retrieve changelogs for any npm package across a version range. Caches locally a
 4. Remaining token(s) = `VERSION_PART`
     - If `VERSION_PART` is empty → go to **Handle Missing Arguments**
 5. Parse `VERSION_PART`:
-    - Contains `..` → split on `..` → `FROM_VER` and `TO_VER` (range query)
+    - Contains `..` → split on `..` → `FROM_VER` and `TO_VER` (range query). If either is not valid semver, or `FROM_VER > TO_VER` in semver order → output error and go to **Handle Missing Arguments**
     - Equals `latest` → resolve to latest stable version from npm (single query)
     - Otherwise → treat as single version query
 
@@ -266,9 +266,9 @@ For each version in `STRATEGY_B_VERSIONS`, use `--include` to capture the HTTP s
 gh api --include /repos/{OWNER}/{REPO}/releases/tags/v{ver}
 ```
 
-Parse the first line of output for HTTP status code:
+The response contains HTTP headers, then a blank line, then the JSON body. Parse the first line for HTTP status code, then extract the JSON body (everything after the first blank line):
 
-- If HTTP **2xx** and valid JSON body → success (use body)
+- If HTTP **2xx** and valid JSON body after header separator → success (use `body` field from JSON)
 - If HTTP **404** → retry without `v` prefix:
 
     ```bash
