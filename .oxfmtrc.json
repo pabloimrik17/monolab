@@ -12,7 +12,8 @@
         ".junie",
         ".opencode",
         "CHANGELOG.md",
-        "reports"
+        "reports",
+        "tsconfig.json"
     ],
     "sortImports": {
         "internalPattern": ["@m0n0lab/"],

@@ -1,6 +1,6 @@
 ---
 name: plugin-version-bump
-description: Bump plugin version and sync version files after completing modifications to a Claude Code plugin (any directory with .claude-plugin/plugin.json). Use after finishing all changes to a plugin — not mid-task.
+description: This skill should be used after completing modifications to a Claude Code plugin (any directory with .claude-plugin/plugin.json) to "bump version", "update plugin version", or "sync version files". Also trigger proactively after finishing plugin changes — not mid-task.
 ---
 
 # Plugin Version Bump

@@ -1,0 +1,18 @@
+import { injectable } from "inversify";
+
+@injectable()
+export class EventSourceService {
+    connect(url: string, handlers: Record<string, (data: unknown) => void>): () => void {
+        const source = new EventSource(url);
+        for (const [event, handler] of Object.entries(handlers)) {
+            source.addEventListener(event, (e: MessageEvent) => {
+                try {
+                    handler(JSON.parse(e.data as string));
+                } catch {
+                    // Ignore malformed SSE data
+                }
+            });
+        }
+        return () => source.close();
+    }
+}
