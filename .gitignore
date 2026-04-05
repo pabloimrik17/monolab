@@ -354,3 +354,5 @@ sketch
 
 .nx/polygraph
 .claude/worktrees
+.output
+.vinxi

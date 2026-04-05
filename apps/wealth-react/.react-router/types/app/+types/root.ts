@@ -13,13 +13,10 @@ type Matches = [
     {
         id: "root";
         module: typeof import("../root.js");
-    }
+    },
 ];
 
-type Annotations = GetAnnotations<
-    Info & { module: Module; matches: Matches },
-    false
->;
+type Annotations = GetAnnotations<Info & { module: Module; matches: Matches }, false>;
 
 export namespace Route {
     // links
@@ -39,8 +36,7 @@ export namespace Route {
     export type MiddlewareFunction = Annotations["MiddlewareFunction"];
 
     // clientMiddleware
-    export type ClientMiddlewareFunction =
-        Annotations["ClientMiddlewareFunction"];
+    export type ClientMiddlewareFunction = Annotations["ClientMiddlewareFunction"];
 
     // loader
     export type LoaderArgs = Annotations["LoaderArgs"];

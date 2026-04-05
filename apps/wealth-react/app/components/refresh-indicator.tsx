@@ -3,10 +3,7 @@ interface RefreshIndicatorProps {
     isPolling: boolean;
 }
 
-export function RefreshIndicator({
-    lastUpdate,
-    isPolling,
-}: RefreshIndicatorProps) {
+export function RefreshIndicator({ lastUpdate, isPolling }: RefreshIndicatorProps) {
     return (
         <div className="refresh-indicator">
             {lastUpdate ? (
