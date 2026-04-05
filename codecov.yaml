@@ -47,6 +47,69 @@ coverage:
                 flags:
                     - http-client
 
+            qup-api:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - qup-api
+
+            qup-data:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - qup-data
+
+            qup-domain:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - qup-domain
+
+            solid-clean:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - solid-clean
+
+            wealth-tracker-core:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - wealth-tracker-core
+
+            green-beard:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - green-beard
+
+            qup-web:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - qup-web
+
+            wealth-react:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - wealth-react
+
+            qup-shared:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - qup-shared
+
         # Patch coverage (new/modified code in PRs)
         patch:
             default:
@@ -89,6 +152,69 @@ coverage:
                 informational: false
                 flags:
                     - http-client
+
+            qup-api:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - qup-api
+
+            qup-data:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - qup-data
+
+            qup-domain:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - qup-domain
+
+            solid-clean:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - solid-clean
+
+            wealth-tracker-core:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - wealth-tracker-core
+
+            green-beard:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - green-beard
+
+            qup-web:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - qup-web
+
+            wealth-react:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - wealth-react
+
+            qup-shared:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - qup-shared
 
 # Files and directories to ignore from coverage calculations
 ignore:
@@ -139,4 +265,49 @@ flags:
     http-client:
         paths:
             - packages/http-client/
+        carryforward: true
+
+    qup-api:
+        paths:
+            - apps/qup-api/
+        carryforward: true
+
+    qup-data:
+        paths:
+            - packages/qup-data/
+        carryforward: true
+
+    qup-domain:
+        paths:
+            - packages/qup-domain/
+        carryforward: true
+
+    solid-clean:
+        paths:
+            - packages/solid-clean/
+        carryforward: true
+
+    wealth-tracker-core:
+        paths:
+            - packages/wealth-tracker-core/
+        carryforward: true
+
+    green-beard:
+        paths:
+            - apps/green-beard/
+        carryforward: true
+
+    qup-web:
+        paths:
+            - apps/qup-web/
+        carryforward: true
+
+    wealth-react:
+        paths:
+            - apps/wealth-react/
+        carryforward: true
+
+    qup-shared:
+        paths:
+            - packages/qup-shared/
         carryforward: true
