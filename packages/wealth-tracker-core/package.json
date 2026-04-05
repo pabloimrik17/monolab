@@ -41,10 +41,12 @@
         "lint:eslint:fix": "eslint --cache --max-warnings 40 --fix .",
         "lint:knip": "knip --max-issues 70",
         "lint:knip:fix": "knip --fix",
-        "test": "vitest run",
-        "test:coverage": "vitest run --coverage",
+        "test:unit": "vitest run",
+        "test:unit:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui",
-        "test:watch": "vitest",
+        "test:unit:watch": "vitest",
+        "test:mutation": "stryker run",
+        "test:mutation:report": "open reports/mutation/index.html",
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
@@ -52,6 +54,9 @@
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "0.18.2",
+        "@stryker-mutator/core": "9.3.0",
+        "@stryker-mutator/typescript-checker": "9.3.0",
+        "@stryker-mutator/vitest-runner": "9.3.0",
         "tsdown": "0.15.9",
         "typescript": "5.9.3",
         "vitest": "catalog:"

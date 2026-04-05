@@ -10,7 +10,10 @@
         "lint:knip": "knip --max-issues 100",
         "lint:prettier": "prettier . --check",
         "start": "react-router-serve ./build/server/index.js",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "test:unit": "vitest run",
+        "test:unit:watch": "vitest",
+        "test:unit:coverage": "vitest run --coverage"
     },
     "dependencies": {
         "@m0n0lab/wealth-tracker-core": "workspace:*",
@@ -24,8 +27,10 @@
         "@react-router/serve": "^7.6.0",
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",
+        "@vitest/coverage-v8": "catalog:",
         "typescript": "5.9.3",
-        "vite": "6.4.1"
+        "vite": "6.4.1",
+        "vitest": "catalog:"
     },
     "engines": {
         "node": "^20.18.0 || >=22.0.0",
