@@ -97,6 +97,14 @@ The system SHALL expose Hono routes:
 - **WHEN** `GET /plantas?familiaId=<uuid>`
 - **THEN** returns 200 with only plantas belonging to that familia
 
+#### Scenario: Create planta with non-existent familia via API
+- **WHEN** `POST /plantas` with a familiaId that doesn't exist
+- **THEN** returns 404 with error DTO
+
+#### Scenario: Update planta with non-existent familia via API
+- **WHEN** `PATCH /plantas/:id` with a familiaId that doesn't exist
+- **THEN** returns 404 with error DTO
+
 ### Requirement: Planta DTOs and request types
 
 The system SHALL define in `green-beard-shared`:

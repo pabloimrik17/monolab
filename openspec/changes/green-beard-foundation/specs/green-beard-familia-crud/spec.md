@@ -96,6 +96,14 @@ The system SHALL expose Hono routes:
 - **WHEN** `POST /familias` with duplicate nombre
 - **THEN** returns 409 with error DTO
 
+#### Scenario: Get non-existent familia via API
+- **WHEN** `GET /familias/:id` with unknown id
+- **THEN** returns 404 with error DTO
+
+#### Scenario: Update familia to duplicate nombre via API
+- **WHEN** `PATCH /familias/:id` sets nombre to one that already exists
+- **THEN** returns 409 with error DTO
+
 ### Requirement: Familia DTOs and request types
 
 The system SHALL define in `green-beard-shared`:
