@@ -135,7 +135,7 @@ Store the fetch list as `FETCH_VERSIONS`. If `FETCH_VERSIONS` is empty, skip to 
 
 If Strategy A will be used (first attempt), check the raw source cache:
 
-For each known changelog filename in `_meta.json.changelogFiles` (or defaults: `CHANGELOG.md`):
+For each known changelog filename in `_meta.json.changelogFiles` (or defaults: `CHANGELOG.md`, `CHANGELOG`, `History.md`, `CHANGES.md` in order):
 
 - If `_source/{filename}` exists:
     - Check file modification time. If **less than 24 hours old**:
@@ -201,7 +201,7 @@ When a raw file is successfully fetched:
 1. Save the exact content 1:1 to `$CACHE_DIR/_source/{filename}`
 2. Compute SHA256: `shasum -a 256 "$CACHE_DIR/_source/{filename}" | cut -d' ' -f1`
 3. Save hash to `$CACHE_DIR/_source/{filename}.sha256`
-4. Update `_meta.json`: set `changelogSource` to `"raw_changelog"`, union `{filename}` into `changelogFiles`
+4. Update `_meta.json`: set `changelogSource` to `"raw_changelog"`, union this successfully fetched `{filename}` into `changelogFiles` (only filenames that returned HTTP 200)
 
 ### Parse — Pattern Detection
 
