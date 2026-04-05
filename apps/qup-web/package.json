@@ -6,7 +6,10 @@
     "scripts": {
         "build": "vinxi build",
         "dev": "vinxi dev",
-        "start": "vinxi start"
+        "start": "vinxi start",
+        "test:unit": "vitest run",
+        "test:unit:watch": "vitest",
+        "test:unit:coverage": "vitest run --coverage"
     },
     "dependencies": {
         "@kobalte/core": "0.13.11",
@@ -20,10 +23,12 @@
     },
     "devDependencies": {
         "@types/node": "22.18.12",
+        "@vitest/coverage-v8": "catalog:",
         "autoprefixer": "10.4.22",
         "postcss": "8.5.6",
         "tailwindcss": "3.4.19",
-        "typescript": "5.9.3"
+        "typescript": "5.9.3",
+        "vitest": "catalog:"
     },
     "engines": {
         "node": "^20.18.0 || >=22.0.0",

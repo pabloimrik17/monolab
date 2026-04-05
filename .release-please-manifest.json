@@ -4,5 +4,8 @@
     "packages/react-hooks": "1.1.4",
     "packages/ts-configs": "1.1.4",
     "packages/types": "0.1.0",
-    "packages/ts-types": "1.0.6"
+    "packages/ts-types": "1.0.6",
+    "packages/solid-clean": "0.1.0",
+    "packages/wealth-tracker-core": "0.1.0",
+    "packages/qup-shared": "0.1.0"
 }

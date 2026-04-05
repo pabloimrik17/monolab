@@ -23,6 +23,27 @@
             "package-name": "@m0n0lab/ts-types",
             "changelog-path": "CHANGELOG.md",
             "extra-files": ["deno.json"]
+        },
+        "packages/http-client": {
+            "release-type": "node",
+            "package-name": "@m0n0lab/http-client",
+            "changelog-path": "CHANGELOG.md",
+            "extra-files": ["deno.json"]
+        },
+        "packages/solid-clean": {
+            "release-type": "node",
+            "package-name": "@m0n0lab/solid-clean",
+            "changelog-path": "CHANGELOG.md"
+        },
+        "packages/wealth-tracker-core": {
+            "release-type": "node",
+            "package-name": "@m0n0lab/wealth-tracker-core",
+            "changelog-path": "CHANGELOG.md"
+        },
+        "packages/qup-shared": {
+            "release-type": "node",
+            "package-name": "@m0n0lab/qup-shared",
+            "changelog-path": "CHANGELOG.md"
         }
     },
     "changelog-sections": [
