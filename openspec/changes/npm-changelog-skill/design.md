@@ -79,8 +79,8 @@ Mark as failed
 ├── _source/
 │   ├── CHANGELOG.md              # 1:1 copy from repo (source of truth)
 │   └── CHANGELOG.md.sha256       # hash of the raw source
-├── v19.0.0.md                    # exact section extract
-├── v19.0.0.meta.json             # status, hashes, source method, timestamp
+├── 19.0.0.md                     # exact section extract (no v prefix)
+├── 19.0.0.meta.json              # status, hashes, source method, timestamp
 └── ...
 ```
 
