@@ -21,27 +21,27 @@ The system SHALL provide create, read, update, and delete operations for Instrum
 #### Scenario: Find all instruments
 
 - **WHEN** `findAll()` is called
-- **THEN** all instruments are returned as an array
+- **THEN** `ResultAsync<Instrument[], PersistenceError>` is returned with all instruments
 
 #### Scenario: Filter instruments by type
 
 - **WHEN** `findByType(InstrumentType.ETF)` is called
-- **THEN** only instruments with type `etf` are returned
+- **THEN** `ResultAsync<Instrument[], PersistenceError>` is returned with only instruments of type `etf`
 
 #### Scenario: Filter instruments by asset class
 
 - **WHEN** `findByAssetClass(AssetClass.Equity)` is called
-- **THEN** only instruments with assetClass `equity` are returned
+- **THEN** `ResultAsync<Instrument[], PersistenceError>` is returned with only instruments of assetClass `equity`
 
 #### Scenario: Update instrument
 
 - **WHEN** an existing instrument's properties are modified
-- **THEN** changes are persisted and the updated instrument is returned
+- **THEN** `ResultAsync<Instrument, PersistenceError>` is returned with the updated instrument
 
 #### Scenario: Delete instrument
 
 - **WHEN** an instrument is deleted by ID
-- **THEN** the instrument is removed from persistence
+- **THEN** `ResultAsync<void, PersistenceError>` is returned after removal
 
 ### Requirement: Instrument model
 
@@ -59,14 +59,20 @@ The Instrument entity SHALL have the following properties: `id` (uuid), `symbol`
 
 ### Requirement: Auto-create on first reference
 
-The system SHALL upsert instruments by symbol — if an instrument with the given symbol does not exist, it is created automatically.
+The system SHALL upsert instruments by symbol — if an instrument with the given symbol does not exist, it is created automatically. Symbols MUST be normalized (trimmed + uppercased) before query/insert to enforce case-insensitive identity (e.g., `aapl` → `AAPL`).
 
 #### Scenario: Upsert new instrument
 
 - **WHEN** `upsertBySymbol` is called with a symbol that doesn't exist
-- **THEN** a new instrument is created and returned
+- **THEN** the symbol is normalized (trimmed, uppercased)
+- **AND** a new instrument is created and returned
 
 #### Scenario: Upsert existing instrument
 
-- **WHEN** `upsertBySymbol` is called with a symbol that already exists
+- **WHEN** `upsertBySymbol` is called with a symbol that already exists (case-insensitive)
 - **THEN** the existing instrument is returned without duplication
+
+#### Scenario: Case-insensitive identity
+
+- **WHEN** `upsertBySymbol("aapl")` is called and instrument with symbol `AAPL` exists
+- **THEN** the existing `AAPL` instrument is returned

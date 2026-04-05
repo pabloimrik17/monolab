@@ -19,6 +19,20 @@ The quote cache SHALL wrap the existing Finnhub client, providing the same inter
 - **THEN** the cached value is returned
 - **AND** no Finnhub API call is made
 
+#### Scenario: Redis read failure (graceful degradation)
+
+- **WHEN** `getQuote("AAPL")` is called and Redis is unavailable or returns an error
+- **THEN** the error is treated as a cache miss
+- **AND** the Finnhub API is called directly
+- **AND** the Redis error is logged but does not fail the request
+
+#### Scenario: Redis write failure after Finnhub fetch
+
+- **WHEN** a Finnhub response is obtained but Redis write fails
+- **THEN** the Finnhub response is still returned to the caller
+- **AND** the Redis write error is logged
+- **AND** caching is best-effort — Redis unavailability MUST NOT cause hard failures
+
 #### Scenario: Cache entry expired
 
 - **WHEN** `getQuote("AAPL")` is called and the cache entry has expired
@@ -62,9 +76,14 @@ The system SHALL support fetching multiple quotes, checking cache per symbol and
 
 ### Requirement: Cache key structure
 
-Cache keys SHALL use the instrument symbol as the key identifier.
+Cache keys SHALL use the instrument symbol as the key identifier. Symbols MUST be normalized (trimmed + uppercased) before key generation to prevent cache fragmentation (e.g., `aapl` → key `investlab:quote:AAPL`).
 
 #### Scenario: Cache key format
 
 - **WHEN** a quote for symbol "AAPL" is cached
-- **THEN** the Redis key includes the symbol (e.g., `investlab:quote:AAPL`)
+- **THEN** the Redis key is `investlab:quote:AAPL`
+
+#### Scenario: Symbol normalization in cache key
+
+- **WHEN** `getQuote("aapl")` is called
+- **THEN** the cache key used is `investlab:quote:AAPL` (normalized)

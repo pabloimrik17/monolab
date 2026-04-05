@@ -32,7 +32,7 @@
 ## 4. Quote Cache
 
 - [ ] 4.1 Add `ioredis` dependency to `packages/investlab-core`
-- [ ] 4.2 Create `QuoteCache` interface in `investlab-domain` (or investlab-core)
+- [ ] 4.2 Create `QuoteCache` interface in `investlab-domain` (domain port)
 - [ ] 4.3 Implement Redis-backed `QuoteCacheImpl` with configurable TTL (default ~1 hour)
 - [ ] 4.4 Implement `getQuote(symbol)` with cache-miss-fetch-store pattern
 - [ ] 4.5 Implement `getQuotes(symbols[])` with per-symbol cache check, batch fetch for uncached
