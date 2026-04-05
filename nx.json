@@ -104,7 +104,6 @@
             ]
         },
         "test:unit:watch": {
-            "cache": true,
             "continuous": true,
             "dependsOn": ["^build", "^test:unit:watch"],
             "inputs": [

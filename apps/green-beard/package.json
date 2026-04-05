@@ -9,16 +9,21 @@
         "preview": "vite preview",
         "prepare": "svelte-kit sync",
         "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-        "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+        "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+        "test:unit": "vitest run",
+        "test:unit:watch": "vitest",
+        "test:unit:coverage": "vitest run --coverage"
     },
     "devDependencies": {
         "@m0n0lab/ts-configs": "workspace:*",
         "@sveltejs/adapter-auto": "^7.0.0",
         "@sveltejs/kit": "^2.50.2",
         "@sveltejs/vite-plugin-svelte": "^6.2.4",
+        "@vitest/coverage-v8": "catalog:",
         "svelte": "^5.54.0",
         "svelte-check": "^4.4.2",
         "typescript": "^5.9.3",
-        "vite": "^7.3.1"
+        "vite": "^7.3.1",
+        "vitest": "catalog:"
     }
 }
