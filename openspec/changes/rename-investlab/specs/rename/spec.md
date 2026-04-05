@@ -1,6 +1,6 @@
 # Rename Specification
 
-## ADDED Requirements
+## RENAMED Requirements
 
 ### Requirement: Project names reflect investment domain
 
@@ -9,7 +9,7 @@ All workspace references SHALL use "investlab" naming: app project `investlab`, 
 #### Scenario: Package names updated
 
 - **WHEN** workspace packages are listed
-- **THEN** `@m0n0lab/investlab` and `@m0n0lab/investlab-core` exist, `wealth-react` and `wealth-tracker-core` do not
+- **THEN** `@m0n0lab/investlab` and `@m0n0lab/investlab-core` exist, `@m0n0lab/wealth-react` and `@m0n0lab/wealth-tracker-core` do not
 
 #### Scenario: Imports resolve correctly
 
