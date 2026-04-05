@@ -22,7 +22,7 @@ Retrieve changelogs for any npm package across a version range. Caches locally a
     - If `VERSION_PART` is empty → go to **Handle Missing Arguments**
 5. Parse `VERSION_PART`:
     - Contains `..` → split on `..` → `FROM_VER` and `TO_VER` (range query). If either is not valid semver, or `FROM_VER > TO_VER` in semver order → output error and go to **Handle Missing Arguments**
-    - Equals `latest` → resolve to latest stable version from npm as `RESOLVED_VER`, then set `FROM_VER=TO_VER=RESOLVED_VER`
+    - Equals `latest` → resolve from the filtered stable versions list (after prerelease exclusion in Step 2), pick the max semver as `RESOLVED_VER`, then set `FROM_VER=TO_VER=RESOLVED_VER`
     - Otherwise → treat as single version query and set `FROM_VER=TO_VER=SINGLE_VER`
 
 ### Handle Missing Arguments
@@ -77,7 +77,7 @@ This returns a JSON array of all published version strings.
 1. Exclude all prerelease versions (any version containing `-` after the patch number, e.g., `19.0.0-rc.1`, `19.0.0-canary.1234`)
 2. For range queries: include versions where `FROM_VER <= version <= TO_VER` (both-inclusive). Compare using semver ordering, not string comparison.
 3. For single version: validate it exists in the versions list, then use `[SINGLE_VER]` as the `VERSIONS` array.
-4. For `latest`: resolve by running `npm view {PKG} version` (returns latest stable), then use that single version.
+4. For `latest`: take the highest version from the stable-filtered list (do not use `npm view {PKG} version` as it may return a prerelease).
 5. Sort the resulting list in ascending semver order.
 
 Store as `VERSIONS` array.
