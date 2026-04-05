@@ -22,8 +22,8 @@ Retrieve changelogs for any npm package across a version range. Caches locally a
     - If `VERSION_PART` is empty → go to **Handle Missing Arguments**
 5. Parse `VERSION_PART`:
     - Contains `..` → split on `..` → `FROM_VER` and `TO_VER` (range query). If either is not valid semver, or `FROM_VER > TO_VER` in semver order → output error and go to **Handle Missing Arguments**
-    - Equals `latest` → resolve to latest stable version from npm (single query)
-    - Otherwise → treat as single version query
+    - Equals `latest` → resolve to latest stable version from npm as `RESOLVED_VER`, then set `FROM_VER=TO_VER=RESOLVED_VER`
+    - Otherwise → treat as single version query and set `FROM_VER=TO_VER=SINGLE_VER`
 
 ### Handle Missing Arguments
 
@@ -360,13 +360,13 @@ Create `$CACHE_DIR/{ver}.meta.json`:
 
 ### Failure Reasons Reference
 
-| Reason                      | When                                                |
-| --------------------------- | --------------------------------------------------- |
-| `no_entry_found`            | Version has no matching heading in parsed CHANGELOG |
-| `empty_release_body`        | GitHub Release exists but body is empty/null        |
-| `no_changelog_source`       | All strategies (A, B, C) returned 404 or failed     |
-| `fetch_error`               | Network or command error during retrieval           |
-| `write_verification_failed` | SHA256 mismatch after 3 write attempts              |
+| Reason                      | When                                                                                        |
+| --------------------------- | ------------------------------------------------------------------------------------------- |
+| `no_entry_found`            | Version has no matching heading in parsed CHANGELOG                                         |
+| `empty_release_body`        | GitHub Release exists but body is empty/null                                                |
+| `no_changelog_source`       | All strategies (A, B, C) exhausted with only definitive not-found outcomes (404 / no entry) |
+| `fetch_error`               | Transient retrieval failure (network, timeout, non-404 HTTP error)                          |
+| `write_verification_failed` | SHA256 mismatch after 3 write attempts                                                      |
 
 ## Step 9: Output Summary
 
