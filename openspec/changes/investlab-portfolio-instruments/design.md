@@ -49,7 +49,7 @@ CRUD operations via modal or inline form — create selects from existing instru
 - `CreatePortfolioItemUseCase`: validates instrument exists, creates item, persists
 - `UpdatePortfolioItemUseCase`: finds item, updates mutable fields (broker, weight, value, notes)
 - `DeletePortfolioItemUseCase`: removes item by ID
-- `ListPortfolioItemsUseCase`: returns all items with resolved instrument data
+- `ListPortfolioItemsUseCase`: returns all items ordered by createdAt ascending, with resolved instrument data
 
 All `@injectable()`, return `ResultAsync`, use repository interface.
 
@@ -60,7 +60,7 @@ portfolio_items (
   id UUID PK DEFAULT gen_random_uuid(),
   instrument_id UUID NOT NULL REFERENCES instruments(id),
   broker VARCHAR(100) NOT NULL,
-  target_weight NUMERIC(5,2) NOT NULL DEFAULT 0,
+  target_weight NUMERIC(5,2) NOT NULL DEFAULT 0 CHECK (target_weight >= 0 AND target_weight <= 100),
   current_value NUMERIC(12,2) NOT NULL DEFAULT 0,
   notes TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),

@@ -16,6 +16,14 @@ The system SHALL model PortfolioItem as an entity in `investlab-domain` with: id
 - **WHEN** `PortfolioItem.create()` is called with an empty broker string
 - **THEN** it returns `Err<ValidationError>`
 
+#### Scenario: Create with negative current value
+- **WHEN** `PortfolioItem.create()` is called with currentValue -100
+- **THEN** it returns `Err<ValidationError>`
+
+#### Scenario: Create with target weight exceeding 100
+- **WHEN** `PortfolioItem.create()` is called with targetWeight 150
+- **THEN** it returns `Err<ValidationError>`
+
 ### Requirement: PortfolioItem repository interface
 
 The system SHALL define a `PortfolioItemRepository` interface in `investlab-domain` with methods returning `ResultAsync`: `save(item)`, `findById(id)`, `findAll()`, `findByInstrumentId(instrumentId)`, `update(item)`, `delete(id)`.

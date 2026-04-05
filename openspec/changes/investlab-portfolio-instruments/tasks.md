@@ -4,7 +4,7 @@
 - [ ] 1.2 Define error types: `PortfolioItemNotFoundError`, `InstrumentNotFoundError` (if not already in foundation)
 - [ ] 1.3 Define `PortfolioItemRepository` interface — save, findById, findAll, findByInstrumentId, update, delete. All return `ResultAsync`
 - [ ] 1.4 Define tokens in domain tokens.ts for PortfolioItemRepository and use cases
-- [ ] 1.5 Implement `CreatePortfolioItemUseCase` (@injectable) — validate instrument exists, create item, persist
+- [ ] 1.5 Implement `CreatePortfolioItemUseCase` (@injectable) — inject InstrumentRepository and PortfolioItemRepository, validate instrument exists, create item, persist
 - [ ] 1.6 Implement `UpdatePortfolioItemUseCase` (@injectable) — find item, update mutable fields, persist
 - [ ] 1.7 Implement `DeletePortfolioItemUseCase` (@injectable) — find item, delete
 - [ ] 1.8 Implement `ListPortfolioItemsUseCase` (@injectable) — return all items with resolved Instrument data
@@ -16,7 +16,7 @@
 ## 2. Data
 
 - [ ] 2.1 Define Drizzle schema: `portfolio_items` table with FK to instruments
-- [ ] 2.2 Generate migration for portfolio_items table
+- [ ] 2.2 Generate migration for portfolio_items table with index on instrument_id
 - [ ] 2.3 Implement `toDomain(row)` and `toRow(entity)` mappers for PortfolioItem
 - [ ] 2.4 Implement `PgPortfolioItemRepository` (@injectable) implementing PortfolioItemRepository with Drizzle queries wrapped in ResultAsync
 - [ ] 2.5 Create `portfolioDataModule` (ContainerModule) binding repo implementation
@@ -29,7 +29,7 @@
 - [ ] 3.3 Implement `PortfolioItemForm` component — instrument selector (from existing catalog), broker input, target weight input, current value input, notes textarea
 - [ ] 3.4 Implement `PortfolioItemRow` component — single row with edit/delete actions
 - [ ] 3.5 Implement `PortfolioViewModel` — loads items via ListPortfolioItemsUseCase, handles CRUD operations
-- [ ] 3.6 Wire Inversify container with portfolio modules in app composition root
+- [ ] 3.6 Wire Inversify container with portfolioModule and portfolioDataModule in app composition root
 - [ ] 3.7 Add navigation link to /portfolio in app layout
 
 ## 4. Verification
