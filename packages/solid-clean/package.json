@@ -1,0 +1,66 @@
+{
+    "name": "@m0n0lab/solid-clean",
+    "version": "0.1.0",
+    "private": false,
+    "author": "Pablo F.G.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/pabloimrik17/monolab.git",
+        "directory": "packages/solid-clean"
+    },
+    "files": [
+        "dist",
+        "package.json",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE"
+    ],
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true,
+        "registry": "https://registry.npmjs.org/"
+    },
+    "scripts": {
+        "build": "pnpm run build:typecheck && pnpm run build:lib",
+        "build:check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
+        "build:lib": "tsdown",
+        "build:typecheck": "tsc --noEmit",
+        "test:unit": "vitest run",
+        "test:unit:watch": "vitest",
+        "test:unit:coverage": "vitest run --coverage",
+        "test:mutation": "stryker run",
+        "test:mutation:report": "open reports/mutation/index.html"
+    },
+    "devDependencies": {
+        "@arethetypeswrong/cli": "0.18.2",
+        "@stryker-mutator/core": "9.3.0",
+        "@stryker-mutator/typescript-checker": "9.3.0",
+        "@stryker-mutator/vitest-runner": "9.3.0",
+        "jsdom": "catalog:",
+        "solid-js": "1.9.11",
+        "tsdown": "0.15.9",
+        "typescript": "5.9.3",
+        "vite-plugin-solid": "2.11.10",
+        "vitest": "catalog:"
+    },
+    "peerDependencies": {
+        "solid-js": "^1.9.0"
+    },
+    "engines": {
+        "node": "^20.18.0 || >=22.0.0",
+        "pnpm": "10.27.0"
+    },
+    "packageManager": "pnpm@10.27.0"
+}

@@ -1,0 +1,26 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "module": "preserve",
+        "moduleResolution": "bundler",
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "declaration": true,
+        "composite": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
+    },
+    "include": ["src/**/*"],
+    "exclude": ["**/*.test.ts", "**/*.spec.ts"],
+    "references": [
+        {
+            "path": "../../packages/qup-domain"
+        },
+        {
+            "path": "../../packages/qup-data"
+        },
+        {
+            "path": "../../packages/qup-shared"
+        }
+    ]
+}
