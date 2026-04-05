@@ -93,9 +93,17 @@ The system SHALL expose Hono routes:
 - **WHEN** `POST /plantas` with `{ "nombre": "Monstera", "familiaId": "<uuid>" }`
 - **THEN** returns 201 with `{ id, nombre, familiaId, familiaName, fotoUrl }`
 
+#### Scenario: Get non-existent planta via API
+- **WHEN** `GET /plantas/:id` with unknown id
+- **THEN** returns 404 with error DTO
+
 #### Scenario: List plantas filtered by familia
 - **WHEN** `GET /plantas?familiaId=<uuid>`
 - **THEN** returns 200 with only plantas belonging to that familia
+
+#### Scenario: Create duplicate planta via API
+- **WHEN** `POST /plantas` with duplicate nombre
+- **THEN** returns 409 with error DTO
 
 #### Scenario: Create planta with non-existent familia via API
 - **WHEN** `POST /plantas` with a familiaId that doesn't exist
@@ -103,6 +111,14 @@ The system SHALL expose Hono routes:
 
 #### Scenario: Update planta with non-existent familia via API
 - **WHEN** `PATCH /plantas/:id` with a familiaId that doesn't exist
+- **THEN** returns 404 with error DTO
+
+#### Scenario: Update planta to duplicate nombre via API
+- **WHEN** `PATCH /plantas/:id` sets nombre to one that already exists
+- **THEN** returns 409 with error DTO
+
+#### Scenario: Delete non-existent planta via API
+- **WHEN** `DELETE /plantas/:id` with unknown id
 - **THEN** returns 404 with error DTO
 
 ### Requirement: Planta DTOs and request types

@@ -92,6 +92,10 @@ The system SHALL expose Hono routes:
 - **WHEN** `DELETE /familias/:id` with valid id
 - **THEN** returns 204
 
+#### Scenario: Delete non-existent familia via API
+- **WHEN** `DELETE /familias/:id` with unknown id
+- **THEN** returns 404 with error DTO
+
 #### Scenario: Create duplicate familia via API
 - **WHEN** `POST /familias` with duplicate nombre
 - **THEN** returns 409 with error DTO
