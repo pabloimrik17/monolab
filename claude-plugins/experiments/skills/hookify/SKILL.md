@@ -1,6 +1,6 @@
 ---
 name: hookify
-description: Analyze CLAUDE.md and AGENTS.md for deterministic instructions that can be converted to Claude Code hooks. Proposes one highest-impact hookifiable instruction per invocation and, on confirmation, generates the bash hook script, updates settings.json, and removes the instruction from the source file. Use when starting a session, reviewing project instructions, or when asked to optimize CLAUDE.md.
+description: This skill should be used when the user asks to "hookify", "optimize CLAUDE.md", "convert instructions to hooks", "enforce CLAUDE.md rules", or when starting a session to review project instructions for hookifiable rules. Analyzes CLAUDE.md/AGENTS.md for deterministic instructions convertible to Claude Code hooks.
 ---
 
 # Hookify
