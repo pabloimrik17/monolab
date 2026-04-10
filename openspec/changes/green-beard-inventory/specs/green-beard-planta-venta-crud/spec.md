@@ -97,7 +97,7 @@ The system SHALL provide injectable use cases:
 - `GetPlantasVentaUseCase`: returns all
 - `GetPlantaVentaByIdUseCase`: returns PlantaVenta or PlantaVentaNotFoundError
 - `UpdatePlantaVentaUseCase`: validates existence (PlantaVentaNotFoundError), validates FK changes (entity-specific NotFoundError), updates
-- `DeletePlantaVentaUseCase`: validates existence (PlantaVentaNotFoundError), gets foto keys for R2 cleanup, deletes entity
+- `DeletePlantaVentaUseCase`: validates existence (PlantaVentaNotFoundError), collects all foto keys, deletes entity, then performs best-effort R2 cleanup of collected keys (logs failures without returning errors to caller)
 
 Photo upload/delete are handled by separate use cases (see photo-storage spec).
 
@@ -116,6 +116,10 @@ Photo upload/delete are handled by separate use cases (see photo-storage spec).
 #### Scenario: Concurrent create for same plantaId
 - **WHEN** two `CreatePlantaVentaUseCase` executions run concurrently for the same `plantaId`
 - **THEN** both complete with distinct `identificador` values and no duplicate `(planta_id, identificador)`
+
+#### Scenario: Delete with R2 cleanup failure
+- **WHEN** `DeletePlantaVentaUseCase` is executed and R2 deletion of foto keys fails
+- **THEN** the PlantaVenta entity is still deleted, cleanup failure is logged, and the use case returns `Ok<void>`
 
 ### Requirement: Drizzle plantas_venta table
 
