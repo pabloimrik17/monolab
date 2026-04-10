@@ -2,42 +2,42 @@
 
 ## 1. Infrastructure Setup
 
-- [ ] 1.1 Create `docker-compose.yml` in `apps/investlab/` with PostgreSQL and Redis services
-- [ ] 1.2 Add `.env.example` with database URL, Redis URL, Finnhub API key
-- [ ] 1.3 Configure Drizzle (`drizzle.config.ts`) in `packages/investlab-data`
-- [ ] 1.4 Verify `docker compose up` starts both services successfully
+- [x] 1.1 Create `docker-compose.yml` in `apps/investlab/` with PostgreSQL and Redis services
+- [x] 1.2 Add `.env.example` with database URL, Redis URL, Finnhub API key
+- [x] 1.3 Configure Drizzle (`drizzle.config.ts`) in `packages/investlab-data`
+- [x] 1.4 Verify `docker compose up` starts both services successfully
 
 ## 2. Domain Package (investlab-domain)
 
-- [ ] 2.1 Scaffold `packages/investlab-domain` with package.json, tsconfig, project.json
-- [ ] 2.2 Create value objects: `InstrumentType`, `AssetClass`, `Sector` enums
-- [ ] 2.3 Create `Instrument` entity with all fields (id, symbol, name, type, assetClass, exchange?, sector?, replicates?, quotable)
-- [ ] 2.4 Create `InstrumentRepository` interface with CRUD + `findBySymbol`, `findByType`, `findByAssetClass`, `upsertBySymbol`
-- [ ] 2.5 Create `PersistenceError` domain error type
-- [ ] 2.6 Define Inversify tokens in `tokens.ts`
-- [ ] 2.7 Create `domain.module.ts` ContainerModule
-- [ ] 2.8 Verify: `pnpm nx run investlab-domain:build`
+- [x] 2.1 Scaffold `packages/investlab-domain` with package.json, tsconfig, tsdown.config
+- [x] 2.2 Create value objects: `InstrumentType`, `AssetClass`, `Sector` enums
+- [x] 2.3 Create `Instrument` entity with all fields (id, symbol, name, type, assetClass, exchange?, sector?, replicates?, quotable)
+- [x] 2.4 Create `InstrumentRepository` interface with CRUD + `findBySymbol`, `findByType`, `findByAssetClass`, `upsertBySymbol`
+- [x] 2.5 Create `PersistenceError` domain error type
+- [x] 2.6 Define Inversify tokens in `tokens.ts`
+- [x] 2.7 Create `domain.module.ts` ContainerModule
+- [x] 2.8 Verify: `pnpm nx run investlab-domain:build`
 
 ## 3. Data Package (investlab-data)
 
-- [ ] 3.1 Scaffold `packages/investlab-data` with package.json, tsconfig, project.json
-- [ ] 3.2 Create Drizzle schema for `instruments` table
-- [ ] 3.3 Generate initial migration with `drizzle-kit generate`
-- [ ] 3.4 Create `InstrumentMapper` with `toDomain(row)` and `toRow(entity)` methods
-- [ ] 3.5 Implement `InstrumentRepositoryImpl` — all methods return `ResultAsync`
-- [ ] 3.6 Create `data.module.ts` ContainerModule binding repo implementation to interface
-- [ ] 3.7 Apply migration: `drizzle-kit migrate`
-- [ ] 3.8 Verify: `pnpm nx run investlab-data:build`
+- [x] 3.1 Scaffold `packages/investlab-data` with package.json, tsconfig, tsdown.config
+- [x] 3.2 Create Drizzle schema for `instruments` table
+- [x] 3.3 Generate initial migration with `drizzle-kit generate`
+- [x] 3.4 Create `InstrumentMapper` with `toDomain(row)` and `toRow(entity)` methods
+- [x] 3.5 Implement `PgInstrumentRepository` — all methods return `ResultAsync`
+- [x] 3.6 Create `data.module.ts` ContainerModule binding repo implementation to interface
+- [x] 3.7 Apply migration: `drizzle-kit migrate`
+- [x] 3.8 Verify: `pnpm nx run investlab-data:build`
 
 ## 4. Quote Cache
 
-- [ ] 4.1 Add `ioredis` dependency to `packages/investlab-core`
-- [ ] 4.2 Create `QuoteCache` interface in `investlab-domain` (domain port)
-- [ ] 4.3 Implement Redis-backed `QuoteCacheImpl` with configurable TTL (default ~1 hour)
-- [ ] 4.4 Implement `getQuote(symbol)` with cache-miss-fetch-store pattern
-- [ ] 4.5 Implement `getQuotes(symbols[])` with per-symbol cache check, batch fetch for uncached
-- [ ] 4.6 Use key format `investlab:quote:{SYMBOL}`
-- [ ] 4.7 Bind in ContainerModule
+- [x] 4.1 Add `ioredis` dependency to `packages/investlab-core`
+- [x] 4.2 Create `QuoteCache` interface in `investlab-domain` (domain port)
+- [x] 4.3 Implement Redis-backed `QuoteCacheImpl` with configurable TTL (default ~1 hour)
+- [x] 4.4 Implement `getQuote(symbol)` with cache-miss-fetch-store pattern
+- [x] 4.5 Implement `getQuotes(symbols[])` with per-symbol cache check, batch fetch for uncached
+- [x] 4.6 Use key format `investlab:quote:{SYMBOL}`
+- [x] 4.7 Bind in ContainerModule
 
 ## 5. Integration
 
