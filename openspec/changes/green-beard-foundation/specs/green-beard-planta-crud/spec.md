@@ -60,6 +60,10 @@ The system SHALL provide injectable use cases:
 - **WHEN** `UpdatePlantaUseCase` is executed with a new fotoUrl
 - **THEN** the planta's fotoUrl is updated
 
+#### Scenario: Update non-existent planta
+- **WHEN** `UpdatePlantaUseCase` is executed with an unknown id
+- **THEN** it returns `Err<NotFoundError>`
+
 ### Requirement: Drizzle plantas table
 
 The system SHALL define a `plantas` table: `id` (UUID PK, default random), `nombre` (VARCHAR 150, NOT NULL, UNIQUE), `familia_id` (UUID, NOT NULL, FK→familias.id), `foto_url` (TEXT, nullable).
@@ -111,6 +115,10 @@ The system SHALL expose Hono routes:
 
 #### Scenario: Update planta with non-existent familia via API
 - **WHEN** `PATCH /plantas/:id` with a familiaId that doesn't exist
+- **THEN** returns 404 with error DTO
+
+#### Scenario: Update non-existent planta via API
+- **WHEN** `PATCH /plantas/:id` with unknown id
 - **THEN** returns 404 with error DTO
 
 #### Scenario: Update planta to duplicate nombre via API

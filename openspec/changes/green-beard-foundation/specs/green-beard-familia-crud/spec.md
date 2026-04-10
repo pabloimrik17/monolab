@@ -59,6 +59,10 @@ The system SHALL provide injectable use cases:
 - **WHEN** `UpdateFamiliaUseCase` is executed changing nombre to one that already exists
 - **THEN** it returns `Err<DuplicateError>`
 
+#### Scenario: Update non-existent familia
+- **WHEN** `UpdateFamiliaUseCase` is executed with an unknown id
+- **THEN** it returns `Err<NotFoundError>`
+
 ### Requirement: Drizzle familias table
 
 The system SHALL define a `familias` table: `id` (UUID PK, default random), `nombre` (VARCHAR 100, NOT NULL, UNIQUE).
@@ -107,6 +111,10 @@ The system SHALL expose Hono routes:
 #### Scenario: Update familia to duplicate nombre via API
 - **WHEN** `PATCH /familias/:id` sets nombre to one that already exists
 - **THEN** returns 409 with error DTO
+
+#### Scenario: Update non-existent familia via API
+- **WHEN** `PATCH /familias/:id` with unknown id
+- **THEN** returns 404 with error DTO
 
 ### Requirement: Familia DTOs and request types
 
