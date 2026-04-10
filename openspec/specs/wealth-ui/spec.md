@@ -1,4 +1,10 @@
-## ADDED Requirements
+# wealth-ui Specification
+
+## Purpose
+
+Display ticker list with quotes, add/remove tickers, and auto-refresh indicator.
+
+## Requirements
 
 ### Requirement: Display ticker list
 The app SHALL display a vertical list of tickers sorted alphabetically with their current quotes.

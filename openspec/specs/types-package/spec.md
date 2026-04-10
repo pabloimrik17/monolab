@@ -1,5 +1,9 @@
 # Types Package Specification
 
+## Purpose
+
+Centralized package for sharing TypeScript type definitions across the monorepo.
+
 ## Requirements
 
 ### Requirement: Package Structure

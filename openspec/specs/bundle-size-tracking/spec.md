@@ -1,4 +1,10 @@
-## MODIFIED Requirements
+# bundle-size-tracking Specification
+
+## Purpose
+
+Track per-package bundle sizes via Codecov Bundle Analysis to monitor and control package size growth.
+
+## Requirements
 
 ### Requirement: Bundle sizes MUST be tracked per published package
 

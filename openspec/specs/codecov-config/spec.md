@@ -1,4 +1,10 @@
-## MODIFIED Requirements
+# codecov-config Specification
+
+## Purpose
+
+Configure Codecov flags, thresholds, and per-package tracking for the monorepo.
+
+## Requirements
 
 ### Requirement: Configuration MUST define per-package flags
 

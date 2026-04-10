@@ -1,4 +1,10 @@
-## ADDED Requirements
+# quote-polling Specification
+
+## Purpose
+
+Periodic auto-refresh of stock quotes with configurable intervals and error recovery.
+
+## Requirements
 
 ### Requirement: Start polling
 The system SHALL start periodic quote fetching when start() is called.

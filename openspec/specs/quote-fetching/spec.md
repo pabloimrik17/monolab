@@ -1,4 +1,10 @@
-## ADDED Requirements
+# quote-fetching Specification
+
+## Purpose
+
+Fetch current stock quotes from Finnhub API with batch support and rate limit handling.
+
+## Requirements
 
 ### Requirement: Fetch single quote
 The system SHALL fetch current quote data for a single ticker symbol from Finnhub API.

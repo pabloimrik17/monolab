@@ -1,4 +1,10 @@
-## ADDED Requirements
+# http-client-contracts Specification
+
+## Purpose
+
+TypeScript interfaces defining the HTTP client contract for all implementations (axios, ky).
+
+## Requirements
 
 ### Requirement: Core HTTP Types
 

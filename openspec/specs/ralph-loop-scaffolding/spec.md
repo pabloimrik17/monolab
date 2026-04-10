@@ -1,4 +1,10 @@
-## ADDED Requirements
+# ralph-loop-scaffolding Specification
+
+## Purpose
+
+Generate Ralph loop infrastructure (PRD, prompt, scripts) from a project description.
+
+## Requirements
 
 ### Requirement: Command invocation
 

@@ -1,4 +1,10 @@
-## ADDED Requirements
+# hookify-skill Specification
+
+## Purpose
+
+Analyze CLAUDE.md/AGENTS.md for deterministic instructions convertible to Claude Code hooks.
+
+## Requirements
 
 ### Requirement: Skill file exists
 

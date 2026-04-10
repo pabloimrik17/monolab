@@ -1,4 +1,10 @@
-## ADDED Requirements
+# sveltekit-app-scaffold Specification
+
+## Purpose
+
+SvelteKit 5 app bootstrapped in Nx+pnpm monorepo with shared tsconfig integration.
+
+## Requirements
 
 ### Requirement: SvelteKit app scaffolded via official CLI
 The system SHALL have a SvelteKit 5 app at `apps/green-beard/` created using the official `sv create` CLI with skeleton template and TypeScript.

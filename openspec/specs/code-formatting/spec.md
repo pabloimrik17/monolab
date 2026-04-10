@@ -1,5 +1,11 @@
 # code-formatting Specification
 
+## Purpose
+
+Workspace formatting configuration using oxfmt with import sorting and lint-staged integration.
+
+## Requirements
+
 ### Requirement: oxfmt as workspace formatter
 The workspace SHALL use oxfmt as the sole code formatter, configured via a single `.oxfmtrc.json` at the workspace root.
 

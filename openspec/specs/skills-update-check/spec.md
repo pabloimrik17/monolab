@@ -1,4 +1,10 @@
-## ADDED Requirements
+# skills-update-check Specification
+
+## Purpose
+
+Session-start skill that checks for global skills.sh updates and offers to apply them.
+
+## Requirements
 
 ### Requirement: Package Runner Detection
 

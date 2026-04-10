@@ -1,5 +1,9 @@
 # Type Utilities Specification
 
+## Purpose
+
+Reusable TypeScript utility types for type-safe key extraction and filtering.
+
 ## Requirements
 
 ### Requirement: StringKeyOf Type Utility

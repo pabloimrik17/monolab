@@ -1,6 +1,6 @@
 # Rename Specification
 
-## RENAMED Requirements
+## MODIFIED Requirements
 
 ### Requirement: Project names reflect investment domain
 

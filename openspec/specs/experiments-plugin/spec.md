@@ -1,3 +1,11 @@
+# experiments-plugin Specification
+
+## Purpose
+
+Beta skills and commands staging area for the monolab Claude Code marketplace.
+
+## Requirements
+
 ### Requirement: Experiments Plugin Structure
 
 The `experiments` plugin SHALL exist at `claude-plugins/experiments/` and follow standard Claude Code plugin structure.

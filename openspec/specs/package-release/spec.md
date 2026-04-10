@@ -1,4 +1,10 @@
-## MODIFIED Requirements
+# package-release Specification
+
+## Purpose
+
+Automated dual publishing to npm and JSR via release-please with proper dependency ordering.
+
+## Requirements
 
 ### Requirement: Package Configuration
 

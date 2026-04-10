@@ -1,4 +1,10 @@
-## ADDED Requirements
+# ticker-management Specification
+
+## Purpose
+
+CRUD operations for stock ticker watchlist with persistence and alphabetical sorting.
+
+## Requirements
 
 ### Requirement: Add ticker to watchlist
 The system SHALL allow adding a ticker symbol to the watchlist. The ticker symbol MUST be normalized to uppercase.

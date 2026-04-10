@@ -1,4 +1,10 @@
-## ADDED Requirements
+# skill-terraformer Specification
+
+## Purpose
+
+Auto-detect project stack and install matching skills.sh skills.
+
+## Requirements
 
 ### Requirement: Skill File Location
 
