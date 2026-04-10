@@ -119,7 +119,7 @@ Photo upload/delete are handled by separate use cases (see photo-storage spec).
 
 ### Requirement: Drizzle plantas_venta table
 
-The system SHALL define a `plantas_venta` table: `id` (UUID PK), `planta_id` (UUID FK→plantas, NOT NULL), `identificador` (INTEGER, NOT NULL), `fotos` (JSONB, NOT NULL, DEFAULT '[]'), `alto_planta_cm` (NUMERIC(10,2), NOT NULL), `maceta_id` (UUID FK→macetas, NOT NULL), `sustrato_id` (UUID FK→sustratos, NOT NULL), `coste_planta` (NUMERIC(10,2), nullable).
+The system SHALL define a `plantas_venta` table: `id` (UUID PK), `planta_id` (UUID FK→plantas, NOT NULL), `identificador` (INTEGER, NOT NULL, CHECK identificador >= 1), `fotos` (JSONB, NOT NULL, DEFAULT '[]'), `alto_planta_cm` (NUMERIC(10,2), NOT NULL, CHECK alto_planta_cm > 0), `maceta_id` (UUID FK→macetas, NOT NULL), `sustrato_id` (UUID FK→sustratos, NOT NULL), `coste_planta` (NUMERIC(10,2), nullable, CHECK coste_planta IS NULL OR coste_planta >= 0).
 
 Composite UNIQUE constraint: `(planta_id, identificador)`.
 
