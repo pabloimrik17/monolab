@@ -2,7 +2,7 @@
 
 ### Requirement: Planta entity
 
-The system SHALL model Planta as a domain entity in `green-beard-domain` with: id (UUID), nombre (string, non-empty, trimmed), familiaId (UUID, required), fotoUrl (string, nullable). Private constructor with `static create()` returning `Result<Planta, ValidationError>` and `static reconstitute()`.
+The system SHALL model Planta as a domain entity in `green-beard-domain` with: id (UUID, auto-generated), nombre (string, non-empty, trimmed), familiaId (UUID, required), fotoUrl (string, nullable). Private constructor with `static create()` returning `Result<Planta, ValidationError>` and `static reconstitute()`.
 
 #### Scenario: Create valid planta
 - **WHEN** `Planta.create({ nombre: "Monstera Deliciosa", familiaId: "<valid-uuid>" })` is called
@@ -96,6 +96,18 @@ The system SHALL expose Hono routes:
 #### Scenario: Create planta via API
 - **WHEN** `POST /plantas` with `{ "nombre": "Monstera", "familiaId": "<uuid>" }`
 - **THEN** returns 201 with `{ id, nombre, familiaId, familiaName, fotoUrl }`
+
+#### Scenario: Get planta via API
+- **WHEN** `GET /plantas/:id` with valid id
+- **THEN** returns 200 with `PlantaDto`
+
+#### Scenario: Update planta via API
+- **WHEN** `PATCH /plantas/:id` with valid id and valid body
+- **THEN** returns 200 with updated `PlantaDto`
+
+#### Scenario: Delete planta via API
+- **WHEN** `DELETE /plantas/:id` with valid id
+- **THEN** returns 204
 
 #### Scenario: Get non-existent planta via API
 - **WHEN** `GET /plantas/:id` with unknown id

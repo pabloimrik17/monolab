@@ -88,9 +88,21 @@ The system SHALL expose Hono routes:
 - `PATCH /familias/:id` → update (body: `{ nombre? }`)
 - `DELETE /familias/:id` → delete
 
+#### Scenario: List familias via API
+- **WHEN** `GET /familias`
+- **THEN** returns 200 with `FamiliaDto[]` ordered by nombre
+
+#### Scenario: Get familia by id via API
+- **WHEN** `GET /familias/:id` with valid id
+- **THEN** returns 200 with `FamiliaDto`
+
 #### Scenario: Create familia via API
 - **WHEN** `POST /familias` with `{ "nombre": "Araceae" }`
 - **THEN** returns 201 with `{ id, nombre }`
+
+#### Scenario: Update familia via API
+- **WHEN** `PATCH /familias/:id` with valid id and valid body
+- **THEN** returns 200 with updated `FamiliaDto`
 
 #### Scenario: Delete familia via API
 - **WHEN** `DELETE /familias/:id` with valid id
