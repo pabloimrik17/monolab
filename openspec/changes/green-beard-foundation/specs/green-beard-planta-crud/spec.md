@@ -2,7 +2,7 @@
 
 ### Requirement: Planta entity
 
-The system SHALL model Planta as a domain entity in `green-beard-domain` with: id (UUID, auto-generated), nombre (string, non-empty, trimmed), familiaId (UUID, required), fotoUrl (string, nullable). Private constructor with `static create()` returning `Result<Planta, ValidationError>` and `static reconstitute()`.
+The system SHALL model Planta as a domain entity in `green-beard-domain` with: id (UUID, auto-generated), nombre (string, non-empty, trimmed), familiaId (UUID, required), fotoUrl (string, nullable). Private constructor with `static create()` returning `Result<Planta, ValidationError>` and `static reconstitute()` for DB hydration. `update()` method for mutations.
 
 #### Scenario: Create valid planta
 - **WHEN** `Planta.create({ nombre: "Monstera Deliciosa", familiaId: "<valid-uuid>" })` is called
