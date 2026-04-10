@@ -93,21 +93,21 @@ The system SHALL define a `PlantaVentaRepository` interface with `ResultAsync` m
 ### Requirement: PlantaVenta CRUD use cases
 
 The system SHALL provide injectable use cases:
-- `CreatePlantaVentaUseCase`: validates plantaId (exists in PlantaRepository), macetaId (exists in MacetaRepository), sustratoId (exists in SustratoRepository), gets next identificador, creates entity, persists
+- `CreatePlantaVentaUseCase`: validates plantaId (exists in PlantaRepository, returns PlantaNotFoundError if not), macetaId (exists in MacetaRepository, returns MacetaNotFoundError if not), sustratoId (exists in SustratoRepository, returns SustratoNotFoundError if not), gets next identificador, creates entity, persists
 - `GetPlantasVentaUseCase`: returns all
-- `GetPlantaVentaByIdUseCase`: returns or NotFoundError
-- `UpdatePlantaVentaUseCase`: validates existence, validates FK changes, updates
-- `DeletePlantaVentaUseCase`: validates existence, gets foto keys for R2 cleanup, deletes entity
+- `GetPlantaVentaByIdUseCase`: returns PlantaVenta or PlantaVentaNotFoundError
+- `UpdatePlantaVentaUseCase`: validates existence (PlantaVentaNotFoundError), validates FK changes (entity-specific NotFoundError), updates
+- `DeletePlantaVentaUseCase`: validates existence (PlantaVentaNotFoundError), gets foto keys for R2 cleanup, deletes entity
 
 Photo upload/delete are handled by separate use cases (see photo-storage spec).
 
 #### Scenario: Create with non-existent planta
 - **WHEN** `CreatePlantaVentaUseCase` is executed with non-existent plantaId
-- **THEN** it returns `Err<NotFoundError>` referencing "Planta"
+- **THEN** it returns `Err<PlantaNotFoundError>`
 
 #### Scenario: Create with non-existent maceta
 - **WHEN** executed with non-existent macetaId
-- **THEN** it returns `Err<NotFoundError>` referencing "Maceta"
+- **THEN** it returns `Err<MacetaNotFoundError>`
 
 #### Scenario: Create assigns auto-incrementing identifier
 - **WHEN** executed for a plantaId that already has [#1, #3]
