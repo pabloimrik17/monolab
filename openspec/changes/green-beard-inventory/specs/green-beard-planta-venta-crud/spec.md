@@ -93,7 +93,7 @@ The system SHALL define a `PlantaVentaRepository` interface with `ResultAsync` m
 ### Requirement: PlantaVenta CRUD use cases
 
 The system SHALL provide injectable use cases:
-- `CreatePlantaVentaUseCase`: validates plantaId (exists in PlantaRepository, returns PlantaNotFoundError if not), macetaId (exists in MacetaRepository, returns MacetaNotFoundError if not), sustratoId (exists in SustratoRepository, returns SustratoNotFoundError if not), gets next identificador, creates entity, persists
+- `CreatePlantaVentaUseCase`: validates plantaId (exists in PlantaRepository, returns PlantaNotFoundError if not), macetaId (exists in MacetaRepository, returns MacetaNotFoundError if not), sustratoId (exists in SustratoRepository, returns SustratoNotFoundError if not), gets next identificador, creates entity, persists atomically; on unique-collision retries allocation with bounded attempts
 - `GetPlantasVentaUseCase`: returns all
 - `GetPlantaVentaByIdUseCase`: returns PlantaVenta or PlantaVentaNotFoundError
 - `UpdatePlantaVentaUseCase`: validates existence (PlantaVentaNotFoundError), validates FK changes (entity-specific NotFoundError), updates
@@ -112,6 +112,10 @@ Photo upload/delete are handled by separate use cases (see photo-storage spec).
 #### Scenario: Create assigns auto-incrementing identifier
 - **WHEN** executed for a plantaId that already has [#1, #3]
 - **THEN** the new PlantaVenta gets identificador = 2
+
+#### Scenario: Concurrent create for same plantaId
+- **WHEN** two `CreatePlantaVentaUseCase` executions run concurrently for the same `plantaId`
+- **THEN** both complete with distinct `identificador` values and no duplicate `(planta_id, identificador)`
 
 ### Requirement: Drizzle plantas_venta table
 
@@ -133,7 +137,7 @@ The system SHALL define in `green-beard-shared`:
 - `PlantaVentaFotoDto`: `{ key: string, url: string }`
 - `PlantaVentaDto`: `{ id, plantaId, plantaNombre, familiaName, identificador, displayName, fotos: PlantaVentaFotoDto[], altoPlantaCm, macetaId, macetaNombre, sustratoId, sustratoNombre, costePlanta: number | null }`
 - `CreatePlantaVentaRequest`: `{ plantaId, altoPlantaCm, macetaId, sustratoId, costePlanta? }`
-- `UpdatePlantaVentaRequest`: `{ altoPlantaCm?, macetaId?, sustratoId?, costePlanta? }`
+- `UpdatePlantaVentaRequest`: `{ altoPlantaCm?, macetaId?, sustratoId?, costePlanta?: number | null }`
 
 Note: identificador is auto-assigned, not in create request. plantaId cannot be changed after creation.
 
