@@ -244,7 +244,7 @@ For each heading, extract the semver version:
 Match against each version in `FETCH_VERSIONS`. For each match found:
 
 - Extract the exact section text (unmodified)
-- This content will be written and verified in **Step 7**
+- This content will be written and verified in **Step 8**
 
 Versions in `FETCH_VERSIONS` not found in the parsed file → add to `STRATEGY_B_VERSIONS`.
 
@@ -288,7 +288,7 @@ The response contains HTTP headers, then a blank line, then the JSON body. Parse
 
 From the JSON response, extract the `body` field.
 
-- If `body` is non-empty → this is the changelog content for this version. **No further parsing needed** — the release body is the final entry. Proceed to **Step 7** for verification and storage.
+- If `body` is non-empty → this is the changelog content for this version. **No further parsing needed** — the release body is the final entry. Proceed to **Step 8** for verification and storage.
 - If `body` is empty or null → add version to `STRATEGY_C_VERSIONS` with note `empty_release_body`
 
 ## Step 7: Strategy C — CDN Fallback
