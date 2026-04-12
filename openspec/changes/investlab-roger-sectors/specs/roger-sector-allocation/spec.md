@@ -26,11 +26,11 @@ The system SHALL allow the user to configure a target percentage per sector, wit
 #### Scenario: No targets configured
 
 - **WHEN** no sector targets have been configured
-- **THEN** the allocation view shows actual distribution only with target columns showing "--"
+- **THEN** the allocation view shows actual distribution only with target, difference, and status columns showing "--"
 
 ### Requirement: Calculate actual allocation per sector
 
-The system SHALL calculate actual sector allocation from entries in COMPRAR, INVERTIDO, or VENDER states.
+The system SHALL calculate actual sector allocation from entries in COMPRAR, INVERTIDO, or VENDER states, using position value = currentPrice × quantity for each active entry.
 
 #### Scenario: Single sector allocation
 

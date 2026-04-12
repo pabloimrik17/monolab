@@ -62,7 +62,7 @@ SectorAllocation {
 | difference < -2% | Yellow | Under-allocated |
 | -2% <= difference <= +2% | Green | On target |
 
-Threshold of +/-2% is hardcoded initially. Can be made configurable later.
+The threshold of +/-2% is hardcoded initially; it can be made configurable later.
 
 ### 4. View layout
 
@@ -72,7 +72,7 @@ Sorted by sector name. "Unclassified" always last row.
 
 ### 5. Target configuration UI
 
-Form with one row per known sector. Number input for target %. Submit validates sum = 100%. Error shown if sum != 100%.
+Form showing sectors with active positions or existing targets. Number input for target %. Submit validates sum = 100%. Error shown if sum != 100%.
 
 Pre-populated with current targets or 0% for unconfigured sectors.
 

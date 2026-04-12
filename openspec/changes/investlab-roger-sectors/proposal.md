@@ -25,3 +25,12 @@ None
 - **New domain entity**: SectorTarget configuration (sector -> target %) in `packages/investlab-domain`
 - **New data layer**: sector_targets schema, migration, SectorTargetRepository in `packages/investlab-data`
 - **Prereq**: `investlab-roger-positions` (entries exist with instruments that have sectors)
+
+## Upstream Contract (investlab-roger-positions)
+
+Entry shape required by roger-sector-allocation:
+- `quantity`: number (set in active states)
+- `currentPrice`: number (from quote cache)
+- `instrument.sector`: Sector enum | null
+
+Active states: COMPRAR, INVERTIDO, VENDER. Entries in other states excluded from allocation.

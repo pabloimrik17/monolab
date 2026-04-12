@@ -25,7 +25,7 @@
 - [ ] 3.3 Create sector target configuration form: row per sector with number input, running total, submit validates sum=100%
 - [ ] 3.4 Add route/section for sector allocation view (under /roger/sectors or within /roger)
 - [ ] 3.5 Wire allocation calculator: fetch active entries, instruments, quotes -> compute -> render table
-- [ ] 3.6 Handle "Unclassified" bucket for instruments without sector (always last row)
+- [ ] 3.6 Handle "Unclassified" bucket for instruments without sector (last row when present; omit if all instruments have sectors)
 
 ## 4. Verification
 
@@ -36,3 +36,5 @@
 - [ ] 4.5 Verify allocation calculation with active entries across multiple sectors
 - [ ] 4.6 Verify color indicators: create scenarios for over/under/on-target
 - [ ] 4.7 Verify "Unclassified" handling with instruments missing sector
+- [ ] 4.8 Verify no targets configured: target/difference/status show "--"
+- [ ] 4.9 Verify no active entries: all sectors show $0 and 0%
