@@ -13,8 +13,11 @@
     "include": ["src/**/*"],
     "exclude": ["**/*.test.ts", "**/*.spec.ts"],
     "references": [
-        {
-            "path": "../investlab-domain"
-        }
+      {
+        "path": "../wealth-tracker-core"
+      },
+      {
+        "path": "../investlab-domain"
+      }
     ]
 }
