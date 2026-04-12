@@ -19,7 +19,8 @@ The system SHALL calculate the weighted average buy price across active entries 
 #### Scenario: No active entries
 
 - **WHEN** instrument "GOOG" has only entries in EN_ESPERA and OPERATIVA
-- **THEN** avgBuyPrice is not calculated (returns 0 or undefined)
+- **THEN** avgBuyPrice is not calculated and returns `undefined`
+- **AND** consumers must render this as dash/empty
 
 #### Scenario: Only active states included
 
@@ -41,6 +42,12 @@ The system SHALL calculate breakeven price accounting for commission costs.
 - **WHEN** an entry in INVERTIDO has desiredPrice=100, quantity=50, commission=9.99, and avgBuyPrice=0
 - **THEN** breakeven = (100 * 50 + 2 * 9.99) / 50 = 100.40
 - **AND** commission is doubled to account for both buy and sell
+
+#### Scenario: Breakeven with invalid quantity
+
+- **WHEN** quantity <= 0
+- **THEN** breakeven is not calculated
+- **AND** the system returns undefined and renders dash/empty
 
 #### Scenario: Breakeven for entry without commission
 
