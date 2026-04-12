@@ -98,8 +98,8 @@ The system SHALL add columns to `portfolio_items`: `invested_amount` (NUMERIC 12
 
 ### Requirement: Return refresh on quote update
 
-The system SHALL recalculate returns for quotable instruments when the quote cache is refreshed. The portfolio view SHALL reflect updated values without full page reload.
+The system SHALL recalculate returns for quotable instruments when the quote cache is refreshed. The portfolio view SHALL reflect updated values without full-page reload.
 
 #### Scenario: Quote cache updates
-- **WHEN** Finnhub cache refreshes with new price for a held instrument
-- **THEN** next portfolio load shows updated currentValue and recalculated return %
+- **WHEN** Finnhub cache refreshes with new price for a held instrument while portfolio view is open
+- **THEN** the portfolio view updates currentValue and recalculated return % in-place without full-page reload

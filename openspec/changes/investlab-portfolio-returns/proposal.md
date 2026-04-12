@@ -5,7 +5,7 @@ Need visibility into profitability — how much each instrument has returned and
 ## What Changes
 
 - Return calculation logic: per-instrument and global portfolio return %
-- Invested amount tracking: sum of contributions to date or manually set baseline
+- Invested amount tracking: manual baseline if set, otherwise derived from sum of contributions to date
 - Current value resolution: quotable instruments use cached Finnhub price x quantity, non-quotable (index funds) use manual entry
 - Return display integrated into `/portfolio` view — not a separate route
 
@@ -26,4 +26,4 @@ Need visibility into profitability — how much each instrument has returned and
 - **Modified route**: `/portfolio` table gains return % column, global return KPI card
 - **New components**: ReturnBadge, GlobalReturnKpi
 - **Integration**: Connects to Finnhub quote cache from foundation for quotable instrument prices
-- **Prereq**: `investlab-portfolio-instruments` must be complete, `investlab-foundation` quote cache available
+- **Prereq**: `portfolio-allocations` must be complete (PR dependency), `investlab-portfolio-instruments` for instrument entities, `investlab-foundation` quote cache available

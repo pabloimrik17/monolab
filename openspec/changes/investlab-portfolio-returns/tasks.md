@@ -27,9 +27,9 @@
 
 ## 4. Integration
 
-- [ ] 4.1 Wire ValueResolver to QuoteCache from investlab-foundation via Inversify token
-- [ ] 4.2 Implement batch price resolution — for all quotable items on portfolio load, fetch cached prices in single pass
-- [ ] 4.3 Ensure portfolio view reflects updated values after quote cache refresh (no full page reload needed if data refetched)
+- [ ] 4.1 Wire ValueResolver to QuoteCache via Inversify token
+- [ ] 4.2 Batch price resolution — fetch cached prices for all quotable items in single pass on portfolio load
+- [ ] 4.3 Subscribe to QuoteCache update callback; on update, re-resolve prices and rerender returns in-place (no full-page reload)
 
 ## 5. Verification
 
