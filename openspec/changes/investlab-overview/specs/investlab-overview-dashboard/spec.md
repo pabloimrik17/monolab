@@ -103,6 +103,20 @@ The system SHALL allow the user to set and update monthly income and monthly con
 - **WHEN** user changes monthly contributions from $1,000 to $1,500
 - **THEN** investment allocation % recalculates with new value
 
+#### Scenario: Reject negative monthly income (ADDED)
+
+- **WHEN** user sets monthly income to -$1,000
+- **THEN** a validation error is shown
+- **AND** the previous value is not changed
+- **AND** KPI cards remain unchanged
+
+#### Scenario: Reject negative monthly contributions (ADDED)
+
+- **WHEN** user sets monthly contributions to -$500
+- **THEN** a validation error is shown
+- **AND** the previous value is not changed
+- **AND** investment allocation % remains unchanged
+
 ### Requirement: Auto-refresh on data changes
 
 The system SHALL recalculate KPIs when the overview page is loaded or navigated to.
