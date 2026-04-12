@@ -4,7 +4,7 @@
 - [ ] 1.2 Implement contribution normalization logic — monthlyContribution(), annualContribution() methods on PortfolioItem
 - [ ] 1.3 Define `AllocationConfig` entity — targetRvPercent, targetRfPercent (derived), monthlyIncome, investmentPercent. `create()` validates targetRvPercent 0-100
 - [ ] 1.4 Define `AllocationConfigRepository` interface — save, get (single row), update. Returns `ResultAsync`
-- [ ] 1.5 Implement `AllocationCalculator` domain service — calculateActualRfRvSplit, calculateWeightDistribution, calculateTotalContributions. Pure functions
+- [ ] 1.5 Implement `AllocationCalculator` domain service — calculateActualRfRvSplit (map fixed_income → RF; equity/commodity/crypto → RV), calculateWeightDistribution, calculateTotalContributions. Pure functions
 - [ ] 1.6 Define tokens for AllocationConfigRepository, AllocationCalculator, and new use cases
 - [ ] 1.7 Implement `UpdateContributionUseCase` (@injectable) — update contribution config on portfolio item
 - [ ] 1.8 Implement `GetAllocationConfigUseCase` (@injectable) — returns config, creates default if none exists
