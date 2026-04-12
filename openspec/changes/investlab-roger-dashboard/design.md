@@ -93,6 +93,6 @@ Below cards: "Configure Cash" button + "Cleanup Stale Tickers" button
 | Risk | Mitigation |
 |------|------------|
 | Negative liquidity confusing | Show in red with clear label; means over-committed |
-| Orphan check across modules adds coupling | Simple count query on entries table; no module API dependency |
+| Orphan check across modules adds coupling | Cross-module reference check before deletion; query all module-owned relations (entries, positions, portfolio links) to verify zero references |
 | Stale threshold too aggressive or too lenient | 7 days is reasonable default; could make configurable via settings later |
 | Generic settings table queried often | Single row for cash; negligible performance impact |

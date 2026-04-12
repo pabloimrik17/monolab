@@ -24,4 +24,4 @@ None
 - **New route**: `/roger/dashboard` or summary section at top of `/roger` in `apps/investlab`
 - **New data**: cash configuration setting in DB
 - **New domain**: liquidity calculator, pending aggregator, stale ticker finder in `packages/investlab-domain`
-- **Prereq**: `investlab-roger-positions` (entries with states), `investlab-roger-metrics-ui` (metrics display patterns)
+- **Prereq**: `investlab-roger-positions` (entries with states), `investlab-roger-metrics-ui` (metrics display patterns), `roger-sectors` (sector data)

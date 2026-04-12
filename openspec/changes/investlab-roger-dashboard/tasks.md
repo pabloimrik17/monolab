@@ -17,7 +17,7 @@
 - [ ] 2.2 Generate migration with `drizzle-kit generate`
 - [ ] 2.3 Implement `RogerSettingRepositoryImpl` — get/set with upsert semantics
 - [ ] 2.4 Create stale ticker query: join entries + instruments, group by instrument, filter ALL entries EN_ESPERA with updatedAt < threshold
-- [ ] 2.5 Create orphan instrument query: instruments with zero entries across all tables
+- [ ] 2.5 Create orphan instrument query: verify instrument has no foreign-key references in module-owned relations (entries, positions, portfolio_links) before marking orphan
 - [ ] 2.6 Bind in data ContainerModule
 - [ ] 2.7 Apply migration: `drizzle-kit migrate`
 

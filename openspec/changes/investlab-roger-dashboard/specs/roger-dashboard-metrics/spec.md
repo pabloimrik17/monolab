@@ -58,7 +58,7 @@ The system SHALL display the total dollar amount of pending sell orders from ent
 
 ### Requirement: Cleanup stale tickers
 
-The system SHALL identify instruments where ALL entries are in EN_ESPERA state with updatedAt older than 7 days, and allow batch deletion with preview.
+The system SHALL identify instruments where ALL entries are in EN_ESPERA state with updatedAt <= now_utc() - interval '7 days' (system UTC clock), and allow batch deletion with preview.
 
 #### Scenario: Identify stale tickers
 
