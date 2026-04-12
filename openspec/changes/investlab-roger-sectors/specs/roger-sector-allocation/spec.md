@@ -4,12 +4,12 @@
 
 ### Requirement: Configure sector targets
 
-The system SHALL allow the user to configure a target percentage per sector, with all targets summing to 100%.
+The system SHALL allow the user to configure a target percentage for a subset of sectors, with configured targets summing to 100%. Unconfigured sectors are treated as 0% target.
 
 #### Scenario: Set sector targets
 
 - **WHEN** user configures targets: Technology 30%, Healthcare 20%, Financial 15%, Energy 10%, Consumer 25%
-- **THEN** all targets are persisted
+- **THEN** all targets are persisted to the sector_targets table and survive sessions
 - **AND** the sum equals 100%
 
 #### Scenario: Reject invalid target sum
@@ -60,17 +60,17 @@ The system SHALL display a table comparing actual allocation against configured 
 #### Scenario: On-target allocation
 
 - **WHEN** Technology actual is 31% and target is 30%
-- **THEN** difference shows +1% with green indicator (within +/-2%)
+- **THEN** difference shows +1% with green indicator (within +/-2% hardcoded threshold; see design.md for configurability roadmap)
 
 #### Scenario: Over-allocated sector
 
 - **WHEN** Technology actual is 38% and target is 30%
-- **THEN** difference shows +8% with red indicator
+- **THEN** difference shows +8% with red indicator (over by more than +2%)
 
 #### Scenario: Under-allocated sector
 
 - **WHEN** Healthcare actual is 12% and target is 20%
-- **THEN** difference shows -8% with yellow indicator
+- **THEN** difference shows -8% with yellow indicator (under by more than -2%)
 
 ### Requirement: Handle instruments without sector
 
@@ -89,7 +89,7 @@ The system SHALL group instruments without a sector as "Unclassified" in the all
 
 ### Requirement: Recalculate on data changes
 
-The system SHALL recalculate allocations when the view is rendered.
+The system SHALL recalculate allocations when the user navigates to or refreshes the sector allocation view.
 
 #### Scenario: Entry state change affects allocation
 
