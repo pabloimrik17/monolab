@@ -38,6 +38,18 @@
       },
       {
         "path": "./apps/qup-web"
+      },
+      {
+        "path": "./packages/investlab-domain"
+      },
+      {
+        "path": "./packages/investlab-core"
+      },
+      {
+        "path": "./packages/investlab-data"
+      },
+      {
+        "path": "./apps/investlab"
       }
     ]
 }
