@@ -9,7 +9,7 @@ The system SHALL allow the user to configure a target percentage for a subset of
 #### Scenario: Set sector targets
 
 - **WHEN** user configures targets: Technology 30%, Healthcare 20%, Financial 15%, Energy 10%, Consumer 25%
-- **THEN** all targets are persisted to the sector_targets table and survive sessions
+- **THEN** all targets are persisted to the sector_targets table (app-scoped, single-user) and survive sessions
 - **AND** the sum equals 100%
 
 #### Scenario: Reject invalid target sum
@@ -32,7 +32,7 @@ The system SHALL allow the user to configure a target percentage for a subset of
 
 The system SHALL calculate actual sector allocation from entries in COMPRAR, INVERTIDO, or VENDER states, using position value = currentPrice × quantity for each active entry.
 
-#### Scenario: Single sector allocation
+#### Scenario: Single-sector allocation
 
 - **WHEN** there are 2 active entries for Technology instruments with values $5,000 and $3,000
 - **AND** total active portfolio value is $20,000
