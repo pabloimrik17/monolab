@@ -85,8 +85,11 @@ export class QuoteCacheImpl implements QuoteCache {
                 const parsed = JSON.parse(raw) as Quote;
                 return { ...parsed, updatedAt: new Date(parsed.updatedAt) };
             }
-        } catch {
-            // Redis read error — treat as cache miss
+        } catch (err) {
+            console.warn(
+                `[QuoteCache] Redis read failed for ${symbol}, treating as cache miss:`,
+                err,
+            );
         }
 
         // Fetch from Finnhub
@@ -117,8 +120,8 @@ export class QuoteCacheImpl implements QuoteCache {
                     }
                 }
             }
-        } catch {
-            // Redis read error — return empty map, all symbols uncached
+        } catch (err) {
+            console.warn("[QuoteCache] Redis batch read failed, treating all as uncached:", err);
         }
         return result;
     }
@@ -126,8 +129,8 @@ export class QuoteCacheImpl implements QuoteCache {
     private async writeCache(symbol: string, quote: Quote): Promise<void> {
         try {
             await this.redis.set(cacheKey(symbol), JSON.stringify(quote), "EX", this.ttl);
-        } catch {
-            // Redis write error — logged, best-effort
+        } catch (err) {
+            console.warn(`[QuoteCache] Redis write failed for ${symbol}:`, err);
         }
     }
 }

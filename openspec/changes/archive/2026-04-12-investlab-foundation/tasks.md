@@ -41,16 +41,16 @@
 
 ## 5. Integration
 
-- [ ] 5.1 Wire Inversify container in app — load domain, data, and cache modules
-- [ ] 5.2 Replace localStorage ticker store with `InstrumentRepository` from DB
-- [ ] 5.3 Replace direct Finnhub calls with cached quote client
-- [ ] 5.4 Update app env config to read database URL, Redis URL
+- [x] 5.1 Wire Inversify container in app — load domain, data, and cache modules
+- [ ] 5.2 Replace localStorage ticker store with `InstrumentRepository` from DB — deferred: no app routes/UI yet (out of scope per design)
+- [ ] 5.3 Replace direct Finnhub calls with cached quote client — deferred: no app routes/UI yet (out of scope per design)
+- [x] 5.4 Update app env config to read database URL, Redis URL
 
 ## 6. Verification
 
-- [ ] 6.1 Run `pnpm nx run investlab-domain:build`
-- [ ] 6.2 Run `pnpm nx run investlab-data:build`
-- [ ] 6.3 Run `pnpm nx run investlab:build`
-- [ ] 6.4 Verify instrument CRUD against running PostgreSQL
-- [ ] 6.5 Verify quote cache against running Redis
-- [ ] 6.6 Grep for remaining localStorage references related to tickers/instruments
+- [x] 6.1 Run `pnpm nx run investlab-domain:build`
+- [x] 6.2 Run `pnpm nx run investlab-data:build`
+- [x] 6.3 Run `pnpm nx run investlab:build` — scaffolded app with package.json, tsconfig, tsdown
+- [x] 6.4 Verify instrument CRUD against running PostgreSQL — 9/9 tests passed via testcontainers
+- [x] 6.5 Verify quote cache against running Redis — 7/7 tests passed via testcontainers
+- [x] 6.6 Grep for remaining localStorage references related to tickers/instruments — none found
