@@ -164,7 +164,7 @@ The system SHALL enforce data requirements based on the target state of a transi
 
 #### Scenario: Transition to COMPRAR requires desiredPrice and quantity
 
-- **WHEN** transitioning to COMPRAR without quantity
+- **WHEN** transitioning to COMPRAR without quantity in transition payload or current entry
 - **THEN** the transition is rejected with MissingRequiredField error
 
 #### Scenario: Transition to COMPRAR with all required data
@@ -174,7 +174,7 @@ The system SHALL enforce data requirements based on the target state of a transi
 
 #### Scenario: Transition to INVERTIDO requires desiredPrice, quantity, and commission
 
-- **WHEN** transitioning to INVERTIDO without commission
+- **WHEN** transitioning to INVERTIDO without commission in transition payload or current entry
 - **THEN** the transition is rejected with MissingRequiredField error
 
 #### Scenario: Transition to INVERTIDO with all required data
@@ -184,7 +184,7 @@ The system SHALL enforce data requirements based on the target state of a transi
 
 #### Scenario: Transition to VENDER requires desiredPrice, quantity, and commission
 
-- **WHEN** transitioning to VENDER without commission
+- **WHEN** transitioning to VENDER without commission in transition payload or current entry
 - **THEN** the transition is rejected with MissingRequiredField error
 
 ### Requirement: Default pre-filling on transition

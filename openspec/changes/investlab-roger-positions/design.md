@@ -90,7 +90,7 @@ State badges with distinct colors per state for quick scanning.
 
 ### 6. Cleanup stale entries
 
-Button triggers: find instruments where ALL entries have state=EN_ESPERA AND updated_at < now - 7 days. Delete those entries (and optionally the instrument if no other references).
+Button triggers: find instruments where ALL entries have state=EN_ESPERA AND updated_at < now - 7 days. Delete those entries. Instrument entities are not deleted by this cleanup action.
 
 **Why button not automatic**: User should control when cleanup happens. Avoids accidental data loss.
 
