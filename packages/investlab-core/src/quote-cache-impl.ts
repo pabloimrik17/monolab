@@ -26,7 +26,7 @@ export class QuoteCacheImpl implements QuoteCache {
         private readonly finnhub: FinnhubClient,
         @inject(CORE_TOKENS.CacheTtl) @optional() ttl?: number,
     ) {
-        this.ttl = ttl ?? DEFAULT_TTL_SECONDS;
+        this.ttl = ttl != null && Number.isInteger(ttl) && ttl > 0 ? ttl : DEFAULT_TTL_SECONDS;
     }
 
     getQuote(symbol: string): ResultAsync<Quote, PersistenceError> {
@@ -40,7 +40,7 @@ export class QuoteCacheImpl implements QuoteCache {
     getQuotes(symbols: string[]): ResultAsync<Map<string, Quote>, PersistenceError> {
         return ResultAsync.fromPromise(
             (async () => {
-                const normalized = symbols.map(normalizeSymbol);
+                const normalized = [...new Set(symbols.map(normalizeSymbol).filter(Boolean))];
                 const result = new Map<string, Quote>();
 
                 // Try cache for all symbols
