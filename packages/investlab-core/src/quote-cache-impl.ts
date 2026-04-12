@@ -31,6 +31,12 @@ export class QuoteCacheImpl implements QuoteCache {
 
     getQuote(symbol: string): ResultAsync<Quote, PersistenceError> {
         const normalized = normalizeSymbol(symbol);
+        if (!normalized) {
+            return ResultAsync.fromPromise(
+                Promise.reject(new PersistenceError("Invalid empty symbol")),
+                (e) => new PersistenceError(e),
+            );
+        }
         return ResultAsync.fromPromise(
             this.fetchWithCache(normalized),
             (e) => new PersistenceError(e),
@@ -100,11 +106,15 @@ export class QuoteCacheImpl implements QuoteCache {
             for (let i = 0; i < symbols.length; i++) {
                 const raw = values[i];
                 if (raw) {
-                    const parsed = JSON.parse(raw) as Quote;
-                    result.set(symbols[i]!, {
-                        ...parsed,
-                        updatedAt: new Date(parsed.updatedAt),
-                    });
+                    try {
+                        const parsed = JSON.parse(raw) as Quote;
+                        result.set(symbols[i]!, {
+                            ...parsed,
+                            updatedAt: new Date(parsed.updatedAt),
+                        });
+                    } catch {
+                        // Malformed cache entry — skip, treat as miss
+                    }
                 }
             }
         } catch {
