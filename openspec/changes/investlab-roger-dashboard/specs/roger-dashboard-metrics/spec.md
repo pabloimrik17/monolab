@@ -99,7 +99,7 @@ The system SHALL show a preview list before deletion and require explicit confir
 
 ### Requirement: Delete orphaned instruments
 
-The system SHALL delete instruments that have no remaining entries (across all modules) after cleanup.
+The system SHALL delete instruments only when, after cleanup, they have no remaining references across the system (including entries and portfolio items).
 
 #### Scenario: Orphaned instrument deleted
 
