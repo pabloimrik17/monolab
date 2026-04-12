@@ -21,7 +21,7 @@ The system SHALL display real liquidity calculated as configured total cash minu
 #### Scenario: No cash configured
 
 - **WHEN** total cash has not been configured
-- **THEN** liquidity shows "--" or prompts user to configure cash
+- **THEN** liquidity shows "--" by default; configure-cash prompt only surfaces after user clicks "Configure Cash" button
 
 #### Scenario: No active entries
 
