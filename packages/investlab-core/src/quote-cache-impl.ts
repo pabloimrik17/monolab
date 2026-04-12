@@ -1,4 +1,4 @@
-import { inject, injectable } from "inversify";
+import { inject, injectable, optional } from "inversify";
 import { ResultAsync } from "neverthrow";
 import { PersistenceError, type Quote, type QuoteCache } from "@m0n0lab/investlab-domain";
 import { CORE_TOKENS } from "./tokens.ts";
@@ -24,7 +24,7 @@ export class QuoteCacheImpl implements QuoteCache {
         @inject(CORE_TOKENS.Redis) private readonly redis: Redis,
         @inject(CORE_TOKENS.FinnhubClient)
         private readonly finnhub: FinnhubClient,
-        @inject(CORE_TOKENS.CacheTtl) ttl?: number,
+        @inject(CORE_TOKENS.CacheTtl) @optional() ttl?: number,
     ) {
         this.ttl = ttl ?? DEFAULT_TTL_SECONDS;
     }

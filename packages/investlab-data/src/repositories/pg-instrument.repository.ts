@@ -63,11 +63,17 @@ export class PgInstrumentRepository implements InstrumentRepository {
     update(instrument: Instrument): ResultAsync<Instrument, PersistenceError> {
         const row = instrumentToRow(instrument);
         return ResultAsync.fromPromise(
-            this.db
-                .update(instruments)
-                .set(row)
-                .where(eq(instruments.id, instrument.id))
-                .returning(),
+            (async () => {
+                const rows = await this.db
+                    .update(instruments)
+                    .set(row)
+                    .where(eq(instruments.id, instrument.id))
+                    .returning();
+                if (rows.length === 0) {
+                    throw new PersistenceError(`Instrument not found: ${instrument.id}`);
+                }
+                return rows;
+            })(),
             (e) => new PersistenceError(e),
         ).map((rows) => instrumentToDomain(rows[0]!));
     }
@@ -85,18 +91,16 @@ export class PgInstrumentRepository implements InstrumentRepository {
         const normalized = instrument.symbol.trim().toUpperCase();
         return ResultAsync.fromPromise(
             (async () => {
-                const existing = await this.db
+                const row = instrumentToRow(instrument);
+                await this.db
+                    .insert(instruments)
+                    .values({ ...row, symbol: normalized })
+                    .onConflictDoNothing({ target: instruments.symbol });
+                const rows = await this.db
                     .select()
                     .from(instruments)
                     .where(eq(instruments.symbol, normalized));
-                if (existing.length > 0) {
-                    return instrumentToDomain(existing[0]!);
-                }
-                const inserted = await this.db
-                    .insert(instruments)
-                    .values(instrumentToRow(instrument))
-                    .returning();
-                return instrumentToDomain(inserted[0]!);
+                return instrumentToDomain(rows[0]!);
             })(),
             (e) => new PersistenceError(e),
         );
