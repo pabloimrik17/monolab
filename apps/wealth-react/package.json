@@ -17,14 +17,14 @@
     },
     "dependencies": {
         "@m0n0lab/wealth-tracker-core": "workspace:*",
-        "react": "^19.0.0",
-        "react-dom": "^19.0.0",
-        "react-router": "^7.6.0"
+        "react": "19.2.4",
+        "react-dom": "19.2.4",
+        "react-router": "7.13.2"
     },
     "devDependencies": {
-        "@react-router/dev": "^7.6.0",
-        "@react-router/node": "^7.6.0",
-        "@react-router/serve": "^7.6.0",
+        "@react-router/dev": "7.13.2",
+        "@react-router/node": "7.13.2",
+        "@react-router/serve": "7.13.2",
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",
         "@vitest/coverage-v8": "catalog:",
@@ -33,7 +33,7 @@
         "vitest": "catalog:"
     },
     "engines": {
-        "node": "^20.18.0 || >=22.0.0",
+        "node": "v25.9.0",
         "pnpm": "10.27.0"
     },
     "packageManager": "pnpm@10.27.0"
