@@ -33,6 +33,12 @@
             "description": "Seguir versionado de Expo con ~",
             "rangeStrategy": "tilde",
             "matchPackageNames": ["/^expo($|-)/", "/^@expo//"]
+        },
+        {
+            "description": "Keep node engine ranges in libraries instead of pinning",
+            "matchFilePatterns": ["packages/**"],
+            "matchDepNames": ["node"],
+            "rangeStrategy": "replace"
         }
     ],
     "customManagers": [
