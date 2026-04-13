@@ -36,7 +36,7 @@
         },
         {
             "description": "Keep node engine ranges in libraries instead of pinning",
-            "matchFilePatterns": ["packages/**"],
+            "matchFileNames": ["packages/**"],
             "matchDepNames": ["node"],
             "rangeStrategy": "replace"
         }
