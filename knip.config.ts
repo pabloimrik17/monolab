@@ -1,7 +1,13 @@
 import { type KnipConfig } from "knip";
 
 export default {
-    ignore: ["coverage/**/*", "html", "validate-branch-name.config.cjs"],
+    ignore: [
+        "coverage/**/*",
+        "html",
+        "validate-branch-name.config.cjs",
+        "apps/*/.react-router/**",
+        ".expect/**",
+    ],
     ignoreWorkspaces: [".claude/worktrees/**"],
     ignoreDependencies: ["validate-branch-name"],
     ignoreExportsUsedInFile: {
