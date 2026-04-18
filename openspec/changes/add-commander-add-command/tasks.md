@@ -60,10 +60,13 @@
 
 ## 9. Plugin Metadata
 
-- [ ] 9.1 Bump `claude-plugins/experiments/.claude-plugin/plugin.json` version (minor bump)
-- [ ] 9.2 Bump `claude-plugins/experiments/package.json` version to match
-- [ ] 9.3 Update the `experiments` entry in `.claude-plugin/marketplace.json` to the same version
+Target version for this change: **`0.6.0`** (minor bump from the current `plugin.json` / `package.json` value of `0.5.0`). Note: `.claude-plugin/marketplace.json` is currently drifted at `0.4.1` and MUST be realigned to the target as part of this change.
+
+- [ ] 9.1 Set `claude-plugins/experiments/.claude-plugin/plugin.json` version to `0.6.0`
+- [ ] 9.2 Set `claude-plugins/experiments/package.json` version to `0.6.0`
+- [ ] 9.3 Set the `experiments` entry in `.claude-plugin/marketplace.json` to `0.6.0` (this realigns the existing drift from `0.4.1`)
 - [ ] 9.4 Update `claude-plugins/experiments/README.md` to mention `commander-add` under current experiments (if the README enumerates them)
+- [ ] 9.5 Verify all three version strings match by running: `jq -r '.version' claude-plugins/experiments/.claude-plugin/plugin.json claude-plugins/experiments/package.json && jq -r '.plugins[] | select(.name=="experiments") | .version' .claude-plugin/marketplace.json` — the three printed values MUST be identical to the target
 
 ## 10. Manual Verification
 
