@@ -4,6 +4,7 @@
 - [ ] 1.2 Verify taze detects and correctly reports `catalog:` entries (vitest/jsdom/@testing-library etc.) with location pointing to `pnpm-workspace.yaml`
 - [ ] 1.3 Verify taze waterfall semantic on a package that has patch + minor + major available (create synthetic case if needed)
 - [ ] 1.4 Test taze behavior against `minimumReleaseAge: 1440`: does it respect it natively, via flag, or not at all? Document exact finding.
+- [ ] 1.4.1 Produce authoritative `minimumReleaseAge` lookup table (config file + key) for each supported PM: pnpm, npm, yarn, bun, deno. This table is a gating deliverable for the skill — any PM without a documented lookup SHALL be rejected by the skill at runtime until documented.
 - [ ] 1.5 Repeat 1.1–1.4 with `ncu` (`--target patch`, `--cooldown`, `-ws`) on the same repo; document divergences
 - [ ] 1.6 Run both tools on a single-repo fixture (no workspace, no catalogs) and confirm output parity for the patch use case
 - [ ] 1.7 Write `research/taze-vs-ncu.md` inside the change folder with evidence table, command logs, and final decision (confirm taze or fall back to ncu with rationale)
@@ -38,9 +39,9 @@
 
 ## 4. Plugin version bump
 
-- [ ] 4.1 Read current version in `claude-plugins/experiments/.claude-plugin/plugin.json`
-- [ ] 4.2 Bump minor (e.g., `0.3.0` → `0.4.0`) in `plugin.json`, `package.json`, and the `experiments` entry in `.claude-plugin/marketplace.json`
-- [ ] 4.3 Verify all three files report the identical new version
+- [ ] 4.1 Confirm authoritative baseline: `plugin.json` at `0.5.0` (package.json matches; marketplace.json experiments entry is stale at `0.4.1`)
+- [ ] 4.2 Set all three to `0.6.0`: `claude-plugins/experiments/.claude-plugin/plugin.json`, `claude-plugins/experiments/package.json`, and the `experiments` entry in `.claude-plugin/marketplace.json` (the bump reconciles the stale marketplace entry)
+- [ ] 4.3 Verify all three files report exactly `0.6.0`
 
 ## 5. Spec reconciliation
 
