@@ -9,17 +9,17 @@ La skill SHALL:
 - Aceptar un parámetro `level` con valores `patch`, `minor`, `major`, o `engines`.
 - Detectar el package manager del proyecto inspeccionando lockfiles y `package.json#packageManager` en este orden: `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `bun.lock`/`bun.lockb` → bun, `deno.lock` → deno, `package-lock.json` → npm.
 - Detectar si es single-repo o workspace (presencia de `pnpm-workspace.yaml`, `workspaces` field en `package.json`, `deno.json#workspace`).
-- Invocar la herramienta de escaneo (`taze` por defecto, con pin de versión en la SKILL.md) sin añadir dependencia al workspace del usuario, usando el runner correspondiente al PM detectado:
-    - pnpm → `pnpm dlx taze@<pinned>`
-    - npm → `npx taze@<pinned>`
-    - yarn → `yarn dlx taze@<pinned>`
-    - bun → `bunx taze@<pinned>`
-    - deno → `deno run --allow-read --allow-write --allow-net --allow-env --allow-run npm:taze@<pinned>` (el mismo runtime cuyo install step en el comando es `deno install`)
-- Aplicar semántica **waterfall**: para `level=patch`, reportar la mayor versión patch disponible aunque existan minor/major por encima. Idem para minor y major.
+- Invocar la herramienta de escaneo (`npm-check-updates` por defecto, con pin de versión en la SKILL.md) sin añadir dependencia al workspace del usuario, usando el runner correspondiente al PM detectado:
+    - pnpm → `pnpm dlx npm-check-updates@<pinned>`
+    - npm → `npx npm-check-updates@<pinned>`
+    - yarn → `yarn dlx npm-check-updates@<pinned>`
+    - bun → `bunx npm-check-updates@<pinned>`
+    - deno → `deno run --allow-read --allow-write --allow-net --allow-env --allow-run npm:npm-check-updates@<pinned>` (el mismo runtime cuyo install step en el comando es `deno install`)
+- Invocar la herramienta con `--target <level>` y `--jsonUpgraded`, y strippear cualquier línea de stdout previa al primer `{` antes de parsear (ncu emite banner informativo sobre `minimumReleaseAge` cuando detecta la config).
+- Para `level=patch`, reportar las versiones patch que la herramienta devuelve (semántica "cap" de ncu: paquetes cuyo upgrade disponible sea sólo minor/major no aparecen). Para `minor` y `major` aplica la misma semántica en su banda.
 - Respetar `minimumReleaseAge` cuando esté declarado en la config del package manager. La skill SHALL:
-    - pnpm: resolver en este orden `pnpm-workspace.yaml#minimumReleaseAge` → `.npmrc` → `package.json#pnpm.*` (las claves exactas en `.npmrc` y `package.json#pnpm.*` se confirman durante la validación del spike).
-    - npm/yarn/bun/deno: la tarea del spike (1.4–1.5) SHALL producir la lista autorizada de config files y claves para cada PM antes de la implementación de la skill. La skill SHALL rechazar ejecución con mensaje claro si se invoca sobre un PM cuya lookup aún no está documentada.
-  Si el PM soporta el setting nativamente la herramienta confía en él; si no, la skill SHALL aplicar filtrado post-proceso comparando fecha de release (vía `npm view <pkg> time`) contra el umbral resuelto.
+    - pnpm: ncu lo lee nativamente desde `pnpm-workspace.yaml#minimumReleaseAge` (verificado en spike). La skill no pasa `--cooldown` para pnpm; delega en la herramienta.
+    - npm/yarn/bun/deno: la skill SHALL resolver el valor y pasarlo como `--cooldown <period>` a ncu. La tabla autorizada de config files y claves por PM vive en la SKILL.md (tarea 1.4.1); cualquier PM cuya lookup aún no esté documentada SHALL hacer fallar la skill con mensaje explícito.
 - Tratar entradas `catalog:` de pnpm como first-class: un paquete referenciado vía `"dep": "catalog:"` con entry en `pnpm-workspace.yaml#catalog` SHALL reportarse con `location: "catalog:default"` y `sourceFile` apuntando a `pnpm-workspace.yaml`.
 - Devolver un objeto JSON con la siguiente shape (TypeScript-style):
 
@@ -53,10 +53,12 @@ La skill SHALL:
 - **THEN** `claude-plugins/experiments/skills/scan-npm-updates/SKILL.md` SHALL exist with YAML frontmatter including `name` and `description`
 - **AND** the skill SHALL appear in the available skills list as `experiments:scan-npm-updates`
 
-#### Scenario: Filter by patch level with waterfall semantic
+#### Scenario: Filter by patch level (cap semantic)
 
 - **WHEN** invoked with `level=patch` on a project where package `foo` has `1.2.5`, `1.3.0`, and `2.0.0` available over current `1.2.3`
-- **THEN** the skill SHALL report `foo` with `targetVersion: 1.2.5`
+- **THEN** the skill SHALL report `foo` with `targetVersion: 1.2.5` (the highest patch in the current minor band)
+- **AND** when package `bar` has only `2.0.0` (a major) available over current `1.2.3` with no patch in the `1.2.x` band
+- **THEN** the skill SHALL NOT include `bar` in `updates`
 
 #### Scenario: pnpm catalog entry detection
 
@@ -144,30 +146,3 @@ El comando SHALL:
 - **WHEN** the command completes applying updates
 - **THEN** the command SHALL NOT invoke tests, lint, build, or create a commit
 - **AND** the final message SHALL suggest these as next steps for the dev/agent
-
----
-
-### Requirement: Plugin Version Bump on Feature Add
-
-When adding the `scan-npm-updates` skill and the `npm-update-patch` command, the `experiments` plugin version SHALL be bumped across all three files listed below. `claude-plugins/experiments/.claude-plugin/plugin.json` is authoritative for determining the previous version.
-
-- `claude-plugins/experiments/.claude-plugin/plugin.json`
-- `claude-plugins/experiments/package.json`
-- `.claude-plugin/marketplace.json` (the entry corresponding to `experiments`)
-
-At the time this change is drafted the three files are inconsistent (`plugin.json` and `package.json` at `0.5.0`, the marketplace entry at `0.4.1`). This change SHALL reconcile the inconsistency by writing the same new version to all three, derived as a minor bump from the authoritative `plugin.json` baseline (`0.5.0` + minor = **`0.6.0`**).
-
-#### Scenario: Version consistency across files
-
-- **WHEN** examining the three files after this change is applied
-- **THEN** all three SHALL report exactly `0.6.0`
-
-#### Scenario: Minor bump for additive features
-
-- **WHEN** the authoritative `plugin.json` version is `0.5.0` at the start of this change
-- **THEN** the new version SHALL be `0.6.0` (minor bump for additive skill + command)
-
-#### Scenario: Stale marketplace entry reconciliation
-
-- **WHEN** the marketplace.json experiments entry is at an older version than `plugin.json` at the start of this change
-- **THEN** the new version bump SHALL overwrite the stale entry so that the reconciled post-state has all three files matching at `0.6.0`

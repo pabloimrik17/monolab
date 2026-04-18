@@ -20,7 +20,7 @@ Actualizar dependencias npm a mano es fricción recurrente: abrir cada `package.
 
 ### Modified Capabilities
 
-- `experiments-plugin`: añade Requirements para la skill `scan-npm-updates` y el comando `npm-update-patch`, más el bump de versión del plugin asociado.
+- `experiments-plugin`: añade Requirements para la skill `scan-npm-updates` y el comando `npm-update-patch`. El bump de versión del plugin se aplica mecánicamente vía la skill `plugin-version-bump` y no se codifica como Requirement.
 
 ## Impact
 

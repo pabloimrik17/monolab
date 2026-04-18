@@ -26,44 +26,29 @@ El comando `/experiments:npm-update-patch` debe funcionar igualmente en single-r
 
 ## Decisions
 
-### Decisión 1: Herramienta de escaneo = `taze` (con `ncu` como fallback documentado)
+### Decisión 1: Herramienta de escaneo = `npm-check-updates` (ncu), pin `21.0.2`
 
-**Contexto.** Candidatos: `npm-check-updates` (ncu), `taze`. Ambos maduros, activos.
+**Historia.** El borrador inicial del design eligió `taze` por waterfall + supuesto JSON output. La tarea del spike (1.1–1.8) invalidó dos premisas:
 
-**Criterios ponderados.**
+1. **Taze no tiene salida JSON** a día de hoy (v19.11.0). Confirmado por `taze --help`, source (`dist/cli.mjs`), y upstream issue `antfu-collective/taze#201` abierto desde 2025-08-27 sin merge. Parsear ANSI-coloreado con columnas variables es frágil de mantener.
+2. **Ncu lee `minimumReleaseAge` de `pnpm-workspace.yaml` nativamente** (v21.x), emite banner `Using minimumReleaseAge from pnpm-workspace.yaml: 1 day` y aplica filtro. El post-proceso que el design anticipaba para el caso pnpm desaparece.
 
-| Criterio | Peso | Razón |
-|---|---|---|
-| pnpm catalogs support | alto | Bloqueante en monolab y cualquier repo pnpm moderno |
-| Semántica waterfall al filtrar por level | alto | Flujo incremental `patch → minor → major` pierde sentido si un major congela los patches |
-| Workspaces (pnpm/yarn/bun) | alto | Caso de uso objetivo |
-| Soporte multi-PM (npm/yarn/pnpm/bun/deno) | medio | Deno y bun menos frecuentes pero dentro del alcance |
-| `minimumReleaseAge` / cooldown | medio | Declarado en el monorepo origen del change |
-| JSON output estable | alto | La skill debe parsear determinísticamente |
-| Mantenimiento | medio | Ambos activos; taze por antfu, ncu por raineorshine |
+Adicional: en la fixture single-repo (`chalk@5.4.0`, `lodash@4.17.20`) ncu reportó ambos patches; taze reportó "up-to-date" (causa exacta no confirmada, pero evidencia reproducible contra taze para single-repo).
 
-**Comparativa (pendiente de validar en tarea del spike; valores reflejan investigación documental, no ejecución en repo):**
+**Decisión: `ncu` con pin `npm-check-updates@21.0.2`.** Razones por orden de peso:
 
-| Aspecto | `taze` | `ncu` |
-|---|---|---|
-| Filter semantic | **Waterfall**: `--patch` reporta max patch aunque haya major por encima | **Cap**: `--target patch` ignora paquetes cuyo máximo es major |
-| pnpm catalogs | Soporte declarado para catalogs de pnpm | Soporte histórico limitado; issues abiertas |
-| pnpm workspaces | Nativo (detecta `pnpm-workspace.yaml`) | Vía `-ws`/`--workspaces` |
-| `minimumReleaseAge` | No lee setting de pnpm directamente; soporta filtrado por edad propio | Soporta `--cooldown` (flag reciente) |
-| JSON | `--json` | `--jsonUpgraded` |
-| Deno | Sí (reciente) | Parcial |
-| Interactividad | `-I` modo interactivo | `-i` modo interactivo |
+1. `--jsonUpgraded` da salida `{ name: targetVersion }` estable → cumple el contrato skill↔comando sin parser frágil.
+2. Lectura nativa de `pnpm-workspace.yaml#minimumReleaseAge` → un branch menos en la skill para el PM principal del repo origen.
+3. `--cooldown <period>` disponible para npm/yarn/bun/deno.
+4. `-ws` / `--root` cubren workspaces; también aceptable iterar por `--packageFile` si `-ws` tiene quirks.
 
-**Decisión: `taze` por defecto.** Motivos:
+**Trade-offs aceptados.**
 
-1. Semántica waterfall alinea con el flujo `update-patch → update-minor → update-major` que el proposal expone como primera entrega de una secuencia.
-2. Catalogs son bloqueante en el repo origen; taze los trata como first-class.
-3. Output JSON directo sin parseo adicional.
+- **Waterfall se pierde**: `--target patch` es "cap" (ignora paquetes que solo ofrecen minor/major). En práctica es aceptable para `npm-update-patch`: el dev espera "patches dentro de la banda actual". Documentado en la skill.
+- **Ni ncu ni taze dereferencian `catalog:`** de pnpm. Wash: la skill debe post-procesar en ambos casos.
+- **Banner no-JSON en stdout**: `Using minimumReleaseAge...` se emite antes del JSON. La skill debe strippear cualquier línea no-JSON antes de `JSON.parse`.
 
-**Fallback a `ncu`** documentado si durante validación (tarea del spike) se encuentra que:
-- taze no respeta `minimumReleaseAge` de pnpm ni tiene equivalente configurable, **y**
-- ncu sí lo respeta vía `--cooldown`, **y**
-- el coste de perder waterfall compensa.
+**Taze queda como opción diferida** si upstream implementa `--json` (issue #201). El research doc justifica el pivot.
 
 Registro completo de la validación vive en `research/taze-vs-ncu.md` dentro del change (nota de investigación, se archiva con el change).
 
@@ -116,13 +101,22 @@ El comando `npm-update-patch`:
 
 ### Decisión 4: Invocación de la tool vía package manager dlx
 
-No se añade dependencia npm al workspace. La skill ejecuta `pnpm dlx taze@<pinned>` (o el equivalente: `npx` para npm, `yarn dlx` para yarn, `bunx` para bun, `deno run --allow-read --allow-write --allow-net --allow-env --allow-run npm:taze@<pinned>` para deno). Pin de versión dentro de la SKILL.md para reproducibilidad; update manual del pin es una tarea de mantenimiento conocida.
+No se añade dependencia npm al workspace. La skill ejecuta `pnpm dlx npm-check-updates@<pinned>` (o el equivalente: `npx` para npm, `yarn dlx` para yarn, `bunx` para bun, `deno run --allow-read --allow-write --allow-net --allow-env --allow-run npm:npm-check-updates@<pinned>` para deno). Pin de versión dentro de la SKILL.md para reproducibilidad; update manual del pin es una tarea de mantenimiento conocida.
 
-**Alternativa descartada**: añadir `taze` como devDep del workspace monolab. Rechazado porque la skill debe funcionar en cualquier repo, no solo este.
+**Alternativa descartada**: añadir `npm-check-updates` como devDep del workspace monolab. Rechazado porque la skill debe funcionar en cualquier repo, no solo este.
 
 ### Decisión 5: Catalogs como first-class
 
-Cuando un paquete está declarado como `"vitest": "catalog:"` en un `package.json` y la entry existe en `pnpm-workspace.yaml` bajo `catalog:`, la skill reporta el update con `location: "catalog:default"` y `sourceFile: "pnpm-workspace.yaml"`. El bump se aplica editando `pnpm-workspace.yaml`, **no** el `package.json` consumer. Si taze no hace esto automáticamente, la skill corrige en post-proceso.
+Cuando un paquete está declarado como `"vitest": "catalog:"` en un `package.json` y la entry existe en `pnpm-workspace.yaml` bajo `catalog:`, la skill reporta el update con `location: "catalog:default"` y `sourceFile: "pnpm-workspace.yaml"`. El bump se aplica editando `pnpm-workspace.yaml`, **no** el `package.json` consumer.
+
+Ni ncu ni taze resuelven `catalog:` automáticamente (confirmado en spike). Por tanto la skill debe:
+
+1. Leer `pnpm-workspace.yaml#catalog` directamente.
+2. Construir un "pseudo-manifest" temporal con las entries del catalog como versiones normales (o consultar `npm view <pkg> versions --json` para cada entry).
+3. Filtrar candidatos por el `level` solicitado, aplicando el `minimumReleaseAge` resuelto.
+4. Reportar cada upgrade con `location: "catalog:default"` y `sourceFile: "pnpm-workspace.yaml"`.
+
+Catalogs nombrados (`catalog:test`) quedan fuera de esta iteración (warning + lista).
 
 ### Decisión 6: UX de selección
 
@@ -147,7 +141,7 @@ Si `pick-subset`: "Nombres a excluir (coma-separados, vacío = todos)". Valida q
 
 ## Risks / Trade-offs
 
-- **Riesgo**: taze cambia output JSON en release futuro y rompe el parseo de la skill.
+- **Riesgo**: ncu cambia el shape de `--jsonUpgraded` en release futuro y rompe el parseo de la skill.
   **Mitigación**: pin de versión en la SKILL.md; validación de shape antes de usar (si difiere, warning + abort con instrucciones de update).
 
 - **Riesgo**: una dep con patch disponible tiene regresión conocida; usuario la aplica "a todo" sin saberlo.
@@ -162,7 +156,9 @@ Si `pick-subset`: "Nombres a excluir (coma-separados, vacío = todos)". Valida q
 - **Trade-off**: sin tests automatizados post-install, un bump que rompe build pasa desapercibido hasta la siguiente ejecución del usuario.
   **Aceptado**: project-agnostic es un goal duro. El usuario sabe qué correr; el comando no presume.
 
-- **Trade-off**: waterfall + `minimumReleaseAge` pueden chocar si un paquete tiene patch reciente dentro del cooldown pero una patch anterior fuera. Filter correcto = "la mayor patch disponible que cumple cooldown". Verificar en spike.
+- **Trade-off**: `ncu --target patch` es "cap" (omite paquetes cuyo máximo disponible es minor/major). Para `npm-update-patch` aceptable: el dev espera patches dentro de la banda actual. Si un paquete no ofrece patch en su banda, no se reporta (coherente con "no hay patch disponible").
+
+- **Trade-off**: ncu emite un banner `Using minimumReleaseAge...` en stdout antes del JSON. Mitigación: skill strippea cualquier línea no-JSON antes de `JSON.parse`; valida que el objeto resultante tenga las claves esperadas.
 
 ## Migration Plan
 
