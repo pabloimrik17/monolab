@@ -9,7 +9,12 @@ La skill SHALL:
 - Aceptar un parámetro `level` con valores `patch`, `minor`, `major`, o `engines`.
 - Detectar el package manager del proyecto inspeccionando lockfiles y `package.json#packageManager` en este orden: `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `bun.lock`/`bun.lockb` → bun, `deno.lock` → deno, `package-lock.json` → npm.
 - Detectar si es single-repo o workspace (presencia de `pnpm-workspace.yaml`, `workspaces` field en `package.json`, `deno.json#workspace`).
-- Invocar la herramienta de escaneo (`taze` por defecto, con pin de versión en la SKILL.md) vía `pnpm dlx` / `npx` / `yarn dlx` / `bunx` según el PM detectado, sin añadir dependencia al workspace del usuario.
+- Invocar la herramienta de escaneo (`taze` por defecto, con pin de versión en la SKILL.md) sin añadir dependencia al workspace del usuario, usando el runner correspondiente al PM detectado:
+    - pnpm → `pnpm dlx taze@<pinned>`
+    - npm → `npx taze@<pinned>`
+    - yarn → `yarn dlx taze@<pinned>`
+    - bun → `bunx taze@<pinned>`
+    - deno → `deno run --allow-read --allow-write --allow-net --allow-env --allow-run npm:taze@<pinned>` (el mismo runtime cuyo install step en el comando es `deno install`)
 - Aplicar semántica **waterfall**: para `level=patch`, reportar la mayor versión patch disponible aunque existan minor/major por encima. Idem para minor y major.
 - Respetar `minimumReleaseAge` cuando esté declarado en la config del package manager. Si la herramienta no lo soporta nativamente, la skill SHALL filtrar en post-proceso comparando fecha de release.
 - Tratar entradas `catalog:` de pnpm como first-class: un paquete referenciado vía `"dep": "catalog:"` con entry en `pnpm-workspace.yaml#catalog` SHALL reportarse con `location: "catalog:default"` y `sourceFile` apuntando a `pnpm-workspace.yaml`.

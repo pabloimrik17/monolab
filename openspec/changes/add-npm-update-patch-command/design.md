@@ -116,7 +116,7 @@ El comando `npm-update-patch`:
 
 ### Decisión 4: Invocación de la tool vía package manager dlx
 
-No se añade dependencia npm al workspace. La skill ejecuta `pnpm dlx taze@<pinned>` (o el equivalente: `npx` para npm, `yarn dlx` para yarn, `bunx` para bun). Pin de versión dentro de la SKILL.md para reproducibilidad; update manual del pin es una mantención conocida.
+No se añade dependencia npm al workspace. La skill ejecuta `pnpm dlx taze@<pinned>` (o el equivalente: `npx` para npm, `yarn dlx` para yarn, `bunx` para bun, `deno run --allow-read --allow-write --allow-net --allow-env --allow-run npm:taze@<pinned>` para deno). Pin de versión dentro de la SKILL.md para reproducibilidad; update manual del pin es una tarea de mantenimiento conocida.
 
 **Alternativa descartada**: añadir `taze` como devDep del workspace monolab. Rechazado porque la skill debe funcionar en cualquier repo, no solo este.
 
