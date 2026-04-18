@@ -1,6 +1,10 @@
 # Persistence Specification
 
-## ADDED Requirements
+## Purpose
+
+PostgreSQL + Drizzle data layer for InvestLab following DDD patterns: pure `investlab-domain` package with entities and repository interfaces, and `investlab-data` package providing Drizzle-backed implementations with mappers and migrations.
+
+## Requirements
 
 ### Requirement: Domain package is pure
 

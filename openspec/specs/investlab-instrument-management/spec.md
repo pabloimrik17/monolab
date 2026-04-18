@@ -1,6 +1,10 @@
 # Instrument Management Specification
 
-## ADDED Requirements
+## Purpose
+
+Instrument CRUD — create, read, update, delete. Shared catalog referenced by both portfolio and Roger modules. Auto-creates instruments on first reference if they don't exist.
+
+## Requirements
 
 ### Requirement: Instrument CRUD
 

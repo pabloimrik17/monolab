@@ -1,6 +1,10 @@
 # Quote Cache Specification
 
-## ADDED Requirements
+## Purpose
+
+Redis-backed cache for Finnhub quote API responses. Configurable TTL, transparent to consumers — same client API, cached behind the scenes — so the app avoids excessive API calls while staying fresh enough for weekly review use.
+
+## Requirements
 
 ### Requirement: Cache wraps Finnhub client transparently
 
