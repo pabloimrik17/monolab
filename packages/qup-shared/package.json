@@ -39,15 +39,10 @@
         "build:typecheck": "tsc --noEmit",
         "test:unit": "vitest run",
         "test:unit:watch": "vitest",
-        "test:unit:coverage": "vitest run --coverage",
-        "test:mutation": "stryker run",
-        "test:mutation:report": "open reports/mutation/index.html"
+        "test:unit:coverage": "vitest run --coverage"
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "0.18.2",
-        "@stryker-mutator/core": "9.3.0",
-        "@stryker-mutator/typescript-checker": "9.3.0",
-        "@stryker-mutator/vitest-runner": "9.3.0",
         "@vitest/coverage-v8": "catalog:",
         "tsdown": "0.15.9",
         "typescript": "5.9.3",
