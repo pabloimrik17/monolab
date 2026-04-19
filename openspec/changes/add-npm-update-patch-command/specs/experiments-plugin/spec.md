@@ -14,7 +14,7 @@ The skill SHALL:
     - npm → `npx -y npm-check-updates@<pinned>`
     - yarn → `yarn dlx npm-check-updates@<pinned>`
     - bun → `bunx npm-check-updates@<pinned>`
-    - deno → `deno run --allow-read --allow-write --allow-net --allow-env --allow-run npm:npm-check-updates@<pinned>` (same runtime whose install step in the command is `deno install`)
+    - deno → `deno run --allow-read --allow-net npm:npm-check-updates@<pinned>` (read-only scan: `--jsonUpgraded` does not write, spawn, or read env; same runtime whose install step in the command is `deno install`)
 - Invoke the tool with `--jsonUpgraded` and an ncu target mapped from `level`: `patch` → `--target patch`, `minor` → `--target minor`, `major` → `--target latest` (followed by a skill-side post-filter that keeps only packages whose target major > current major, since ncu has no native `major` target), `engines` → `--target latest --enginesNode` (ncu filters to candidates whose `engines.node` satisfies the project's own `engines.node`; `@engines` is not a valid ncu target). Strip any stdout line preceding the first `{` before parsing (ncu emits an informational banner about `minimumReleaseAge` when it detects the config).
 - For `level=patch`, report the patch versions the tool returns (ncu's "cap" semantic: packages whose only available upgrade is minor/major do not appear). For `minor` and `major`, the same semantic applies within their band.
 - Respect `minimumReleaseAge` when declared in the package manager's config. The skill SHALL:
@@ -45,7 +45,7 @@ The skill SHALL:
     - `"catalog:default"` — entry in pnpm's default catalog (declared in `pnpm-workspace.yaml`). `sourceFile` is `pnpm-workspace.yaml`.
     - `"catalog:<name>"` — reserved for future iterations; MUST NOT be emitted in `updates` in this iteration (named catalogs surface only via `warnings`).
 - Emit a warning and continue (do not abort) if non-default named catalogs are detected (`catalog:test`, etc.); list them as unsupported and exclude them from `updates` in this iteration.
-- Abort with a clear message if the detected PM's dlx runner is not available on PATH.
+- Abort with a clear message if the detected PM runner is not available on PATH.
 
 #### Scenario: Skill file exists and is discoverable
 
@@ -77,9 +77,9 @@ The skill SHALL:
 - **WHEN** invoked and no dependencies have updates matching the level and release-age constraints
 - **THEN** the skill SHALL return `{ ..., updates: [] }` without error
 
-#### Scenario: Package manager missing dlx runner
+#### Scenario: Package manager runner missing
 
-- **WHEN** the detected package manager's dlx runner is not on PATH
+- **WHEN** the detected package manager runner is not on PATH
 - **THEN** the skill SHALL abort with a message stating which runner is missing and how to install it
 
 ---

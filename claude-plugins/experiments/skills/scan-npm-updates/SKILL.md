@@ -40,7 +40,7 @@ Perform these in order. Any failure aborts the skill:
 1. **`level` is one of the four accepted values.** Otherwise: `Error: invalid level "<value>". Expected patch|minor|major|engines.`
 2. **A package manager can be determined** (see Detection below). Otherwise: `Error: could not detect a package manager. Need one of: pnpm-lock.yaml, yarn.lock, bun.lock(b), deno.lock, package-lock.json in the repo root.`
 3. **The detected PM has a `minimumReleaseAge` lookup entry in this skill** (see table below). PMs without one abort: `Error: minimumReleaseAge lookup not yet documented for <pm>. Refusing to run until documented.`
-4. **The dlx runner for the detected PM is on `PATH`** (see Dlx Resolution). Otherwise: `Error: <runner> not found on PATH. Install <pm> to proceed.`
+4. **The runner for the detected PM is on `PATH`** (see Runner Resolution). Otherwise: `Error: <runner> not found on PATH. Install <pm> to proceed.`
 
 ## Detection
 
@@ -68,15 +68,15 @@ If none found, check `package.json#packageManager` (e.g. `pnpm@10.27.0`) and der
 
 Otherwise `single`.
 
-## Dlx runner resolution
+## Runner resolution
 
-| Package manager | Runner invocation prefix                                                       |
-| --------------- | ------------------------------------------------------------------------------ |
-| `pnpm`          | `pnpm dlx`                                                                     |
-| `npm`           | `npx -y`                                                                       |
-| `yarn`          | `yarn dlx`                                                                     |
-| `bun`           | `bunx`                                                                         |
-| `deno`          | `deno run --allow-read --allow-write --allow-net --allow-env --allow-run npm:` |
+| Package manager | Runner invocation prefix                 |
+| --------------- | ---------------------------------------- |
+| `pnpm`          | `pnpm dlx`                               |
+| `npm`           | `npx -y`                                 |
+| `yarn`          | `yarn dlx`                               |
+| `bun`           | `bunx`                                   |
+| `deno`          | `deno run --allow-read --allow-net npm:` |
 
 Before the first invocation: `command -v <runner_binary>`. For deno the binary is `deno`; for npm check `npx`. Abort (precondition 4) if missing.
 
@@ -195,7 +195,7 @@ Emit the `ScanResult` JSON object. That's it. Do not print tables, do not ask qu
 | Unknown `level`                                    | Abort with precondition-1 error.                                                                                            |
 | No lockfile and no `packageManager` hint           | Abort with precondition-2 error.                                                                                            |
 | PM lacks `minimumReleaseAge` lookup row            | Abort with precondition-3 error.                                                                                            |
-| dlx runner missing                                 | Abort with precondition-4 error.                                                                                            |
+| PM runner missing                                  | Abort with precondition-4 error.                                                                                            |
 | ncu exits non-zero on a manifest                   | Push stderr (or a synthesized `ncu failed on <manifest>`) into `warnings` and continue. `updates` for that manifest = `[]`. |
 | ncu output cannot be parsed as JSON                | Push raw stdout (truncated) into `warnings`; `updates` for that manifest = `[]`.                                            |
 | `npm view <pkg>` fails during catalog post-process | Push a warning naming the package; omit catalog record for that entry.                                                      |
