@@ -1,5 +1,5 @@
 ---
-description: Register the current (or specified) project in the user-scoped Commander registry at ~/.claude/commander/projects.json
+description: Register the current (or specified) project in the user-scoped Commander registry at <HOME>/.claude/commander/projects.json
 ---
 
 # commander-add
@@ -22,12 +22,12 @@ The same contract is re-implemented by every `commander:*` command via built-in 
 
 ### Path
 
-`~/.claude/commander/projects.json` — resolved from `$HOME` on POSIX, `%USERPROFILE%` on Windows.
+`<HOME>/.claude/commander/projects.json` — where `<HOME>` resolves to `$HOME` on POSIX and `%USERPROFILE%` on Windows. All path references below use this `<HOME>` placeholder.
 
 ### Lazy create
 
 - **Reads** (`read`, `list`, `getByName`) MUST NOT create the file or its parent directory. A missing file MUST be treated as an empty registry (`{ "version": 1, "projects": {} }` in memory; nothing on disk).
-- **Writes** MUST create `~/.claude/commander/` recursively if it doesn't exist, and then create `projects.json` atomically.
+- **Writes** MUST create `<HOME>/.claude/commander/` recursively if it doesn't exist, and then create `projects.json` atomically.
 
 ### Schema template
 
@@ -90,8 +90,8 @@ Fields:
 Always:
 
 1. Serialize the updated registry to JSON with **2-space indentation** and a **single trailing newline**.
-2. `Write` the serialized content to a sibling temp file `~/.claude/commander/projects.json.tmp` (overwrite any pre-existing temp).
-3. `Bash mv ~/.claude/commander/projects.json.tmp ~/.claude/commander/projects.json` — rename is atomic on POSIX and on Windows when the paths share a filesystem.
+2. `Write` the serialized content to a sibling temp file `<HOME>/.claude/commander/projects.json.tmp` (overwrite any pre-existing temp).
+3. `Bash mv "<HOME>/.claude/commander/projects.json.tmp" "<HOME>/.claude/commander/projects.json"` — rename is atomic on POSIX and on Windows when the paths share a filesystem.
 4. If any step fails, the previous `projects.json` MUST remain unchanged.
 
 ### JSON formatting
@@ -247,7 +247,7 @@ Confirmation step: echo the derived `path`, `monorepoRoot` (if any), and `keywor
 For each required field still missing after Steps 1–3, prompt via `AskUserQuestion`, **one field per question**:
 
 - `name`: "What short name should identify this project in the Commander registry?"
-- `path`: "Absolute path to the project directory?" (pre-fill with `$CWD`)
+- `path`: "Absolute path to the project directory?" (pre-fill with `$CWD`). After the user answers, resolve `path` to an absolute path (e.g., `Bash cd <path> && pwd`) before validation or persistence — the same invariant as Step 1 Rule 3.
 - `keywords`: "Comma-separated keywords describing the stack (frameworks, languages)?" — split on `,`, trim each, lowercase each before persisting.
 - `description`: "One-sentence description of this project? Aim for 10–15 words." (the word count is a guideline in the question copy, not a hard-enforced limit)
 - `specialRules` (optional): "Any rules a future assistant should know about that aren't evident from code? Comma-separated, leave empty to skip."
@@ -267,7 +267,7 @@ Before prompting for final confirmation, validate:
     If absent: abort with `"path does not exist: <path>"`. No write.
 
 2. `name` is unique in the registry:
-    - `Read` `~/.claude/commander/projects.json` if it exists; treat missing file as empty.
+    - `Read` `<HOME>/.claude/commander/projects.json` if it exists; treat missing file as empty.
     - If `projects[name]` already exists: inform the user and use `AskUserQuestion` to either pick a new name or abort. On abort: exit without writing.
 
 3. `keywords` is non-empty and `description` is non-empty. If either is empty, re-enter Priority C for that field.
@@ -279,7 +279,7 @@ Before prompting for final confirmation, validate:
 Render the fully populated record and ask `AskUserQuestion` with options:
 
 - "Save" — proceed to the write.
-- "Edit" — re-enter Step 4 for a single field of the user's choice.
+- "Edit" — re-enter Step 4 for a single field of the user's choice. If `path` is the edited field, re-normalize it to an absolute path before returning to Step 5.
 - "Abort" — exit without writing.
 
 ### 6b. On "Save"
@@ -288,17 +288,17 @@ Render the fully populated record and ask `AskUserQuestion` with options:
 2. `Read` the current registry if present, else start from `{ "version": 1, "projects": {} }`.
 3. Insert the new record at `projects[name]`.
 4. Serialize with 2-space indent and a trailing newline.
-5. Ensure `~/.claude/commander/` exists:
+5. Ensure `<HOME>/.claude/commander/` exists:
 
     ```bash
-    mkdir -p ~/.claude/commander
+    mkdir -p "<HOME>/.claude/commander"
     ```
 
-6. `Write` the serialized content to `~/.claude/commander/projects.json.tmp`.
+6. `Write` the serialized content to `<HOME>/.claude/commander/projects.json.tmp`.
 7. Atomically replace:
 
     ```bash
-    mv ~/.claude/commander/projects.json.tmp ~/.claude/commander/projects.json
+    mv "<HOME>/.claude/commander/projects.json.tmp" "<HOME>/.claude/commander/projects.json"
     ```
 
 8. Surface a concise success message: `Registered "<name>" at <path>.`
@@ -308,7 +308,7 @@ Render the fully populated record and ask `AskUserQuestion` with options:
 Exit without writing. Do not leave `projects.json.tmp` behind if step 6b step 6 already wrote it — remove it:
 
 ```bash
-rm -f ~/.claude/commander/projects.json.tmp
+rm -f "<HOME>/.claude/commander/projects.json.tmp"
 ```
 
 (Only applies if the abort happens between steps 6b.6 and 6b.7.)
@@ -320,7 +320,7 @@ rm -f ~/.claude/commander/projects.json.tmp
 - `"path does not exist: <path>"` — validation failure in Step 5.1.
 - `"project name already registered: <name>"` — validation failure in Step 5.2.
 - `"unsupported registry version: <n>"` — reader hit a future schema version.
-- `"registry file is not valid JSON"` — `Read` succeeded but parsing failed; ask the user to inspect `~/.claude/commander/projects.json` by hand.
+- `"registry file is not valid JSON"` — `Read` succeeded but parsing failed; ask the user to inspect `<HOME>/.claude/commander/projects.json` by hand.
 
 ## Non-goals (deferred)
 
