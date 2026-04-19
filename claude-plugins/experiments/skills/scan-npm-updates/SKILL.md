@@ -101,11 +101,11 @@ Build the command:
 ### Which manifests to scan
 
 - `single` → one invocation against `./package.json`.
-- `workspace` → one invocation per workspace manifest (root + each sub-package). Enumerate with:
+- `workspace` → one invocation per workspace sub-package manifest. Enumerate with:
     - pnpm: `pnpm -r exec node -e "console.log(process.cwd())"` (or read `pnpm-workspace.yaml#packages` globs and expand with `ls`).
     - npm/yarn/bun: read `package.json#workspaces` globs and expand.
     - deno: read `deno.json#workspace`.
-    - (regardless of PM) also scan the root `package.json` (many repos keep dev-only deps there).
+    - (regardless of PM) also scan the root `package.json` once (many repos keep dev-only deps there).
 
 Running ncu once per manifest keeps the `--jsonUpgraded` shape predictable (`{ name: targetVersion }`). The `-ws` flag has different output shapes across ncu versions and is avoided.
 
