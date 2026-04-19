@@ -56,8 +56,8 @@ The `commander-add` command SHALL collect project metadata (name, path, keywords
 
 When the target directory is a monorepo, the `commander-add` command SHALL classify it as single-project or multi-project.
 
-- **Single-project monorepo**: keywords SHALL be extracted from the entire repository.
-- **Multi-project monorepo**: the command SHALL ask the user which subproject to register. The `path` field SHALL record the chosen subproject directory (not the monorepo root). Keywords SHALL be extracted only from the chosen subproject. The optional `monorepoRoot` field SHALL record the monorepo root path.
+- **Single-project monorepo**: keywords and description SHALL be extracted from the entire repository.
+- **Multi-project monorepo**: the command SHALL ask the user which subproject to register. The `path` field SHALL record the chosen subproject directory (not the monorepo root). Keywords AND description SHALL be scoped to the chosen subproject (the auto-detection subagent emits a per-subproject `description`; the top-level monorepo description is used only as a fallback when the subagent omits it, and the user SHALL be invited to edit it in the confirmation step). The optional `monorepoRoot` field SHALL record the monorepo root path.
 
 #### Scenario: Multi-project monorepo prompts for subproject
 
@@ -65,10 +65,11 @@ When the target directory is a monorepo, the `commander-add` command SHALL class
 - **AND** the user did not indicate a subproject via arguments
 - **THEN** the command SHALL present the detected subprojects via `AskUserQuestion` for the user to choose one
 
-#### Scenario: Keywords scoped to chosen subproject
+#### Scenario: Keywords and description scoped to chosen subproject
 
 - **WHEN** the user picks a subproject in a multi-project monorepo
 - **THEN** the persisted `keywords` SHALL be extracted from that subproject only
+- **AND** the persisted `description` SHALL be the subproject-level summary emitted by the auto-detection subagent (or, if absent, the monorepo-level description flagged for user edit at confirmation)
 - **AND** the persisted `path` SHALL be the subproject's absolute directory
 
 #### Scenario: Single-project monorepo aggregates keywords
