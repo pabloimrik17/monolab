@@ -217,8 +217,8 @@ Example of a correctly formatted response (non-monorepo):
 ### Parse the response
 
 1. Attempt a strict parse: the raw response MUST be valid JSON whose first character is `{` and last is `}`.
-2. If that fails, try a **tolerant recovery** once before re-dispatching: strip surrounding markdown fences (`` `json `` ` / ` ``` ```), strip any prose before the first `{`and after the last matching`}`, then re-parse. If the recovered string parses, use it.
-3. If tolerant recovery fails, re-dispatch **once** with a stricter prompt that quotes the original prompt's "CRITICAL OUTPUT FORMAT" block verbatim plus: `"Your previous response was not valid JSON. Emit ONLY the JSON object. First character`{`, last character`}`. No fences, no prose, no explanation."`.
+2. If that fails, try a **tolerant recovery** once before re-dispatching: strip any surrounding markdown code fence (a line of three backticks, optionally followed by a language tag such as `json`, at the start, and a matching closing line of three backticks at the end), then strip any prose before the first `{` and after the last matching `}`, then re-parse. If the recovered string parses, use it.
+3. If tolerant recovery fails, re-dispatch **once** with a stricter prompt that quotes the original prompt's "CRITICAL OUTPUT FORMAT" block verbatim plus: "Your previous response was not valid JSON. Emit ONLY the JSON object. First character `{`, last character `}`. No fences, no prose, no explanation."
 4. If the re-dispatch still doesn't parse, abandon Priority B and fall through to Priority C for every still-missing field.
 
 ### Use the detected values
