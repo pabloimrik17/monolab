@@ -4,6 +4,15 @@ Beta skills and commands staging area for monolab. Features here are experimenta
 
 ## Commands
 
+### `/experiments:commander-add`
+
+Register the current (or specified) project in the user-scoped Commander registry at `~/.claude/commander/projects.json`. Collects `name`, `path`, `keywords`, `description`, and optional `specialRules` via **A → B → C** priority: explicit args, then a Haiku auto-detection subagent, then `AskUserQuestion` prompts. Writes are atomic.
+
+```bash
+/experiments:commander-add
+/experiments:commander-add --name investlab --path /Users/me/code/investlab --keywords react,typescript --description "Portfolio tracker built with SolidStart."
+```
+
 ### `/experiments:ralph`
 
 Generate Ralph loop infrastructure from a project description for autonomous AI coding.
