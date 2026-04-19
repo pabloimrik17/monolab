@@ -3,9 +3,7 @@
 ## Purpose
 
 Beta skills and commands staging area for the monolab Claude Code marketplace.
-
 ## Requirements
-
 ### Requirement: Experiments Plugin Structure
 
 The `experiments` plugin SHALL exist at `claude-plugins/experiments/` and follow standard Claude Code plugin structure.
@@ -172,155 +170,6 @@ Both files SHALL have matching version numbers.
 
 ---
 
-### Requirement: scan-npm-updates Skill
-
-El plugin `experiments` SHALL proveer una skill `scan-npm-updates` en `claude-plugins/experiments/skills/scan-npm-updates/SKILL.md` que escanea dependencias actualizables y devuelve resultados estructurados, filtrados por tipo de update.
-
-La skill SHALL:
-
-- Aceptar un parámetro `level` con valores `patch`, `minor`, `major`, o `engines`.
-- Detectar el package manager del proyecto inspeccionando lockfiles y `package.json#packageManager` en este orden: `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `bun.lock`/`bun.lockb` → bun, `deno.lock` → deno, `package-lock.json` → npm.
-- Detectar si es single-repo o workspace (presencia de `pnpm-workspace.yaml`, `workspaces` field en `package.json`, `deno.json#workspace`).
-- Invocar la herramienta de escaneo (`npm-check-updates` por defecto, con pin de versión en la SKILL.md) sin añadir dependencia al workspace del usuario, usando el runner correspondiente al PM detectado:
-    - pnpm → `pnpm dlx npm-check-updates@<pinned>`
-    - npm → `npx npm-check-updates@<pinned>`
-    - yarn → `yarn dlx npm-check-updates@<pinned>`
-    - bun → `bunx npm-check-updates@<pinned>`
-    - deno → `deno run --allow-read --allow-write --allow-net --allow-env --allow-run npm:npm-check-updates@<pinned>` (el mismo runtime cuyo install step en el comando es `deno install`)
-- Invocar la herramienta con `--target <level>` y `--jsonUpgraded`, y strippear cualquier línea de stdout previa al primer `{` antes de parsear (ncu emite banner informativo sobre `minimumReleaseAge` cuando detecta la config).
-- Para `level=patch`, reportar las versiones patch que la herramienta devuelve (semántica "cap" de ncu: paquetes cuyo upgrade disponible sea sólo minor/major no aparecen). Para `minor` y `major` aplica la misma semántica en su banda.
-- Respetar `minimumReleaseAge` cuando esté declarado en la config del package manager. La skill SHALL:
-    - pnpm: ncu lo lee nativamente desde `pnpm-workspace.yaml#minimumReleaseAge` (verificado en spike). La skill no pasa `--cooldown` para pnpm; delega en la herramienta.
-    - npm/yarn/bun/deno: la skill SHALL resolver el valor y pasarlo como `--cooldown <period>` a ncu. La tabla autorizada de config files y claves por PM vive en la SKILL.md; cualquier PM cuya lookup aún no esté documentada SHALL hacer fallar la skill con mensaje explícito.
-- Tratar entradas `catalog:` de pnpm como first-class: un paquete referenciado vía `"dep": "catalog:"` con entry en `pnpm-workspace.yaml#catalog` SHALL reportarse con `location: "catalog:default"` y `sourceFile` apuntando a `pnpm-workspace.yaml`.
-- Devolver un objeto JSON con la siguiente shape (TypeScript-style):
-
-    ```ts
-    interface ScanResult {
-      packageManager: "pnpm" | "npm" | "yarn" | "bun" | "deno";
-      repoType: "single" | "workspace";
-      updates: Array<{
-        name: string;                   // nombre del paquete npm
-        currentVersion: string;         // semver declarado en el manifest
-        targetVersion: string;          // semver propuesto por la herramienta
-        location: string;               // ver enumeración abajo
-        sourceFile: string;             // path relativo al repo root del manifest que se editaría
-        skippedByReleaseAge?: boolean;  // true si se eligió una versión inferior por minimumReleaseAge
-      }>;
-      warnings: string[];               // mensajes no fatales (stderr de la tool, catalogs no soportados, etc.)
-    }
-    ```
-
-    Semántica de `location` (valores permitidos):
-    - `"root"` — dependencia declarada en el `package.json` raíz de un single-repo.
-    - `"workspace:<package-name>"` — dependencia en el `package.json` de un paquete workspace (p. ej. `"workspace:@m0n0lab/react-hooks"`). `sourceFile` apunta al `package.json` de ese paquete.
-    - `"catalog:default"` — entry en el catalog por defecto de pnpm (declarado en `pnpm-workspace.yaml`). `sourceFile` es `pnpm-workspace.yaml`.
-    - `"catalog:<name>"` — entry en un catalog nombrado (`catalog:test`, etc.). Reportado con warning; no aplicable en esta iteración.
-- Emitir un warning y continuar (no abort) si detecta catalogs nombrados no-default (`catalog:test`, etc.); listarlos como no soportados en esta iteración.
-- Abortar con mensaje claro si el PM detectado no tiene el dlx runner disponible en PATH.
-
-#### Scenario: Skill file exists and is discoverable
-
-- **WHEN** the `experiments` plugin is installed
-- **THEN** `claude-plugins/experiments/skills/scan-npm-updates/SKILL.md` SHALL exist with YAML frontmatter including `name` and `description`
-- **AND** the skill SHALL appear in the available skills list as `experiments:scan-npm-updates`
-
-#### Scenario: Filter by patch level (cap semantic)
-
-- **WHEN** invoked with `level=patch` on a project where package `foo` has `1.2.5`, `1.3.0`, and `2.0.0` available over current `1.2.3`
-- **THEN** the skill SHALL report `foo` with `targetVersion: 1.2.5` (the highest patch in the current minor band)
-- **AND** when package `bar` has only `2.0.0` (a major) available over current `1.2.3` with no patch in the `1.2.x` band
-- **THEN** the skill SHALL NOT include `bar` in `updates`
-
-#### Scenario: pnpm catalog entry detection
-
-- **WHEN** invoked on a pnpm workspace with `vitest: "catalog:"` in a consumer `package.json` and `vitest: 4.0.18` under `catalog:` in `pnpm-workspace.yaml`, with `4.0.24` available
-- **THEN** the skill SHALL report `vitest` with `location: "catalog:default"` and `sourceFile: "pnpm-workspace.yaml"`
-
-#### Scenario: minimumReleaseAge filtering
-
-- **WHEN** invoked on a project with `minimumReleaseAge: 1440` and a target patch was published 10 minutes ago
-- **THEN** the skill SHALL exclude that version from `updates` or include it with `skippedByReleaseAge: true` and select the next acceptable version if any
-
-#### Scenario: No updates available
-
-- **WHEN** invoked and no dependencies have updates matching the level and release-age constraints
-- **THEN** the skill SHALL return `{ ..., updates: [] }` without error
-
-#### Scenario: Package manager missing dlx runner
-
-- **WHEN** the detected package manager's dlx runner is not on PATH
-- **THEN** the skill SHALL abort with a message stating which runner is missing and how to install it
-
----
-
-### Requirement: npm-update-patch Command
-
-El plugin `experiments` SHALL proveer el comando `/experiments:npm-update-patch` en `claude-plugins/experiments/commands/npm-update-patch.md`, invocable como slash command de Claude Code.
-
-El comando SHALL:
-
-- Tener YAML frontmatter con al menos `description`.
-- Invocar la skill `scan-npm-updates` con `level=patch`.
-- Si no hay updates, mostrar mensaje informativo y terminar.
-- Renderizar una tabla con columnas: `name`, `currentVersion → targetVersion`, `location`.
-- Presentar al usuario una única `AskUserQuestion` con opciones `apply-all`, `pick-subset`, `cancel`.
-- Si `pick-subset`: preguntar nombres a excluir (coma-separados o línea por paquete; vacío = incluir todos); validar que los nombres existan en la lista y re-preguntar si no.
-- Aplicar bumps editando el `sourceFile` correspondiente a cada update aceptado (`package.json` o `pnpm-workspace.yaml`).
-- Ejecutar una única invocación de install del PM detectado (`pnpm install` / `npm install` / `yarn install` / `bun install` / `deno install`) al final.
-- Mostrar un resumen textual: qué se aplicó, qué se saltó, y un mensaje sugiriendo (no ejecutando) pasos de verificación al dev/agente (tests, lint, commit).
-- No ejecutar tests, lint, build, ni crear commits.
-
-#### Scenario: Command file exists with frontmatter
-
-- **WHEN** examining `claude-plugins/experiments/commands/`
-- **THEN** `npm-update-patch.md` SHALL exist with YAML frontmatter containing a `description` field
-
-#### Scenario: Command invocable as slash command
-
-- **WHEN** user types `/experiments:npm-update-patch`
-- **THEN** Claude SHALL execute the command instructions
-
-#### Scenario: No patch updates available
-
-- **WHEN** the skill returns an empty `updates` array
-- **THEN** the command SHALL print a message like "No patch updates available" and terminate without prompting
-
-#### Scenario: Apply-all flow
-
-- **WHEN** the skill returns N updates AND the user selects `apply-all`
-- **THEN** the command SHALL bump all N entries in their respective `sourceFile` and run a single install
-- **AND** SHALL print a summary listing all applied updates
-
-#### Scenario: Pick-subset with exclusions
-
-- **WHEN** the skill returns 3 updates `[a, b, c]` AND the user selects `pick-subset` AND excludes `b`
-- **THEN** the command SHALL bump only `a` and `c`
-- **AND** the summary SHALL list `a, c` as applied and `b` as skipped
-
-#### Scenario: Pick-subset with invalid exclusion name
-
-- **WHEN** the user submits an exclusion name not present in the updates list
-- **THEN** the command SHALL re-prompt with the invalid name(s) highlighted and the list of valid names
-
-#### Scenario: Cancel flow
-
-- **WHEN** the user selects `cancel`
-- **THEN** the command SHALL exit without modifying any file
-
-#### Scenario: Catalog update edits pnpm-workspace.yaml
-
-- **WHEN** an applied update has `sourceFile: "pnpm-workspace.yaml"`
-- **THEN** the command SHALL bump the version under `catalog:` in `pnpm-workspace.yaml` and NOT touch the consumer `package.json`
-
-#### Scenario: No post-install verification
-
-- **WHEN** the command completes applying updates
-- **THEN** the command SHALL NOT invoke tests, lint, build, or create a commit
-- **AND** the final message SHALL suggest these as next steps for the dev/agent
-
----
-
 ### Requirement: Commander Add Command File
 
 The `experiments` plugin SHALL include `commands/commander-add.md`.
@@ -424,3 +273,153 @@ On confirmation the command SHALL invoke the `commander-registry` `add` operatio
 
 - **WHEN** the resolved `path` does not exist on disk
 - **THEN** the command SHALL abort with a clear message identifying the invalid path
+
+### Requirement: scan-npm-updates Skill
+
+The `experiments` plugin SHALL provide a `scan-npm-updates` skill at `claude-plugins/experiments/skills/scan-npm-updates/SKILL.md` that scans for available dependency updates and returns structured results filtered by update type.
+
+The skill SHALL:
+
+- Accept a `level` parameter with values `patch`, `minor`, `major`, or `engines`.
+- Detect the project's package manager by inspecting lockfiles and `package.json#packageManager` in this order: `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `bun.lock`/`bun.lockb` → bun, `deno.lock` → deno, `package-lock.json` → npm.
+- Detect whether the project is a single-repo or workspace (presence of `pnpm-workspace.yaml`, `workspaces` field in `package.json`, `deno.json#workspace`).
+- Invoke the scanning tool (`npm-check-updates` by default, with version pinned in SKILL.md) without adding a dependency to the user's workspace, using the runner corresponding to the detected PM:
+    - pnpm → `pnpm dlx npm-check-updates@<pinned>`
+    - npm → `npx -y npm-check-updates@<pinned>`
+    - yarn → `yarn dlx npm-check-updates@<pinned>`
+    - bun → `bunx npm-check-updates@<pinned>`
+    - deno → `deno run --allow-read --allow-net npm:npm-check-updates@<pinned>` (read-only scan: `--jsonUpgraded` does not write, spawn, or read env; same runtime whose install step in the command is `deno install`)
+- Invoke the tool with `--jsonUpgraded` and an ncu target mapped from `level`: `patch` → `--target patch`, `minor` → `--target minor`, `major` → `--target latest` (followed by a skill-side post-filter that keeps only packages whose target major > current major, since ncu has no native `major` target), `engines` → `--target latest --enginesNode` (ncu filters to candidates whose `engines.node` satisfies the project's own `engines.node`; `@engines` is not a valid ncu target). Strip any stdout line preceding the first `{` before parsing (ncu emits an informational banner about `minimumReleaseAge` when it detects the config).
+- For `level=patch`, report the patch versions the tool returns (ncu's "cap" semantic: packages whose only available upgrade is minor/major do not appear). For `minor` and `major`, the same semantic applies within their band.
+- Respect `minimumReleaseAge` when declared in the package manager's config. The skill SHALL:
+    - pnpm: ncu reads it natively from `pnpm-workspace.yaml#minimumReleaseAge` (verified in spike). The skill does not pass `--cooldown` for pnpm; it delegates to the tool.
+    - npm/yarn/bun/deno: the skill SHALL resolve the value and pass it as `--cooldown <period>` to ncu. The authoritative table of config files and keys per PM lives in SKILL.md (task 1.4.1); any PM whose lookup is not yet documented SHALL cause the skill to fail with an explicit message.
+- Treat pnpm `catalog:` entries as first-class: a package referenced via `"dep": "catalog:"` with an entry in `pnpm-workspace.yaml#catalog` SHALL be reported with `location: "catalog:default"` and `sourceFile` pointing to `pnpm-workspace.yaml`.
+- Return a JSON object with the following shape (TypeScript-style):
+
+    ```ts
+    interface ScanResult {
+      packageManager: "pnpm" | "npm" | "yarn" | "bun" | "deno";
+      repoType: "single" | "workspace";
+      updates: Array<{
+        name: string;                   // npm package name
+        currentVersion: string;         // semver declared in the manifest
+        targetVersion: string;          // semver proposed by the tool
+        location: string;               // see enumeration below
+        sourceFile: string;             // path relative to repo root of the manifest that would be edited
+        skippedByReleaseAge?: boolean;  // true if a lower version was chosen due to minimumReleaseAge
+      }>;
+      warnings: string[];               // non-fatal messages (tool stderr, unsupported catalogs, etc.)
+    }
+    ```
+
+    Semantics of `location` (allowed values):
+    - `"root"` — dependency declared in the root `package.json` of a single-repo.
+    - `"workspace:<package-name>"` — dependency in the `package.json` of a workspace package (e.g. `"workspace:@m0n0lab/react-hooks"`). `sourceFile` points to that package's `package.json`.
+    - `"catalog:default"` — entry in pnpm's default catalog (declared in `pnpm-workspace.yaml`). `sourceFile` is `pnpm-workspace.yaml`.
+    - `"catalog:<name>"` — reserved for future iterations; MUST NOT be emitted in `updates` in this iteration (named catalogs surface only via `warnings`).
+- Emit a warning and continue (do not abort) if non-default named catalogs are detected (`catalog:test`, etc.); list them as unsupported and exclude them from `updates` in this iteration.
+- Abort with a clear message if the detected PM runner is not available on PATH.
+
+#### Scenario: Skill file exists and is discoverable
+
+- **WHEN** the `experiments` plugin is installed
+- **THEN** `claude-plugins/experiments/skills/scan-npm-updates/SKILL.md` SHALL exist with YAML frontmatter including `name` and `description`
+- **AND** the skill SHALL appear in the available skills list as `experiments:scan-npm-updates`
+
+#### Scenario: Filter by patch level (cap semantic)
+
+- **WHEN** invoked with `level=patch` on a project where package `foo` has `1.2.5`, `1.3.0`, and `2.0.0` available over current `1.2.3`
+- **THEN** the skill SHALL report `foo` with `targetVersion: 1.2.5` (the highest patch in the current minor band)
+- **AND** when package `bar` has only `2.0.0` (a major) available over current `1.2.3` with no patch in the `1.2.x` band
+- **THEN** the skill SHALL NOT include `bar` in `updates`
+
+#### Scenario: pnpm catalog entry detection
+
+- **WHEN** invoked on a pnpm workspace with `vitest: "catalog:"` in a consumer `package.json` and `vitest: 4.0.18` under `catalog:` in `pnpm-workspace.yaml`, with `4.0.24` available
+- **THEN** the skill SHALL report `vitest` with `location: "catalog:default"` and `sourceFile: "pnpm-workspace.yaml"`
+
+#### Scenario: minimumReleaseAge filtering
+
+- **WHEN** invoked on a project with `minimumReleaseAge: 1440` and a target patch was published 10 minutes ago
+- **THEN** the skill SHALL select the highest version that satisfies `minimumReleaseAge` (if any) and include only that selected target in `updates`
+- **AND** when a newer candidate is skipped solely due to `minimumReleaseAge`, the returned update entry SHALL include `skippedByReleaseAge: true`
+- **AND** if no candidate satisfies `minimumReleaseAge`, the package SHALL be omitted from `updates`
+
+#### Scenario: No updates available
+
+- **WHEN** invoked and no dependencies have updates matching the level and release-age constraints
+- **THEN** the skill SHALL return `{ ..., updates: [] }` without error
+
+#### Scenario: Package manager runner missing
+
+- **WHEN** the detected package manager runner is not on PATH
+- **THEN** the skill SHALL abort with a message stating which runner is missing and how to install it
+
+---
+
+### Requirement: npm-update-patch Command
+
+The `experiments` plugin SHALL provide the `/experiments:npm-update-patch` command at `claude-plugins/experiments/commands/npm-update-patch.md`, invocable as a Claude Code slash command.
+
+The command SHALL:
+
+- Have YAML frontmatter with at least `description`.
+- Invoke the `scan-npm-updates` skill with `level=patch`.
+- If there are no updates, show an informational message and terminate.
+- Render a table with columns: `name`, `currentVersion → targetVersion`, `location`.
+- Present the user with a single `AskUserQuestion` with options `apply-all`, `pick-subset`, `cancel`.
+- If `pick-subset`: ask for names to exclude (comma-separated or one package per line; empty = include all); validate that names exist in the list and re-prompt if not.
+- Apply bumps by editing the `sourceFile` corresponding to each accepted update (`package.json` or `pnpm-workspace.yaml`).
+- Execute a single install invocation for the detected PM (`pnpm install` / `npm install` / `yarn install` / `bun install` / `deno install`) at the end.
+- Display a textual summary: what was applied, what was skipped, and a message suggesting (not executing) verification steps to the dev/agent (tests, lint, commit).
+- Not execute tests, lint, build, or create commits.
+
+#### Scenario: Command file exists with frontmatter
+
+- **WHEN** examining `claude-plugins/experiments/commands/`
+- **THEN** `npm-update-patch.md` SHALL exist with YAML frontmatter containing a `description` field
+
+#### Scenario: Command invocable as slash command
+
+- **WHEN** user types `/experiments:npm-update-patch`
+- **THEN** Claude SHALL execute the command instructions
+
+#### Scenario: No patch updates available
+
+- **WHEN** the skill returns an empty `updates` array
+- **THEN** the command SHALL print a message like "No patch updates available" and terminate without prompting
+
+#### Scenario: Apply-all flow
+
+- **WHEN** the skill returns N updates AND the user selects `apply-all`
+- **THEN** the command SHALL bump all N entries in their respective `sourceFile` and run a single install
+- **AND** SHALL print a summary listing all applied updates
+
+#### Scenario: Pick-subset with exclusions
+
+- **WHEN** the skill returns 3 updates `[a, b, c]` AND the user selects `pick-subset` AND excludes `b`
+- **THEN** the command SHALL bump only `a` and `c`
+- **AND** the summary SHALL list `a, c` as applied and `b` as skipped
+
+#### Scenario: Pick-subset with invalid exclusion name
+
+- **WHEN** the user submits an exclusion name not present in the updates list
+- **THEN** the command SHALL re-prompt with the invalid name(s) highlighted and the list of valid names
+
+#### Scenario: Cancel flow
+
+- **WHEN** the user selects `cancel`
+- **THEN** the command SHALL exit without modifying any file
+
+#### Scenario: Catalog update edits pnpm-workspace.yaml
+
+- **WHEN** an applied update has `sourceFile: "pnpm-workspace.yaml"`
+- **THEN** the command SHALL bump the version under `catalog:` in `pnpm-workspace.yaml` and NOT touch the consumer `package.json`
+
+#### Scenario: No post-install verification
+
+- **WHEN** the command completes applying updates
+- **THEN** the command SHALL NOT invoke tests, lint, build, or create a commit
+- **AND** the final message SHALL suggest these as next steps for the dev/agent
+
