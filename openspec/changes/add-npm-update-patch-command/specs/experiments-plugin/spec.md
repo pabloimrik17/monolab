@@ -43,8 +43,8 @@ The skill SHALL:
     - `"root"` — dependency declared in the root `package.json` of a single-repo.
     - `"workspace:<package-name>"` — dependency in the `package.json` of a workspace package (e.g. `"workspace:@m0n0lab/react-hooks"`). `sourceFile` points to that package's `package.json`.
     - `"catalog:default"` — entry in pnpm's default catalog (declared in `pnpm-workspace.yaml`). `sourceFile` is `pnpm-workspace.yaml`.
-    - `"catalog:<name>"` — entry in a named catalog (`catalog:test`, etc.). Reported with a warning; not applicable in this iteration.
-- Emit a warning and continue (do not abort) if non-default named catalogs are detected (`catalog:test`, etc.); list them as unsupported in this iteration.
+    - `"catalog:<name>"` — reserved for future iterations; MUST NOT be emitted in `updates` in this iteration (named catalogs surface only via `warnings`).
+- Emit a warning and continue (do not abort) if non-default named catalogs are detected (`catalog:test`, etc.); list them as unsupported and exclude them from `updates` in this iteration.
 - Abort with a clear message if the detected PM's dlx runner is not available on PATH.
 
 #### Scenario: Skill file exists and is discoverable
@@ -68,7 +68,9 @@ The skill SHALL:
 #### Scenario: minimumReleaseAge filtering
 
 - **WHEN** invoked on a project with `minimumReleaseAge: 1440` and a target patch was published 10 minutes ago
-- **THEN** the skill SHALL exclude that version from `updates` or include it with `skippedByReleaseAge: true` and select the next acceptable version if any
+- **THEN** the skill SHALL select the highest version that satisfies `minimumReleaseAge` (if any) and include only that selected target in `updates`
+- **AND** when a newer candidate is skipped solely due to `minimumReleaseAge`, the returned update entry SHALL include `skippedByReleaseAge: true`
+- **AND** if no candidate satisfies `minimumReleaseAge`, the package SHALL be omitted from `updates`
 
 #### Scenario: No updates available
 
