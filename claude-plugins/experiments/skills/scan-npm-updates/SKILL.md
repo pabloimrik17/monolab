@@ -105,8 +105,7 @@ Build the command:
     - pnpm: `pnpm -r exec node -e "console.log(process.cwd())"` (or read `pnpm-workspace.yaml#packages` globs and expand with `ls`).
     - npm/yarn/bun: read `package.json#workspaces` globs and expand.
     - deno: read `deno.json#workspace`.
-
-        Also scan the root `package.json` (many repos keep dev-only deps there).
+    - (regardless of PM) also scan the root `package.json` (many repos keep dev-only deps there).
 
 Running ncu once per manifest keeps the `--jsonUpgraded` shape predictable (`{ name: targetVersion }`). The `-ws` flag has different output shapes across ncu versions and is avoided.
 
@@ -145,7 +144,7 @@ For pnpm workspaces with a `pnpm-workspace.yaml#catalog` block:
 
 1. Read `pnpm-workspace.yaml` and parse the top-level `catalog:` map.
 2. If `catalog:` is absent, skip this section.
-3. For each `(name, version)` pair under `catalog:`, query `npm view <name> versions --json time --json` once (single spawn per package; cache in-memory for the scan).
+3. For each `(name, version)` pair under `catalog:`, query `npm view <name> versions time --json` once (single spawn per package; cache in-memory for the scan).
 4. Filter candidate versions by:
     - the current `level` (patch = max version within the current minor band; minor = max within major band; major = max version whose major > current's major).
     - the resolved `minimumReleaseAge` threshold (a version is acceptable iff `now - publishTime >= threshold`).
