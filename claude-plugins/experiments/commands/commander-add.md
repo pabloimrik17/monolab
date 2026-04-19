@@ -78,6 +78,8 @@ Fields:
 
 ### Add flow
 
+`add(record)` is the low-level persistence primitive. It is strict and has no UX affordances — error handling and recovery (re-prompt, abort) live in the command layer (Step 5.2). Callers are expected to check uniqueness and path existence first; the rejections below are the safety net.
+
 `add(record)` MUST:
 
 1. Reject with `"project name already registered"` if `name` is already a key in `projects`.
@@ -127,7 +129,7 @@ Rules:
 
 1. Collect only fields the user explicitly passed. Do not guess; absence means "Priority B should try".
 2. If `--path` is absent, default to `$CWD` (the working directory at invocation time).
-3. Always resolve `path` to an absolute path before any downstream use (e.g., `Bash cd <path> && pwd`).
+3. Always resolve `path` to an absolute path before any downstream use (e.g., `Bash cd "<path>" && pwd`).
 4. If all required fields (`name`, `path`, `keywords`, `description`) are present after parsing, **skip Priority B entirely** and go straight to **Step 5 — Validation**, then **Step 6 — Confirmation and write**.
 
 ## Step 2 — Haiku auto-detection (Priority B)
@@ -247,7 +249,7 @@ Confirmation step: echo the derived `path`, `monorepoRoot` (if any), and `keywor
 For each required field still missing after Steps 1–3, prompt via `AskUserQuestion`, **one field per question**:
 
 - `name`: "What short name should identify this project in the Commander registry?"
-- `path`: "Absolute path to the project directory?" (pre-fill with `$CWD`). After the user answers, resolve `path` to an absolute path (e.g., `Bash cd <path> && pwd`) before validation or persistence — the same invariant as Step 1 Rule 3.
+- `path`: "Absolute path to the project directory?" (pre-fill with `$CWD`). After the user answers, resolve `path` to an absolute path (e.g., `Bash cd "<path>" && pwd`) before validation or persistence — the same invariant as Step 1 Rule 3.
 - `keywords`: "Comma-separated keywords describing the stack (frameworks, languages)?" — split on `,`, trim each, lowercase each before persisting.
 - `description`: "One-sentence description of this project? Aim for 10–15 words." (the word count is a guideline in the question copy, not a hard-enforced limit)
 - `specialRules` (optional): "Any rules a future assistant should know about that aren't evident from code? Comma-separated, leave empty to skip."
@@ -268,7 +270,7 @@ Before prompting for final confirmation, validate:
 
 2. `name` is unique in the registry:
     - `Read` `<HOME>/.claude/commander/projects.json` if it exists; treat missing file as empty.
-    - If `projects[name]` already exists: inform the user and use `AskUserQuestion` to either pick a new name or abort. On abort: exit without writing.
+    - If `projects[name]` already exists: inform the user and use `AskUserQuestion` to either pick a new name or abort. On abort: exit without writing. This command-level pre-check is what makes the layered design work — if this check is skipped or races, the low-level `add(record)` safety net still rejects with `"project name already registered"` (see the "Add flow" contract above).
 
 3. `keywords` is non-empty and `description` is non-empty. If either is empty, re-enter Priority C for that field.
 
