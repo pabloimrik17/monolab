@@ -183,11 +183,11 @@ The skill SHALL:
 - Detect whether the project is a single-repo or workspace (presence of `pnpm-workspace.yaml`, `workspaces` field in `package.json`, `deno.json#workspace`).
 - Invoke the scanning tool (`npm-check-updates` by default, with version pinned in SKILL.md) without adding a dependency to the user's workspace, using the runner corresponding to the detected PM:
     - pnpm → `pnpm dlx npm-check-updates@<pinned>`
-    - npm → `npx npm-check-updates@<pinned>`
+    - npm → `npx -y npm-check-updates@<pinned>`
     - yarn → `yarn dlx npm-check-updates@<pinned>`
     - bun → `bunx npm-check-updates@<pinned>`
     - deno → `deno run --allow-read --allow-write --allow-net --allow-env --allow-run npm:npm-check-updates@<pinned>` (same runtime whose install step in the command is `deno install`)
-- Invoke the tool with `--target <level>` and `--jsonUpgraded`, and strip any stdout line preceding the first `{` before parsing (ncu emits an informational banner about `minimumReleaseAge` when it detects the config).
+- Invoke the tool with `--jsonUpgraded` and an ncu target mapped from `level`: `patch` → `--target patch`, `minor` → `--target minor`, `major` → `--target latest` (followed by a skill-side post-filter that keeps only packages whose target major > current major, since ncu has no native `major` target), `engines` → `--target latest --enginesNode` (ncu filters to candidates whose `engines.node` satisfies the project's own `engines.node`; `@engines` is not a valid ncu target). Strip any stdout line preceding the first `{` before parsing (ncu emits an informational banner about `minimumReleaseAge` when it detects the config).
 - For `level=patch`, report the patch versions the tool returns (ncu's "cap" semantic: packages whose only available upgrade is minor/major do not appear). For `minor` and `major`, the same semantic applies within their band.
 - Respect `minimumReleaseAge` when declared in the package manager's config. The skill SHALL:
     - pnpm: ncu reads it natively from `pnpm-workspace.yaml#minimumReleaseAge` (verified in spike). The skill does not pass `--cooldown` for pnpm; it delegates to the tool.

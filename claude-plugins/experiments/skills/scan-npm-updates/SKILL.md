@@ -91,12 +91,12 @@ Build the command:
 
 ### `level` → `--target` mapping
 
-| `level`   | ncu `--target` | Notes                                                                                                                     |
-| --------- | -------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `patch`   | `patch`        | Cap semantic: only reports packages with a patch available inside the current minor band.                                 |
-| `minor`   | `minor`        | Cap semantic: only reports packages with a minor available inside the current major band.                                 |
-| `major`   | `latest`       | ncu's `major` target does not exist; use `latest` and let the caller filter. The skill still labels the level as `major`. |
-| `engines` | `@engines`     | ncu supports `@engines` for `node`/runtime constraints; most repos return no updates here. Acceptable for this iteration. |
+| `level`   | ncu `--target`             | Notes                                                                                                                                                                                                         |
+| --------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `patch`   | `patch`                    | Cap semantic: only reports packages with a patch available inside the current minor band.                                                                                                                     |
+| `minor`   | `minor`                    | Cap semantic: only reports packages with a minor available inside the current major band.                                                                                                                     |
+| `major`   | `latest`                   | ncu has no native `major` target. The skill passes `--target latest`, then post-filters results to keep only packages whose target major > current major (see Parsing below).                                 |
+| `engines` | `latest` + `--enginesNode` | `@engines` is not a valid ncu target. Pass `--target latest --enginesNode`; ncu filters candidates to versions whose `engines.node` satisfies the project's own `engines.node`. Most repos return empty here. |
 
 ### Which manifests to scan
 
@@ -120,6 +120,8 @@ ncu writes a non-JSON banner before the JSON payload when `minimumReleaseAge` is
 4. Capture stderr into `warnings` unchanged (one warning per non-empty line).
 
 The parsed object maps `name → targetVersion`. Look up the `currentVersion` from the same manifest's `dependencies`/`devDependencies`/`peerDependencies`/`optionalDependencies` to fill `currentVersion` and preserve any `^`/`~`/`=` prefix.
+
+When `level=major`, after parsing ncu's output, drop entries whose parsed target-major is not strictly greater than the parsed current-major. This enforces the `major` cap semantic that ncu itself does not provide (its `latest` target returns whatever is tagged `latest`, which may be the same major).
 
 ## `minimumReleaseAge` lookup table
 
@@ -145,7 +147,7 @@ For pnpm workspaces with a `pnpm-workspace.yaml#catalog` block:
 2. If `catalog:` is absent, skip this section.
 3. For each `(name, version)` pair under `catalog:`, query `npm view <name> versions --json time --json` once (single spawn per package; cache in-memory for the scan).
 4. Filter candidate versions by:
-    - the current `level` (patch = max version within the current minor band; minor = max within major band; major = max overall).
+    - the current `level` (patch = max version within the current minor band; minor = max within major band; major = max version whose major > current's major).
     - the resolved `minimumReleaseAge` threshold (a version is acceptable iff `now - publishTime >= threshold`).
 5. Emit an update record with:
     - `name`: the catalog key.
