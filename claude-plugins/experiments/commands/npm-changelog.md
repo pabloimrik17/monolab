@@ -6,6 +6,8 @@ description: Retrieve, cache, and verify npm package changelogs locally for a ve
 
 Retrieve changelogs for any npm package across a version range. Caches locally at `~/.claude/changelogs/` so repeated queries never re-fetch verified versions. Output is a summary with file paths — never paste changelog content into chat.
 
+> Authoritative spec: `openspec/specs/npm-changelog-retrieval/spec.md` — Strategy A (raw CHANGELOG with monorepo subdirectory cascade) and Strategy B (GitHub Releases with scoped tag-format probe chain and cached `tagFormat` short-circuit).
+
 ## Arguments
 
 **ARGUMENTS variable contains**: `{package} {from}..{to}` (range), `{package} {version}` (single), `{package} latest`, or empty.
@@ -115,6 +117,17 @@ Write/update with:
 }
 ```
 
+`tagFormat` is a templated string once discovered (Strategy B, Step 6). Valid templates:
+
+- `"v{version}"` — v-prefixed (most common)
+- `"{version}"` — bare
+- `"{package}@{version}"` — scoped monorepo (Changesets convention, e.g., `@tanstack/query-core@5.90.20`)
+- `"{packageBasename}@{version}"` — scope-stripped (e.g., `query-core@5.90.20`)
+- `"{package}-v{version}"` — hyphenated variant
+- `"{packageBasename}-v{version}"` — hyphenated + scope-stripped
+
+`changelogFiles` is a union of filenames (repo-root) or path-qualified filenames (e.g., `packages/query-core/CHANGELOG.md`) that returned HTTP 200.
+
 Preserve existing `tagFormat`, `changelogSource`, and `changelogFiles` values if already set — only overwrite with new non-null discoveries. For `changelogFiles`, union new filenames into the existing array.
 
 ### Cache Lookup
@@ -135,16 +148,20 @@ Store the fetch list as `FETCH_VERSIONS`. If `FETCH_VERSIONS` is empty, skip to 
 
 If Strategy A will be used (first attempt), check the raw source cache:
 
-For each known changelog filename in `_meta.json.changelogFiles` (or defaults: `CHANGELOG.md`, `CHANGELOG`, `History.md`, `CHANGES.md` in order):
+For each known changelog entry in `_meta.json.changelogFiles` (or defaults: `CHANGELOG.md`, `CHANGELOG`, `History.md`, `CHANGES.md` in order):
 
-- If `_source/{filename}` exists:
-    - Check file modification time. If **less than 24 hours old**:
-        - Recompute SHA256: `shasum -a 256 "$CACHE_DIR/_source/{filename}" | cut -d' ' -f1`
-        - Compare against `_source/{filename}.sha256`
-        - If match → **reuse** cached raw source (skip re-fetch)
-        - If mismatch or `.sha256` missing → **re-fetch**
-    - If **older than 24 hours** → **re-fetch**
-- If `_source/{filename}` does not exist → **fetch**
+1. Derive the **cache key**:
+    - Root-fetched file → `{filename}` (e.g., `CHANGELOG.md`)
+    - Subdirectory-fetched file (path-qualified, contains `/`) → replace every `/` with `__` (e.g., `packages/query-core/CHANGELOG.md` → `packages__query-core__CHANGELOG.md`)
+2. Look up `_source/{cacheKey}`:
+    - If `_source/{cacheKey}` exists:
+        - Check file modification time. If **less than 24 hours old**:
+            - Recompute SHA256: `shasum -a 256 "$CACHE_DIR/_source/{cacheKey}" | cut -d' ' -f1`
+            - Compare against `_source/{cacheKey}.sha256`
+            - If match → **reuse** cached raw source (skip re-fetch)
+            - If mismatch or `.sha256` missing → **re-fetch**
+        - If **older than 24 hours** → **re-fetch**
+    - If `_source/{cacheKey}` does not exist → **fetch**
 
 ## Step 4: Resolve Default Branch
 
@@ -160,37 +177,59 @@ Store as `DEFAULT_BRANCH`. If this fails, record the error and proceed to Strate
 
 **Goal:** Fetch the raw CHANGELOG from the GitHub repo and parse individual version sections.
 
-### Fetch
+### Fetch — Probe Order
 
-If raw source is not cached (per TTL check), try filenames in order:
+The probe path depends on whether `_meta.json.isMonorepo=true` AND `_meta.json.monorepoDirectory` is non-null.
+
+**Single-repo packages (no `monorepoDirectory`)** — preserve prior behavior, root only:
 
 1. `CHANGELOG.md`
 2. `CHANGELOG`
 3. `History.md`
 4. `CHANGES.md`
 
-For each filename:
+**Monorepo packages (`isMonorepo=true` AND `monorepoDirectory` set)** — subdirectory first, then root fallback:
+
+1. `{MONOREPO_DIR}/CHANGELOG.md`
+2. `{MONOREPO_DIR}/CHANGELOG`
+3. `{MONOREPO_DIR}/History.md`
+4. `{MONOREPO_DIR}/CHANGES.md`
+5. Fall through to root chain for versions not resolved by the subdirectory file:
+    - `CHANGELOG.md` → `CHANGELOG` → `History.md` → `CHANGES.md`
+
+For each candidate path in the applicable chain:
 
 ```bash
 RAW_TMP="$(mktemp)"
-curl -sL --connect-timeout 10 --max-time 30 -w "%{http_code}" -o "$RAW_TMP" "https://raw.githubusercontent.com/{OWNER}/{REPO}/{DEFAULT_BRANCH}/{filename}"
+curl -sL --connect-timeout 10 --max-time 30 -w "%{http_code}" -o "$RAW_TMP" "https://raw.githubusercontent.com/{OWNER}/{REPO}/{DEFAULT_BRANCH}/{path}"
 # Clean up after processing: rm -f "$RAW_TMP"
 ```
 
+Where `{path}` is either `{filename}` (single-repo / root fallback) or `{MONOREPO_DIR}/{filename}` (monorepo subdirectory probe).
+
 Capture both curl exit code and HTTP status:
 
-- If curl exit code != 0 OR HTTP is `000` / `5xx` / non-404 `4xx` → mark Strategy A attempt as `fetch_error` and continue to next strategy (do not finalize version failure yet)
+- If curl exit code != 0 OR HTTP is `000` / `5xx` / non-404 `4xx` → mark Strategy A attempt as `fetch_error` and continue to the next strategy (do not finalize version failure yet)
 - If HTTP `200` → use this file
-- If HTTP `404` → try next filename; if all filenames exhausted → proceed to split-archive check
+- If HTTP `404` → try the next candidate in the chain; if all candidates in the monorepo subdirectory chain return 404, fall through to the root chain; if the root chain also exhausts → proceed to split-archive check
 
-**Always fetch from repo root**, never from a monorepo subdirectory.
+### Cascade Semantics (monorepo only)
+
+The subdirectory file and the root file are **not** mutually exclusive — they cascade **per version**:
+
+1. Parse the subdirectory file (if 200) with the same pattern detection and section extraction rules described below. Versions whose heading is found in the subdirectory file are **resolved** via the subdirectory source.
+2. Versions in `FETCH_VERSIONS` **not** found in the subdirectory file (or when the subdirectory file is entirely absent / all candidates 404) fall through to the root chain.
+3. Parse the root file (if 200) with the same rules. Versions whose heading is found in the root file are **resolved** via the root source.
+4. Versions still unresolved after both the subdirectory and root chains are appended to `STRATEGY_B_VERSIONS` and handled by Step 6.
+
+Rationale: a subdirectory CHANGELOG may omit very old versions that were consolidated into the root CHANGELOG during a repo reorganization. The cascade preserves coverage cheaply (1 extra fetch) before escalating to Strategy B's per-version request cost.
 
 ### Split-Archive Handling
 
-If no standard filename worked, or if the fetched CHANGELOG doesn't contain entries for some requested versions:
+If no standard filename worked at either the subdirectory or root level, or if the fetched CHANGELOGs don't contain entries for some requested versions:
 
-1. **Vue-style splits:** Try `changelogs/CHANGELOG-{major}.{minor}.md` for each relevant major.minor in the version range
-2. **Angular-style archive:** Try `CHANGELOG_ARCHIVE.md`
+1. **Vue-style splits:** Try `changelogs/CHANGELOG-{major}.{minor}.md` (root only) for each relevant major.minor in the version range
+2. **Angular-style archive:** Try `CHANGELOG_ARCHIVE.md` (root only)
 
 Fetch each with the same `curl` pattern.
 
@@ -198,12 +237,22 @@ Fetch each with the same `curl` pattern.
 
 When a raw file is successfully fetched:
 
-1. Save the exact content 1:1 to `$CACHE_DIR/_source/{filename}`
-2. Compute SHA256: `shasum -a 256 "$CACHE_DIR/_source/{filename}" | cut -d' ' -f1`
-3. Save hash to `$CACHE_DIR/_source/{filename}.sha256`
-4. Update `_meta.json`: set `changelogSource` to `"raw_changelog"`, union this successfully fetched `{filename}` into `changelogFiles` (only filenames that returned HTTP 200)
+1. Derive the **cache key**:
+    - Root-fetched file → `{filename}` (e.g., `CHANGELOG.md`)
+    - Subdirectory-fetched file → `{MONOREPO_DIR}/{filename}` with `/` replaced by `__` (e.g., `packages/query-core/CHANGELOG.md` → `packages__query-core__CHANGELOG.md`)
+2. Save the exact content 1:1 to `$CACHE_DIR/_source/{cacheKey}`
+3. Compute SHA256: `shasum -a 256 "$CACHE_DIR/_source/{cacheKey}" | cut -d' ' -f1`
+4. Save hash to `$CACHE_DIR/_source/{cacheKey}.sha256`
+5. Update `_meta.json`:
+    - Set `changelogSource` to `"raw_changelog"`
+    - Union the **path-qualified filename** into `changelogFiles`:
+        - Root-fetched → bare filename (e.g., `CHANGELOG.md`)
+        - Subdirectory-fetched → `{MONOREPO_DIR}/{filename}` with forward slashes preserved (e.g., `packages/query-core/CHANGELOG.md`)
+    - Only entries that returned HTTP 200 are unioned
 
 ### Parse — Pattern Detection
+
+Parsing operates identically on subdirectory-fetched and root-fetched raw files — pattern detection, section extraction, and version matching are file-content-driven and make no assumptions about origin path. In the monorepo cascade, parse the subdirectory file first (resolving as many versions as possible), then parse the root file only for the versions still unresolved.
 
 Scan the first 50 lines of the raw changelog. Test these patterns **in priority order** and use the **first match**:
 
@@ -256,33 +305,85 @@ Versions in `FETCH_VERSIONS` not found in the parsed file → add to `STRATEGY_B
 
 - Max **30 requests per batch**
 - **100ms sleep** between each request
-- If more than 30 versions remain, batch in groups of 30
+- **Each tag-format probe counts as one request** — a single version whose first N probes 404 before the (N+1)th 200s consumes N+1 slots from the batch budget
+- If more than 30 requests total are projected, batch in groups of 30
 
-### Fetch Releases
+### Derive `{packageBasename}`
 
-For each version in `STRATEGY_B_VERSIONS`, use `--include` to capture the HTTP status line:
+For scope-stripped tag-format variants, derive the basename from `PKG`:
+
+- **Scoped** (`@scope/name`) → `{packageBasename}` = `name` (e.g., `@tanstack/query-core` → `query-core`)
+- **Unscoped** (`name`) → `{packageBasename}` equals `PKG`; scope-stripped probes are **skipped** because they duplicate the non-stripped form
+
+### Cached-Format Short-Circuit
+
+On entry to Strategy B, read `_meta.json.tagFormat`. If set (non-null), resolve the template against the current version's context to produce the first probe URL:
+
+| Template                         | Resolves to (example for `@tanstack/query-core@5.90.20`) |
+| -------------------------------- | -------------------------------------------------------- |
+| `"v{version}"`                   | `v5.90.20`                                               |
+| `"{version}"`                    | `5.90.20`                                                |
+| `"{package}@{version}"`          | `@tanstack/query-core@5.90.20`                           |
+| `"{packageBasename}@{version}"`  | `query-core@5.90.20`                                     |
+| `"{package}-v{version}"`         | `@tanstack/query-core-v5.90.20`                          |
+| `"{packageBasename}-v{version}"` | `query-core-v5.90.20`                                    |
+
+Probe that URL first:
 
 ```bash
-gh api --include /repos/{OWNER}/{REPO}/releases/tags/v{ver}
+gh api --include /repos/{OWNER}/{REPO}/releases/tags/{RESOLVED_TAG}
 ```
 
-The response contains HTTP headers, then a blank line, then the JSON body. Parse the first line for HTTP status code, then extract the JSON body (everything after the first blank line):
+- HTTP **2xx** with non-empty `body` → success (skip the standard chain, skip the `_meta.json` write — value is unchanged)
+- HTTP **404** → fall through **silently** to the standard probe chain below. **Do NOT invalidate `_meta.json.tagFormat`** — a stale hint costs at most one 100ms request per invocation and avoids churn on transient misses.
 
-- If HTTP **2xx** and valid JSON body after header separator → success (use `body` field from JSON)
-- If HTTP **404** → retry without `v` prefix:
+### Standard Probe Chain
 
-    ```bash
-    gh api --include /repos/{OWNER}/{REPO}/releases/tags/{ver}
-    ```
+If `tagFormat` is null, or the cached-format probe missed, probe tag formats in this order and stop at the first success:
 
-- If **other error** (rate limit 403/429, 5xx, network failure) → mark `fetch_error` (retryable)
+1. `v{version}`
+2. `{version}` (no prefix)
+3. **Monorepo only** (`_meta.json.isMonorepo=true`) — continue with scoped variants:
+    - `{PKG}@{version}` — e.g., `@tanstack/query-core@5.90.20` (Changesets convention — most common)
+    - `{PKG-basename}@{version}` — e.g., `query-core@5.90.20` (Lerna-style scope-stripped; **skipped for unscoped packages**)
+    - `{PKG}-v{version}` — hyphenated variant
+    - `{PKG-basename}-v{version}` — hyphenated + scope-stripped (**skipped for unscoped packages**)
 
-- On first successful tag format, update `_meta.json.tagFormat` (e.g., `"v{version}"` or `"{version}"`)
-- Sleep 100ms between requests:
+For each probe:
 
-    ```bash
-    sleep 0.1
-    ```
+```bash
+gh api --include /repos/{OWNER}/{REPO}/releases/tags/{TAG}
+```
+
+The response contains HTTP headers, then a blank line, then the JSON body. Parse the first line for HTTP status code, then extract the JSON body:
+
+- HTTP **2xx** with valid JSON body → success (use `body` field from JSON); stop probing this version
+- HTTP **404** → try the next format in the chain
+- **Other error** (rate limit 403/429, 5xx, network failure) → mark `fetch_error` (retryable); stop probing this version
+
+Sleep 100ms between every request (including between probes for the same version):
+
+```bash
+sleep 0.1
+```
+
+### Persist `tagFormat`
+
+On first successful probe (cached-format or standard-chain), determine the **template string** that produced the hit:
+
+| Successful tag matches      | Templated form                   |
+| --------------------------- | -------------------------------- |
+| `v{version}`                | `"v{version}"`                   |
+| `{version}`                 | `"{version}"`                    |
+| `{PKG}@{version}`           | `"{package}@{version}"`          |
+| `{PKG-basename}@{version}`  | `"{packageBasename}@{version}"`  |
+| `{PKG}-v{version}`          | `"{package}-v{version}"`         |
+| `{PKG-basename}-v{version}` | `"{packageBasename}-v{version}"` |
+
+Persist to `_meta.json.tagFormat` **only if** the new template differs from the currently cached value:
+
+- Cached value is `null` or a different template → write the new template
+- Cached value equals the new template (steady state) → **skip the write** to avoid `_meta.json` churn
 
 ### Body Extraction
 
@@ -292,6 +393,8 @@ From the JSON response, extract the `body` field.
 - If `body` is empty or null → add version to `STRATEGY_C_VERSIONS` with note `empty_release_body`
 
 ## Step 7: Strategy C — CDN Fallback
+
+Strategy C fetches from unpkg by **published package identity** (`{PKG}@{ver}`), which is already implicitly monorepo-aware — unpkg serves each subpackage of a monorepo under its own npm coordinates, so no subdirectory-aware branching is needed here.
 
 For each version in `STRATEGY_C_VERSIONS`:
 
