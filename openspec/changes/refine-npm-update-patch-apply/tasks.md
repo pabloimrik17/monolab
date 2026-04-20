@@ -41,7 +41,7 @@
 
 - [x] 6.1 Run `/experiments:npm-update-patch` on this workspace; confirm detection unchanged, table renders as before
 - [x] 6.2 Exercise `apply-all` and observe Step 6 runs `ncu --upgrade` per manifest (not per-entry Edit calls). Verify prefixes preserved by diffing `package.json` before/after
-- [ ] 6.3 Exercise `pick-subset` excluding one package; verify only the rest got bumped via `--filter`
+- [x] 6.3 Exercise `pick-subset` excluding one package; verify only the rest got bumped via `--filter`
 - [ ] 6.4 Exercise `cancel`; verify zero file changes
 - [ ] 6.5 Verify catalog entries in `pnpm-workspace.yaml` still get bumped correctly (existing path)
 
