@@ -7,6 +7,8 @@ description: Scan a JavaScript/TypeScript project for available npm dependency u
 
 Scan the current working directory's JS/TS project and return a structured list of dependency updates at a given level. Pure read-only scan; all mutation (bumping manifests, running installs) is the caller's responsibility.
 
+> **Skill scope vs. `data/` folder.** This skill does NOT read anything under `skills/scan-npm-updates/data/`. The `data/` subdirectory hosts command-side registries (e.g. `pkg-upgrade-overrides.yaml`) consumed by `/experiments:npm-update-patch` and siblings. The registries are co-located with the skill because they are semantically paired with the scan output, but they are intentionally out of scope for the scan itself — the skill stays read-only and registry-agnostic. Future contributors should add command-side data here; skill-side inputs live elsewhere (or in `references/`).
+
 ## Inputs
 
 - **`level`** (required): `patch` | `minor` | `major` | `engines`. The caller passes this; do not infer from arguments.

@@ -1,0 +1,51 @@
+# Package upgrade override registry
+#
+# Consumed by /experiments:npm-update-patch (and any future sibling commands).
+# NOT read by the scan-npm-updates skill — the skill stays read-only and
+# ignorant of override logic. This file lives inside the skill folder because
+# the override list is semantically paired with the scan output, but it is a
+# command-side data artifact.
+#
+# Entry fields:
+#
+#   id                    (string, required) stable identifier, also shown in
+#                         the AskUserQuestion prompt.
+#   matches               (list of strings, required, non-empty) glob patterns
+#                         over package names. `*` matches any run of characters
+#                         within a package name (so `@storybook/*` matches
+#                         `@storybook/react`, `@storybook/addon-essentials`,
+#                         etc.). No other glob metacharacters are supported.
+#   command               (string, required) shell command template. `{version}`
+#                         is interpolated before presenting the prompt.
+#   versionSource         (string, required) how to resolve `{version}`:
+#                           - target-of:<name>         → targetVersion of <name>
+#                                                       from the accepted set
+#                           - max-target-of:<glob>     → max semver across
+#                                                       targetVersions of
+#                                                       accepted packages
+#                                                       matching <glob>
+#                           - latest                   → literal "latest"
+#   fallbackVersionSource (string, optional) same syntax; used when the primary
+#                         source cannot be resolved.
+#   reference             (string, optional) URL to upstream docs for the
+#                         override command; surfaced to the user.
+#   notes                 (string, optional) human-readable note shown in the
+#                         prompt so the user understands what the override does.
+#
+# Matching is first-win: a package matches at most one entry, the first in
+# declaration order whose `matches` patterns coincide.
+#
+# Adding a new override = append an entry here; no command-logic change needed.
+
+overrides:
+    - id: storybook
+      matches:
+          - storybook
+          - "@storybook/*"
+          - eslint-plugin-storybook
+          - "storybook-addon-*"
+      command: "npx storybook@{version} upgrade"
+      versionSource: target-of:storybook
+      fallbackVersionSource: max-target-of:@storybook/*
+      reference: https://storybook.js.org/docs/releases/upgrading
+      notes: "Synchronises every @storybook/* package to {version} and runs automigrations."
