@@ -26,7 +26,7 @@ The same contract is re-implemented by every `commander:*` command via built-in 
 
 ### Lazy create
 
-- **Reads** (`read`, `list`, `getByName`) MUST NOT create the file or its parent directory. A missing file MUST be treated as an empty registry (`{ "version": 1, "projects": {} }` in memory; nothing on disk).
+- **Reads** (`read`, `list`, `getByName`) MUST NOT create the file or its parent directory. A missing file MUST be treated as an empty registry (`{ "version": 2, "projects": {} }` in memory; nothing on disk).
 - **Writes** MUST create `<HOME>/.claude/commander/` recursively if it doesn't exist, and then create `projects.json` atomically.
 
 ### Schema template
@@ -35,12 +35,12 @@ The on-disk file is a single JSON object:
 
 ```json
 {
-    "version": 1,
+    "version": 2,
     "projects": {}
 }
 ```
 
-For this change the schema `version` is `1`. Readers MUST abort with `"unsupported registry version"` if they see a higher version and MUST NOT overwrite the file.
+For this change the schema `version` is `2`. Readers MUST abort with `"unsupported registry version"` if they see a version greater than `2` (i.e., the highest known version) and MUST NOT overwrite the file. Readers SHALL accept `version: 1` and `version: 2` files; v1 records may lack `repoType` (see "Record shape" — legacy drift is surfaced by future `commander-update` / `commander-list`, not auto-migrated).
 
 ### Record shape
 
@@ -54,19 +54,21 @@ Each entry in `projects` is keyed by `name` and has the shape:
     "description": "Portfolio tracker, SolidStart-based, lives inside monolab monorepo.",
     "createdAt": "2026-04-19T12:00:00Z",
     "updatedAt": "2026-04-19T12:00:00Z",
+    "repoType": "multi-monorepo",
     "specialRules": ["No ESLint"],
     "monorepoRoot": "/Users/.../monolab"
 }
 ```
 
-Fields:
+Fields (schema v2):
 
 - `name` (string, required) — unique registry key; kebab-case or plain lowercase.
 - `path` (string, required) — absolute path to the effective project directory.
-- `keywords` (string[], required, non-empty) — frameworks / languages / stacks.
+- `keywords` (string[], required, non-empty) — frameworks / languages / stacks. Normalized via the `commander-normalize` skill (controlled vocabulary; deterministic).
 - `description` (string, required, non-empty) — 10–15-word summary.
 - `createdAt` (string, required) — UTC ISO-8601 timestamp of first registration.
 - `updatedAt` (string, required) — UTC ISO-8601 timestamp of last modification.
+- `repoType` (string, required in v2) — one of `"single-repo"`, `"monorepo"`, `"multi-monorepo"`. Required on every record written by a v2-aware writer.
 - `specialRules` (string[], optional) — rules not evident from the code.
 - `monorepoRoot` (string, optional) — absolute path to the monorepo root, set only when `path` is a subproject.
 
@@ -84,8 +86,10 @@ Fields:
 
 1. Reject with `"project name already registered"` if `name` is already a key in `projects`.
 2. Reject with `"path does not exist"` if `path` is not an existing directory on disk.
-3. Set `createdAt` and `updatedAt` to the current UTC ISO-8601 timestamp.
-4. Persist via the atomic write recipe below.
+3. Reject with `"invalid repoType: <value>"` if `record.repoType` is not exactly one of `"single-repo"`, `"monorepo"`, `"multi-monorepo"`.
+4. Set `createdAt` and `updatedAt` to the current UTC ISO-8601 timestamp.
+5. **Upgrade the file's `version` field to `2` on first v2 write** when the on-disk file is `"version": 1`. Existing records that predate v2 SHALL be preserved byte-for-byte (do NOT synthesize a `repoType` for them). Only the newly inserted record carries `repoType`. Future `commander-update` / `commander-list` will surface drift on legacy records.
+6. Persist via the atomic write recipe below.
 
 ### Atomic write recipe
 
@@ -130,7 +134,8 @@ Rules:
 1. Collect only fields the user explicitly passed. Do not guess; absence means "Priority B should try".
 2. If `--path` is absent, default to `$CWD` (the working directory at invocation time).
 3. Always resolve `path` to an absolute path before any downstream use (e.g., `Bash cd "<path>" && pwd`).
-4. If all required fields (`name`, `path`, `keywords`, `description`) are present after parsing, **skip Priority B entirely** and go straight to **Step 5 — Validation**, then **Step 6 — Confirmation and write**.
+4. If all required fields (`name`, `path`, `keywords`, `description`) are present after parsing, **skip Priority B entirely** and go straight to **Step 5 — Validation**, then **Step 6 — Confirmation and write**. In this case Step 2.5 (normalization) is ALSO skipped: explicit `--keywords` is persisted verbatim (lowercased, trimmed) without vocabulary filtering and without a post-write vocabulary suggestion.
+5. **Explicit `--keywords` bypasses normalization.** Whenever the user passes `--keywords`, the supplied list is persisted verbatim (lowercased, trimmed) and Step 2.5 is not invoked for that list. The vocabulary suggestion flow (Step 7) is ALSO suppressed for this invocation.
 
 ## Step 2 — Haiku auto-detection (Priority B)
 
@@ -232,17 +237,70 @@ Populate any required field still missing from Step 1 with the detected equivale
 - `specialRules` ← detected `specialRules` (may be empty).
 - If `isMonorepo` is true, remember `monorepoType` and `subprojects` for Step 3.
 
+## Step 2.5 — Normalization
+
+Run after Step 2, before Step 3. **Skip entirely if the user supplied `--keywords`** (see Step 1 Rule 5).
+
+Invoke the `commander-normalize` skill (from the `experiments` plugin) to transform the raw Haiku keyword output into the final persisted `keywords[]`.
+
+### Skill invocation contract
+
+**Inputs:**
+
+- `keywords` (string[]) — raw detected keywords from Haiku.
+- `description` (string) — top-level (or subproject) description from Haiku.
+- `specialRules` (string[]) — detected special rules (may be empty).
+- `repoType` (string) — one of `"single-repo"`, `"monorepo"`, `"multi-monorepo"`. See "Derive repoType" below.
+- `subprojects` (object[], only when `repoType == "multi-monorepo"`) — `[{ name, keywords }, ...]`.
+
+**Outputs:**
+
+- `keywords` (string[]) — normalized, deduplicated, alphabetically sorted, every entry in the canonical vocabulary.
+- `droppedTerms` (string[]) — raw terms dropped by the vocabulary filter that are NOT in the excludes list. Feeds Step 7.
+
+### Derive repoType
+
+Map Haiku's `monorepoType` to the persisted `repoType`:
+
+- `monorepoType: "none"` → `repoType: "single-repo"`
+- `monorepoType: "single"` → `repoType: "monorepo"`
+- `monorepoType: "multi"` → `repoType: "multi-monorepo"`
+
+When Priority A supplied all fields and Haiku was skipped, `repoType` is still required. Determine it by:
+
+1. **Filesystem-marker inference** at `path`: presence of any of `pnpm-workspace.yaml`, `nx.json`, `turbo.json`, `lerna.json`, `rush.json`, `package.json` with a top-level `workspaces` field, `Cargo.toml` with a `[workspace]` table, or `go.work` indicates a monorepo. If one clearly dominant app exists, `"monorepo"`; if multiple independent subprojects exist, `"multi-monorepo"`; otherwise `"single-repo"`.
+2. **If inference is ambiguous**, prompt via `AskUserQuestion` with the three enumeration values (`single-repo`, `monorepo`, `multi-monorepo`) as options.
+
+### Invocation flow
+
+**For `repoType` in `{"single-repo", "monorepo"}`:**
+
+1. Call the skill once with the whole-tree `keywords`, `description`, `specialRules`, and `repoType`.
+2. Use the returned `keywords` as the final persisted list.
+3. Remember `droppedTerms` for Step 7.
+
+**For `repoType == "multi-monorepo"`:**
+
+1. For each detected subproject, call the skill with that subproject's raw `keywords`, the subproject's `description` (if Haiku emitted one, else the top-level `description`), `specialRules`, and `repoType = "multi-monorepo"` + `subprojects` set to the full subproject list so the skill can compute the top-level union.
+2. The skill returns a normalized list per call. Capture each subproject's normalized `keywords`.
+3. Call the skill once more at the top level with each subproject's already-normalized `keywords` under `subprojects[i].keywords` to get the top-level union (informational — not persisted on individual records, only surfaced at confirmation).
+4. Aggregate `droppedTerms` as the set-union across all subproject invocations (dedup, order preserved).
+
+### Use the normalized output
+
+Replace Haiku's raw `keywords` with the normalized list(s). Downstream steps (3, 4, 5, 6) operate on normalized keywords only.
+
 ## Step 3 — Monorepo subproject selection
 
 Run after Step 2, before Step 4.
 
 - If `monorepoType === "multi"` **and** the user did not supply a subproject via `--path`:
     1. Present the detected subprojects via `AskUserQuestion` (one option per subproject, label = `subprojects[i].name`, description = short path hint).
-    2. On selection: set `path = subprojects[i].path` (absolute), `monorepoRoot = TARGET_PATH`, `keywords = subprojects[i].keywords`, and **`description = subprojects[i].description`** (the per-subproject summary emitted by Haiku). If the subagent omitted `subprojects[i].description`, keep the top-level `description` as a fallback and flag it for user edit in the confirmation step.
-- If `monorepoType === "single"`: leave `monorepoRoot` unset; keep the aggregated `keywords` and top-level `description`.
+    2. On selection: set `path = subprojects[i].path` (absolute), `monorepoRoot = TARGET_PATH`, `keywords = subprojects[i].keywords` (the **already-normalized** per-subproject list produced by Step 2.5 — NOT the raw Haiku list, and NOT the top-level aggregated union), and **`description = subprojects[i].description`** (the per-subproject summary emitted by Haiku). If the subagent omitted `subprojects[i].description`, keep the top-level `description` as a fallback and flag it for user edit in the confirmation step.
+- If `monorepoType === "single"`: leave `monorepoRoot` unset; keep the aggregated + normalized `keywords` from Step 2.5 and the top-level `description`.
 - If `monorepoType === "none"`: leave `monorepoRoot` unset.
 
-Confirmation step: echo the derived `path`, `monorepoRoot` (if any), and `keywords` back to the user and offer per-field edit before proceeding. Use `AskUserQuestion` with an "Edit `<field>`" option per editable field plus a "Continue" option.
+Confirmation step: echo the derived `path`, `monorepoRoot` (if any), `repoType`, and `keywords` back to the user and offer per-field edit before proceeding. Use `AskUserQuestion` with an "Edit `<field>`" option per editable field plus a "Continue" option.
 
 ## Step 4 — Prompted fallbacks (Priority C)
 
@@ -278,17 +336,17 @@ Before prompting for final confirmation, validate:
 
 ### 6a. Final confirmation
 
-Render the fully populated record and ask `AskUserQuestion` with options:
+Render the fully populated record (including `repoType`) and ask `AskUserQuestion` with options:
 
 - "Save" — proceed to the write.
-- "Edit" — re-enter Step 4 for a single field of the user's choice. If `path` is the edited field, re-normalize it to an absolute path before returning to Step 5.
+- "Edit" — re-enter Step 4 for a single field of the user's choice. The editable fields include `name`, `path`, `keywords`, `description`, `specialRules`, **and `repoType`** (presented as a 3-option pick: `single-repo` / `monorepo` / `multi-monorepo`). If `path` is the edited field, re-normalize it to an absolute path before returning to Step 5. If `repoType` is the edited field and it changes the topology (e.g., `single-repo` → `multi-monorepo`), re-run Step 2.5 normalization on the keyword set so the persisted list reflects the new topology.
 - "Abort" — exit without writing.
 
 ### 6b. On "Save"
 
 1. Set `createdAt` and `updatedAt` to the current UTC ISO-8601 timestamp (e.g., `date -u +%Y-%m-%dT%H:%M:%SZ`).
-2. `Read` the current registry if present, else start from `{ "version": 1, "projects": {} }`.
-3. Insert the new record at `projects[name]`.
+2. `Read` the current registry if present, else start from `{ "version": 2, "projects": {} }`. If the on-disk file is `{ "version": 1, ... }`, upgrade the in-memory `version` to `2` (legacy records remain in `projects` unchanged — their fields are preserved byte-for-byte and no synthetic `repoType` is added).
+3. Insert the new record at `projects[name]` (the new record MUST include `repoType`).
 4. Serialize with 2-space indent and a trailing newline.
 5. Ensure `<HOME>/.claude/commander/` exists:
 
@@ -307,13 +365,53 @@ Render the fully populated record and ask `AskUserQuestion` with options:
 
 ### 6c. On any abort
 
-Exit without writing. Do not leave `projects.json.tmp` behind if step 6b step 6 already wrote it — remove it:
+Exit without writing. Do not leave `projects.json.tmp` behind if step 6b step 7 already wrote it — remove it:
 
 ```bash
 rm -f "<HOME>/.claude/commander/projects.json.tmp"
 ```
 
-(Only applies if the abort happens between steps 6b.6 and 6b.7.)
+(Only applies if the abort happens between steps 6b.7 and 6b.8.)
+
+## Step 7 — Vocabulary suggestion
+
+Run **only after Step 6b step 8** (i.e., the write succeeded).
+
+**Skip entirely** when ANY of the following holds:
+
+- `droppedTerms` (from Step 2.5) is empty.
+- The user supplied `--keywords` explicitly (Step 2.5 was bypassed; there is nothing to suggest).
+- The session-level "Skip vocab suggestions" flag is set (see options below).
+- `gh` is not on `PATH`. Detect via `command -v gh >/dev/null 2>&1`. Do NOT prompt or error — silently skip.
+
+Otherwise present a single `AskUserQuestion` with three options:
+
+- **Yes** — open a GitHub issue suggesting the dropped terms be added to the skill's vocabulary. Invoke:
+
+    ```bash
+    gh issue create \
+      --title "vocab: add <term1>[, <term2>, ...]" \
+      --body "<body>"
+    ```
+
+    where the title lists every dropped term comma-separated and the body is:
+
+    ```text
+    Dropped terms surfaced by `commander-normalize` during a `commander-add` invocation.
+
+    Terms: <comma-separated dropped terms>
+    Project: <name>
+    Date (UTC): <YYYY-MM-DD>
+
+    Consider adding these to `claude-plugins/experiments/skills/commander-normalize/references/vocabulary.json` (canonical, synonyms, or excludes as appropriate).
+    ```
+
+    On `gh` non-zero exit, surface the stderr to the user but do NOT roll back the registry write — the suggestion is post-hoc.
+
+- **No** — dismiss for this project. The registry write stands.
+- **Skip session** — set a session-level flag (in-conversation memory only, not persisted) that suppresses Step 7 for the remainder of the current Claude Code session, then dismiss this prompt without invoking `gh`.
+
+The flow SHALL NOT block: the write has already succeeded by the time this prompt appears.
 
 ---
 
@@ -321,12 +419,13 @@ rm -f "<HOME>/.claude/commander/projects.json.tmp"
 
 - `"path does not exist: <path>"` — validation failure in Step 5.1.
 - `"project name already registered: <name>"` — validation failure in Step 5.2.
-- `"unsupported registry version: <n>"` — reader hit a future schema version.
+- `"unsupported registry version: <n>"` — reader hit a `version` greater than `2` (the highest known version).
+- `"invalid repoType: <value>"` — `add(record)` received a `repoType` outside the enum.
 - `"registry file is not valid JSON"` — `Read` succeeded but parsing failed; ask the user to inspect `<HOME>/.claude/commander/projects.json` by hand.
 
 ## Non-goals (deferred)
 
 - Delete, update, list, config-add commands (separate tickets).
-- Concurrency (lockfile, CAS) — v1 assumes single-invocation.
-- Schema migrations — `version` is fixed at `1` for this change.
+- Concurrency (lockfile, CAS) — single-invocation assumption carries over from v1.
+- Auto-migration of v1 records to v2 — `commander-add` writes v2 only; legacy v1 records are preserved as drift and surfaced by future `commander-update` / `commander-list`.
 - Cross-machine sync.

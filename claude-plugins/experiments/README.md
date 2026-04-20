@@ -55,6 +55,10 @@ Checks for updates to globally-installed skills.sh skills once per session. Dete
 
 Shared scan backend used by `/experiments:npm-update-patch` (and by future `npm-update-minor`/`major`/`engines` siblings). Invokes `npm-check-updates@21.0.2` via the detected package manager's dlx runner, post-processes pnpm `catalog:` entries, and returns a structured `ScanResult` JSON object. Read-only — never edits files.
 
+### `commander-normalize`
+
+Controlled-vocabulary keyword normalization for the Commander registry. Used by `/experiments:commander-add` (Step 2.5) and future `commander-update` / `commander-list` to turn raw, stochastic Haiku-detected keywords into the deterministic, alphabetically-sorted list persisted in `~/.claude/commander/projects.json`. Ships `references/vocabulary.json` with `canonical`, `synonyms`, and `excludes` lists; reports `droppedTerms` so callers can surface vocabulary gaps via a `gh issue create` suggestion flow.
+
 ## Testing
 
 ```bash
