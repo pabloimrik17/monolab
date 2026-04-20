@@ -45,6 +45,20 @@ Scan the current project for patch-level npm updates and interactively apply the
 
 Tip: pair with `/experiments:npm-changelog <pkg> <from>..<to>` before accepting if you want to skim the changelog for any listed patch.
 
+### `/experiments:npm-changelog`
+
+Retrieve, cache, and verify changelogs for any npm package across a version range. Caches under `~/.claude/changelogs/` and only re-fetches when SHA256 verification fails or TTL expires — repeated queries are effectively free.
+
+```bash
+/experiments:npm-changelog react 18.0.0..19.0.0
+/experiments:npm-changelog @tanstack/query-core 5.90.0..5.90.20
+/experiments:npm-changelog @angular/core latest
+```
+
+Monorepo-aware: when `repository.directory` is present in npm metadata, the command probes `{directory}/CHANGELOG.md` first, then falls back to the repo root, then to scoped GitHub release tags (`@scope/pkg@{version}`, `{packageBasename}@{version}`, hyphenated variants). The discovered `tagFormat` is cached per-package for subsequent versions.
+
+Authoritative spec: `openspec/specs/npm-changelog-retrieval/spec.md`.
+
 ## Skills
 
 ### `skills-update-check`
