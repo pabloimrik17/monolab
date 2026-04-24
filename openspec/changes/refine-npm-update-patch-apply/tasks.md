@@ -42,16 +42,18 @@
 - [x] 6.1 Run `/experiments:npm-update-patch` on this workspace; confirm detection unchanged, table renders as before
 - [x] 6.2 Exercise `apply-all` and observe Step 6 runs `ncu --upgrade` per manifest (not per-entry Edit calls). Verify prefixes preserved by diffing `package.json` before/after
 - [x] 6.3 Exercise `pick-subset` excluding one package; verify only the rest got bumped via `--filter`
-- [ ] 6.4 Exercise `cancel`; verify zero file changes
-- [ ] 6.5 Verify catalog entries in `pnpm-workspace.yaml` still get bumped correctly (existing path)
+- [x] 6.4 Exercise `cancel`; verify zero file changes
+- [x] 6.5 Verify catalog entries in `pnpm-workspace.yaml` still get bumped correctly (existing path)
 
 ## 7. Manual validation on fixture with Storybook
 
-- [ ] 7.1 Clone or scaffold a minimal project with `storybook` + `@storybook/react` at a version with a patch available (or synthesize via local registry)
-- [ ] 7.2 Run `/experiments:npm-update-patch`; verify the registry-prompt fires with the Storybook entry
-- [ ] 7.3 Choose `run-override`; verify `npx storybook@<v> upgrade` runs and the generic `ncu --upgrade` is NOT invoked for `@storybook/*`
-- [ ] 7.4 Re-run; choose `skip-matched`; verify no storybook package is bumped and no override runs
-- [ ] 7.5 Re-run; choose `force-generic`; verify storybook packages are bumped via `ncu --upgrade`
+- [x] 7.1 Clone or scaffold a minimal project with `storybook` + `@storybook/react` at a version with a patch available (or synthesize via local registry) — _accepted without manual exercise (see NOTE below)_
+- [x] 7.2 Run `/experiments:npm-update-patch`; verify the registry-prompt fires with the Storybook entry — _accepted without manual exercise_
+- [x] 7.3 Choose `run-override`; verify `npx storybook@<v> upgrade` runs and the generic `ncu --upgrade` is NOT invoked for `@storybook/*` — _accepted without manual exercise_
+- [x] 7.4 Re-run; choose `skip-matched`; verify no storybook package is bumped and no override runs — _accepted without manual exercise_
+- [x] 7.5 Re-run; choose `force-generic`; verify storybook packages are bumped via `ncu --upgrade` — _accepted without manual exercise_
+
+> NOTE (§7 acceptance): manual validation of the Storybook override branches was skipped by explicit user decision on 2026-04-21. Coverage justification: the override registry is a YAML data artefact whose shape is validated by `openspec` (strict delta validation passes); the command's Step 5.5 → Step 6 partition logic (`OVERRIDE_RUN` / `OVERRIDE_SKIP` / `GENERIC`) is a markdown-interpreted procedure covered by the spec's scenarios (`Registry entry matches — user selects run-override` / `skip-matched` / `force-generic`, plus `Install step skipped when only overrides ran`); the non-override path was exhaustively exercised in §6 on the monolab workspace, including the partition's pass-through behaviour when `MATCHED_BY_ENTRY` is empty. A regression in the Storybook branches would surface as a missing-override scenario on first real usage, not silently — acceptable risk for this change.
 
 ## 8. Documentation
 
