@@ -185,7 +185,7 @@ Invoke `npm-check-updates@21.0.2` once per distinct `sourceFile`:
 
 The `<runner-prefix>` is the same as the one `scan-npm-updates` used (`pnpm dlx`, `npx -y`, `yarn dlx`, `bunx`, `deno run --allow-read --allow-net npm:`).
 
-`<names>` is the ACCEPTED package names for this file, joined by single spaces, double-quoted. It is a literal list; ncu treats it as exact names (see `research/ncu-filter-spike.md`).
+`<names>` is the GENERIC package names for this file (i.e., accepted minus `OVERRIDE_RUN`/`OVERRIDE_SKIP` for that file), joined by single spaces, double-quoted. It is a literal list; ncu treats it as exact names (see `research/ncu-filter-spike.md`).
 
 Always include `--filter` when:
 

@@ -42,7 +42,8 @@ La skill `scan-npm-updates` ya ejecuta `ncu` con `--jsonUpgraded` en modo read-o
   --upgrade \
   --packageFile <path> \
   [--cooldown <period>]        # solo cuando el scan usó --cooldown
-  [--filter "<names...>"]      # solo en pick-subset
+  [--filter "<names...>"]      # cuando el set objetivo sea subconjunto estricto
+                               # (pick-subset o exclusiones por OVERRIDE_RUN/OVERRIDE_SKIP)
 ```
 
 El runner-prefix se resuelve igual que en el scan (`pnpm dlx`, `npx -y`, `yarn dlx`, `bunx`, `deno run ...`).
