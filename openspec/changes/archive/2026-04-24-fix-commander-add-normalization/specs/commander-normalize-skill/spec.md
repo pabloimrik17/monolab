@@ -56,11 +56,17 @@ The skill SHALL define a six-step pipeline applied to a set of raw keyword input
 1. **Synonym expansion**: each raw term present as a key in `synonyms` SHALL be replaced by the corresponding canonical terms. Non-synonym terms pass through unchanged.
 2. **Vocabulary filter**: the working set SHALL be intersected with `canonical`. Terms absent from `canonical` are dropped.
 3. **Exclusion**: any term in `excludes` SHALL be removed from the working set.
-4. **Multi-monorepo aggregation**: applied only when the caller indicates `repoType == "multi-monorepo"`. Top-level `keywords` SHALL be the set-union of each subproject's already-normalized `keywords`.
-5. **Promotion**: for each canonical term present in `description` (case-insensitive, matched on word boundaries) or in any `specialRules` entry, the term SHALL be added to the working set.
+4. **Multi-monorepo aggregation**: applied only when the caller indicates `repoType == "multi-monorepo"`. The skill SHALL accept `subprojects: [{ name, keywords, description?, specialRules? }]` alongside the top-level inputs in the SAME invocation. It SHALL apply steps 1–3 to each subproject's raw `keywords` independently, producing that subproject's normalized list, and SHALL compute the top-level `keywords` as the set-union of those already-normalized lists.
+5. **Promotion**: for each canonical term present in `description` (case-insensitive, matched on word boundaries) or in any `specialRules` entry, the term SHALL be added to the working set. For multi-monorepo, promotion SHALL run per-subproject against that subproject's own `description`/`specialRules` when present, else against the top-level values.
 6. **Dedup + sort**: the working set SHALL be deduplicated and sorted alphabetically ascending.
 
-The pipeline SHALL return a string array of lowercase, canonical, deduplicated, alphabetically-sorted keywords.
+The pipeline SHALL return an object with the following shape:
+
+- `keywords` (string[]) — lowercase, canonical, deduplicated, alphabetically-sorted. For `repoType == "multi-monorepo"` this is the top-level union; otherwise the normalized whole-tree list.
+- `subprojects` (object[]) — present ONLY when `repoType == "multi-monorepo"`. One entry per input subproject as `{ name, keywords }`; `keywords` is that subproject's normalized (non-aggregated) list. Order matches the input `subprojects` order.
+- `droppedTerms` (string[]) — see the "Dropped-Term Reporting" requirement.
+
+Callers SHALL NOT issue per-subproject invocations to obtain subproject normalized lists; the skill emits them in one call so `droppedTerms` is deduplicated authoritatively at the skill boundary.
 
 #### Scenario: Synonym expansion precedes filtering
 
@@ -83,6 +89,14 @@ The pipeline SHALL return a string array of lowercase, canonical, deduplicated, 
 - **WHEN** `repoType == "multi-monorepo"` and two subprojects have normalized keywords `["react","typescript"]` and `["vue","typescript"]`
 - **THEN** the top-level `keywords` SHALL equal `["react","typescript","vue"]`
 
+#### Scenario: Multi-monorepo returns per-subproject lists and top-level union in one call
+
+- **WHEN** the skill is invoked once with `repoType == "multi-monorepo"` and `subprojects: [{name:"a", keywords:["reactjs"]}, {name:"b", keywords:["vuejs","foobar"]}]`
+- **THEN** the output SHALL include `subprojects: [{name:"a", keywords:["react"]}, {name:"b", keywords:["vue"]}]`
+- **AND** the top-level `keywords` SHALL equal `["react","vue"]`
+- **AND** `droppedTerms` SHALL include `"foobar"` exactly once (deduplicated at the skill boundary)
+- **AND** the caller SHALL NOT need to issue per-subproject invocations to obtain the per-subproject normalized lists
+
 #### Scenario: Promotion recovers prose-only terms
 
 - **WHEN** Haiku emits `keywords: []` but `description` contains "Inversify-based clean architecture" and `"inversify"` + `"clean-architecture"` are in `canonical`
@@ -103,6 +117,8 @@ The skill SHALL return, alongside the normalized keyword list, a list of raw ter
 This list enables the caller to surface vocabulary gaps to the user (see the experiments-plugin `commander-add` vocabulary suggestion flow).
 
 Terms dropped because they are in `excludes` SHALL NOT appear in this list (they are intentional drops, not gaps).
+
+For `repoType == "multi-monorepo"`, `droppedTerms` SHALL be the deduplicated union of step-2 drops across the top-level input AND every subproject input, computed within the single skill invocation. Callers SHALL NOT merge `droppedTerms` across multiple invocations.
 
 #### Scenario: Gap is reported
 

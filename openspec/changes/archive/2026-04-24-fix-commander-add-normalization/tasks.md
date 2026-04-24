@@ -14,6 +14,7 @@
 - [x] 2.5 Document step 5 promotion, including the case-insensitive word-boundary match against `description` and each `specialRules` entry
 - [x] 2.6 Document step 6 dedup + alphabetical sort
 - [x] 2.7 Document the `droppedTerms` return value and its excludes-suppression rule with a worked example
+- [x] 2.8 (verify-fix) Clarify the multi-monorepo invocation shape in `SKILL.md`: single call, returns `{ keywords, subprojects: [{name, keywords}], droppedTerms }`; update Outputs table and Step 4 narrative; per-subproject `description`/`specialRules` supported in `subprojects[i]` for Step 5 promotion
 
 ## 3. Commander-Add Command Integration
 
@@ -22,6 +23,7 @@
 - [x] 3.3 In Step 2.5, specify the per-subproject normalization loop for `monorepoType == "multi"` and the top-level union call
 - [x] 3.4 Update Step 3 (subproject selection) to use the already-normalized per-subproject `keywords` when setting the selected subproject's fields
 - [x] 3.5 Add the "Explicit --keywords argument bypasses normalization" rule to Step 1 (argument parsing)
+- [x] 3.6 (verify-fix) Collapse the multi-monorepo flow in `commander-add.md` Step 2.5 to a single skill invocation consuming the returned `{ keywords, subprojects[i].keywords, droppedTerms }`; remove the old N+1 call pattern and the manual `droppedTerms` aggregation
 
 ## 4. repoType Persistence
 
@@ -35,7 +37,7 @@
 - [x] 5.1 Update the schema template in `commander-add.md` (and any other authoritative reference) from `"version": 1` to `"version": 2`
 - [x] 5.2 Update the "Add flow" contract in `commander-add.md` so the writer upgrades the file's `version` field to `2` on first v2 write while preserving existing records byte-for-byte
 - [x] 5.3 Update the `"unsupported registry version"` error threshold wording to reference the current known version (`2`)
-- [ ] 5.4 Cross-check `openspec/specs/commander-registry/spec.md` after archive to ensure v2 + `repoType` requirements are correctly merged
+- [x] 5.4 Cross-check `openspec/specs/commander-registry/spec.md` after archive to ensure v2 + `repoType` requirements are correctly merged
 
 ## 6. Vocabulary Suggestion Flow
 

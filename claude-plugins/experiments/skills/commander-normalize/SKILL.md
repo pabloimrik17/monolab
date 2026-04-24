@@ -15,20 +15,21 @@ Turn raw, stochastic keyword output from auto-detection (Haiku) into a determini
 
 ## Inputs
 
-| Field          | Type       | Required | Notes                                                                                      |
-| -------------- | ---------- | -------- | ------------------------------------------------------------------------------------------ |
-| `keywords`     | `string[]` | yes      | Raw candidate terms as emitted by Haiku (lowercase, kebab-case expected; tolerate either). |
-| `description`  | `string`   | no       | 10–15-word project summary, used by step 5 (promotion).                                    |
-| `specialRules` | `string[]` | no       | Free-form rules, used by step 5 (promotion).                                               |
-| `repoType`     | `string`   | no       | One of `"single-repo"`, `"monorepo"`, `"multi-monorepo"`. Controls step 4 (aggregation).   |
-| `subprojects`  | `object[]` | no       | Only required when `repoType == "multi-monorepo"`. Each entry is `{ name, keywords }`.     |
+| Field          | Type       | Required | Notes                                                                                                                                                                                                                                                  |
+| -------------- | ---------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `keywords`     | `string[]` | yes      | Raw candidate terms as emitted by Haiku (lowercase, kebab-case expected; tolerate either).                                                                                                                                                             |
+| `description`  | `string`   | no       | 10–15-word project summary, used by step 5 (promotion).                                                                                                                                                                                                |
+| `specialRules` | `string[]` | no       | Free-form rules, used by step 5 (promotion).                                                                                                                                                                                                           |
+| `repoType`     | `string`   | no       | One of `"single-repo"`, `"monorepo"`, `"multi-monorepo"`. Controls step 4 (aggregation).                                                                                                                                                               |
+| `subprojects`  | `object[]` | no       | Only required when `repoType == "multi-monorepo"`. Each entry is `{ name, keywords, description?, specialRules? }`; promotion (step 5) runs per-subproject on the entry's own `description`/`specialRules` when present, else on the top-level fields. |
 
 ## Outputs
 
-| Field          | Type       | Notes                                                                                                   |
-| -------------- | ---------- | ------------------------------------------------------------------------------------------------------- |
-| `keywords`     | `string[]` | Normalized, deduplicated, alphabetically sorted. Every entry is in `vocabulary.json#canonical`.         |
-| `droppedTerms` | `string[]` | Raw terms dropped by step 2 (vocabulary filter) that are NOT in `vocabulary.json#excludes`. See step 7. |
+| Field          | Type       | Notes                                                                                                                                                                                                                          |
+| -------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `keywords`     | `string[]` | Normalized, deduplicated, alphabetically sorted. Every entry is in `vocabulary.json#canonical`. For `repoType == "multi-monorepo"` this is the top-level union; otherwise the normalized whole-tree list.                      |
+| `subprojects`  | `object[]` | Present ONLY when `repoType == "multi-monorepo"`. One entry per input subproject as `{ name, keywords }`, where `keywords` is that subproject's normalized (non-aggregated) list. Order matches the input `subprojects` order. |
+| `droppedTerms` | `string[]` | Raw terms dropped by step 2 (vocabulary filter) across all inputs (top-level + every subproject), deduplicated, that are NOT in `vocabulary.json#excludes`. See the "Dropped-term reporting" section.                          |
 
 ## Vocabulary sidecar
 
@@ -80,12 +81,15 @@ Example:
 
 **Precondition:** `repoType == "multi-monorepo"`. Skip otherwise.
 
-For multi-monorepos, each subproject's raw keywords are passed through steps 1–3 independently. Then the top-level `keywords` is computed as the set-union of each subproject's already-normalized list. Individual subproject records persist their own (non-aggregated) normalized list; the top-level union is informational.
+**Single invocation, dual output.** The caller passes `keywords` (top-level raw, may be `[]`) plus `subprojects: [{ name, keywords, description?, specialRules? }]` in ONE call. The skill applies steps 1–3 to each subproject's raw keywords independently — producing that subproject's normalized list — and then computes the top-level `keywords` as the set-union of those already-normalized lists. Both the per-subproject normalized lists (returned as `subprojects[i].keywords`) and the top-level union (returned as `keywords`) are emitted from the same call. Callers SHALL NOT issue per-subproject invocations; `droppedTerms` is deduplicated authoritatively at the skill boundary.
+
+Callers persist each subproject's own normalized list on individual records; the top-level union is informational (surfaced to the user at confirmation, not persisted on subproject records).
 
 Example:
 
-- Subprojects (post step 3): `[["react", "typescript"], ["vue", "typescript"]]`
-- Top-level after step 4: `["react", "typescript", "vue"]`
+- Input `subprojects`: `[{name:"app-a", keywords:["reactjs","typescript","foobar"]}, {name:"app-b", keywords:["vuejs","typescript"]}]`.
+- After steps 1–3 per subproject: `app-a → ["react","typescript"]`, `app-b → ["vue","typescript"]`.
+- Returned: `{ keywords: ["react","typescript","vue"], subprojects: [{name:"app-a",keywords:["react","typescript"]}, {name:"app-b",keywords:["vue","typescript"]}], droppedTerms: ["foobar"] }`.
 
 ### Step 5 — Promotion
 

@@ -281,10 +281,16 @@ When Priority A supplied all fields and Haiku was skipped, `repoType` is still r
 
 **For `repoType == "multi-monorepo"`:**
 
-1. For each detected subproject, call the skill with that subproject's raw `keywords`, the subproject's `description` (if Haiku emitted one, else the top-level `description`), `specialRules`, and `repoType = "multi-monorepo"` + `subprojects` set to the full subproject list so the skill can compute the top-level union.
-2. The skill returns a normalized list per call. Capture each subproject's normalized `keywords`.
-3. Call the skill once more at the top level with each subproject's already-normalized `keywords` under `subprojects[i].keywords` to get the top-level union (informational — not persisted on individual records, only surfaced at confirmation).
-4. Aggregate `droppedTerms` as the set-union across all subproject invocations (dedup, order preserved).
+1. **Single skill invocation.** Pass:
+    - `keywords`: top-level raw keywords (may be `[]` if Haiku did not emit a top-level list; the top-level union is produced from subprojects).
+    - `description`: top-level monorepo description.
+    - `specialRules`: top-level special rules (may be empty).
+    - `repoType = "multi-monorepo"`.
+    - `subprojects`: full detected subproject list as `[{ name, keywords, description?, specialRules? }]`. Include each subproject's own `description`/`specialRules` when Haiku emitted them so per-subproject promotion (Step 5 of the skill) is scoped correctly.
+2. The skill returns `{ keywords, subprojects, droppedTerms }`:
+    - `subprojects[i].keywords` — each subproject's normalized (non-aggregated) list. Step 3 persists this on the chosen subproject record.
+    - `keywords` — top-level union. Informational only; surfaced at confirmation, never persisted on individual records.
+    - `droppedTerms` — already deduplicated across all inputs. Feeds Step 7.
 
 ### Use the normalized output
 
