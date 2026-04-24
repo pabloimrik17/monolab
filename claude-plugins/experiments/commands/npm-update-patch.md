@@ -188,12 +188,12 @@ The `<runner-prefix>` is the same as the one `scan-npm-updates` used (`pnpm dlx`
 
 `<names>` is the GENERIC package names for this file (i.e., accepted minus `OVERRIDE_RUN`/`OVERRIDE_SKIP` for that file), joined by single spaces, double-quoted. It is a literal list; ncu treats it as exact names (see `research/ncu-filter-spike.md`).
 
-Always include `--filter` when:
+Include `--filter` when:
 
-- the primary prompt was `pick-subset`, OR
+- the primary prompt was `pick-subset` **and at least one package was excluded**, OR
 - any update for this file was removed by `OVERRIDE_RUN`/`OVERRIDE_SKIP` (to prevent ncu from bumping packages the user chose to route through an override or skip).
 
-Omit `--filter` only when the bumps for this file are exactly `apply-all` + no overrides touch this file — i.e. ncu's own set equals our target set.
+Omit `--filter` when the bumps for this file are effectively full-set apply (including `pick-subset` with empty exclusions) and no overrides touch this file — i.e. ncu's own set equals our target set.
 
 Stream ncu's stdout/stderr through to the user so diffs are observable. If ncu exits non-zero on a file, abort with:
 
