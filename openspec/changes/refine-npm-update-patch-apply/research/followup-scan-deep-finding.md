@@ -69,3 +69,61 @@ This change (`refine-npm-update-patch-apply`) is scoped to the apply phase. The 
 - Re-run the scan spike fixtures to confirm `--deep` banner shape is parseable alongside `--jsonUpgraded`.
 
 Tracked outside this change; revisit after archiving `refine-npm-update-patch-apply`.
+
+---
+
+## Spike follow-up (2026-04-24) — root cause is different, `--deep` is incidental
+
+Re-investigated before turning the sketch above into an OpenSpec change. The original observation (per-manifest returning `{}`, `--deep` finding bumps) was correct, but the cause was **not** ncu's enumeration strategy.
+
+### What the spike ran
+
+Both commands from the repo root, ncu 21.0.2, `--loglevel silly` to inspect resolved options:
+
+```bash
+# per-manifest
+pnpm dlx npm-check-updates@21.0.2 --target patch --loglevel silly \
+  --packageFile packages/react-clean/package.json
+# → Options includes: packageManager: 'deno',  dep: [ 'imports' ]
+# → Current versions: {}
+
+# per-manifest with explicit -p pnpm
+pnpm dlx npm-check-updates@21.0.2 --target patch --jsonUpgraded -p pnpm \
+  --packageFile packages/react-clean/package.json
+# → { "@types/react": "18.3.28", "tsdown": "0.15.12" }
+
+# --deep (from repo root)
+pnpm dlx npm-check-updates@21.0.2 --target patch --loglevel silly --deep
+# → Options includes: packageManager: 'pnpm',  dep: [ 'prod', 'dev', 'optional', 'packageManager' ]
+```
+
+### Root cause
+
+ncu 21.0.2 auto-detects `packageManager: 'deno'` when `--packageFile <sub>/package.json` points to a directory that contains a sibling `deno.json`. In monolab this is true for the JSR dual-publish packages:
+
+```
+packages/react-clean/deno.json
+packages/react-hooks/deno.json
+packages/ts-configs/deno.json
+packages/ts-types/deno.json
+packages/http-client/deno.json
+/deno.json
+```
+
+With `packageManager: 'deno'`, ncu's default for `--dep` collapses to `['imports']` (Deno's import-map section). Since `package.json` has no `imports`, "Current versions" is `{}` → nothing to upgrade → `{}` returned.
+
+`--deep` "works" only because running from the repo root, ncu finds `pnpm-lock.yaml` first and wins pnpm detection, then applies that PM globally across the glob-matched manifests. It is *not* a property of `--deep` itself. `--help` confirms: `--deep` is literally `alias of (--packageFile '**/package.json')`.
+
+### Fix
+
+Pass `-p <resolvedPackageManager>` explicitly on every ncu invocation. The skill already resolves the PM in precondition 2; it just has to propagate it. One-line change. Does not require `--deep`. Verified live.
+
+### What this invalidates in the sketch above
+
+- "Swap per-manifest spawns for a single `--deep` invocation" — optional optimization, not required for correctness.
+- "Delete the workspace-enumeration subroutine" — wrong for npm/yarn/bun because `--deep` is a `**/package.json` glob and does not respect `package.json#workspaces` or `deno.json#workspace`; it would *overscan* into fixtures, examples, tooling.
+- "22 spawns vs. 1" — still true as a performance observation, but separable from the correctness bug.
+
+### Supersedes
+
+The correctness fix is tracked in OpenSpec change `fix-scan-npm-updates-pm-detection` (proposal dated 2026-04-24). Any `--deep` / spawn-reduction work is optional and should be proposed after that change lands, framed as an optimization with the overscan caveat above.
