@@ -34,7 +34,7 @@ Each project record SHALL contain the following fields:
 
 - `name` (string, required): the unique identifier, kebab-case or plain lowercase.
 - `path` (string, required): absolute path to the effective project directory.
-- `keywords` (string[], required): non-empty list of frameworks and languages, normalized via the `commander-normalize` skill's controlled vocabulary and deterministic pipeline.
+- `keywords` (string[], required): non-empty list of technologies (frameworks, languages, tools, patterns), normalized via the `commander-normalize` skill's controlled vocabulary (`vocabulary.json`) and deterministic pipeline.
 - `description` (string, required): short summary, 10–15 words.
 - `createdAt` (string, required): ISO-8601 timestamp of first registration.
 - `updatedAt` (string, required): ISO-8601 timestamp of last modification.
