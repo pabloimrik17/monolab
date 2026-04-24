@@ -176,6 +176,7 @@ Invoke `npm-check-updates@21.0.2` once per distinct `sourceFile`:
 
 ```bash
 <runner-prefix> npm-check-updates@21.0.2 \
+  -p <pm> \
   --target patch \
   --upgrade \
   --packageFile <sourceFile> \
@@ -183,7 +184,7 @@ Invoke `npm-check-updates@21.0.2` once per distinct `sourceFile`:
   [--filter "<names>"]         # include only when the set for this file is a strict subset of the ncu-detectable candidates (pick-subset OR force-generic partial inclusion)
 ```
 
-The `<runner-prefix>` is the same as the one `scan-npm-updates` used (`pnpm dlx`, `npx -y`, `yarn dlx`, `bunx`, `deno run --allow-read --allow-net npm:`).
+The `<runner-prefix>` is the same as the one `scan-npm-updates` used (`pnpm dlx`, `npx -y`, `yarn dlx`, `bunx`, `deno run --allow-read --allow-net npm:`). `-p <pm>` MUST be passed (same PM the scan used) to mirror scan semantics and prevent ncu auto-detection drift — e.g. ncu otherwise auto-detects `deno` when a sibling `deno.json` exists, collapsing `--dep` to `['imports']` and dropping `dependencies`/`devDependencies` updates.
 
 `<names>` is the GENERIC package names for this file (i.e., accepted minus `OVERRIDE_RUN`/`OVERRIDE_SKIP` for that file), joined by single spaces, double-quoted. It is a literal list; ncu treats it as exact names (see `research/ncu-filter-spike.md`).
 

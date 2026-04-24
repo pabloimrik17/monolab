@@ -226,10 +226,10 @@ El skill SHALL emitir un único JSON object conformando a `ScanResult`:
 
 El skill SHALL NOT emitir prosa, tablas o formato user-facing. El JSON object es la única salida (más los warnings embebidos en él). `warnings` SHALL ser de-duplicado (strings idénticos repetidos colapsan a una sola entry).
 
-#### Scenario: JSON-only output
+#### Scenario: Raw JSON-only output
 
 - **WHEN** la ejecución del skill completa con éxito
-- **THEN** la única salida es el JSON de `ScanResult` (fenced o raw) sin prosa adicional
+- **THEN** la única salida es el JSON **raw** de `ScanResult` (sin fences Markdown ni prosa adicional)
 
 #### Scenario: Warnings deduped
 
