@@ -88,7 +88,8 @@ Pinned tool: **`npm-check-updates@21.0.2`** (ncu).
 
 Build the command:
 
-- `<runner-prefix> npm-check-updates@21.0.2 --target <ncu-target> --jsonUpgraded --packageFile <manifest-path>`
+- `<runner-prefix> npm-check-updates@21.0.2 -p <pm> --target <ncu-target> --jsonUpgraded --packageFile <manifest-path>`
+- `<pm>` is the package manager resolved in precondition 2 (one of `pnpm`|`npm`|`yarn`|`bun`|`deno`). Passing `-p` is MANDATORY: ncu 21.0.2 auto-detects `packageManager: 'deno'` when `--packageFile` points to a directory with a sibling `deno.json`, which collapses `--dep` to `['imports']` and drops real bumps in `dependencies`/`devDependencies` (see change `fix-scan-npm-updates-pm-detection`).
 - Add `--cooldown <period>` only when the detected PM is **not** `pnpm` (pnpm's `minimumReleaseAge` is read natively by ncu; verified in the spike). The value comes from the lookup below; omit the flag if the resolved period is `0` or unset.
 
 ### `level` → `--target` mapping
