@@ -190,7 +190,7 @@ The command SHALL exit with the same code it would have produced without the arg
 
 - **WHEN** the user invokes `/experiments:commander-list --foo bar`
 - **THEN** the command SHALL print `commander-list takes no arguments; ignoring: --foo bar`
-- **AND** SHALL render the registry normally afterwards
+- **AND** SHALL render the registry normally afterward
 
 ---
 
