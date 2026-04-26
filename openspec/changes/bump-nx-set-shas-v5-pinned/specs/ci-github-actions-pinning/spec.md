@@ -41,7 +41,7 @@ Las actions oficiales de GitHub (`actions/checkout`, `actions/setup-node`, `acti
 
 ### Requirement: nx-set-shas SHALL run on Node 24 runtime
 
-El step `Set Nx SHA` en `.github/workflows/ci.yml` SHALL usar `nrwl/nx-set-shas@v5` (pineado) ejecutándose sobre el runner ya configurado con Node 24.12.0.
+El step `Set Nx SHA` en `.github/workflows/ci.yml` SHALL usar `nrwl/nx-set-shas` pineado a un commit SHA de 40 caracteres con comentario `# vX.Y.Z`, ejecutándose sobre el runner ya configurado con Node 24.12.0.
 
 #### Scenario: CI step runs successfully on v5
 
