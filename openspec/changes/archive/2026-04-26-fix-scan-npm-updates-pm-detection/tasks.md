@@ -18,6 +18,6 @@
 ## 4. OpenSpec validation & archive
 
 - [x] 4.1 Correr `openspec validate fix-scan-npm-updates-pm-detection` y resolver cualquier error (deltas, scenarios, capability paths).
-- [ ] 4.2 Commit conventional: `docs(openspec): propose fix-scan-npm-updates-pm-detection (seed npm-update-scanning spec)`.
-- [ ] 4.3 Commit del edit de skill cuando se implemente: `fix(skills): pass -p <pm> explicit to ncu in scan-npm-updates (avoid deno auto-detect)`.
-- [ ] 4.4 Tras merge, correr `/opsx:archive fix-scan-npm-updates-pm-detection` (o equivalente) para mover el delta a `openspec/specs/npm-update-scanning/spec.md`.
+- [x] 4.2 Commit conventional: `docs(openspec): propose fix-scan-npm-updates-pm-detection (seed npm-update-scanning spec)`.
+- [x] 4.3 Commit del edit de skill cuando se implemente: `fix(skills): pass -p <pm> explicit to ncu in scan-npm-updates (avoid deno auto-detect)`.
+- [x] 4.4 Tras merge, correr `/opsx:archive fix-scan-npm-updates-pm-detection` (o equivalente) para mover el delta a `openspec/specs/npm-update-scanning/spec.md`.
