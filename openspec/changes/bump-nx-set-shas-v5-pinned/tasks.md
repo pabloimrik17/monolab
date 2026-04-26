@@ -11,12 +11,7 @@
 
 ## 3. Verificación
 
-- [ ] 3.1 Push branch y abrir PR draft contra `develop`
-- [ ] 3.2 Verificar que el step `Set Nx SHA` completa exitosamente en CI (logs muestran `NX_BASE`/`NX_HEAD` exportados)
-- [ ] 3.3 Verificar que el resto del pipeline pasa (lint, test, build) sin regresiones
+- [x] 3.1 Push branch y abrir PR draft contra `develop`
+- [x] 3.2 Verificar que el step `Set Nx SHA` completa exitosamente en CI (logs muestran `NX_BASE`/`NX_HEAD` exportados)
+- [x] 3.3 Verificar que el resto del pipeline pasa (lint, test, build) sin regresiones
 - [x] 3.4 Validar artifacts del change: `pnpm dlx @fission-ai/openspec@1.2.0 validate --changes --no-interactive`
-
-## 4. Post-merge (informativo, no bloqueante)
-
-- [ ] 4.1 Tras merge a `develop`, comprobar en el siguiente ciclo de Renovate que aparecen PRs proponiendo pin a SHA para otras actions de terceros (`pnpm/action-setup`, `codecov/codecov-action`, `codecov/test-results-action`)
-- [ ] 4.2 Si Renovate no abre las PRs esperadas, revisar logs en Mend dashboard y abrir issue de seguimiento
