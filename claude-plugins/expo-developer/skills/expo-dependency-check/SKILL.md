@@ -18,7 +18,9 @@ If neither indicator exists, skip this workflow.
 
 ## Package Manager Detection
 
-Check for lock files (first match wins):
+If `${user_config.package_manager_override}` is non-empty, use it directly as the package-manager source — skip lockfile detection. Accepted override values: `npm`, `pnpm`, `yarn`, `bun`.
+
+Otherwise, check for lock files (first match wins):
 
 | Lock File                 | Package Manager | Command Prefix                         |
 | ------------------------- | --------------- | -------------------------------------- |
@@ -28,14 +30,30 @@ Check for lock files (first match wins):
 | `package-lock.json`       | npm             | `npx`                                  |
 | (none)                    | npm (default)   | `npx`                                  |
 
+When the override is set, map it to the equivalent prefix:
+
+| Override value | Command Prefix |
+| -------------- | -------------- |
+| `npm`          | `npx`          |
+| `pnpm`         | `pnpx`         |
+| `yarn`         | `yarn dlx`     |
+| `bun`          | `bunx`         |
+
 ## Workflow
 
-1. Ask the user which action to take:
-    - **Check only**: Run `<prefix> expo install --check` to see incompatible versions
-    - **Auto-fix**: Run `<prefix> expo install --fix` to update to compatible versions
-    - **Skip**: Do nothing
+Branch on `${user_config.default_action}`:
 
-2. Execute the chosen command and report results.
+- `ask` (default): prompt the user to choose between **Check only**, **Auto-fix**, or **Skip**, then execute the chosen command.
+- `check`: run `<prefix> expo install --check` directly, without prompting.
+- `fix`: run `<prefix> expo install --fix` directly, without prompting.
+
+Action commands:
+
+- **Check only**: `<prefix> expo install --check` — report incompatible versions
+- **Auto-fix**: `<prefix> expo install --fix` — update to compatible versions
+- **Skip**: do nothing
+
+Report results after execution.
 
 ## Examples
 

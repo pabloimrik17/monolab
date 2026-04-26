@@ -4,6 +4,8 @@
 
 Automated dual publishing to npm and JSR via release-please with proper dependency ordering.
 
+> Related: Claude Code plugins under `claude-plugins/` are released through the same `release-please` configuration but as git tags rather than registry publications. See [`claude-plugin-release`](../claude-plugin-release/spec.md) and the repo-root [`RELEASE.md`](../../../RELEASE.md) for the plugin flow and the `{plugin-name}--v{version}` tag convention.
+
 ## Requirements
 
 ### Requirement: Package Configuration

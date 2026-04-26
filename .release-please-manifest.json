@@ -7,5 +7,7 @@
     "packages/ts-types": "1.0.6",
     "packages/solid-clean": "0.1.0",
     "packages/wealth-tracker-core": "0.1.0",
-    "packages/qup-shared": "0.1.0"
+    "packages/qup-shared": "0.1.0",
+    "claude-plugins/experiments": "0.8.0",
+    "claude-plugins/expo-developer": "0.2.0"
 }
