@@ -22,25 +22,25 @@ jobs:
             NX_NO_CLOUD: ${{ vars.NX_NO_CLOUD }}
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
               with:
                   filter: tree:0
                   fetch-depth: 0
 
             - name: Setup pnpm
-              uses: pnpm/action-setup@v4
+              uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
               with:
                   version: 10.27.0
 
             - name: Setup Nodejs
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
               with:
                   node-version: 24.12.0
                   # Cache node_modules
                   cache: "pnpm"
 
             - name: Set Nx SHA
-              uses: nrwl/nx-set-shas@v4
+              uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
 
             - name: Debug Nx Cloud variable
               run: |
@@ -56,7 +56,7 @@ jobs:
 
             - name: Restore cached npm dependencies
               id: cache-dependencies-restore
-              uses: actions/cache/restore@v4
+              uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
               with:
                   path: |
                       node_modules
@@ -72,7 +72,7 @@ jobs:
 
             - name: Cache npm dependencies
               id: cache-dependencies-save
-              uses: actions/cache/save@v4
+              uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
               with:
                   path: |
                       node_modules
@@ -82,7 +82,7 @@ jobs:
             - name: Restore Nx cache
               id: cache-nx-restore
               if: ${{ env.NX_NO_CLOUD == 'true' }}
-              uses: actions/cache/restore@v4
+              uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
               with:
                   path: .nx
                   key: nx-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('nx.json') }}
@@ -93,7 +93,7 @@ jobs:
 
             - name: Restore Stryker incremental cache
               id: cache-stryker-restore
-              uses: actions/cache/restore@v4
+              uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
               with:
                   path: packages/*/reports/stryker-incremental.json
                   key: stryker-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -165,7 +165,7 @@ jobs:
             # Upload coverage per package with individual flags for isolated tracking
             # In PRs: only upload affected packages. On main/develop/pre: upload all packages for baseline
             - name: 📊 Upload coverage to Codecov - react-hooks
-              uses: codecov/codecov-action@v5
+              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.react-hooks == 'true') }}
               with:
                   files: ./packages/react-hooks/coverage/lcov.info
@@ -174,7 +174,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload coverage to Codecov - react-clean
-              uses: codecov/codecov-action@v5
+              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.react-clean == 'true') }}
               with:
                   files: ./packages/react-clean/coverage/lcov.info
@@ -183,7 +183,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload coverage to Codecov - ts-configs
-              uses: codecov/codecov-action@v5
+              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.ts-configs == 'true') }}
               with:
                   files: ./packages/ts-configs/coverage/lcov.info
@@ -192,7 +192,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload coverage to Codecov - ts-types
-              uses: codecov/codecov-action@v5
+              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.ts-types == 'true') }}
               with:
                   files: ./packages/ts-types/coverage/lcov.info
@@ -201,7 +201,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload coverage to Codecov - http-client
-              uses: codecov/codecov-action@v5
+              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.http-client == 'true') }}
               with:
                   files: ./packages/http-client/coverage/lcov.info
@@ -210,7 +210,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload coverage to Codecov - qup-api
-              uses: codecov/codecov-action@v5
+              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-api == 'true') }}
               with:
                   files: ./apps/qup-api/coverage/lcov.info
@@ -219,7 +219,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload coverage to Codecov - qup-data
-              uses: codecov/codecov-action@v5
+              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-data == 'true') }}
               with:
                   files: ./packages/qup-data/coverage/lcov.info
@@ -228,7 +228,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload coverage to Codecov - qup-domain
-              uses: codecov/codecov-action@v5
+              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-domain == 'true') }}
               with:
                   files: ./packages/qup-domain/coverage/lcov.info
@@ -237,7 +237,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload coverage to Codecov - solid-clean
-              uses: codecov/codecov-action@v5
+              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.solid-clean == 'true') }}
               with:
                   files: ./packages/solid-clean/coverage/lcov.info
@@ -246,7 +246,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload coverage to Codecov - wealth-tracker-core
-              uses: codecov/codecov-action@v5
+              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.wealth-tracker-core == 'true') }}
               with:
                   files: ./packages/wealth-tracker-core/coverage/lcov.info
@@ -255,7 +255,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload coverage to Codecov - green-beard
-              uses: codecov/codecov-action@v5
+              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.green-beard == 'true') }}
               with:
                   files: ./apps/green-beard/coverage/lcov.info
@@ -264,7 +264,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload coverage to Codecov - qup-web
-              uses: codecov/codecov-action@v5
+              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-web == 'true') }}
               with:
                   files: ./apps/qup-web/coverage/lcov.info
@@ -273,7 +273,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload coverage to Codecov - wealth-react
-              uses: codecov/codecov-action@v5
+              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.wealth-react == 'true') }}
               with:
                   files: ./apps/wealth-react/coverage/lcov.info
@@ -282,7 +282,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload coverage to Codecov - qup-shared
-              uses: codecov/codecov-action@v5
+              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-shared == 'true') }}
               with:
                   files: ./packages/qup-shared/coverage/lcov.info
@@ -294,7 +294,7 @@ jobs:
             # Critical: runs even if tests fail (via !cancelled()) to capture failure data for Test Analytics
             # In PRs: only upload affected packages. On main/develop/pre: upload all packages for baseline
             - name: 📊 Upload test results to Codecov - react-hooks
-              uses: codecov/test-results-action@v1
+              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.react-hooks == 'true') }}
               with:
                   files: ./packages/react-hooks/test-results.junit.xml
@@ -303,7 +303,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - react-clean
-              uses: codecov/test-results-action@v1
+              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.react-clean == 'true') }}
               with:
                   files: ./packages/react-clean/test-results.junit.xml
@@ -312,7 +312,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - ts-configs
-              uses: codecov/test-results-action@v1
+              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.ts-configs == 'true') }}
               with:
                   files: ./packages/ts-configs/test-results.junit.xml
@@ -321,7 +321,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - ts-types
-              uses: codecov/test-results-action@v1
+              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.ts-types == 'true') }}
               with:
                   files: ./packages/ts-types/test-results.junit.xml
@@ -330,7 +330,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - http-client
-              uses: codecov/test-results-action@v1
+              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.http-client == 'true') }}
               with:
                   files: ./packages/http-client/test-results.junit.xml
@@ -339,7 +339,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - qup-api
-              uses: codecov/test-results-action@v1
+              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-api == 'true') }}
               with:
                   files: ./apps/qup-api/test-results.junit.xml
@@ -348,7 +348,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - qup-data
-              uses: codecov/test-results-action@v1
+              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-data == 'true') }}
               with:
                   files: ./packages/qup-data/test-results.junit.xml
@@ -357,7 +357,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - qup-domain
-              uses: codecov/test-results-action@v1
+              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-domain == 'true') }}
               with:
                   files: ./packages/qup-domain/test-results.junit.xml
@@ -366,7 +366,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - solid-clean
-              uses: codecov/test-results-action@v1
+              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.solid-clean == 'true') }}
               with:
                   files: ./packages/solid-clean/test-results.junit.xml
@@ -375,7 +375,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - wealth-tracker-core
-              uses: codecov/test-results-action@v1
+              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.wealth-tracker-core == 'true') }}
               with:
                   files: ./packages/wealth-tracker-core/test-results.junit.xml
@@ -384,7 +384,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - green-beard
-              uses: codecov/test-results-action@v1
+              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.green-beard == 'true') }}
               with:
                   files: ./apps/green-beard/test-results.junit.xml
@@ -393,7 +393,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - qup-web
-              uses: codecov/test-results-action@v1
+              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-web == 'true') }}
               with:
                   files: ./apps/qup-web/test-results.junit.xml
@@ -402,7 +402,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - wealth-react
-              uses: codecov/test-results-action@v1
+              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.wealth-react == 'true') }}
               with:
                   files: ./apps/wealth-react/test-results.junit.xml
@@ -411,7 +411,7 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov - qup-shared
-              uses: codecov/test-results-action@v1
+              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
               if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-shared == 'true') }}
               with:
                   files: ./packages/qup-shared/test-results.junit.xml
@@ -431,14 +431,14 @@ jobs:
 
             - name: Cache Stryker incremental results
               id: cache-stryker-save
-              uses: actions/cache/save@v4
+              uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
               if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
               with:
                   path: packages/*/reports/stryker-incremental.json
                   key: ${{ steps.cache-stryker-restore.outputs.cache-primary-key }}
 
             - name: 📊 Upload mutation reports as artifacts
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
               if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
               with:
                   name: mutation-reports
@@ -466,7 +466,7 @@ jobs:
             - name: Cache Nx results
               id: cache-nx-save
               if: ${{ env.NX_NO_CLOUD == 'true' }}
-              uses: actions/cache/save@v4
+              uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
               with:
                   path: .nx
                   key: ${{ steps.cache-nx-restore.outputs.cache-primary-key }}
