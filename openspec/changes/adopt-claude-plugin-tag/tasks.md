@@ -3,7 +3,7 @@
 - [x] 1.1 Add `claude-plugins/experiments` entry to `release-please-config.json` with `release-type: simple`, `tag-separator: "--"`, `include-v-in-tag: true`
 - [x] 1.2 Configure `extra-files` for the experiments entry: `.claude-plugin/plugin.json` (`type: json`, `jsonpath: $.version`), root `.claude-plugin/marketplace.json` (`type: json`, `jsonpath` targeting the experiments entry's version using array index), and `package.json` (`type: json`, `jsonpath: $.version`)
 - [x] 1.3 Add `claude-plugins/expo-developer` entry to `release-please-config.json` with the same release-type, tag-separator, and include-v-in-tag settings
-- [x] 1.4 Configure `extra-files` for the expo-developer entry: `.claude-plugin/plugin.json` and root `.claude-plugin/marketplace.json` (no `package.json` bump — verify whether the plugin's `package.json` carries a `version` field that should track the manifest)
+- [x] 1.4 Configure `extra-files` for the expo-developer entry: `.claude-plugin/plugin.json` (`jsonpath: $.version`), `package.json` (`jsonpath: $.version`), and root `.claude-plugin/marketplace.json` (matching plugin entry version) so all version surfaces stay in sync
 - [x] 1.5 Seed `.release-please-manifest.json` with `"claude-plugins/experiments": "<current version from plugin.json>"` and `"claude-plugins/expo-developer": "<current version from plugin.json>"`
 - [x] 1.6 Document the array-index coupling in the root README (or a new `RELEASE.md`): reordering `plugins[]` in `marketplace.json` requires updating the corresponding jsonpath indices
 

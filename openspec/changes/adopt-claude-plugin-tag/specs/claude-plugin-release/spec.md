@@ -28,7 +28,7 @@ The double-dash separator (`--`) is required; it is the convention recognized by
 
 ### Requirement: Release Automation via release-please
 
-Plugin releases SHALL be driven by the `googleapis/release-please-action@v4` workflow already configured at `.github/workflows/release-please.yml` with `target-branch: main`.
+Plugin releases SHALL be driven by the configured release-please workflow at `.github/workflows/release-please.yml` (`target-branch: main`). The workflow's GitHub Actions, including `googleapis/release-please-action`, SHALL be pinned to a 40-character commit digest per the repo's OpenSSF Scorecard policy — never a floating major tag.
 
 The configuration files `release-please-config.json` and `.release-please-manifest.json` SHALL contain one entry per plugin with:
 
