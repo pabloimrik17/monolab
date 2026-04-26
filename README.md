@@ -405,6 +405,11 @@ feat(react-hooks,react-clean): add TypeScript 5.9 support
 This project uses [release-please](https://github.com/googleapis/release-please)
 to automate versioning and publishing.
 
+> Plugin releases under `claude-plugins/` follow a separate but related flow
+> (git tags formatted `{plugin-name}--v{version}` instead of registry
+> publication). See [`RELEASE.md`](./RELEASE.md) for the plugin tag
+> convention, conventional-commit mapping, and the `develop → main` cadence.
+
 #### How It Works
 
 1. **Develop & Commit**: Make changes and commit using conventional commits
