@@ -101,38 +101,148 @@ Cancelled. No files modified.
 
 Exit without touching files.
 
+## Step 5.5 — Package Upgrade Override Registry
+
+Before touching any manifest, consult the override registry so families like Storybook that ship their own upgrade command stay in sync instead of being bumped entry by entry.
+
+### Load the registry
+
+Read `claude-plugins/experiments/skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml`. Parse it as YAML into a list of entries under the top-level `overrides:` key. Required fields per entry: `id`, `matches`, `command`, `versionSource`. Optional: `fallbackVersionSource`, `reference`, `notes`.
+
+If the file is missing, cannot be read, fails to parse, or lacks `overrides`, print a single-line warning (`Override registry unavailable: {reason}. Proceeding without overrides.`) and treat the registry as empty — do NOT abort. This is graceful degradation; legacy behaviour is preserved.
+
+### Compute matches
+
+For each update in `ACCEPTED`, determine the first entry whose `matches` list includes a pattern that matches the update's `name`. Pattern semantics:
+
+- `*` matches any run of characters within a package name (so `@storybook/*` matches `@storybook/react` and `@storybook/addon-essentials`, and `storybook-addon-*` matches `storybook-addon-themes`).
+- No other glob metacharacters. Exact strings (`storybook`) match only that literal name.
+
+Matching is **first-win**: an update binds to at most one entry, the first one in declaration order whose `matches` coincide. Updates that bind to no entry remain candidates for the generic flow (Step 6).
+
+Let `MATCHED_BY_ENTRY` be a map `entry.id → [updates bound to this entry]`. If `MATCHED_BY_ENTRY` is empty, skip to Step 6 without prompting.
+
+### Resolve `{version}`
+
+For each entry in `MATCHED_BY_ENTRY`, resolve the interpolated command string:
+
+- `target-of:<name>` → the `targetVersion` of the accepted update whose name equals `<name>`, stripped of any leading `^`/`~`/`=`. If that update is not in `ACCEPTED`, treat the source as unresolved.
+- `max-target-of:<glob>` → the max semver across `targetVersion` values (prefix-stripped) of accepted updates whose names match `<glob>`. If no update matches the glob, treat the source as unresolved.
+- `latest` → the literal string `latest`.
+
+If `versionSource` is unresolved and `fallbackVersionSource` is defined, try it. If both fail, emit a warning (`Cannot resolve {version} for override {id}: neither {versionSource} nor {fallbackVersionSource} produced a value. Falling back to generic ncu --upgrade for matched packages.`), drop this entry from `MATCHED_BY_ENTRY`, and let its matched updates rejoin the generic flow.
+
+Interpolate the resolved version into `command` by replacing the literal token `{version}`.
+
+### Prompt the user (one AskUserQuestion per matched entry)
+
+For each remaining entry in `MATCHED_BY_ENTRY` (preserve declaration order):
+
+- **Question** (verbatim, substituting fields):
+
+    ```text
+    Override detected for {entry.id}. {entry.notes}
+    Matched packages: {comma-separated names}.
+    Suggested command: {interpolated command}.
+    {entry.reference ? "Reference: <url>" : ""}
+    How do you want to handle this family?
+    ```
+
+- **Multi-select**: `false`
+- **Options**:
+    - `run-override` — "Execute the suggested command once; skip generic ncu bump for these packages."
+    - `skip-matched` — "Leave these packages untouched; do not run the override and do not bump them generically."
+    - `force-generic` — "Ignore the override and bump these packages with the generic ncu flow."
+
+Record the chosen action per entry into a `OVERRIDE_ACTIONS: Map<entry.id, "run-override"|"skip-matched"|"force-generic">` structure along with the interpolated command.
+
+### Partition for Step 6
+
+Compute three disjoint subsets of `ACCEPTED` before continuing:
+
+- `OVERRIDE_RUN = { updates bound to an entry whose action is run-override }` — handled by running the override command; excluded from ncu.
+- `OVERRIDE_SKIP = { updates bound to an entry whose action is skip-matched }` — excluded from everything.
+- `GENERIC = ACCEPTED − OVERRIDE_RUN − OVERRIDE_SKIP` — includes every update that did not bind to any entry PLUS every update bound to a `force-generic` entry.
+
+If every update in `ACCEPTED` falls under `OVERRIDE_SKIP` and `OVERRIDE_RUN` is also empty, print `All accepted updates were skipped by override policy. Nothing to apply.` and exit without touching files.
+
 ## Step 6 — Apply bumps
 
-Group `ACCEPTED` by `sourceFile`. For each file, open it once, apply every bump in memory, and write once.
+Group `GENERIC` by `sourceFile` and distinguish two manifest kinds. Then run `OVERRIDE_RUN` entries.
 
-### For a `package.json` file
+### For a `package.json` file (GENERIC, manifest kind = `package.json`)
 
-For each accepted update targeting this file:
+Invoke `npm-check-updates@21.0.2` once per distinct `sourceFile`:
 
-- Locate the package name under `dependencies`, `devDependencies`, `peerDependencies`, or `optionalDependencies`. Pick the section where the name is currently declared; do not move it across sections.
-- Replace the value with `targetVersion` (the skill preserved the leading `^`/`~`/`=`/none prefix). Do not reformat the file; preserve existing indentation and trailing newline.
+```bash
+<runner-prefix> npm-check-updates@21.0.2 \
+  -p <pm> \
+  --target patch \
+  --upgrade \
+  --packageFile <sourceFile> \
+  [--cooldown <period>]        # mirror the value the scan resolved; omit for pnpm (ncu reads pnpm-workspace.yaml natively)
+  [--filter "<names>"]         # include only when the set for this file is a strict subset of the ncu-detectable candidates (pick-subset OR force-generic partial inclusion)
+```
 
-### For `pnpm-workspace.yaml`
+The `<runner-prefix>` is the same as the one `scan-npm-updates` used (`pnpm dlx`, `npx -y`, `yarn dlx`, `bunx`, `deno run --allow-read --allow-net npm:`). `-p <pm>` MUST be passed (same PM the scan used) to mirror scan semantics and prevent ncu auto-detection drift — e.g. ncu otherwise auto-detects `deno` when a sibling `deno.json` exists, collapsing `--dep` to `['imports']` and dropping `dependencies`/`devDependencies` updates.
 
-For each accepted update with `sourceFile === "pnpm-workspace.yaml"`:
+`<names>` is the GENERIC package names for this file (i.e., accepted minus `OVERRIDE_RUN`/`OVERRIDE_SKIP` for that file), joined by single spaces, double-quoted. It is a literal list; ncu treats it as exact names (see `research/ncu-filter-spike.md`).
+
+Include `--filter` when:
+
+- the primary prompt was `pick-subset` **and at least one package was excluded**, OR
+- any update for this file was removed by `OVERRIDE_RUN`/`OVERRIDE_SKIP` (to prevent ncu from bumping packages the user chose to route through an override or skip).
+
+Omit `--filter` when the bumps for this file are effectively full-set apply (including `pick-subset` with empty exclusions) and no overrides touch this file — i.e. ncu's own set equals our target set.
+
+Stream ncu's stdout/stderr through to the user so diffs are observable. If ncu exits non-zero on a file, abort with:
+
+```text
+ncu --upgrade failed on {sourceFile} (exit {code}).
+Applied before this failure: {manifest paths already rewritten}.
+Re-run /experiments:npm-update-patch to retry the rest.
+```
+
+Stop immediately; do not run install and do not run any override command.
+
+### For `pnpm-workspace.yaml` (GENERIC, manifest kind = catalog)
+
+ncu 21.0.2 does not rewrite catalog entries (see `research/ncu-catalog-spike.md`). Keep the in-memory edit path:
+
+For each update in `GENERIC` with `sourceFile === "pnpm-workspace.yaml"`:
 
 - Under the top-level `catalog:` block, locate the key matching `name`.
 - Replace the value with `targetVersion`. Preserve surrounding whitespace, comments, and other keys' order.
 - Do NOT touch any consumer `package.json` that references `catalog:`.
 
-If a `sourceFile` path cannot be opened or a key is unexpectedly missing, abort with:
+If a key is unexpectedly missing, abort with:
 
 ```text
-Failed to bump {name} in {sourceFile}: {reason}.
+Failed to bump {name} in pnpm-workspace.yaml: {reason}.
 Applied so far: {names already written on disk}.
 Re-run /experiments:npm-update-patch to retry the rest.
 ```
 
-Stop immediately; do not run install.
+Stop immediately; do not run install and do not run any override command.
+
+### Run override commands (OVERRIDE_RUN)
+
+After the generic path has written every manifest successfully, execute each entry's interpolated command once, in declaration order. Stream stdout/stderr. If any override exits non-zero, abort with:
+
+```text
+Override command failed ({entry.id}, exit {code}): {interpolated command}.
+Generic bumps already written to disk: {manifest paths}.
+Override-executed before this failure: {entry ids}.
+Review changes and retry.
+```
+
+Stop immediately; do NOT run `ncu --upgrade` for the matched packages as a fallback (leaves the tree in a consistent, reviewable state) and do NOT run the final install for this invocation.
 
 ## Step 7 — Install
 
-Run exactly one install command based on `packageManager`:
+If `OVERRIDE_RUN` is non-empty, `OVERRIDE_SKIP` is empty, `GENERIC` is empty, and no catalog write happened (i.e., every accepted update was handled by `run-override` and nothing outside override commands was written), SKIP the final install — every override command is assumed to handle its own install (record this in the summary).
+
+Otherwise, run exactly one install command based on `packageManager`:
 
 | PM   | Command        |
 | ---- | -------------- |
@@ -150,20 +260,32 @@ Install failed ({pm} exit {code}). Manifests are already bumped; review changes 
 
 ## Step 8 — Summary
 
-After a successful install, print:
+After a successful install (or after skipping it per Step 7), print:
 
 ```markdown
 ## npm-update-patch summary
 
-**Applied ({N}):**
+**Applied generically via ncu ({Ng}):**
 
 - {name} {currentVersion} → {targetVersion} ({location})
 - ...
 
-**Skipped ({M}):**
+**Applied via override ({No}):**
 
-- {name} ({reason: "excluded by user" | other})
+- {entry.id}: {interpolated command} — matched {comma-separated names}
 - ...
+
+**Skipped by override policy ({Ns_o}):**
+
+- {name} ({entry.id})
+- ...
+
+**Skipped by user ({Ns_u}):**
+
+- {name} (excluded by user)
+- ...
+
+**Install:** {"<pm> install executed" | "skipped (overrides handled install)"}
 
 **Suggested next steps (not executed):**
 
@@ -172,13 +294,16 @@ After a successful install, print:
 - Review changes (`git diff`) and commit.
 ```
 
-- Omit the `Skipped` block entirely when `M === 0`.
-- Always include the `Suggested next steps` block.
+- Omit any block whose count is zero (except `Suggested next steps`, which is always present).
+- When `{Ng}` is non-zero, list each update with its original `location`.
+- When `{No}` is non-zero, list each override entry with the command that ran and the matched names (surface enough information that the user can re-invoke the override manually if needed).
 - Do not run any of the suggested steps. This is a hard rule.
 
 ## Hard rules
 
 - Never run tests, lint, or build.
 - Never create commits or PRs.
-- Never modify files on `cancel` or when the user excludes every update.
+- Never modify files on `cancel` or when every accepted update is skipped by override policy.
 - Never mutate a consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
+- Never auto-execute an override command without the user selecting `run-override` explicitly for that entry.
+- Never run `ncu --upgrade` as a fallback after an override command fails.

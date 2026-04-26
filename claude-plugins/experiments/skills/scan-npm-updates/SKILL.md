@@ -7,6 +7,8 @@ description: Scan a JavaScript/TypeScript project for available npm dependency u
 
 Scan the current working directory's JS/TS project and return a structured list of dependency updates at a given level. Pure read-only scan; all mutation (bumping manifests, running installs) is the caller's responsibility.
 
+> **Skill scope vs. `data/` folder.** This skill does NOT read anything under `skills/scan-npm-updates/data/`. The `data/` subdirectory hosts command-side registries (e.g. `pkg-upgrade-overrides.yaml`) consumed by `/experiments:npm-update-patch` and siblings. The registries are co-located with the skill because they are semantically paired with the scan output, but they are intentionally out of scope for the scan itself — the skill stays read-only and registry-agnostic. Future contributors should add command-side data here; skill-side inputs live elsewhere (or in `references/`).
+
 ## Inputs
 
 - **`level`** (required): `patch` | `minor` | `major` | `engines`. The caller passes this; do not infer from arguments.
@@ -86,7 +88,8 @@ Pinned tool: **`npm-check-updates@21.0.2`** (ncu).
 
 Build the command:
 
-- `<runner-prefix> npm-check-updates@21.0.2 --target <ncu-target> --jsonUpgraded --packageFile <manifest-path>`
+- `<runner-prefix> npm-check-updates@21.0.2 -p <pm> --target <ncu-target> --jsonUpgraded --packageFile <manifest-path>`
+- `<pm>` is the package manager resolved in precondition 2 (one of `pnpm`|`npm`|`yarn`|`bun`|`deno`). Passing `-p` is MANDATORY: ncu 21.0.2 auto-detects `packageManager: 'deno'` when `--packageFile` points to a directory with a sibling `deno.json`, which collapses `--dep` to `['imports']` and drops real bumps in `dependencies`/`devDependencies` (see change `fix-scan-npm-updates-pm-detection`).
 - Add `--cooldown <period>` only when the detected PM is **not** `pnpm` (pnpm's `minimumReleaseAge` is read natively by ncu; verified in the spike). The value comes from the lookup below; omit the flag if the resolved period is `0` or unset.
 
 ### `level` → `--target` mapping
