@@ -13,6 +13,16 @@ Register the current (or specified) project in the user-scoped Commander registr
 /experiments:commander-add --name investlab --path /Users/me/code/investlab --keywords react,typescript --description "Portfolio tracker built with SolidStart."
 ```
 
+### `/experiments:commander-delete`
+
+Remove a project record from the Commander registry by `name`. Resolves the target via **A → B** priority: explicit name (positional or `--name`), else interactive pick from `list()` via `AskUserQuestion`. A confirmation prompt (default = cancel) renders `name`, `path`, and `description` before the atomic temp-write + rename. Empty/missing registry exits cleanly without prompting; unknown names abort without touching the file.
+
+```bash
+/experiments:commander-delete                # interactive picker
+/experiments:commander-delete investlab      # explicit positional
+/experiments:commander-delete --name investlab
+```
+
 ### `/experiments:commander-list`
 
 List every project registered in the user-scoped Commander registry. Read-only — never creates, modifies, or deletes `~/.claude/commander/projects.json`. Each project renders as a vertically-aligned YAML-ish block (insertion order); the project name is suffixed inline with `[legacy: missing repoType]` for v1 records and `[missing path]` when the recorded `path` no longer exists on disk. Empty registry prints a single discoverability hint pointing to `commander-add`.
