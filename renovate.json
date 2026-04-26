@@ -4,7 +4,8 @@
         "config:recommended",
         ":dependencyDashboard",
         ":semanticCommits",
-        ":enableVulnerabilityAlertsWithLabel(security)"
+        ":enableVulnerabilityAlertsWithLabel(security)",
+        "helpers:pinGitHubActionDigestsToSemver"
     ],
     "timezone": "Europe/Madrid",
     "reviewers": ["pabloimrik17"],
@@ -14,20 +15,20 @@
     "prConcurrentLimit": 10,
     "prHourlyLimit": 2,
     "configMigration": true,
-    "minimumReleaseAge": "7 days",
+    "minimumReleaseAge": "14 days",
     "rangeStrategy": "pin",
     "packageRules": [
         {
             "matchUpdateTypes": ["patch"],
-            "schedule": ["on the first day of the month"]
+            "schedule": ["on the 1st day of the month"]
         },
         {
             "matchUpdateTypes": ["minor"],
-            "schedule": ["on the first day of the month every 2 months"]
+            "schedule": ["on the 8th day of the month every 2 months"]
         },
         {
             "matchUpdateTypes": ["major"],
-            "schedule": ["on the first day of the month every 3 months"]
+            "schedule": ["on the 15th day of the month every 3 months"]
         },
         {
             "description": "Seguir versionado de Expo con ~",
