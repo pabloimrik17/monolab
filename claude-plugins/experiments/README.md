@@ -84,3 +84,11 @@ claude --plugin-dir ./claude-plugins/experiments
 ```
 
 Then use `/experiments:hello-experiments` in the Claude Code CLI.
+
+## Releases
+
+This plugin is released via git tags formatted `experiments--v{version}`.
+
+Triggers: a `feat(experiments)` or `fix(experiments)` conventional-commit on `main` causes `release-please` to open a release PR. Merging that PR bumps `.claude-plugin/plugin.json`, `package.json`, and the matching entry in the root `.claude-plugin/marketplace.json`, then creates the tag and a GitHub release.
+
+See [`RELEASE.md`](../../RELEASE.md) at the repo root for the full flow, the conventional-commit-to-bump mapping, and the `develop → main` cadence.
