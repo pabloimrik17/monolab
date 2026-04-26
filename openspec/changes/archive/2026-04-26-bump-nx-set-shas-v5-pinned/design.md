@@ -48,11 +48,13 @@
 
 **Alternativa descartada**: exempt `actions/*` con `packageRules: [{ matchPackageNames: ["actions/*"], pinDigests: false }]`. Razón: contradice OpenSSF y añade superficie conceptual.
 
-### Decision 4: No pinear manualmente el resto de actions de terceros en este change
+### Decision 4: Pinear manualmente todas las actions en este change (no diferir a Renovate)
 
-**Elegido**: solo `nrwl/nx-set-shas` se pinea a mano ahora.
+**Elegido**: pinear a mano `nrwl/nx-set-shas` y todas las demás actions de `ci.yml` y `release-please.yml` (`actions/*`, `pnpm/action-setup`, `codecov/*`, `googleapis/release-please-action`, `denoland/setup-deno`) al mismo SHA + comentario semver.
 
-**Por qué**: el issue es específico para v5 bump. El resto (`pnpm/action-setup`, `codecov/*`, `actions/*`) lo pineará Renovate en el siguiente ciclo gracias al preset, manteniendo el diff de este change pequeño y enfocado.
+**Por qué**: si se diferiera a Renovate, el spec (`### Requirement: All GitHub Actions SHALL be pinned to commit SHA`) quedaría no conforme entre el merge de este change y el primer ciclo de Renovate (potencialmente semanas, dado `minimumReleaseAge: 14d` + stagger trimestral para majors). Pinear todo ahora elimina esa ventana de divergencia spec/implementación y no depende de un sistema externo para alcanzar conformidad. Coste: ~10 SHAs adicionales en el diff. Beneficio: spec-compliant al hacer merge, sin gap.
+
+**Alternativa descartada**: solo pinear `nrwl/nx-set-shas` y dejar que Renovate haga el resto en el siguiente ciclo. Razón: introduce ventana de no-conformidad con el spec recién creado y dependencia operativa de Renovate (rate limits, schedule, posible rename del preset) para alcanzar el estado declarado.
 
 ### Decision 5: Stagger Renovate schedules + bump `minimumReleaseAge` a 14d
 
