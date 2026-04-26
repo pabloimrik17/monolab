@@ -1,43 +1,64 @@
 ## ADDED Requirements
 
-### Requirement: Third-party GitHub Actions SHALL be pinned to commit SHA
+### Requirement: All GitHub Actions SHALL be pinned to commit SHA
 
-Toda referencia a una GitHub Action de terceros (cualquier `uses:` cuyo owner no sea `actions/`) en `.github/workflows/**/*.yml` SHALL usar un commit SHA de 40 caracteres como ref, seguido de un comentario `# vX.Y.Z` con la versión semver legible.
-
-Las actions oficiales de GitHub (`actions/checkout`, `actions/setup-node`, `actions/cache`, `actions/upload-artifact`) MAY usar un major tag (`@v4`).
+Toda referencia `uses:` a una GitHub Action en `.github/workflows/**/*.yml` SHALL usar un commit SHA de 40 caracteres como ref, seguido de un comentario `# vX.Y.Z` con la versión semver legible. La regla aplica por igual a actions de terceros (`nrwl/*`, `pnpm/*`, `codecov/*`, etc.) y a las actions oficiales de GitHub (`actions/*`).
 
 #### Scenario: Pinned third-party action passes review
 
 - **WHEN** un workflow contiene `uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1`
-- **THEN** la referencia es válida y la version legible queda documentada en el comentario
+- **THEN** la referencia es válida y la versión legible queda documentada en el comentario
 
-#### Scenario: Mutable tag on third-party action is rejected
+#### Scenario: Pinned official GitHub action passes review
 
-- **WHEN** un workflow contiene `uses: codecov/codecov-action@v5` (sin SHA)
-- **THEN** se considera no conforme y debe ser convertido a SHA-pinned con comentario `# v5.x.y`
+- **WHEN** un workflow contiene `uses: actions/checkout@<40-char-sha> # v4.2.2`
+- **THEN** la referencia es válida; no hay carve-out para `actions/*`
 
-#### Scenario: Official GitHub action keeps major tag
+#### Scenario: Mutable tag on any action is rejected
 
-- **WHEN** un workflow contiene `uses: actions/checkout@v4`
-- **THEN** la referencia es válida sin SHA pinning
+- **WHEN** un workflow contiene `uses: codecov/codecov-action@v5` o `uses: actions/checkout@v4` (sin SHA)
+- **THEN** se considera no conforme y debe ser convertido a SHA-pinned con comentario `# vX.Y.Z`
 
 ### Requirement: Renovate SHALL maintain pinned action SHAs automatically
 
 `renovate.json` SHALL incluir el preset `helpers:pinGitHubActionDigestsToSemver` (o equivalente) en el array `extends`, de modo que Renovate:
 
-- Pinee a SHA cualquier action nueva que aparezca con un major/minor tag
+- Pinee a SHA cualquier action nueva que aparezca con un major/minor tag (incluidas `actions/*`)
 - Actualice el SHA pineado cuando se publique una nueva versión, conservando el comentario `# vX.Y.Z` actualizado
 - Genere PRs separadas por update type (patch/minor/major) respetando los `packageRules` existentes
+
+`renovate.json` SHALL NOT contener `packageRules` que pongan `pinDigests: false` para `actions/*` u otros owners.
 
 #### Scenario: Renovate config includes the pin preset
 
 - **WHEN** se inspecciona `renovate.json`
-- **THEN** el array `extends` contiene `"helpers:pinGitHubActionDigestsToSemver"`
+- **THEN** el array `extends` contiene `"helpers:pinGitHubActionDigestsToSemver"` y no hay `packageRules` que excluyan `actions/*` del pinning
 
 #### Scenario: Renovate updates a pinned SHA
 
 - **WHEN** se publica `nrwl/nx-set-shas@v5.0.2` upstream
 - **THEN** Renovate abre una PR que reemplaza el SHA actual y actualiza el comentario a `# v5.0.2` sin perder el formato
+
+### Requirement: Renovate SHALL stagger PR creation across update types
+
+`renovate.json` SHALL definir schedules separados por `matchUpdateTypes` para evitar spikes de PRs cuando ciclos coinciden:
+
+- `patch` → primer día del mes
+- `minor` → día 8 del mes cada 2 meses
+- `major` → día 15 del mes cada 3 meses
+
+Adicionalmente, `minimumReleaseAge` SHALL ser de al menos `14 days` para reducir exposición a paquetes comprometidos recientemente publicados.
+
+#### Scenario: Schedules are staggered
+
+- **WHEN** se inspecciona `renovate.json`
+- **THEN** los `packageRules` con `matchUpdateTypes: ["patch"|"minor"|"major"]` tienen `schedule` distintos por día/mes
+
+#### Scenario: Release age window enforced
+
+- **WHEN** se publica una nueva versión de un paquete
+- **AND** han pasado menos de 14 días desde la publicación
+- **THEN** Renovate NO abre PR para esa versión hasta que la ventana se cumpla (excepto vulnerabilidades cubiertas por `:enableVulnerabilityAlertsWithLabel(security)`)
 
 ### Requirement: nx-set-shas SHALL run on Node 24 runtime
 
