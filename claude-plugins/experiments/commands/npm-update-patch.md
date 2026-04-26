@@ -240,7 +240,7 @@ Stop immediately; do NOT run `ncu --upgrade` for the matched packages as a fallb
 
 ## Step 7 — Install
 
-If `GENERIC` was empty AND no catalog write happened AND `OVERRIDE_RUN` produced at least one command, SKIP the final install — every override command is assumed to handle its own install (record this in the summary).
+If `OVERRIDE_RUN` is non-empty, `OVERRIDE_SKIP` is empty, `GENERIC` is empty, and no catalog write happened (i.e., every accepted update was handled by `run-override` and nothing outside override commands was written), SKIP the final install — every override command is assumed to handle its own install (record this in the summary).
 
 Otherwise, run exactly one install command based on `packageManager`:
 
