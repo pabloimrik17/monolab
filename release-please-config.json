@@ -44,6 +44,54 @@
             "release-type": "node",
             "package-name": "@m0n0lab/qup-shared",
             "changelog-path": "CHANGELOG.md"
+        },
+        "claude-plugins/experiments": {
+            "release-type": "simple",
+            "package-name": "experiments",
+            "tag-separator": "--",
+            "include-v-in-tag": true,
+            "changelog-path": "CHANGELOG.md",
+            "extra-files": [
+                {
+                    "type": "json",
+                    "path": ".claude-plugin/plugin.json",
+                    "jsonpath": "$.version"
+                },
+                {
+                    "type": "json",
+                    "path": "package.json",
+                    "jsonpath": "$.version"
+                },
+                {
+                    "type": "json",
+                    "path": "../../.claude-plugin/marketplace.json",
+                    "jsonpath": "$.plugins[1].version"
+                }
+            ]
+        },
+        "claude-plugins/expo-developer": {
+            "release-type": "simple",
+            "package-name": "expo-developer",
+            "tag-separator": "--",
+            "include-v-in-tag": true,
+            "changelog-path": "CHANGELOG.md",
+            "extra-files": [
+                {
+                    "type": "json",
+                    "path": ".claude-plugin/plugin.json",
+                    "jsonpath": "$.version"
+                },
+                {
+                    "type": "json",
+                    "path": "package.json",
+                    "jsonpath": "$.version"
+                },
+                {
+                    "type": "json",
+                    "path": "../../.claude-plugin/marketplace.json",
+                    "jsonpath": "$.plugins[0].version"
+                }
+            ]
         }
     },
     "changelog-sections": [

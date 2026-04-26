@@ -1,6 +1,6 @@
 {
     "name": "expo-developer",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "Expo/React Native developer tools with dependency validation",
     "author": {
         "name": "Pablo F.G.",
@@ -9,5 +9,19 @@
     "license": "MIT",
     "repository": "https://github.com/pabloimrik17/monolab",
     "homepage": "https://github.com/pabloimrik17/monolab/tree/main/claude-plugins/expo-developer",
-    "keywords": ["expo", "react-native", "dependency-validation", "package-manager"]
+    "keywords": ["expo", "react-native", "dependency-validation", "package-manager"],
+    "userConfig": {
+        "default_action": {
+            "type": "string",
+            "title": "Default action",
+            "description": "Default behavior for the expo-dependency-check skill. Accepted values: \"ask\" (prompt the user), \"check\" (run `expo install --check` non-interactively), or \"fix\" (run `expo install --fix` non-interactively).",
+            "default": "ask"
+        },
+        "package_manager_override": {
+            "type": "string",
+            "title": "Package manager override",
+            "description": "Override lockfile-based package-manager detection. Accepted non-empty values: \"npm\", \"pnpm\", \"yarn\", or \"bun\". Leave empty to detect from lockfiles (default).",
+            "default": ""
+        }
+    }
 }

@@ -23,6 +23,14 @@ Remove a project record from the Commander registry by `name`. Resolves the targ
 /experiments:commander-delete --name investlab
 ```
 
+### `/experiments:commander-list`
+
+List every project registered in the user-scoped Commander registry. Read-only — never creates, modifies, or deletes `~/.claude/commander/projects.json`. Each project renders as a vertically-aligned YAML-ish block (insertion order); the project name is suffixed inline with `[legacy: missing repoType]` for v1 records and `[missing path]` when the recorded `path` no longer exists on disk. Empty registry prints a single discoverability hint pointing to `commander-add`.
+
+```bash
+/experiments:commander-list
+```
+
 ### `/experiments:ralph`
 
 Generate Ralph loop infrastructure from a project description for autonomous AI coding.
@@ -94,3 +102,11 @@ claude --plugin-dir ./claude-plugins/experiments
 ```
 
 Then use `/experiments:hello-experiments` in the Claude Code CLI.
+
+## Releases
+
+This plugin is released via git tags formatted `experiments--v{version}`.
+
+Triggers: a `feat(experiments)` or `fix(experiments)` conventional-commit on `main` causes `release-please` to open a release PR. Merging that PR bumps `.claude-plugin/plugin.json`, `package.json`, and the matching entry in the root `.claude-plugin/marketplace.json`, then creates the tag and a GitHub release.
+
+See [`RELEASE.md`](../../RELEASE.md) at the repo root for the full flow, the conventional-commit-to-bump mapping, and the `develop → main` cadence.

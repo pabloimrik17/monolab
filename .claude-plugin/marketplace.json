@@ -13,7 +13,7 @@
         {
             "name": "expo-developer",
             "source": "./claude-plugins/expo-developer",
-            "version": "0.1.0",
+            "version": "0.2.0",
             "description": "Expo/React Native developer tools with dependency validation"
         },
         {
