@@ -4,7 +4,8 @@
         "config:recommended",
         ":dependencyDashboard",
         ":semanticCommits",
-        ":enableVulnerabilityAlertsWithLabel(security)"
+        ":enableVulnerabilityAlertsWithLabel(security)",
+        "helpers:pinGitHubActionDigestsToSemver"
     ],
     "timezone": "Europe/Madrid",
     "reviewers": ["pabloimrik17"],
