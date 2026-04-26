@@ -46,8 +46,8 @@ Before any write, render the targeted record (`name`, `path`, `description`) and
 
 Add a single new operation to the registry contract:
 
-1. Read the registry. If the file is missing, treat as empty and return a "project not registered" error.
-2. If `name` is not a key in `projects`, return "project not registered" without writing.
+1. Read the registry. If the file is missing, treat as empty and return a "no projects registered" error.
+2. If `name` is not a key in `projects`, return "project '<name>' is not registered" without writing.
 3. Otherwise remove the key from `projects`, update no other field (no `updatedAt` on the registry itself — none exists), and persist atomically (temp + rename).
 4. Return the removed record (for the success message).
 
