@@ -56,7 +56,7 @@ Examples:
 | no `package.json`, `basename(CWD) = "My.Demo App"`                             | `my-demo-app`                                                             |
 | `package.json#name = "@scope/very-long-package-name-that-overflows-the-limit"` | first 40 chars of `scope-very-long-package-name-that-overflows-the-limit` |
 
-The unix timestamp suffix (`<unix-ts>` = seconds since epoch at invocation) ensures unique paths even if two invocations land in the same second on the same project (rare but possible).
+The unix timestamp suffix (`<unix-ts>` = seconds since epoch at invocation) provides time ordering. To guarantee uniqueness for same-second collisions on the same project, the skill SHALL append a deterministic collision suffix (`-2`, `-3`, …) when the target directory already exists.
 
 ## Phase 0 — Stale-plan cleanup (pre-step)
 
@@ -277,7 +277,7 @@ After the consumer's apply / cancel / abort step finishes (or after `abort` from
 
 The workflow SHALL NOT delete the plan dir without explicit `delete-plan`. There is no default option. Stale-cleanup (phase 0) is the safety net.
 
-After the cleanup choice, update the global `_meta.json.phase` to `"done"` (only if the dir was kept; otherwise the file is gone with the dir).
+After the cleanup choice, the workflow returns control to the consumer. The consumer is responsible for advancing `_meta.json.phase` to `"executing"` / `"done"` when applicable (only if the dir was kept; otherwise the file is gone with the dir). The workflow itself SHALL NOT set the phase past `"planning"` — see Hard rules.
 
 ## Hard rules
 

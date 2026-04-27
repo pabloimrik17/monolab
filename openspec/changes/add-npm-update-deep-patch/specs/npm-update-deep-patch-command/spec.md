@@ -80,6 +80,8 @@ When the workflow finishes phase 4 (plan-mode synthesis) successfully, the comma
 
 The command SHALL show the prompt exactly once per invocation. The command SHALL NOT auto-apply any plan item without an explicit option selection.
 
+If the workflow returns an early-exit signal before phase 4 completes (stale-cleanup `cancel` or integrity-verification `abort`), the command SHALL NOT call `AskUserQuestion` for the execution prompt. The command SHALL exit immediately without applying any plan items and SHALL emit a short summary indicating the early-exit reason (e.g. `Cancelled by stale-cleanup. No files modified.` or `Aborted on integrity check. No files modified.`) before delegating to the workflow's cleanup prompt.
+
 #### Scenario: Prompt order
 
 - **WHEN** plan synthesis completes
@@ -89,6 +91,11 @@ The command SHALL show the prompt exactly once per invocation. The command SHALL
 
 - **WHEN** the user selects `cancel`
 - **THEN** no file in the workspace is modified and the plan dir remains on disk pending the cleanup prompt
+
+#### Scenario: Early-exit skips the execution prompt
+
+- **WHEN** the workflow returns an early-exit signal from stale-cleanup `cancel` or integrity-verification `abort` before phase 4 completes
+- **THEN** the command does NOT call `AskUserQuestion` for the execution prompt, applies no plan items, and prints a short summary identifying the early-exit reason before the workflow's cleanup prompt fires
 
 ### Requirement: Bump application reuses existing infrastructure
 

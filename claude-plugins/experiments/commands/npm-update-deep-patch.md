@@ -66,7 +66,7 @@ The workflow handles, in order, all of:
 
 Surface progress messages emitted by the workflow as they are produced. The command SHALL NOT advance the workflow's phases on its behalf, and SHALL NOT dispatch subagents itself — the workflow is fully responsible for the orchestration above. The command's only responsibility during Steps 4 is to wait for the workflow to finish.
 
-If the user picked `cancel` (in stale-cleanup) or `abort` (in integrity verification), the workflow returns an early-exit signal. In that case, skip directly to Step 7's cleanup prompt with no apply step.
+If the user picked `cancel` (in stale-cleanup) or `abort` (in integrity verification), the workflow returns an early-exit signal. In that case, skip directly to Step 8's cleanup prompt with no apply step.
 
 ## Step 5 — Execution prompt
 

@@ -2,12 +2,17 @@
 
 ### Requirement: Input contract
 
-The skill SHALL accept a single input: an array of update records each conforming to the existing `ScanResult.updates[]` shape produced by `experiments:scan-npm-updates`. Specifically, each record SHALL have at minimum `name`, `currentVersion`, `targetVersion`, `location`, and `sourceFile`. The skill SHALL NOT mutate the input array.
+The skill SHALL accept a single input object with the following properties:
+
+- `updates` (required): an array of update records each conforming to the existing `ScanResult.updates[]` shape produced by `experiments:scan-npm-updates`. Each record SHALL have at minimum `name`, `currentVersion`, `targetVersion`, `location`, and `sourceFile`.
+- `maxPerGroup` (optional): integer override for the per-group cap (see the Per-group cap requirement). When omitted, the default cap applies.
+
+The skill SHALL NOT mutate the `updates` array.
 
 #### Scenario: Empty input returns empty groups
 
-- **WHEN** the input is `[]`
-- **THEN** the skill returns `{ groups: [] }` and writes no warnings
+- **WHEN** the input `updates` is `[]`
+- **THEN** the skill returns `{ groups: [], warnings: [] }`
 
 #### Scenario: Input passthrough preserves order
 

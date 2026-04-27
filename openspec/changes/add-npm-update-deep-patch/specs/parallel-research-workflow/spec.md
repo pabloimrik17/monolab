@@ -2,7 +2,7 @@
 
 ### Requirement: Plan-directory creation
 
-The skill SHALL create a plan directory at `~/.claude/experiments/plans/<slug>-<level>-<unix-ts>/` at the start of every invocation, where:
+The skill SHALL create a plan directory at `~/.claude/experiments/plans/<slug>-<level>-<unix-ts>/` after the stale-plan cleanup prompt resolves, and only when the invocation has not been cancelled (i.e., the user did not select `cancel` in stale-cleanup), where:
 
 - `<slug>` is derived from the root `package.json#name` if present, else `basename(CWD)`. Sanitization: lowercase, replace any run of `[^a-z0-9]+` with `-`, trim leading and trailing `-`, truncate to 40 characters.
 - `<level>` is the level passed by the caller (one of `patch`, `minor`, `major`, `engines`).
