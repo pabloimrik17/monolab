@@ -1,29 +1,29 @@
 ## Why
 
-No hay forma automatizada de asegurar que un proyecto tenga instaladas las skills de skills.sh relevantes para su stack. Cada sesión empieza sin saber si faltan skills útiles, y tras instalarlas manualmente no hay mecanismo para que persistan entre `pnpm install`.
+There is no automated way to ensure a project has the skills.sh skills relevant to its stack installed. Each session starts without knowing whether useful skills are missing, and after installing them manually there is no mechanism to make them persist across `pnpm install`.
 
 ## What Changes
 
-- Nueva skill `skill-terraformer` en `claude-plugins/experiments/skills/`
-- Lista curada embebida en la skill: mapeo stack → skills de skills.sh relevantes
-- Detección automática del stack del proyecto (package.json, configs, frameworks)
-- Instalación de skills faltantes via `bunx skills add` (project-level)
-- Asegurar script `postinstall` en package.json con `bunx skills experimental_install` cuando hay skills gestionadas
+- New `skill-terraformer` skill at `claude-plugins/experiments/skills/`
+- Curated list embedded in the skill: stack → relevant skills.sh skills mapping
+- Automatic project stack detection (package.json, configs, frameworks)
+- Install missing skills via `bunx skills add` (project-level)
+- Ensure `postinstall` script in package.json with `bunx skills experimental_install` when skills are managed
 
 ## Capabilities
 
 ### New Capabilities
 
-- `skill-terraformer`: Skill que al activarse detecta el stack del proyecto, compara contra lista curada de skills.sh, instala las faltantes, y asegura postinstall en package.json
+- `skill-terraformer`: Skill that, when activated, detects the project stack, compares against the curated skills.sh list, installs the missing ones, and ensures a postinstall script in package.json
 
 ### Modified Capabilities
 
-- `experiments-plugin`: Añade directorio `skills/` con la primera skill del plugin
+- `experiments-plugin`: Adds a `skills/` directory with the plugin's first skill
 
 ## Impact
 
-- `claude-plugins/experiments/` — nuevo directorio `skills/skill-terraformer/`
-- `claude-plugins/experiments/.claude-plugin/plugin.json` — posible bump de versión
-- `package.json` (root) — puede añadirse/modificarse script `postinstall`
-- Dependencia externa: `skills` CLI (npx, no instalada como dep)
-- Genera `skills-lock.json` en root del proyecto
+- `claude-plugins/experiments/` — new `skills/skill-terraformer/` directory
+- `claude-plugins/experiments/.claude-plugin/plugin.json` — possible version bump
+- `package.json` (root) — `postinstall` script may be added/modified
+- External dependency: `skills` CLI (npx, not installed as a dep)
+- Generates `skills-lock.json` at the project root
