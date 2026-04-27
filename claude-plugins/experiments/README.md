@@ -53,6 +53,14 @@ Creates 5 files in the current directory:
 
 Explains the purpose of this plugin and lists any experimental features currently available.
 
+### `/experiments:npm-update-deep-patch`
+
+Same scope as `npm-update-patch` (patch-level, semver-safe, manifest bump + one install) but with **research**: every changelog is fetched in parallel by subagents who cross-reference it against this codebase, then the main agent enters plan mode and synthesizes a single integrated `plan.md` of (a) applicable improvements and (b) workarounds-resolved-by-upgrade, plus the bump set. The user picks `apply-all` / `apply-bumps-only` / `pick-subset` / `cancel`. Plan dir lives under `~/.claude/experiments/plans/` with stale-cleanup (>10 days) prompted on each invocation. Never runs tests, lint, build, or commits.
+
+```bash
+/experiments:npm-update-deep-patch
+```
+
 ### `/experiments:npm-update-patch`
 
 Scan the current project for patch-level npm updates and interactively apply the subset you accept. Works on pnpm/npm/yarn/bun/deno, single-repo or workspace; treats pnpm `catalog:` entries as first-class. Bumps `package.json` manifests via a single `ncu --upgrade` per file (prefix- and format-preserving), edits `pnpm-workspace.yaml#catalog` in-memory, and runs one final install unless all accepted updates were handled via `run-override`. Never runs tests, lint, or commits.
@@ -90,6 +98,14 @@ Checks for updates to globally-installed skills.sh skills once per session. Dete
 ### `scan-npm-updates`
 
 Shared scan backend used by `/experiments:npm-update-patch` (and by future `npm-update-minor`/`major`/`engines` siblings). Invokes `npm-check-updates@21.0.2` via the detected package manager's dlx runner, post-processes pnpm `catalog:` entries, and returns a structured `ScanResult` JSON object. Read-only — never edits files.
+
+### `group-packages-for-research`
+
+Deterministic partition of `ScanResult.updates[]` into bounded subagent groups using `@scope/` coalescing + per-group cap (default `8`, override via `maxPerGroup ∈ [1, 32]`). Pure, no-network, reproducible. Consumed by the `parallel-research-workflow` skill and therefore by `/experiments:npm-update-deep-patch` (and future deep-\* siblings).
+
+### `parallel-research-workflow`
+
+Two-phase parallel-subagent orchestration over a pre-grouped package set: phase 1 fetches every changelog via `experiments:npm-changelog`, phase 2 cross-references against this codebase, phase 3 verifies integrity (`retry-failed` / `continue-without` / `abort`), phase 4 enters plan mode and writes `plan.md`. Persists artifacts under `~/.claude/experiments/plans/<slug>-<level>-<unix-ts>/`. Reusable across `npm-update-deep-{patch,minor,major,engines}` — only the level changes.
 
 ### `commander-normalize`
 
