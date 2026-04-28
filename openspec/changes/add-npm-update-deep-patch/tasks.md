@@ -112,6 +112,7 @@
 - [x] 10.8 Update the delta spec `Requirement: Phase 3` to "Phase 3 — integrity verification (mandatory gate)" with new scenarios (phase advances to integrity, disk truth over memory, expected-missing in degraded path)
 - [x] 10.9 Re-validate change post-edits via `openspec validate add-npm-update-deep-patch` (passes)
 - [x] 10.11 Root cause for the original stalls (per second monolab dry-run): subagents treated `npm-changelog` skill output as their final response. Added mandatory `Subagent dispatch prompt template` section to SKILL.md and matching delta-spec requirement with three scenarios (intermediate output, no_changelog_source continuation, final-response format).
+- [x] 10.12 UX gap from second dry-run: improvements applied silently with no preview before file edits, and the post-hoc summary is too late for course-correction. `Step 6b` of `npm-update-deep-patch.md` now mandates literal plan-mode entry (`EnterPlanMode` tool) listing applicable + inapplicable improvements with file paths and snippets; rejection preserves bumps. Matching delta-spec requirement updated with three new scenarios (plan mode entered before any edit, inapplicable bullets explicit, rejection preserves bumps).
 - [ ] 10.10 Manual re-test on monolab: confirm batching produces sequential `Batch n/total` progress lines, phase 3 prompt fires when groups stall, and `_meta.json` writers use `sourceFile` consistently
 
 ## 11. Manual verification — coverage from initial monolab run (2026-04-27)

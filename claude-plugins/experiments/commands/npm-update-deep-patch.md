@@ -146,15 +146,24 @@ Install failed ({pm} exit {code}). Manifests are already bumped; review changes 
 
 For `apply-bumps-only`: stop here, jump to Step 7. Improvements are skipped entirely.
 
-### Step 6b — `apply-all` (improvements)
+### Step 6b — `apply-all` (improvements via plan mode)
 
-After the bumps install completes successfully, re-enter Claude Code plan mode with the `Improvements (applicable to this codebase)` bullets from `plan.md` as the in-scope work. Drive the main agent through the edits per bullet:
+After the bumps install completes successfully, the command SHALL apply the `Improvements (applicable to this codebase)` bullets from `plan.md` **via Claude Code plan mode** (not via blind edits). Concrete sequence:
 
-- For each improvement bullet, the main agent reads the area hints (file globs, directory hints) and produces a focused set of edits.
-- The improvements step SHALL NOT expand scope beyond bullets present in `plan.md`. If during edit the agent identifies adjacent improvements not in the plan, those are NOT applied.
-- The improvements step SHALL NOT execute tests, lint, or build. SHALL NOT create commits or PRs.
+1. **Reconnaissance pass.** For each improvement bullet, the main agent reads the area hints (file globs, directory hints) and the relevant files to determine the concrete edits the bullet would translate into in this specific codebase. Bullets whose opportunity does not actually land here (e.g. require a Hono RPC client when the repo only uses Hono server-side) are flagged as `inapplicable` with a one-sentence reason.
+2. **Plan-mode entry (mandatory).** The main agent invokes the `EnterPlanMode` tool with a markdown plan that lists, in order:
+    - The applicable improvements with the concrete edits they translate to: file path, brief description of the change, and (for non-trivial edits) the before/after snippet so the user can preview the effect.
+    - The inapplicable improvements with their reason — explicitly listed so the user knows what was researched and why nothing was applied for those bullets.
+    - A summary footer counting `applicable: <N>` and `inapplicable: <M>`.
+3. **User review and approval.** Plan mode pauses until the user accepts or rejects the plan.
+    - **Approved** → main agent exits plan mode and executes the listed edits via `Edit` / `Write` calls. After all edits land, continue to Step 7.
+    - **Rejected** → the command SHALL print `Improvements rejected at plan-mode review. No improvement edits applied; bumps are preserved.` and skip to Step 7. Bumps already applied in Step 6a are NOT reverted.
 
-After every improvement bullet has been processed (applied or explicitly deemed inapplicable on review), continue to Step 7.
+The improvements step SHALL NOT expand scope beyond bullets present in `plan.md`. If during reconnaissance or plan-mode review the agent identifies adjacent improvements not in `plan.md`, those are surfaced as suggestions in the Step 7 summary's `Suggested next steps` list — never silently added to the plan-mode plan.
+
+The improvements step SHALL NOT execute tests, lint, or build. SHALL NOT create commits or PRs.
+
+**Why plan mode is mandatory here**: this is the only point in the workflow where the command modifies workspace files based on synthesized research that the user has not yet seen rendered as concrete edits. The earlier apply-choice prompt (Step 5) commits the user to a path; plan mode lets them veto specifically the improvements before any source file is touched. Without it, the user only learns "0 of 10 improvements were actually applicable to my codebase" via the Step 7 summary, which is too late to course-correct.
 
 ### Step 6c — `pick-subset`
 
