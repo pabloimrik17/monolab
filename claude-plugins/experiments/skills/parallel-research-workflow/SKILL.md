@@ -380,13 +380,13 @@ When all groups are healthy or the user chose `continue-without`:
 
 4. The four `H2` sections SHALL appear in this exact order: `Improvements (applicable to this codebase)`, `Workarounds resolved`, `Skipped or unavailable`, `Patch bump set`. Sections with zero items still appear with a single line under them (e.g. `_no improvements identified_`) — never omit the heading. The `<reason>` cell in `Skipped or unavailable` rows is sourced as follows: for `failed`/`missing` groups, copy `groups/<id>/_meta.json.errorReason` verbatim; for `expected-missing` groups (degraded path), use the constant string `research consolidated in main agent (subagent dispatch limited)` without reading per-group meta.
 5. The `Patch bump set` table SHALL list every update from `scan.json` regardless of group health (i.e., even if a group's research is unavailable, its packages are still listed for bumping). Columns are exactly `package`, `current → target`, `location`. Rows sorted by `location` then `name` for stability.
-6. After plan mode ends and the user has reviewed `plan.md` (the user is the gate, not the workflow — the workflow does not auto-advance), the main agent updates `_meta.json.phase` to `"executing"` only when the consumer command (e.g. `/experiments:npm-update-deep-patch`) actually begins applying things. The workflow itself does not apply edits — it hands control back to the caller after writing `plan.md`.
+6. After plan mode ends and the user has reviewed `plan.md` (the user is the gate, not the workflow — the workflow does not auto-advance), the main agent updates `_meta.json.phase` to `"executing"` only when the consumer command (e.g. `/experiments:npm-update-deep-patch`) actually begins applying things. The workflow itself does not apply edits — it hands control back to the caller after writing `plan.md` so the consumer can run its apply step. The end-of-flow cleanup (see below) is a separate, consumer-triggered re-entry into the workflow; the consumer is responsible for invoking it exactly once after its apply / cancel / abort step finishes.
 
 The H1 title interpolates `<level>`: `Deep-patch plan: <slug>` for `level=patch`, `Deep-minor plan: <slug>` for `level=minor`, etc.
 
 ## End-of-flow cleanup
 
-After the consumer's apply / cancel / abort step finishes (or after `abort` from phase 3), the workflow SHALL prompt the user once via `AskUserQuestion`:
+When the consumer re-invokes the workflow for cleanup (after its apply / cancel / abort step finishes, or after `abort` from phase 3), the workflow SHALL prompt the user once via `AskUserQuestion`:
 
 - **Question**: `Plan dir at <plan-dir>. Keep for inspection or delete?`
 - **Multi-select**: `false`
