@@ -9,7 +9,7 @@ Generic two-phase parallel-subagent research workflow. Given a pre-grouped set o
 
 This skill is reusable by every `/experiments:npm-update-deep-*` command (and, eventually, `commander:update-deep-*`). It is the orchestration layer; consumers wire scan → grouping → this skill → user-driven execution.
 
-The skill writes only under `~/.claude/experiments/plans/<slug>-<level>-<unix-ts>/`. It does NOT modify any workspace file. Bumping manifests / running installs / applying improvements are the caller's responsibility (see `/experiments:npm-update-deep-patch`).
+The skill writes only under `~/.claude/experiments/plans/<slug>-<level>-<unix-ts>[-N]/` (where `[-N]` is the optional collision suffix described in "Slug derivation"; omitted on the common no-collision path). It does NOT modify any workspace file. Bumping manifests / running installs / applying improvements are the caller's responsibility (see `/experiments:npm-update-deep-patch`).
 
 ## Inputs
 
@@ -41,7 +41,7 @@ If a writer encounters a record with the wrong field name (e.g., `manifest` inst
 ## Outputs (on disk)
 
 ```text
-~/.claude/experiments/plans/<slug>-<level>-<unix-ts>/
+~/.claude/experiments/plans/<slug>-<level>-<unix-ts>[-N]/   # [-N] appended only on same-second collisions (-2, -3, ...)
 ├── _meta.json          # global plan metadata (phase, level, scan summary, group ids)
 ├── scan.json           # raw ScanResult captured at invocation
 ├── plan.md             # final integrated plan written by the main agent in phase 4
@@ -99,8 +99,8 @@ If no stale entries exist, do not prompt — proceed silently. The skill SHALL N
 
 After phase 0, create the new plan directory:
 
-1. Compute `<slug>`, capture `level` from input, capture `<unix-ts> = now`.
-2. `mkdir -p ~/.claude/experiments/plans/<slug>-<level>-<unix-ts>/groups/`.
+1. Compute `<slug>`, capture `level` from input, capture `<unix-ts> = now`. Resolve any collision suffix per "Slug derivation" so the final basename `<plan-dir-name> = <slug>-<level>-<unix-ts>[-N]` is unique on disk.
+2. `mkdir -p ~/.claude/experiments/plans/<plan-dir-name>/groups/`.
 3. Write `scan.json` with the verbatim `scanResult` input (pretty-printed, 2-space indent).
 4. Write the global `_meta.json` (see schema below) with `phase: "scanning"`.
 
@@ -398,7 +398,7 @@ After the cleanup choice, the workflow returns control to the consumer. The cons
 
 ## Hard rules
 
-- The workflow SHALL NOT write outside `~/.claude/experiments/plans/<slug>-<level>-<unix-ts>/`.
+- The workflow SHALL NOT write outside `~/.claude/experiments/plans/<slug>-<level>-<unix-ts>[-N]/` (where `[-N]` is omitted unless collision resolution appended `-2`, `-3`, …).
 - The workflow SHALL NOT execute tests, lint, or build.
 - The workflow SHALL NOT create commits or PRs.
 - The workflow SHALL NOT auto-delete any plan dir without explicit user confirmation.
