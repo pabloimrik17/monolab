@@ -1,6 +1,6 @@
 ---
 name: parallel-research-workflow
-description: Use when a command needs to dispatch a two-phase parallel-subagent research workflow (changelog fetch → codebase research → integrity check → plan-mode synthesis) over a pre-grouped package set — for example `/experiments:npm-update-deep-patch` (and future deep-* siblings) after invoking `group-packages-for-research`. Trigger phrases include "dispatch research subagents over these groups", "run the deep-update workflow", or any flow that needs per-group changelog research persisted under `~/.claude/experiments/plans/`. Inputs `{ groups, level, scanResult }`; produces `<plan-dir>/plan.md` + per-group `_meta.json`, `changelogs/`, `research.md`. Never edits workspace files; bumps/applies are the caller's responsibility.
+description: Use when a command needs to dispatch a two-phase parallel-subagent research workflow (changelog fetch → codebase research → integrity check → plan-mode synthesis) over a pre-grouped package set — for example `/experiments:npm-update-deep-patch` (and future deep-* siblings) after invoking `group-packages-for-research`. Inputs `{ groups, level, scanResult }`; produces `<plan-dir>/plan.md` plus per-group `_meta.json`, `changelogs/`, and `research.md`. Never edits workspace files; bump/apply are the caller's responsibility.
 ---
 
 # parallel-research-workflow
@@ -79,7 +79,9 @@ The unix timestamp suffix (`<unix-ts>` = seconds since epoch at invocation) prov
 
 ## Phase 0 — Stale-plan cleanup (pre-step)
 
-Before creating the new plan directory, enumerate `~/.claude/experiments/plans/` and classify each child entry:
+Before creating the new plan directory, enumerate **only plan directories** under `~/.claude/experiments/plans/` whose basenames match the regex `^[a-z0-9-]+-(patch|minor|major|engines)-\d+(-\d+)?$` (i.e., `<slug>-<level>-<unix-ts>` with the optional collision suffix). Files and directories that do not match SHALL be ignored entirely — they are never read, never classified, and never offered for deletion.
+
+For each matching plan directory, classify it as:
 
 - **stale** if `_meta.json.createdAt` is more than 10 days old (relative to now), OR if `_meta.json` is missing / unreadable / fails to parse.
 - **fresh** otherwise.
@@ -311,7 +313,7 @@ After every batch of phase 1+2 has returned (or after `degrade-to-main-agent` wa
 
 If every group is healthy → set the global `_meta.json.phase` to `"planning"` and advance to phase 4.
 
-If at least one group is `failed` or `missing`, prompt the main agent's user via `AskUserQuestion` (the prompt is mandatory — DO NOT silently continue):
+If at least one group is `failed` or `missing` (excluding `expected-missing` in degraded mode — see "Degraded phase 3"), prompt the main agent's user via `AskUserQuestion` (the prompt is mandatory — DO NOT silently continue):
 
 - **Question**: `Research integrity check: <healthy>/<total> groups healthy. Non-healthy: <comma-separated groupIds>. How do you want to proceed?`
 - **Multi-select**: `false`
@@ -338,7 +340,7 @@ Healthy groups are immutable across retries — never re-dispatched, never re-wr
 If the user selected `degrade-to-main-agent` from the phase-1 hard-wall prompt, phase 3 still runs but with relaxed semantics:
 
 - Groups that DID complete cleanly before the hard wall → classified `healthy` as usual; their `research.md` feeds phase 4 normally.
-- Groups in batches that were never dispatched → classified `expected-missing` (a fourth class introduced only for the degraded path). These are NOT errors and SHALL NOT trigger the integrity prompt. They are recorded in `plan.md`'s `## Skipped or unavailable` section with the reason `research consolidated in main agent (subagent dispatch limited)`.
+- Groups in batches that were never dispatched → classified `expected-missing` (a fourth class introduced only for the degraded path). These are NOT errors and SHALL NOT trigger the integrity prompt. They are recorded in `plan.md`'s `## Skipped or unavailable` section with the constant reason string `research consolidated in main agent (subagent dispatch limited)` — phase 4 SHALL use this constant directly and SHALL NOT attempt to read `groups/<id>/_meta.json.errorReason` for `expected-missing` groups (the per-group `_meta.json` may not exist).
 - Groups that started but failed normally → classified `failed` and surfaced via the integrity prompt as usual (the user may still retry the few that legitimately failed even though others were dropped to degraded mode).
 
 The mandatory walk and the disk-truth rule still apply. The only thing the degraded path skips is the integrity prompt for the deliberately-undispatched batches.
@@ -366,7 +368,7 @@ When all groups are healthy or the user chose `continue-without`:
 
     ## Skipped or unavailable
 
-    - <groupId> — <reason copied from groups/<id>/\_meta.json.errorReason>.
+    - <groupId> — <reason>.
     - ...
 
     ## Patch bump set
@@ -376,7 +378,7 @@ When all groups are healthy or the user chose `continue-without`:
     | ...     | ...              | ...      |
     ```
 
-4. The four `H2` sections SHALL appear in this exact order: `Improvements (applicable to this codebase)`, `Workarounds resolved`, `Skipped or unavailable`, `Patch bump set`. Sections with zero items still appear with a single line under them (e.g. `_no improvements identified_`) — never omit the heading.
+4. The four `H2` sections SHALL appear in this exact order: `Improvements (applicable to this codebase)`, `Workarounds resolved`, `Skipped or unavailable`, `Patch bump set`. Sections with zero items still appear with a single line under them (e.g. `_no improvements identified_`) — never omit the heading. The `<reason>` cell in `Skipped or unavailable` rows is sourced as follows: for `failed`/`missing` groups, copy `groups/<id>/_meta.json.errorReason` verbatim; for `expected-missing` groups (degraded path), use the constant string `research consolidated in main agent (subagent dispatch limited)` without reading per-group meta.
 5. The `Patch bump set` table SHALL list every update from `scan.json` regardless of group health (i.e., even if a group's research is unavailable, its packages are still listed for bumping). Columns are exactly `package`, `current → target`, `location`. Rows sorted by `location` then `name` for stability.
 6. After plan mode ends and the user has reviewed `plan.md` (the user is the gate, not the workflow — the workflow does not auto-advance), the main agent updates `_meta.json.phase` to `"executing"` only when the consumer command (e.g. `/experiments:npm-update-deep-patch`) actually begins applying things. The workflow itself does not apply edits — it hands control back to the caller after writing `plan.md`.
 
