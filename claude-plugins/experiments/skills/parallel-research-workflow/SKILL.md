@@ -115,12 +115,15 @@ The skill SHALL NOT skip phases or move backwards. The skill SHALL NOT advance t
 ```json
 {
     "slug": "<string>",
+    "planDirName": "<string>",
     "level": "patch" | "minor" | "major" | "engines",
     "createdAt": "<ISO 8601>",
     "phase": "scanning" | "grouping" | "changelogs" | "research" | "integrity" | "planning" | "executing" | "done",
     "groupIds": ["<string>", ...]
 }
 ```
+
+`planDirName` is the chosen final directory name (just the basename — not the absolute path), including any deterministic collision suffix (`-2`, `-3`, …) appended for same-second collisions. Consumers reconstruct the absolute path as `~/.claude/experiments/plans/<planDirName>/`. Distinct from `slug`, which is the project identifier without level/timestamp/collision-suffix.
 
 `groupIds` is populated when the workflow advances to the `grouping` phase, with the deterministic order from the grouping skill's output.
 

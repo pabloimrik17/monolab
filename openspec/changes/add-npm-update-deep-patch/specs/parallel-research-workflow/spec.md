@@ -6,7 +6,7 @@ The skill SHALL create a plan directory at `~/.claude/experiments/plans/<slug>-<
 
 - `<slug>` is derived from the root `package.json#name` if present, else `basename(CWD)`. Sanitization: lowercase, replace any run of `[^a-z0-9]+` with `-`, trim leading and trailing `-`, truncate to 40 characters.
 - `<level>` is the level passed by the caller (one of `patch`, `minor`, `major`, `engines`).
-- `<unix-ts>` is the unix timestamp in seconds at invocation start. To guarantee uniqueness for same-second collisions, if the candidate directory already exists the skill SHALL deterministically append `-2`, `-3`, … (incrementing until a free name is found) so the final path becomes `<slug>-<level>-<unix-ts>[-N]`. The chosen final directory name SHALL be recorded in `_meta.json`.
+- `<unix-ts>` is the unix timestamp in seconds at invocation start. To guarantee uniqueness for same-second collisions, if the candidate directory already exists the skill SHALL deterministically append `-2`, `-3`, … (incrementing until a free name is found) so the final path becomes `<slug>-<level>-<unix-ts>[-N]`. The chosen final directory name SHALL be recorded in `_meta.json` under the `planDirName` field (basename only, including any collision suffix).
 
 The plan directory SHALL be created with these subpaths populated: `_meta.json` (global metadata), `scan.json` (verbatim copy of the `ScanResult` consumed by the workflow), and an empty `groups/` directory. `plan.md` is written later by the main agent.
 
@@ -63,12 +63,15 @@ The skill SHALL maintain a `_meta.json` file at the plan-directory root with the
 ```json
 {
   "slug": "<string>",
+  "planDirName": "<string>",
   "level": "patch" | "minor" | "major" | "engines",
   "createdAt": "<ISO 8601>",
   "phase": "scanning" | "grouping" | "changelogs" | "research" | "integrity" | "planning" | "executing" | "done",
   "groupIds": ["<string>", ...]
 }
 ```
+
+`planDirName` is the basename of the chosen plan directory (e.g. `monolab-source-patch-1745347200` or `monolab-source-patch-1745347200-2` when a collision suffix was appended). It is recorded so consumers can reconstruct the absolute path as `~/.claude/experiments/plans/<planDirName>/` even when the suffix is non-empty.
 
 The `phase` field SHALL advance monotonically through the listed values; the skill SHALL NOT skip phases or move backwards.
 
@@ -317,7 +320,7 @@ When all groups are healthy or the user chose `continue-without`, the main agent
 
 Each section is populated by reading the healthy groups' `research.md` files and the original `scan.json`. The "Patch bump set" section SHALL list every update from `scan.json` regardless of group health, formatted as a markdown table with columns `package | current → target | location`.
 
-The skill SHALL update the global `_meta.json.phase` to `"planning"` before entering plan mode and to `"executing"` after the user-driven execution step begins.
+The skill SHALL update the global `_meta.json.phase` to `"planning"` before entering plan mode. The skill SHALL NOT set `_meta.json.phase` to `"executing"` or `"done"`; advancing past `"planning"` is consumer-owned (the calling command sets these phases when applying begins or completes).
 
 #### Scenario: Plan mode entered
 

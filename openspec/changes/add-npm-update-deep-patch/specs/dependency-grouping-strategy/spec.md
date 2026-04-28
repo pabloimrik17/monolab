@@ -39,6 +39,8 @@ The skill SHALL coalesce all updates that share the same `@scope/` prefix into a
 
 The bucket key for a scoped name `@scope/pkg` SHALL be `<scope>` (lowercased). The bucket key for an unscoped name `pkg` SHALL be `solo-<pkg>`.
 
+These keys are the **raw bucket keys** used internally for bucketing only. The output `bucketKey` and `groupId` fields (see Group id generation and Output contract) SHALL use the **sanitized bucket key** derived from the raw key by lowercasing, replacing any run of `[^a-z0-9]+` with `-`, and trimming leading and trailing `-`. Implementations SHALL NOT emit the raw key in the output.
+
 #### Scenario: Scoped packages coalesce
 
 - **WHEN** the input contains `@tanstack/react-query`, `@tanstack/react-table`, `@tanstack/query-core`
