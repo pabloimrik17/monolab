@@ -40,7 +40,7 @@ If `updates.length === 0`:
 
 ## Step 3 — Group
 
-Invoke the `dependency-grouping-strategy` capability — implemented by the `group-packages-for-research` skill — passing `ScanResult.updates` as the input. Capture the resulting JSON:
+Invoke the `dependency-grouping-strategy` capability — implemented by the `group-packages-for-research` skill — passing an object input `{ updates: ScanResult.updates }` (and `maxPerGroup` only when explicitly overridden). Capture the resulting JSON:
 
 ```ts
 {
@@ -66,7 +66,10 @@ The workflow handles, in order, all of:
 
 Surface progress messages emitted by the workflow as they are produced. The command SHALL NOT advance the workflow's phases on its behalf, and SHALL NOT dispatch subagents itself — the workflow is fully responsible for the orchestration above. The command's only responsibility during Steps 4 is to wait for the workflow to finish.
 
-If the user picked `cancel` (in stale-cleanup) or `abort` (in integrity verification), the workflow returns an early-exit signal. In that case, skip directly to Step 8's cleanup prompt with no apply step.
+Early-exit handling:
+
+- If the user picked `cancel` in Phase 0 (stale-cleanup), the workflow exits before any plan dir is created. The command prints a short reasoned summary (`Cancelled by stale-cleanup. No files modified.`) and exits without reaching Step 8 — there is nothing to clean up.
+- If the user picked `abort` in Phase 1 (hard-wall) or Phase 3 (integrity), the workflow returns with the plan dir preserved. The command prints a short reasoned summary (`Aborted at hard-wall. No files modified.` for Phase 1; `Aborted on integrity check. No files modified.` for Phase 3), skips Steps 5–7 and goes directly to Step 8.
 
 ## Step 5 — Execution prompt
 
@@ -169,8 +172,8 @@ The improvements step SHALL NOT execute tests, lint, or build. SHALL NOT create 
 
 Free-form selection over both the improvement bullets and the bumps:
 
-1. Compute `IMPROVEMENT_TITLES = the leading text of each`-`bullet under`## Improvements (applicable to this codebase)`in`plan.md` (one identifier per bullet — keep enough context to disambiguate).
-2. Compute `BUMP_NAMES = unique package names from the`## Patch bump set` table.
+1. Compute `IMPROVEMENT_TITLES` = the leading text of each `-` bullet under `## Improvements (applicable to this codebase)` in `plan.md` (one identifier per bullet; keep enough context to disambiguate).
+2. Compute `BUMP_NAMES` = unique package names from the `## Patch bump set` table.
 3. Ask the user (free-form message, no AskUserQuestion):
 
     ```text
@@ -251,7 +254,7 @@ Cancelled. No files modified.
 
 Delegate the cleanup prompt to the `parallel-research-workflow` skill (it owns the `delete-plan` / `keep-plan` choice). The command SHALL NOT prompt for cleanup itself — there is exactly one cleanup prompt per invocation.
 
-If the workflow returned early (Step 4 cancel/abort), the cleanup prompt still fires (the workflow handles that case). For `apply-*` paths, the cleanup prompt fires after the summary in Step 7 prints.
+The command invokes the workflow's cleanup exactly once at this step. The workflow then prompts the user (`delete-plan` / `keep-plan`) and acts on the choice before returning. This applies to every path that reaches Step 8: `abort` from Phase 1 or Phase 3, and any `apply-*` path (after Step 7's summary prints). Phase 0 `cancel` does not reach Step 8 (see Step 4).
 
 ## Hard rules
 

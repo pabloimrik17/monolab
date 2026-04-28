@@ -104,11 +104,11 @@ After phase 0, create the new plan directory:
 3. Write `scan.json` with the verbatim `scanResult` input (pretty-printed, 2-space indent).
 4. Write the global `_meta.json` (see schema below) with `phase: "scanning"`.
 
-After this step, the global phase advances monotonically through:
+After this step, the global phase advances monotonically up to and including `planning` (workflow-owned phases):
 
-`scanning` → `grouping` → `changelogs` → `research` → `integrity` → `planning` → `executing` → `done`
+`scanning` → `grouping` → `changelogs` → `research` → `integrity` → `planning`
 
-The skill SHALL NOT skip phases or move backwards. Each transition writes the new phase to `_meta.json` atomically (write to `_meta.json.tmp`, rename).
+The skill SHALL NOT skip phases or move backwards. The skill SHALL NOT advance the phase past `planning` — `executing` and `done` are consumer-owned (the calling command sets them in its own `_meta.json` updates). Each transition writes the new phase to `_meta.json` atomically (write to `_meta.json.tmp`, rename).
 
 ### Global `_meta.json` schema
 
@@ -159,7 +159,7 @@ When the global phase transitions to `changelogs`, dispatch subagents in **seque
     3. Walk the batch's `groups/<id>/_meta.json` files. Surface a one-line progress message `Batch <n>/<total>: <healthy>/<batch-size> groups completed cleanly.`
     4. **Hard-wall detection**: if **every** subagent in the batch returned with `phase: "pending"` and `status: "pending"` (i.e. none even started — the dispatch itself was denied/rate-limited rather than the work failing), enter the **degraded-mode prompt** below before starting the next batch. Per-package fetch failures inside groups that DID start are NOT a hard wall — those are handled by the per-group transition rules.
 
-The skill SHALL NOT skip ahead to the next batch while subagents from the current batch are in flight. The skill SHALL NOT collapse all batches into a single dispatch even when `groups.length <= maxConcurrent` is false — the cap is a hard limit, not a hint.
+The skill SHALL NOT skip ahead to the next batch while subagents from the current batch are in flight. The skill SHALL NOT exceed `maxConcurrent` in any batch — the cap is a hard limit, not a hint. A single batch is allowed only when `groups.length <= maxConcurrent`; otherwise groups SHALL be split into sequential batches.
 
 ### Degraded-mode prompt (hard-wall fallback)
 

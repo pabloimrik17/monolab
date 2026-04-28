@@ -21,7 +21,7 @@ The skill SHALL NOT mutate the `updates` array.
 
 ### Requirement: Deterministic ordering
 
-The skill SHALL sort the input by package `name` ascending using a stable, locale-insensitive comparison before any partitioning. The same input array SHALL always produce the same group partition and the same group ids.
+The skill SHALL sort the input by package `name` ascending before any partitioning, using lexicographic comparison by Unicode code points (i.e., direct codepoint-by-codepoint comparison — equivalent to JavaScript's default `Array.prototype.sort` on strings, NOT `String.prototype.localeCompare`). The sort SHALL be stable: records with identical names preserve their input order. The same input array SHALL always produce the same group partition and the same group ids.
 
 #### Scenario: Stable sort
 
@@ -80,7 +80,7 @@ The skill SHALL split any bucket whose package count exceeds `MAX_PER_GROUP` (de
 
 ### Requirement: Group id generation
 
-Each group SHALL receive a deterministic id of the form `<bucket-key>-<n>` where `<n>` is a 1-indexed sequence number within the bucket after splitting. The id SHALL be lowercase. Bucket keys SHALL be sanitized by replacing any run of `[^a-z0-9]+` with `-` and trimming leading and trailing `-`.
+Each group SHALL receive a deterministic id of the form `<sanitized-bucket-key>-<n>` where `<n>` is a 1-indexed sequence number within the bucket after splitting. The id SHALL be lowercase. The sanitized bucket key SHALL be derived from the raw bucket key (`<scope>` for scoped, `solo-<pkg>` for unscoped) by lowercasing, replacing any run of `[^a-z0-9]+` with `-`, and trimming leading and trailing `-`. The same sanitized value SHALL be emitted as `bucketKey` in the output (see Output contract); raw logical keys SHALL NOT appear in the output.
 
 #### Scenario: Single-chunk scoped bucket
 

@@ -6,7 +6,7 @@ The skill SHALL create a plan directory at `~/.claude/experiments/plans/<slug>-<
 
 - `<slug>` is derived from the root `package.json#name` if present, else `basename(CWD)`. Sanitization: lowercase, replace any run of `[^a-z0-9]+` with `-`, trim leading and trailing `-`, truncate to 40 characters.
 - `<level>` is the level passed by the caller (one of `patch`, `minor`, `major`, `engines`).
-- `<unix-ts>` is the unix timestamp in seconds at invocation start.
+- `<unix-ts>` is the unix timestamp in seconds at invocation start. To guarantee uniqueness for same-second collisions, if the candidate directory already exists the skill SHALL deterministically append `-2`, `-3`, … (incrementing until a free name is found) so the final path becomes `<slug>-<level>-<unix-ts>[-N]`. The chosen final directory name SHALL be recorded in `_meta.json`.
 
 The plan directory SHALL be created with these subpaths populated: `_meta.json` (global metadata), `scan.json` (verbatim copy of the `ScanResult` consumed by the workflow), and an empty `groups/` directory. `plan.md` is written later by the main agent.
 
@@ -138,7 +138,7 @@ The canonical fields for per-group `_meta.json.packages[]` items are: `name`, `f
 
 When the workflow's phase transitions to `changelogs`, the skill SHALL dispatch subagents in **sequential batches** of size `maxConcurrent` (default `5`, range `[1, 10]`). Within a batch, all subagents SHALL be dispatched in a single dispatch step (parallel). Batches themselves SHALL be sequential — batch N+1 SHALL NOT start before every subagent in batch N has returned.
 
-The skill SHALL NOT collapse all groups into a single dispatch even when the group count is small enough to fit; the cap is a hard limit, not a hint. The skill SHALL surface a one-line progress message after each batch completes.
+A single batch is allowed only when `groups.length <= maxConcurrent`; otherwise the skill SHALL split groups into sequential batches of at most `maxConcurrent`. The skill SHALL NOT exceed `maxConcurrent` in any batch — the cap is a hard limit, not a hint, and SHALL NOT be inflated to fit a larger group count into one dispatch. The skill SHALL surface a one-line progress message after each batch completes.
 
 Each subagent SHALL:
 

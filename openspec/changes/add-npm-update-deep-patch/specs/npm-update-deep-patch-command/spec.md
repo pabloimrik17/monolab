@@ -48,7 +48,7 @@ If the scan returns `updates.length === 0`, the command SHALL:
 
 ### Requirement: Workflow orchestration
 
-When the scan returns one or more updates, the command SHALL invoke the `dependency-grouping-strategy` skill with the `ScanResult.updates` array, then invoke the `parallel-research-workflow` skill with the resulting groups, the level `patch`, and the verbatim `ScanResult` (so the workflow can persist `scan.json`). The command SHALL surface progress messages emitted by the workflow but SHALL NOT advance phases on the workflow's behalf.
+When the scan returns one or more updates, the command SHALL invoke the `dependency-grouping-strategy` skill with object input `{ updates: ScanResult.updates }` (and `maxPerGroup` only when explicitly overridden), then invoke the `parallel-research-workflow` skill with the resulting groups, the level `patch`, and the verbatim `ScanResult` (so the workflow can persist `scan.json`). The command SHALL surface progress messages emitted by the workflow but SHALL NOT advance phases on the workflow's behalf.
 
 #### Scenario: Grouping precedes workflow dispatch
 

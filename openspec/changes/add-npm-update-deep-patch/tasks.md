@@ -18,7 +18,7 @@
 - [x] 2.4 Document the stale-cleanup pre-step: enumerate `~/.claude/experiments/plans/`, classify by `_meta.json.createdAt > 10 days` or unreadable meta, prompt with `delete-stale` / `keep-stale` / `cancel`
 - [x] 2.5 Specify the global `_meta.json` schema with the monotonic phase enum (`scanning` → `grouping` → `changelogs` → `research` → `integrity` → `planning` → `executing` → `done`)
 - [x] 2.6 Specify the per-group `groups/<id>/_meta.json` schema (`groupId`, `packages[]`, `phase`, `status`, timing, `errorPhase`, `errorReason`)
-- [x] 2.7 Document phase 1 (parallel changelog fetch): one subagent per group dispatched together, each invoking `experiments:npm-changelog` per package, writing under `groups/<id>/changelogs/<package-basename>/`, recording per-package failures inline as `error.txt`
+- [x] 2.7 Document phase 1 (parallel changelog fetch): one subagent per group dispatched in sequential batches capped by `maxConcurrent`, each invoking `experiments:npm-changelog` per package, writing under `groups/<id>/changelogs/<package-basename>/`, recording per-package failures inline as `error.txt`
 - [x] 2.8 Specify the phase-1 → phase-2 transition rule: at least one package fetched successfully → continue; all packages failed → mark group `status: error`, `errorPhase: changelogs`, exit
 - [x] 2.9 Document phase 2 (codebase research): subagent reads changelogs + codebase context, writes `research.md` with the two fixed sections per package (`Workarounds resolved`, `Improvements applicable`), 80/20 effort split, opportunity-level only — no code, no line numbers, no diff sketches
 - [x] 2.10 Document the `_no findings_` sentinel rule and the no-code-suggestions rule
@@ -40,7 +40,7 @@
 - [x] 3.7 Step 6a — `apply-all` and `apply-bumps-only` paths: bump every package via the same mechanism as `npm-update-patch` (ncu for `package.json`, in-memory edit for `pnpm-workspace.yaml#catalog`), one install at the end
 - [x] 3.8 Step 6b — `apply-all` (improvements): re-enter plan mode with the improvement bullets in scope and drive main-agent edits per the plan
 - [x] 3.9 Step 6c — `pick-subset` path: free-form selection over both improvements and bumps; validate selections against the plan content; reuse 6a/6b mechanisms for the chosen subset
-- [x] 3.10 Step 6d — `cancel` path: print `Cancelled. No files modified.` and skip to Step 7's cleanup prompt
+- [x] 3.10 Step 6d — `cancel` path: print `Cancelled. No files modified.` and skip to Step 8's cleanup prompt
 - [x] 3.11 Step 7 — final summary: emit the conditional sections (`Applied bumps`, `Applied improvements`, `Skipped improvements`, `Skipped or unavailable groups`, `Install`, `Suggested next steps`) per the spec, omitting zero-count sections except `Suggested next steps`
 - [x] 3.12 Step 8 — cleanup prompt delegated to the workflow skill (no double prompt)
 - [x] 3.13 Document all command-level hard rules verbatim: never run tests/lint/build, never commit/PR, never modify files on `cancel`, never mutate consumer `catalog:` references
