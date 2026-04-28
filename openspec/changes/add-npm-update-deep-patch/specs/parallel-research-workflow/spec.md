@@ -170,6 +170,29 @@ Within a batch, the skill SHALL NOT block phase 2 of group A on phase 1 of group
 - **WHEN** every package in a group fails the changelog phase
 - **THEN** the group's `_meta.json` is set to `phase: "changelogs"`, `status: "error"`, `errorPhase: "changelogs"`, `errorReason` summarizing the per-package reasons, and the subagent does not run phase 2
 
+### Requirement: Subagent dispatch prompt template
+
+Each subagent dispatched in phase 1+2 SHALL receive a prompt that explicitly enforces non-termination across two failure modes observed in dry-runs: (a) returning the `experiments:npm-changelog` skill's structured summary as the agent's final answer, and (b) returning the first per-package failure (notably `no_changelog_source` for `@types/*`) as the agent's final answer.
+
+The dispatch prompt SHALL include, at minimum: numbered execution steps; an explicit rule that the `npm-changelog` skill output is INTERMEDIATE data and the subagent MUST NOT terminate after invoking it; explicit handling for `no_changelog_source` (write `error.txt`, continue); a required final-response format `<groupId>: ok — <fetched>/<total> changelogs; <researched> researched.`; and a closing reminder that the task is incomplete if `research.md` is missing in the success path or `_meta.json` is not updated.
+
+The skill SHALL NOT dispatch a subagent with a looser prompt; substitution is a spec violation.
+
+#### Scenario: Skill output is intermediate
+
+- **WHEN** a subagent invokes `experiments:npm-changelog` and receives a "All N versions cached and verified..." summary
+- **THEN** the dispatch prompt mandates the subagent treat that summary as intermediate and continue to the next package, ultimately writing `research.md` and updating `_meta.json` before returning
+
+#### Scenario: no_changelog_source does not abort the subagent
+
+- **WHEN** the first package processed by a subagent returns `no_changelog_source`
+- **THEN** the subagent writes `error.txt` for that package and continues with the remaining packages in the group; it SHALL NOT terminate after the first failure
+
+#### Scenario: Final-response format is enforced
+
+- **WHEN** the subagent completes phase 2 successfully
+- **THEN** its final response is a single line in the form `<groupId>: ok — <fetched>/<total> changelogs; <researched> researched.` with no surrounding prose or markdown
+
 ### Requirement: Subagent dispatch hard-wall fallback
 
 If every subagent in a single batch returns with `phase: "pending"` and `status: "pending"` (i.e. none even started — the dispatch itself was denied or rate-limited rather than the work failing), the skill SHALL classify the batch as **hard-walled** and prompt the user once via `AskUserQuestion` before starting the next batch.

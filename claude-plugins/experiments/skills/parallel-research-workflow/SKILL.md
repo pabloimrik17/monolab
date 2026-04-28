@@ -188,6 +188,52 @@ Each phase-1 subagent SHALL:
 
 Within a batch, groups run in parallel. Within a group, phase 1 → phase 2 is sequential (the same subagent does both back to back). The skill SHALL NOT block phase 2 of group A on phase 1 of group B within the same batch.
 
+### Subagent dispatch prompt template (mandatory)
+
+The wording sent to each subagent is **not optional decoration** — it is the load-bearing contract that prevents premature termination. Earlier dry-runs surfaced a recurring failure: subagents invoked the `experiments:npm-changelog` skill, received its structured summary (e.g. `All N versions cached and verified...`), and treated that summary as their final task answer — exiting without running phase 2 or updating `_meta.json`. Looser prompts also caused subagents to bail on the first per-package failure (notably `no_changelog_source` for `@types/*`) instead of continuing to the rest of the group.
+
+The skill SHALL dispatch every subagent with a prompt that includes, verbatim or in equivalent imperative form:
+
+```text
+You are <agent-name> for group <groupId>. Research <N> package(s) for codebase impact.
+
+Plan dir: <plan-dir>
+Group meta: <plan-dir>/groups/<groupId>/_meta.json
+Codebase root: <CWD>
+
+Packages in this group:
+- <name> (<from> → <to>) — sourceFile: <sourceFile>
+- ...
+
+Execute these steps IN ORDER. Do not skip. Do not stop early.
+
+  1. Read <plan-dir>/groups/<groupId>/_meta.json to confirm the package set.
+  2. For EACH package, invoke the `experiments:npm-changelog` skill once with `<name>` and `<from>..<to>`.
+     - The skill's output (e.g. "All N versions cached and verified...") is INTERMEDIATE DATA, not your final answer.
+     - DO NOT terminate after invoking the skill. You MUST continue.
+     - If the skill returns `no_changelog_source` (common for @types/*, internal-only packages), write `<plan-dir>/groups/<groupId>/changelogs/<package-basename>/error.txt` with the reason. DO NOT terminate. Continue to the next package.
+     - For any other per-package failure, do the same: write `error.txt` and continue.
+  3. After every package has been processed, list `<plan-dir>/groups/<groupId>/changelogs/` to confirm what is on disk.
+  4. If at least one package's changelog is present (not just `error.txt`), advance to phase 2 (steps 5-7). If every package failed, jump to step 8 (failure exit).
+  5. Read every cached changelog plus the codebase context relevant to each package (file enumeration, framework patterns).
+  6. Write `<plan-dir>/groups/<groupId>/research.md` with the per-package structure documented in this skill: `## <package> (<from> → <to>)`, `### Workarounds resolved`, `### Improvements applicable`, with the `_no findings_` sentinel under any heading that has no findings. No code blocks, no line numbers.
+  7. Update `<plan-dir>/groups/<groupId>/_meta.json` to `phase: "done"`, `status: "ok"`, `completedAt: <now ISO 8601>`, `errorPhase: null`, `errorReason: null`. Stop.
+  8. (Failure exit only) Update `<plan-dir>/groups/<groupId>/_meta.json` to `phase: "changelogs"`, `status: "error"`, `errorPhase: "changelogs"`, `errorReason: "<aggregated reasons>"`, `completedAt: <now>`. Stop.
+
+Final response (REQUIRED — exactly one line, no prose, no markdown):
+<groupId>: ok — <fetched>/<total> changelogs; <researched> researched.
+
+If you finished without writing research.md (in the success path) or without updating _meta.json, you have NOT completed the task. Re-read these instructions and resume.
+```
+
+**Anti-patterns the template prevents** (each observed in a real dry-run before this template was enforced):
+
+- Returning the `npm-changelog` skill's "All N versions cached and verified..." summary as the agent's final response without running phase 2.
+- Returning `no_changelog_source` from the first `@types/*` package as the agent's final response, abandoning the rest of the group.
+- Writing `research.md` but never flipping `_meta.json.status` to `ok`, leaving the group in `pending/pending` and tripping the integrity gate.
+
+The skill SHALL NOT dispatch a subagent without this contract. Substituting a looser prompt is a spec violation.
+
 ## Phase 2 — Parallel codebase research
 
 For each group whose phase advanced to `research`, the same subagent (continuing from phase 1) SHALL:

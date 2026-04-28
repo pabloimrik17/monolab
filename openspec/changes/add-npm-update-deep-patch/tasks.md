@@ -111,6 +111,7 @@
 - [x] 10.7 Promote phase 3 to a mandatory gate in `parallel-research-workflow/SKILL.md` (global phase MUST advance through `integrity` before `planning`; classification reads from disk, not memory; degraded-path `expected-missing` class)
 - [x] 10.8 Update the delta spec `Requirement: Phase 3` to "Phase 3 — integrity verification (mandatory gate)" with new scenarios (phase advances to integrity, disk truth over memory, expected-missing in degraded path)
 - [x] 10.9 Re-validate change post-edits via `openspec validate add-npm-update-deep-patch` (passes)
+- [x] 10.11 Root cause for the original stalls (per second monolab dry-run): subagents treated `npm-changelog` skill output as their final response. Added mandatory `Subagent dispatch prompt template` section to SKILL.md and matching delta-spec requirement with three scenarios (intermediate output, no_changelog_source continuation, final-response format).
 - [ ] 10.10 Manual re-test on monolab: confirm batching produces sequential `Batch n/total` progress lines, phase 3 prompt fires when groups stall, and `_meta.json` writers use `sourceFile` consistently
 
 ## 11. Manual verification — coverage from initial monolab run (2026-04-27)
