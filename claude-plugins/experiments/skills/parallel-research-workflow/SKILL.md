@@ -189,7 +189,7 @@ Each phase-1 subagent SHALL:
     - **At least one package succeeded** → update `_meta.json` to `phase: "research"`, leave `status` as `pending`, and proceed to phase 2 within the same subagent.
     - **Every package failed** → update `_meta.json` to `phase: "changelogs"`, `status: "error"`, `errorPhase: "changelogs"`, `errorReason: "<aggregated reasons>"`, `completedAt: <now>`. Exit the subagent without running phase 2.
 
-Within a batch, groups run in parallel. Within a group, phase 1 → phase 2 is sequential (the same subagent does both back to back). The skill SHALL NOT block phase 2 of group A on phase 1 of group B within the same batch.
+Within a batch, groups run in parallel. Within a group, phase 1 → phase 2 is sequential (the same subagent does both back-to-back). The skill SHALL NOT block phase 2 of group A on phase 1 of group B within the same batch.
 
 ### Subagent dispatch prompt template (mandatory)
 
