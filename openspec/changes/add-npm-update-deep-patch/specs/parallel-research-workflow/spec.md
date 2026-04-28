@@ -118,9 +118,29 @@ The skill SHALL initialize this file with `phase: "pending"`, `status: "pending"
 - **WHEN** the changelogs phase fails for the group with reason `rate limited by GitHub`
 - **THEN** `_meta.json` has `phase: "changelogs"`, `status: "error"`, `errorPhase: "changelogs"`, `errorReason: "rate limited by GitHub"`, `completedAt` set
 
-### Requirement: Phase 1 — parallel changelog fetch
+### Requirement: Field naming conventions
 
-When the workflow's phase transitions to `changelogs`, the skill SHALL dispatch one subagent per group in parallel. Each subagent SHALL:
+The skill SHALL use a fixed vocabulary for persistent JSON fields. Implementations SHALL NOT silently accept synonyms or aliases; encountering a non-canonical field name (e.g. `manifest` in place of `sourceFile`) SHALL cause the record to be treated as malformed.
+
+The canonical fields for per-group `_meta.json.packages[]` items are: `name`, `from`, `to`, `location`, `sourceFile`. The global `scan.json` retains the upstream `experiments:scan-npm-updates` vocabulary (`currentVersion`, `targetVersion`); the two artifacts SHALL NOT be unified.
+
+#### Scenario: Canonical fields written
+
+- **WHEN** the skill initializes a group's `_meta.json`
+- **THEN** every package record contains exactly the keys `name`, `from`, `to`, `location`, `sourceFile` and SHALL NOT contain `manifest`, `path`, `file`, `currentVersion`, or `targetVersion`
+
+#### Scenario: Aliased field rejected on read
+
+- **WHEN** a downstream consumer reads a `_meta.json` whose package record contains `manifest` instead of `sourceFile`
+- **THEN** the consumer SHALL classify the record as malformed and SHALL NOT silently treat `manifest` as `sourceFile`
+
+### Requirement: Phase 1 — batched parallel changelog fetch
+
+When the workflow's phase transitions to `changelogs`, the skill SHALL dispatch subagents in **sequential batches** of size `maxConcurrent` (default `5`, range `[1, 10]`). Within a batch, all subagents SHALL be dispatched in a single dispatch step (parallel). Batches themselves SHALL be sequential — batch N+1 SHALL NOT start before every subagent in batch N has returned.
+
+The skill SHALL NOT collapse all groups into a single dispatch even when the group count is small enough to fit; the cap is a hard limit, not a hint. The skill SHALL surface a one-line progress message after each batch completes.
+
+Each subagent SHALL:
 
 1. Read its group's `_meta.json` to determine the package set.
 2. For each package, invoke the `experiments:npm-changelog` skill once with the package name and version range `<from>..<to>`.
@@ -128,12 +148,17 @@ When the workflow's phase transitions to `changelogs`, the skill SHALL dispatch 
 4. On per-package failure, record the error inline within `changelogs/<package-basename>/error.txt` and continue to the next package.
 5. After all packages have been attempted, update its group's `_meta.json` to `phase: "research"` and proceed to phase 2 if at least one package succeeded; otherwise set `status: "error"`, `errorPhase: "changelogs"`, `errorReason: "<aggregated reasons>"`, `completedAt: <now>`, and exit.
 
-The skill SHALL NOT block phase 2 of group A on phase 1 of group B; each group's two phases run sequentially within the group, but groups run in parallel.
+Within a batch, the skill SHALL NOT block phase 2 of group A on phase 1 of group B; each group's two phases run sequentially within the group, but groups within the same batch run in parallel.
 
-#### Scenario: All groups dispatched in parallel
+#### Scenario: Groups split into batches
 
-- **WHEN** grouping yields three groups
-- **THEN** three subagents are dispatched in a single dispatch step (not sequentially)
+- **WHEN** grouping yields 13 groups and `maxConcurrent` is `5`
+- **THEN** the skill dispatches three batches of size 5, 5, 3 sequentially; batch 2 starts only after every subagent in batch 1 has returned
+
+#### Scenario: Single batch when count fits
+
+- **WHEN** grouping yields 4 groups and `maxConcurrent` is `5`
+- **THEN** the skill dispatches all 4 groups in a single batch
 
 #### Scenario: Per-package failure does not abort the group
 
@@ -144,6 +169,29 @@ The skill SHALL NOT block phase 2 of group A on phase 1 of group B; each group's
 
 - **WHEN** every package in a group fails the changelog phase
 - **THEN** the group's `_meta.json` is set to `phase: "changelogs"`, `status: "error"`, `errorPhase: "changelogs"`, `errorReason` summarizing the per-package reasons, and the subagent does not run phase 2
+
+### Requirement: Subagent dispatch hard-wall fallback
+
+If every subagent in a single batch returns with `phase: "pending"` and `status: "pending"` (i.e. none even started — the dispatch itself was denied or rate-limited rather than the work failing), the skill SHALL classify the batch as **hard-walled** and prompt the user once via `AskUserQuestion` before starting the next batch.
+
+The prompt SHALL offer exactly three options: `retry-current-batch` (re-dispatch this batch only), `degrade-to-main-agent` (abandon subagent dispatch for the remaining un-dispatched batches and synthesize `plan.md` directly in the main agent using already-cached changelogs under `~/.claude/changelogs/`), and `abort` (exit cleanly, plan dir preserved). The skill SHALL NOT auto-retry a hard-walled batch.
+
+When `degrade-to-main-agent` is selected, the resulting `plan.md` SHALL include a one-line banner identifying which `groupIds` were not dispatched and noting that research was consolidated in the main agent. Per-package failures inside groups that DID start are NOT a hard wall and SHALL NOT trigger this prompt.
+
+#### Scenario: Hard wall fires prompt
+
+- **WHEN** every subagent in batch 1 of 3 returns with `phase: "pending"`, `status: "pending"`
+- **THEN** the workflow fires the hard-wall prompt before starting batch 2
+
+#### Scenario: Per-package failure does not fire prompt
+
+- **WHEN** all subagents in a batch start and run, but each ends with `status: "error"` due to per-package fetch failures
+- **THEN** the workflow does NOT fire the hard-wall prompt; the failures are surfaced via the phase 3 integrity prompt instead
+
+#### Scenario: Degrade-to-main-agent banner
+
+- **WHEN** the user selects `degrade-to-main-agent` after batch 2 of 4 hard-walls
+- **THEN** the resulting `plan.md` contains a banner naming the un-dispatched batch-3 and batch-4 group ids and stating research was consolidated in the main agent
 
 ### Requirement: Phase 2 — parallel codebase research
 
@@ -179,26 +227,46 @@ If the subagent encounters an unrecoverable error during phase 2, it SHALL updat
 - **WHEN** phase 2 errors out for a group whose phase 1 succeeded
 - **THEN** `groups/<id>/changelogs/` is preserved on disk, `_meta.json` is set to `phase: "research"`, `status: "error"`, `errorPhase: "research"`, and `research.md` is not written
 
-### Requirement: Phase 3 — integrity verification
+### Requirement: Phase 3 — integrity verification (mandatory gate)
 
-When every dispatched subagent has returned, the main agent SHALL classify each group:
+Phase 3 is a **mandatory gate**: the global `_meta.json.phase` SHALL NOT advance to `"planning"` without phase 3 completing first. Skipping phase 3 — even when the workflow believes all groups succeeded — is a spec violation.
 
-- **healthy** if the group's `_meta.json` has `phase: "done"` and `status: "ok"`.
-- **failed** if `status: "error"` (regardless of phase) or `phase !== "done"` after all subagents have returned.
-- **missing** if the group id is listed in the global `_meta.json.groupIds` but `groups/<id>/` does not exist on disk.
+After every batch of phase 1+2 has returned (or after `degrade-to-main-agent` was selected from the hard-wall prompt), the skill SHALL:
 
-If at least one group is `failed` or `missing`, the main agent SHALL prompt via `AskUserQuestion` with these options:
+1. Set the global `_meta.json.phase` to `"integrity"`.
+2. Enumerate every `groupId` listed in the global `_meta.json.groupIds`.
+3. For each `groupId`, read `groups/<groupId>/_meta.json` from disk and classify:
+   - **healthy** if the file exists AND `phase: "done"` AND `status: "ok"`.
+   - **failed** if the file exists AND (`status: "error"` OR `phase !== "done"`).
+   - **missing** if the file does not exist on disk.
+4. Classification SHALL be done by reading from disk, not from in-memory state — disk is the source of truth.
 
-- `retry-failed` — re-dispatch only the non-healthy groups (phase 1 + phase 2 from scratch for each).
+If every group is `healthy`, the skill SHALL set the global `_meta.json.phase` to `"planning"` and advance to phase 4 silently.
+
+If at least one group is `failed` or `missing`, the main agent SHALL prompt via `AskUserQuestion` (the prompt is mandatory — the skill SHALL NOT silently continue) with these options:
+
+- `retry-failed` — re-dispatch only the non-healthy groups (phase 1 + phase 2 from scratch for each), respecting `maxConcurrent` batching.
 - `continue-without` — proceed to phase 4 using only the healthy groups; non-healthy groups SHALL be documented in the resulting `plan.md`.
 - `abort` — exit cleanly. The plan dir is preserved.
 
 The skill SHALL NOT auto-retry non-healthy groups.
 
+In the degraded path (after `degrade-to-main-agent`), groups in batches that were never dispatched SHALL be classified `expected-missing` (a path-only fourth class) and SHALL be documented in `plan.md`'s `## Skipped or unavailable` section without firing the integrity prompt for them; legitimately failed or missing groups still trigger the prompt as usual.
+
+#### Scenario: Phase advances to integrity before planning
+
+- **WHEN** every batch of phase 1+2 has returned and all groups are healthy
+- **THEN** the global `_meta.json.phase` is set to `"integrity"` first, then to `"planning"`, never directly from `"changelogs"` to `"planning"`
+
+#### Scenario: Disk truth over in-memory state
+
+- **WHEN** the workflow's in-memory tracking believes a group succeeded but `groups/<id>/_meta.json` on disk shows `status: "pending"`
+- **THEN** the integrity walk classifies the group as `failed` and the prompt fires
+
 #### Scenario: All groups healthy proceeds to plan
 
 - **WHEN** every group has `phase: "done"` and `status: "ok"`
-- **THEN** no integrity prompt is shown and the workflow advances to phase 4
+- **THEN** no integrity prompt is shown and the workflow advances to phase 4 after setting phase to `"integrity"` then `"planning"`
 
 #### Scenario: Mixed health prompts user
 
@@ -214,6 +282,11 @@ The skill SHALL NOT auto-retry non-healthy groups.
 
 - **WHEN** the user selects `continue-without` with one failed group `vitest-1`
 - **THEN** the eventual `plan.md` contains a `## Skipped or unavailable` section listing `vitest-1` and its `errorReason`
+
+#### Scenario: Expected-missing groups in degraded path
+
+- **WHEN** the user selected `degrade-to-main-agent` and 8 of 20 groups were never dispatched
+- **THEN** the integrity walk classifies those 8 as `expected-missing`, does NOT fire the prompt for them, and the resulting `plan.md` lists them under `## Skipped or unavailable`
 
 ### Requirement: Phase 4 — plan synthesis in plan mode
 

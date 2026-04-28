@@ -16,8 +16,27 @@ The skill writes only under `~/.claude/experiments/plans/<slug>-<level>-<unix-ts
 - **`groups`** (required): array of group records as emitted by `group-packages-for-research` — `[{ groupId, bucketKey, packages: [...] }]`.
 - **`level`** (required): one of `patch` | `minor` | `major` | `engines`. Embedded into the plan-dir slug and into `_meta.json.level`. Determines the title of `plan.md` (e.g. `Deep-patch plan: <slug>`).
 - **`scanResult`** (required): the verbatim `ScanResult` JSON from `experiments:scan-npm-updates`. Persisted as `scan.json` so the main agent can reconstruct the full bump set in phase 4.
+- **`maxConcurrent`** (optional, integer, default `5`): per-batch concurrency cap for phase-1+2 subagent dispatch. Inclusive valid range `[1, 10]`. A value outside this range aborts with `Error: maxConcurrent must be between 1 and 10, got <value>.` See "Phase 1" for batching semantics.
 
 The skill SHALL NOT mutate any input.
+
+## Field naming conventions (canonical vocabulary)
+
+The persistent JSON written by this workflow uses a fixed vocabulary. Implementations MUST use these exact field names — no synonyms, no abbreviations. Drift between parallel writers is a real risk.
+
+**Per-group `_meta.json.packages[]` items:**
+
+| Field        | Type   | Example                      | Notes                                                                              |
+| ------------ | ------ | ---------------------------- | ---------------------------------------------------------------------------------- |
+| `name`       | string | `@tanstack/react-query`      | Full package name including any `@scope/` prefix.                                  |
+| `from`       | string | `5.90.18`                    | Current semver. NOT `currentVersion`, NOT `current`.                               |
+| `to`         | string | `5.90.20`                    | Target semver. NOT `targetVersion`, NOT `target`.                                  |
+| `location`   | string | `workspace:@m0n0lab/qup-api` | Workspace identifier or `root` or `catalog:<name>`. Mirrors `ScanResult.location`. |
+| `sourceFile` | string | `apps/qup-api/package.json`  | Relative path from workspace root. NOT `manifest`, NOT `path`, NOT `file`.         |
+
+**Global `scan.json`** is the verbatim `ScanResult` from `experiments:scan-npm-updates` and uses that skill's vocabulary (`currentVersion` / `targetVersion`). Per-group meta intentionally uses the terser `from`/`to`; do NOT unify — the two artifacts have distinct consumers and contracts.
+
+If a writer encounters a record with the wrong field name (e.g., `manifest` instead of `sourceFile`), it SHALL treat the record as malformed, NOT silently accept the alias.
 
 ## Outputs (on disk)
 
@@ -124,9 +143,40 @@ The skill SHALL NOT skip phases or move backwards. Each transition writes the ne
 
 Initialize each group's `_meta.json` with `phase: "pending"`, `status: "pending"`, `completedAt: null`, `errorPhase: null`, `errorReason: null`, and `startedAt` set to the dispatch timestamp before the group's first subagent runs. `from`/`to` mirror the `currentVersion`/`targetVersion` of each scan record.
 
-## Phase 1 — Parallel changelog fetch
+## Phase 1 — Batched parallel changelog fetch
 
-When the global phase transitions to `changelogs`, dispatch **one subagent per group**, all in a single dispatch step (not sequentially). Each phase-1 subagent SHALL:
+When the global phase transitions to `changelogs`, dispatch subagents in **sequential batches of `maxConcurrent` groups** (default `5`, range `[1, 10]`). Within a batch, all subagents are dispatched in a single dispatch step (parallel); batches themselves are sequential — batch N+1 does NOT start until every subagent in batch N has returned.
+
+**Why batched** (this is the workflow's hardest-learned lesson): a single dispatch of 20+ subagents reliably triggers cascading permission denials and rate limits, leaving most groups stuck in `phase: "pending"` and the workflow with no progress to show. Smaller batches (a) bound the blast radius of any single denial, (b) ensure that partial progress is preserved on disk before the next batch runs, and (c) let the workflow detect a hard wall early and fall back gracefully.
+
+### Batching algorithm
+
+1. Order the groups by `groupId` ascending (deterministic).
+2. Slice into batches of size `maxConcurrent`. The final batch may be smaller.
+3. For each batch in order:
+    1. Dispatch every subagent in the batch in a single dispatch step.
+    2. Wait for **all** subagents in the batch to return (success or error).
+    3. Walk the batch's `groups/<id>/_meta.json` files. Surface a one-line progress message `Batch <n>/<total>: <healthy>/<batch-size> groups completed cleanly.`
+    4. **Hard-wall detection**: if **every** subagent in the batch returned with `phase: "pending"` and `status: "pending"` (i.e. none even started — the dispatch itself was denied/rate-limited rather than the work failing), enter the **degraded-mode prompt** below before starting the next batch. Per-package fetch failures inside groups that DID start are NOT a hard wall — those are handled by the per-group transition rules.
+
+The skill SHALL NOT skip ahead to the next batch while subagents from the current batch are in flight. The skill SHALL NOT collapse all batches into a single dispatch even when `groups.length <= maxConcurrent` is false — the cap is a hard limit, not a hint.
+
+### Degraded-mode prompt (hard-wall fallback)
+
+If a batch hard-walls (all subagents stalled at `pending/pending`), prompt the user once via `AskUserQuestion` before continuing:
+
+- **Question**: `Subagent dispatch was denied or rate-limited for batch <n>/<total> (<groupIds>). How do you want to proceed?`
+- **Multi-select**: `false`
+- **Options**:
+    - `retry-current-batch` — re-dispatch this batch only (no backoff sleep — the user has already paused the flow). Repeats the same batch with the same `maxConcurrent`.
+    - `degrade-to-main-agent` — abandon subagent dispatch for the remaining groups; the main agent synthesizes `plan.md` directly using already-cached changelogs under `~/.claude/changelogs/`. The main agent SHALL prepend a one-line banner to `plan.md`: `> Research consolidated in main agent due to subagent dispatch limits. Per-group research.md files were not produced for: <comma-separated groupIds of un-dispatched batches>.`
+    - `abort` — exit cleanly. Plan dir is preserved on disk.
+
+If the user picks `retry-current-batch` and the same batch hard-walls again, the prompt re-fires with the question text prefixed `Retried and still hard-walled.` — same three options, no automatic escalation. If the user picks `degrade-to-main-agent`, the workflow skips directly to a modified phase 3 (see "Degraded phase 3" below) and then phase 4 with the banner.
+
+### Per-subagent contract (unchanged)
+
+Each phase-1 subagent SHALL:
 
 1. Read its group's `_meta.json` to determine the package set.
 2. For each package in the group, invoke the `experiments:npm-changelog` skill once with the package name and the version range `<from>..<to>` (e.g., `@tanstack/react-query 5.90.18..5.90.20`).
@@ -136,7 +186,7 @@ When the global phase transitions to `changelogs`, dispatch **one subagent per g
     - **At least one package succeeded** → update `_meta.json` to `phase: "research"`, leave `status` as `pending`, and proceed to phase 2 within the same subagent.
     - **Every package failed** → update `_meta.json` to `phase: "changelogs"`, `status: "error"`, `errorPhase: "changelogs"`, `errorReason: "<aggregated reasons>"`, `completedAt: <now>`. Exit the subagent without running phase 2.
 
-Groups run in parallel. Within a group, phase 1 → phase 2 is sequential (the same subagent does both back to back). The skill SHALL NOT block phase 2 of group A on phase 1 of group B.
+Within a batch, groups run in parallel. Within a group, phase 1 → phase 2 is sequential (the same subagent does both back to back). The skill SHALL NOT block phase 2 of group A on phase 1 of group B within the same batch.
 
 ## Phase 2 — Parallel codebase research
 
@@ -194,17 +244,25 @@ Allowed: file globs (`apps/**/use*.ts`), directory hints (`apps/wealth-react/src
 
 This is a deliberate choice (D4 in the design): the main agent has full project context in plan mode and synthesizes line-level changes more reliably than independent subagents.
 
-## Phase 3 — Integrity verification
+## Phase 3 — Integrity verification (mandatory gate)
 
-When every dispatched subagent has returned, the main agent SHALL walk `groups/*/`, read each `_meta.json`, and classify each group:
+Phase 3 is a **mandatory gate**: the global `_meta.json.phase` SHALL NOT advance to `"planning"` without phase 3 completing first. Skipping phase 3 — even when the workflow "knows" all groups succeeded — is a spec violation. The gate exists because parallel writers can leave per-group meta in inconsistent states (stuck `pending`, missing dirs, schema drift) that only a fresh on-disk read can detect.
 
-- **healthy**: `phase: "done"` AND `status: "ok"`.
-- **failed**: `status: "error"` (regardless of phase) OR `phase !== "done"` after all subagents have returned.
-- **missing**: `groupId` listed in the global `_meta.json.groupIds` but `groups/<groupId>/` does not exist on disk.
+### Mandatory walk
 
-If every group is healthy → silently advance to phase 4.
+After every batch of phase 1+2 has returned (or after `degrade-to-main-agent` was selected), the main agent SHALL:
 
-If at least one group is `failed` or `missing`, prompt the main agent's user via `AskUserQuestion`:
+1. Set the global `_meta.json.phase` to `"integrity"`.
+2. Enumerate every `groupId` in the global `_meta.json.groupIds`.
+3. For each `groupId`, attempt to read `groups/<groupId>/_meta.json` from disk. Classify:
+    - **healthy**: file exists AND `phase: "done"` AND `status: "ok"`.
+    - **failed**: file exists AND (`status: "error"` OR `phase !== "done"`).
+    - **missing**: file does not exist on disk (the directory was never created or was wiped).
+4. The classification MUST be done by reading from disk, NOT from in-memory state — disk is the source of truth.
+
+If every group is healthy → set the global `_meta.json.phase` to `"planning"` and advance to phase 4.
+
+If at least one group is `failed` or `missing`, prompt the main agent's user via `AskUserQuestion` (the prompt is mandatory — DO NOT silently continue):
 
 - **Question**: `Research integrity check: <healthy>/<total> groups healthy. Non-healthy: <comma-separated groupIds>. How do you want to proceed?`
 - **Multi-select**: `false`
@@ -225,6 +283,16 @@ When the user selects `retry-failed`:
 4. After this retry round, run phase 3 again. The integrity prompt may fire again if any group still fails — same options apply. The skill SHALL NOT loop indefinitely; if the user re-picks `retry-failed` and the same groups fail twice in a row, the skill SHALL escalate by setting the prompt's question text to `Retried <groupIds> and they failed again. retry-failed will reset and retry once more, continue-without will skip them. Pick.` — but otherwise the same three options remain.
 
 Healthy groups are immutable across retries — never re-dispatched, never re-written.
+
+### Degraded phase 3 (after `degrade-to-main-agent`)
+
+If the user selected `degrade-to-main-agent` from the phase-1 hard-wall prompt, phase 3 still runs but with relaxed semantics:
+
+- Groups that DID complete cleanly before the hard wall → classified `healthy` as usual; their `research.md` feeds phase 4 normally.
+- Groups in batches that were never dispatched → classified `expected-missing` (a fourth class introduced only for the degraded path). These are NOT errors and SHALL NOT trigger the integrity prompt. They are recorded in `plan.md`'s `## Skipped or unavailable` section with the reason `research consolidated in main agent (subagent dispatch limited)`.
+- Groups that started but failed normally → classified `failed` and surfaced via the integrity prompt as usual (the user may still retry the few that legitimately failed even though others were dropped to degraded mode).
+
+The mandatory walk and the disk-truth rule still apply. The only thing the degraded path skips is the integrity prompt for the deliberately-undispatched batches.
 
 ## Phase 4 — Plan-mode synthesis
 

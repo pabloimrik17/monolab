@@ -97,3 +97,29 @@
 - [ ] 9.1 Run on a repo with at least 18 packages from a single scope (e.g., `@storybook/*`); confirm the group ids are `storybook-1`, `storybook-2`, `storybook-3` and chunk sizes are 8, 8, 2
 - [ ] 9.2 Run twice on identical scan output; confirm both invocations produce byte-identical group partitions and group ids
 - [ ] 9.3 Confirm that no `npm view` or `gh api` calls are made during grouping (network trace or zero outbound requests)
+
+## 10. Resilience hardening (post-monolab dry-run findings)
+
+> Added 2026-04-28 after the first real run on monolab (50 patches → 20 groups) revealed three implementation gaps the original spec did not address: subagent fan-out at scale was rejected by the dispatcher, phase 3 was silently skipped, and per-group `_meta.json` field naming drifted between parallel writers (`manifest` vs `sourceFile`). All three are now in the delta spec and the `parallel-research-workflow` SKILL.md.
+
+- [x] 10.1 Add `Field naming conventions` section to `parallel-research-workflow/SKILL.md` (canonical `name` / `from` / `to` / `location` / `sourceFile`; explicit "no aliases, malformed if drifted")
+- [x] 10.2 Add corresponding `Requirement: Field naming conventions` to the delta spec with two scenarios (canonical fields written, aliased field rejected on read)
+- [x] 10.3 Replace "single-dispatch all groups" in `parallel-research-workflow/SKILL.md` Phase 1 with batched dispatch (`maxConcurrent` default `5`, range `[1, 10]`); document that batches are sequential and progress is surfaced after each batch
+- [x] 10.4 Update the delta spec `Requirement: Phase 1` accordingly, renamed to "Phase 1 — batched parallel changelog fetch", with batching scenarios (split into batches, single batch when count fits)
+- [x] 10.5 Document the hard-wall fallback in `parallel-research-workflow/SKILL.md`: detection rule (every subagent in a batch returns `pending/pending`), prompt options (`retry-current-batch` / `degrade-to-main-agent` / `abort`), and the degraded-mode `plan.md` banner contract
+- [x] 10.6 Add `Requirement: Subagent dispatch hard-wall fallback` to the delta spec with three scenarios (hard wall fires prompt, per-package failure does not, degrade-to-main-agent banner)
+- [x] 10.7 Promote phase 3 to a mandatory gate in `parallel-research-workflow/SKILL.md` (global phase MUST advance through `integrity` before `planning`; classification reads from disk, not memory; degraded-path `expected-missing` class)
+- [x] 10.8 Update the delta spec `Requirement: Phase 3` to "Phase 3 — integrity verification (mandatory gate)" with new scenarios (phase advances to integrity, disk truth over memory, expected-missing in degraded path)
+- [x] 10.9 Re-validate change post-edits via `openspec validate add-npm-update-deep-patch` (passes)
+- [ ] 10.10 Manual re-test on monolab: confirm batching produces sequential `Batch n/total` progress lines, phase 3 prompt fires when groups stall, and `_meta.json` writers use `sourceFile` consistently
+
+## 11. Manual verification — coverage from initial monolab run (2026-04-27)
+
+> Tasks effectively covered by the first real run, with caveats. See `~/.claude/experiments/plans/m0n0lab-source-patch-1777322102/` for artifacts.
+
+- [x] 11.1 Plan-dir layout created (7.1 ✓)
+- [x] 11.2 `apply-all` end-to-end: 50 bumps applied across 17 manifests + single `pnpm install` (covers 7.5 broader than `apply-bumps-only`)
+- [x] 11.3 `keep-plan` honored (7.6 ✓)
+- [x] 11.4 Catalog scan path exercised (8.2 partial — no catalog patches available on monolab so the in-place edit was not triggered)
+- [ ] 11.5 ⚠️ Phase 2 `research.md` per group NOT produced (subagent dispatch failed; addressed by §10 — retest required)
+- [ ] 11.6 ⚠️ Phase 3 integrity prompt NOT fired despite 19 stalled groups (addressed by §10 — retest required)
