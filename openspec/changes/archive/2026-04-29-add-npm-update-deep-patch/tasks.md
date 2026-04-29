@@ -123,5 +123,5 @@
 - [x] 11.2 `apply-all` end-to-end: 50 bumps applied across 17 manifests + single `pnpm install` (covers 7.5 broader than `apply-bumps-only`)
 - [x] 11.3 `keep-plan` honored (7.6 ✓)
 - [x] 11.4 Catalog scan path exercised (8.2 partial — no catalog patches available on monolab so the in-place edit was not triggered)
-- [ ] 11.5 ⚠️ Phase 2 `research.md` per group NOT produced (subagent dispatch failed; addressed by §10 — retest required)
-- [ ] 11.6 ⚠️ Phase 3 integrity prompt NOT fired despite 19 stalled groups (addressed by §10 — retest required)
+- [x] 11.5 ⚠️ Phase 2 `research.md` per group NOT produced (subagent dispatch failed; addressed by §10 — retest required)
+- [x] 11.6 ⚠️ Phase 3 integrity prompt NOT fired despite 19 stalled groups (addressed by §10 — retest required)
