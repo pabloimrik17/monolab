@@ -63,10 +63,10 @@
 
 > Deferred to archive time. The user's standing rule (`feedback_openspec_delta.md`) is "Never edit `openspec/specs/` directly while a change is in-flight; edit the delta in `openspec/changes/<id>/specs/` instead." The section header itself reads "(after implementation merges)". Pre-merge, the change validates strictly via `openspec validate add-npm-update-deep-patch --strict` (passes). The per-capability `openspec spec validate <name>` calls require the synced specs which only exist post-sync. Tick these off when archiving via `/opsx:archive`.
 
-- [ ] 6.1 Run `openspec sync` (or `/opsx:sync add-npm-update-deep-patch`) so each new capability spec is materialized at `openspec/specs/<capability>/spec.md`
-- [ ] 6.2 Validate via `openspec spec validate parallel-research-workflow`
-- [ ] 6.3 Validate via `openspec spec validate dependency-grouping-strategy`
-- [ ] 6.4 Validate via `openspec spec validate npm-update-deep-patch-command`
+- [x] 6.1 Run `openspec sync` (or `/opsx:sync add-npm-update-deep-patch`) so each new capability spec is materialized at `openspec/specs/<capability>/spec.md`
+- [x] 6.2 Validate via `openspec spec validate parallel-research-workflow`
+- [x] 6.3 Validate via `openspec spec validate dependency-grouping-strategy`
+- [x] 6.4 Validate via `openspec spec validate npm-update-deep-patch-command`
 
 ## 7. Manual verification — happy path
 
