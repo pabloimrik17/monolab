@@ -386,13 +386,15 @@ The H1 title interpolates `<level>`: `Deep-patch plan: <slug>` for `level=patch`
 
 ## End-of-flow cleanup
 
-When the consumer re-invokes the workflow for cleanup (after its apply / cancel / abort step finishes, or after `abort` from phase 3), the workflow SHALL prompt the user once via `AskUserQuestion`:
+When the consumer re-invokes the workflow for cleanup, the workflow SHALL prompt the user once via `AskUserQuestion`:
 
 - **Question**: `Plan dir at <plan-dir>. Keep for inspection or delete?`
 - **Multi-select**: `false`
 - **Options**:
     - `delete-plan` — recursively `rm -rf <plan-dir>`.
     - `keep-plan` — leave it on disk; the next invocation's stale-cleanup (phase 0) will catch it after 10 days.
+
+Cleanup re-entry is consumer-driven and optional: when phase 1 or phase 3 returns `abort`, the workflow itself exits cleanly with the plan dir preserved (per lines covering each abort option) and does NOT prompt for cleanup on its own. The consumer decides whether to re-invoke the workflow for cleanup; if it does, the workflow MUST present the `delete-plan` / `keep-plan` prompt above. If the consumer skips re-invocation, the plan dir stays on disk until the next stale-cleanup pass (phase 0).
 
 The workflow SHALL NOT delete the plan dir without explicit `delete-plan`. There is no default option. Stale-cleanup (phase 0) is the safety net.
 
