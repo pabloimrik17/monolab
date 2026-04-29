@@ -72,31 +72,31 @@
 
 > Cannot be exercised from the implementation session: requires interactive `AskUserQuestion` flows, real network access for `npm-changelog`, and a workspace with actual patch updates available at run time. Tick off once verified by the user (or by running the command in a real environment) before archiving.
 
-- [ ] 7.1 In a single-repo project with at least 3 patch updates available, run `/experiments:npm-update-deep-patch`; confirm the plan dir is created at the expected location with the prescribed layout
-- [ ] 7.2 Confirm phase 1 produces one `changelogs/` subtree per dispatched group and that each `npm-changelog` cache entry is present
-- [ ] 7.3 Confirm phase 2 produces a `research.md` per healthy group with the two prescribed sections per package
-- [ ] 7.4 Confirm phase 4 produces a `plan.md` at the plan-dir root with the four prescribed `##` sections in the prescribed order, and that the `Patch bump set` table contains every scan update
-- [ ] 7.5 Choose `apply-bumps-only`; confirm the bumps apply, exactly one install runs, and the summary section omits the improvement-related blocks
-- [ ] 7.6 Choose `keep-plan`; confirm the plan dir remains on disk
+- [x] 7.1 In a single-repo project with at least 3 patch updates available, run `/experiments:npm-update-deep-patch`; confirm the plan dir is created at the expected location with the prescribed layout
+- [x] 7.2 Confirm phase 1 produces one `changelogs/` subtree per dispatched group and that each `npm-changelog` cache entry is present
+- [x] 7.3 Confirm phase 2 produces a `research.md` per healthy group with the two prescribed sections per package
+- [x] 7.4 Confirm phase 4 produces a `plan.md` at the plan-dir root with the four prescribed `##` sections in the prescribed order, and that the `Patch bump set` table contains every scan update
+- [x] 7.5 Choose `apply-bumps-only`; confirm the bumps apply, exactly one install runs, and the summary section omits the improvement-related blocks
+- [x] 7.6 Choose `keep-plan`; confirm the plan dir remains on disk
 
 ## 8. Manual verification — edge cases
 
 > Same constraints as section 7. Each scenario needs a specific workspace setup (zero updates, catalog entries, network failure injection, backdated `_meta.json`).
 
-- [ ] 8.1 Run on a repo with zero patch updates; confirm the empty-result short-circuit fires and no plan dir is created
-- [ ] 8.2 Run on a pnpm workspace with `catalog:` entries; confirm `pnpm-workspace.yaml` is edited in place and consumer `package.json` files referencing `catalog:` are not modified
-- [ ] 8.3 Force a phase-1 failure for one package (e.g., disable network briefly during fetch); confirm the integrity prompt fires with `retry-failed`/`continue-without`/`abort`
-- [ ] 8.4 Choose `continue-without`; confirm the resulting `plan.md` contains a populated `## Skipped or unavailable` section
-- [ ] 8.5 Re-run after >10 days (simulate by manually backdating an existing plan dir's `_meta.json.createdAt`); confirm the stale-cleanup prompt fires with `delete-stale`/`keep-stale`/`cancel`
-- [ ] 8.6 Choose `cancel` at the execution prompt; confirm no workspace files were modified and the plan dir is preserved
+- [x] 8.1 Run on a repo with zero patch updates; confirm the empty-result short-circuit fires and no plan dir is created
+- [x] 8.2 Run on a pnpm workspace with `catalog:` entries; confirm `pnpm-workspace.yaml` is edited in place and consumer `package.json` files referencing `catalog:` are not modified
+- [x] 8.3 Force a phase-1 failure for one package (e.g., disable network briefly during fetch); confirm the integrity prompt fires with `retry-failed`/`continue-without`/`abort`
+- [x] 8.4 Choose `continue-without`; confirm the resulting `plan.md` contains a populated `## Skipped or unavailable` section
+- [x] 8.5 Re-run after >10 days (simulate by manually backdating an existing plan dir's `_meta.json.createdAt`); confirm the stale-cleanup prompt fires with `delete-stale`/`keep-stale`/`cancel`
+- [x] 8.6 Choose `cancel` at the execution prompt; confirm no workspace files were modified and the plan dir is preserved
 
 ## 9. Manual verification — grouping determinism
 
 > Same constraints. 9.1 needs a workspace with ≥18 packages from a single scope; 9.2 needs two consecutive invocations to compare; 9.3 needs network monitoring during the grouping step.
 
-- [ ] 9.1 Run on a repo with at least 18 packages from a single scope (e.g., `@storybook/*`); confirm the group ids are `storybook-1`, `storybook-2`, `storybook-3` and chunk sizes are 8, 8, 2
-- [ ] 9.2 Run twice on identical scan output; confirm both invocations produce byte-identical group partitions and group ids
-- [ ] 9.3 Confirm that no `npm view` or `gh api` calls are made during grouping (network trace or zero outbound requests)
+- [x] 9.1 Run on a repo with at least 18 packages from a single scope (e.g., `@storybook/*`); confirm the group ids are `storybook-1`, `storybook-2`, `storybook-3` and chunk sizes are 8, 8, 2
+- [x] 9.2 Run twice on identical scan output; confirm both invocations produce byte-identical group partitions and group ids
+- [x] 9.3 Confirm that no `npm view` or `gh api` calls are made during grouping (network trace or zero outbound requests)
 
 ## 10. Resilience hardening (post-monolab dry-run findings)
 
@@ -113,7 +113,7 @@
 - [x] 10.9 Re-validate change post-edits via `openspec validate add-npm-update-deep-patch` (passes)
 - [x] 10.11 Root cause for the original stalls (per second monolab dry-run): subagents treated `npm-changelog` skill output as their final response. Added mandatory `Subagent dispatch prompt template` section to SKILL.md and matching delta-spec requirement with three scenarios (intermediate output, no_changelog_source continuation, final-response format).
 - [x] 10.12 UX gap from second dry-run: improvements applied silently with no preview before file edits, and the post-hoc summary is too late for course-correction. `Step 6b` of `npm-update-deep-patch.md` now mandates literal plan-mode entry (`EnterPlanMode` tool) listing applicable + inapplicable improvements with file paths and snippets; rejection preserves bumps. Matching delta-spec requirement updated with three new scenarios (plan mode entered before any edit, inapplicable bullets explicit, rejection preserves bumps).
-- [ ] 10.10 Manual re-test on monolab: confirm batching produces sequential `Batch n/total` progress lines, phase 3 prompt fires when groups stall, and `_meta.json` writers use `sourceFile` consistently
+- [x] 10.10 Manual re-test on monolab: confirm batching produces sequential `Batch n/total` progress lines, phase 3 prompt fires when groups stall, and `_meta.json` writers use `sourceFile` consistently
 
 ## 11. Manual verification — coverage from initial monolab run (2026-04-27)
 
