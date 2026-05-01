@@ -63,11 +63,11 @@
     "devDependencies": {
         "@arethetypeswrong/cli": "0.18.2",
         "@testing-library/react": "catalog:",
-        "@types/react": "18.3.27",
+        "@types/react": "18.3.28",
         "jsdom": "catalog:",
         "react": "18.3.1",
         "react-dom": "18.3.1",
-        "tsdown": "0.15.9",
+        "tsdown": "0.15.12",
         "typescript": "5.9.3",
         "vitest": "catalog:"
     },
