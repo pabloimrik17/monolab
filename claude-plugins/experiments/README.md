@@ -31,6 +31,16 @@ List every project registered in the user-scoped Commander registry. Read-only â
 /experiments:commander-list
 ```
 
+### `/experiments:commander-update-patch`
+
+Apply patch-level npm updates across every project registered in the Commander registry, in one invocation. Reads `~/.claude/commander/projects.json` (never mutates it), raises a multi-select project picker, dispatches parallel scans via Haiku subagents (one per project), deduplicates updates by package, applies max-wins version alignment with a single conflict-policy prompt when ranges disagree, consults the same `pkg-upgrade-overrides.yaml` registry as `npm-update-patch` (one prompt per matched entry across the whole run), and applies projects sequentially with stop-on-fail. Inherits every `npm-update-patch` hard rule: no tests, no lint, no build, no commits.
+
+```bash
+/experiments:commander-update-patch
+```
+
+The summary partitions the resolved set into applied / failed / pending so a partial-failure run can be resumed by re-invoking the command after fixing the failed project.
+
 ### `/experiments:ralph`
 
 Generate Ralph loop infrastructure from a project description for autonomous AI coding.
@@ -110,6 +120,10 @@ Two-phase parallel-subagent orchestration over a pre-grouped package set: phase 
 ### `commander-normalize`
 
 Controlled-vocabulary keyword normalization for the Commander registry. Used by `/experiments:commander-add` (Step 2.5) and future `commander-update` / `commander-list` to turn raw, stochastic Haiku-detected keywords into the deterministic, alphabetically-sorted list persisted in `~/.claude/commander/projects.json`. Ships `references/vocabulary.json` with `canonical`, `synonyms`, and `excludes` lists; reports `droppedTerms` so callers can surface vocabulary gaps via a `gh issue create` suggestion flow.
+
+### `commander-update-orchestrator`
+
+Cross-project npm-update orchestration. Owns the fan-out / fan-in pipeline used by `/experiments:commander-update-patch` (and the future `-minor` / `-major` / `-engines` siblings, plus the deep variants): list+filter projects from the registry, dispatch parallel `experiments:scan-npm-updates` runs via Haiku subagents (one per project, in a single message), deduplicate updates by package, version-align (max-wins with a one-prompt per-project fallback on range conflicts), render a unified plan table, consult `pkg-upgrade-overrides.yaml` once per matched entry across the whole run, gate on `apply-all` / `pick-subset` / `cancel`, then apply each project sequentially (stop-on-fail) and emit an aggregated summary. Pure built-in tools (`Read`, `Bash`, `AskUserQuestion`, `Agent`, `Skill`, `Edit`); read-only against the registry.
 
 ## Testing
 
