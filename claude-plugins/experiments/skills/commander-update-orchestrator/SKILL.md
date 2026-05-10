@@ -333,7 +333,7 @@ Compute three disjoint subsets per package:
 - `OVERRIDE_SKIP` — packages bound to a `skip-matched` entry. Excluded from everything.
 - `GENERIC` — packages not bound to any entry, plus packages bound to a `force-generic` entry.
 
-If every accepted package is in `OVERRIDE_SKIP` and `OVERRIDE_RUN` is empty, print `All accepted updates were skipped by override policy. Nothing to apply.` and exit `0` without touching files.
+If every package in the post-policy plan is in `OVERRIDE_SKIP` and `OVERRIDE_RUN` is empty, print `All accepted updates were skipped by override policy. Nothing to apply.` and exit `0` without touching files. (`ACCEPTED` is defined in Step 9; this short-circuit happens before the user confirmation gate.)
 
 ## Step 9 — User confirmation gate
 
