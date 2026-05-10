@@ -114,7 +114,7 @@ Records lacking `repoType` are kept as-is. Do NOT synthesize the field, do NOT a
 
 If `RESOLVED` is empty after Step 2.2 (every retained record has a missing path), print:
 
-- `No projects registered. Use /experiments:commander-add to register one.` — when the registry was empty to begin with (Step 2.5 / 2.6 already exited there; this is dead code unless Step 2.2 emptied a non-empty list).
+- `No projects registered. Use /experiments:commander-add to register one.` — when the registry was empty initially (the empty-registry / empty-`projects`-object branches in Step 2 already exited there; this branch is effectively dead unless Step 2.2 emptied a non-empty list).
 - Otherwise, print `No selectable projects after path-drift filtering.` followed by every `pathMissing[]` entry as a `- <name> — <path>` bullet, and exit `0`.
 
 ## Step 3 — Project subset selection (skipped when `projectsFilter` is set)
@@ -352,7 +352,7 @@ Let `ACCEPTED = post-policy ∖ OVERRIDE_SKIP`. Proceed to Step 10.
 
 ### 9.2 `pick-subset`
 
-1. Compute `VALID_NAMES = unique names in the post-policy plan` (excludes `OVERRIDE_SKIP` already).
+1. Compute `VALID_NAMES = unique names in the post-policy plan` (post Step 6 conflict policy), then remove names in `OVERRIDE_SKIP` (post Step 8.5) — the resulting set is what the user can validly exclude.
 2. Ask the user (free-form message, no AskUserQuestion):
 
     ```text
