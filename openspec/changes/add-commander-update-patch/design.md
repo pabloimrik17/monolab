@@ -84,7 +84,7 @@ When the same package shows different `targetVersion` across projects, the orche
 **Rationale:**
 
 - **Max-wins matches user intent**: registering N projects under Commander signals "I want them aligned". Defaulting to max gives the user the highest agreement-able version automatically.
-- **Per-project fallback respects rangedeclarations.** A project pinned to `~4.17.21` is intentional; coercing it past its range would silently break the project's stated upgrade contract.
+- **Per-project fallback respects range declarations.** A project pinned to `~4.17.21` is intentional; coercing it past its range would silently break the project's stated upgrade contract.
 - **One prompt, not N.** A user with 12 conflicting packages does not want to answer 12 questions. The single-policy prompt keeps the run interactive but bounded.
 
 **Alternatives considered:**

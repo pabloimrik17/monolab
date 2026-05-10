@@ -365,7 +365,7 @@ Let `ACCEPTED = post-policy ∖ OVERRIDE_SKIP`. Proceed to Step 10.
 5. Validate every name in `EXCLUDED` is in `VALID_NAMES`. On any invalid:
     - Print `Unknown package name(s): {invalid names}. Valid names: {VALID_NAMES}.`
     - Re-prompt step 9.2.2.
-6. Let `ACCEPTED = post-policy where name not in EXCLUDED ∪ OVERRIDE_SKIP`. Let `SKIPPED_BY_USER = EXCLUDED`.
+6. Let `ACCEPTED = post-policy \ {names in EXCLUDED} \ {names in OVERRIDE_SKIP}` (set difference: drop both excluded and override-skipped packages — `OVERRIDE_SKIP` MUST NOT be re-included by `pick-subset`). Let `SKIPPED_BY_USER = EXCLUDED`.
 7. If `ACCEPTED` is empty after exclusion → print `All updates excluded; nothing to apply.` and exit `0` without touching files.
 8. Otherwise proceed to Step 10.
 
