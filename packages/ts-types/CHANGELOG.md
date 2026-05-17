@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.7](https://github.com/pabloimrik17/monolab/compare/ts-types-v1.0.6...ts-types-v1.0.7) (2026-05-17)
+
+
+### Documentation
+
+* archived add-common-utility-types spec ([7958cc1](https://github.com/pabloimrik17/monolab/commit/7958cc1a1a858811c77477194332eac9d5847c8f))
+
 ## [1.0.6](https://github.com/pabloimrik17/monolab/compare/ts-types-v1.0.5...ts-types-v1.0.6) (2025-11-15)
 
 

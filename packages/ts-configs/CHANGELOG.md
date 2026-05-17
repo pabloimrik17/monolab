@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/pabloimrik17/monolab/compare/ts-configs-v1.1.4...ts-configs-v1.2.0) (2026-05-17)
+
+
+### Features
+
+* **http-client:** define contract types and interfaces ([#101](https://github.com/pabloimrik17/monolab/issues/101)) ([a4e6c33](https://github.com/pabloimrik17/monolab/commit/a4e6c33ca29ce280712a4b093a5e99eacbe3091a))
+
 ## [1.1.4](https://github.com/pabloimrik17/monolab/compare/ts-configs-v1.1.3...ts-configs-v1.1.4) (2025-11-15)
 
 

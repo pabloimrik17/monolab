@@ -15,6 +15,13 @@
 
 -   Pablo F. Guerra @pabloimrik17
 
+## [3.2.0](https://github.com/pabloimrik17/monolab/compare/react-clean-v3.1.4...react-clean-v3.2.0) (2026-05-17)
+
+
+### Features
+
+* feature/wealth-tracker-core ([#131](https://github.com/pabloimrik17/monolab/issues/131)) ([b5fe64a](https://github.com/pabloimrik17/monolab/commit/b5fe64a8b4a3b127647521eb85275c710a5aa4f0))
+
 ## [3.1.4](https://github.com/pabloimrik17/monolab/compare/react-clean-v3.1.3...react-clean-v3.1.4) (2025-11-15)
 
 
