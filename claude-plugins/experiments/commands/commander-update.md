@@ -81,16 +81,16 @@ Parse `ARGUMENTS` as a flag string. Recognize:
 | `--name`        | `name`         | Equivalent to the first positional token.                                            |
 | `--keywords`    | `keywords`     | Comma-separated string → split on `,`, trim each, lowercase each, deduplicate.       |
 | `--description` | `description`  | Quoted string; use as-is.                                                            |
-| `--rules`       | `specialRules` | Comma-separated string → split on `,`, trim each, deduplicate.                       |
+| `--rules`       | `specialRules` | Comma-separated string → split on `,`, trim each, lowercase each, deduplicate.       |
 | `--repo-type`   | `repoType`     | Enum value: `single-repo` \| `monorepo` \| `multi-monorepo`. Validate at parse time. |
 | `--refresh`     | (boolean)      | No value. Opt-in trigger for the Haiku re-scan (Step 4).                             |
 
 Rules:
 
-1. The first non-flag token (if any) is treated as the target `name`. `--name <value>` is equivalent.
+1. The first non-flag token (if any) is treated as the target `name`. `--name <value>` is equivalent. If both forms are supplied and the two values are not byte-equal, abort with `"conflicting target name inputs"` and do NOT read or modify the registry.
 2. **Reject any unrecognized flag** before any read or write. Abort with `"unknown flag: <flag>"` (verbatim flag string).
 3. Validate `--repo-type <value>` against `{ single-repo, monorepo, multi-monorepo }` at parse time. On miss, abort with `"invalid repoType: <value>"` and do NOT prompt further; do NOT read or modify the registry.
-4. Split / trim / lowercase / deduplicate `--keywords` and split / trim / deduplicate `--rules` csv inputs into string arrays. Empty entries (e.g., `,,foo`) are dropped.
+4. Split / trim / lowercase / deduplicate `--keywords` and `--rules` csv inputs into string arrays. Empty entries (e.g., `,,foo`) are dropped.
 5. **Explicit `--keywords` bypasses normalization.** When supplied, the resulting list is persisted verbatim (lowercased, trimmed, deduplicated). The `commander-normalize` skill SHALL NOT be invoked and the vocab-suggestion flow (Step 9) SHALL be suppressed for this invocation. Identical rule to `commander-add` Step 1 Rule 5.
 6. If a name was supplied (positional or `--name`), check existence via `getByName(name)` (`Read` the registry; treat missing file as empty). If the name is not in `projects`, abort with `"project '<name>' is not registered"` — explicit input always wins, the picker SHALL NOT be used as a fallback. If the registry file is missing or `projects` is empty, abort with `"no projects registered"`.
 
@@ -319,6 +319,7 @@ The flow SHALL NOT block: the write has already succeeded by the time this promp
 - `"no projects registered"` — registry file is missing or `projects` is `{}`. Used in Step 1 Rule 6 (explicit-name path with missing/empty registry), Step 2 (interactive empty-registry exit), and Step 8.2 (defensive race).
 - `"project '<name>' is not registered"` — explicit name (Step 1 Rule 6) or defensive race (Step 8.2) targeted a key not present in `projects`.
 - `"unknown flag: <flag>"` — Step 1 Rule 2 saw a flag outside `{ --name, --keywords, --description, --rules, --repo-type, --refresh }`.
+- `"conflicting target name inputs"` — Step 1 Rule 1 saw both a positional `<name>` and `--name <value>` with non-equal values.
 - `"invalid repoType: <value>"` — Step 1 Rule 3 received a `--repo-type` value outside the enum, OR the Step 8.4 defensive re-validation rejected the patched record.
 - `"field '<key>' is not editable"` — the `update(name, patch)` primitive (above) rejected a patch key outside `{ keywords, description, specialRules, repoType }`. Defensive — should be unreachable through the command flow.
 - `"unsupported registry version: <n>"` — reader hit a `version` greater than `2`. Same behavior as the read path documented in `commander-add`.

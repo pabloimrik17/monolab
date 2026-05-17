@@ -12,7 +12,7 @@ Invocation form:
 /experiments:commander-update [<name> | --name <name>] [--keywords <csv>] [--description <text>] [--rules <csv>] [--repo-type <enum>] [--refresh]
 ```
 
-All flags are optional. Both positional `<name>` and `--name <name>` are accepted and equivalent for target identification.
+All flags are optional. Both positional `<name>` and `--name <name>` are accepted and equivalent for target identification. If both are supplied and their values differ, the command SHALL abort with `"conflicting target name inputs"` and SHALL NOT modify the registry.
 
 #### Scenario: Command discovered by Claude Code
 
@@ -24,6 +24,14 @@ All flags are optional. Both positional `<name>` and `--name <name>` are accepte
 
 - **WHEN** `ARGUMENTS` contains a flag not in `{ --name, --keywords, --description, --rules, --repo-type, --refresh }`
 - **THEN** the command SHALL abort with `"unknown flag: <name>"`
+- **AND** SHALL NOT modify the registry
+
+#### Scenario: Positional name and --name disagree
+
+- **WHEN** `ARGUMENTS` contains both a positional `<name>` token and `--name <value>`
+- **AND** the two values are not byte-equal
+- **THEN** the command SHALL abort with `"conflicting target name inputs"`
+- **AND** SHALL NOT prompt the user further
 - **AND** SHALL NOT modify the registry
 
 ---
@@ -271,6 +279,7 @@ The command SHALL surface the following user-facing error messages, all without 
 - `"no projects registered"` — registry file is missing or `projects` is `{}` (target resolution Step A→B or Step 4 defensive race).
 - `"project '<name>' is not registered"` — explicit name (Step A) or defensive race (Step 4) targeted a key not present in `projects`.
 - `"unknown flag: <flag>"` — Step 1 saw an unsupported flag in `ARGUMENTS`.
+- `"conflicting target name inputs"` — Step 1 saw both a positional `<name>` and `--name <value>` with non-equal values.
 - `"invalid repoType: <value>"` — `--repo-type` supplied a value outside the enum.
 - `"field '<name>' is not editable"` — a patch built by the command tried to set a non-editable field (defensive — should be unreachable through normal flow).
 - `"unsupported registry version: <n>"` — read path hit a `version` greater than the highest known version. Reused from `commander-add`.

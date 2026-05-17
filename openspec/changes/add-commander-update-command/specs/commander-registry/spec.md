@@ -128,9 +128,10 @@ Remediation of the missing-path drift signal is NOT supported by `update` — `p
 
 #### Scenario: Surfacing is the caller's job
 
-- **WHEN** a caller (e.g. `commander-list`) wants to alert the user to drift
+- **WHEN** a caller performing a read/surfacing operation (e.g. `commander-list`) wants to alert the user to drift
 - **THEN** the caller SHALL inspect each record for the two drift signals and produce its own user-facing annotations
-- **AND** SHALL NOT call back into the registry to "fix" the drift
+- **AND** SHALL NOT call back into the registry from the read/surfacing path to "fix" the drift (no silent auto-mutation triggered by a read)
+- **AND** user-initiated remediation via `update(name, { repoType: "<enum>" })` remains permitted as a separate, explicit write — see "User-initiated repoType backfill via update" below
 
 #### Scenario: User-initiated repoType backfill via update
 
