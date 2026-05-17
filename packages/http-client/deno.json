@@ -2,5 +2,6 @@
     "name": "@m0n0lab/http-client",
     "version": "0.2.0",
     "license": "MIT",
-    "exports": "./src/index.ts"
+    "exports": "./src/index.ts",
+    "unstable": ["sloppy-imports"]
 }
