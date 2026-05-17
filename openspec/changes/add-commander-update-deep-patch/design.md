@@ -49,13 +49,16 @@ Add a `mode` input to `commander-update-orchestrator` with default `"shallow"`. 
 - **Step 6.5** — Group the deduplicated package set with `group-packages-for-research`, then invoke `parallel-research-workflow` with `mode: "cross-project"`, `slugOverride: "commander-deep-<level>"`, and the aggregated `CrossProjectPlan` repackaged as the workflow's `scanResult` input.
 - **Step 7** — Plan rendering switches to a research-aware shape (improvements + workarounds sections from `plan.md`, plus the cross-project bump set table). The skill still emits the shallow table when `mode === "shallow"`.
 - **Step 9** — The confirmation gate gains an `apply-bumps-only` option (mirroring single-project deep-patch). Shallow mode keeps the three-option gate it has today.
-- **Step 10** — After all bumps land successfully across all projects, the orchestrator enters ONE plan-mode round and walks the improvements section, performing reconnaissance per (improvement, affected project) and presenting the unified edit set for user approval.
+- **Step 10** — Split into three sub-steps for deep mode (shallow keeps its single-loop shape):
+    - **Step 10a — Bumps loop**: iterate projects in registry order, run per-project ncu + catalog edits + override commands + one install. Sequential, stop-on-fail. Identical to shallow Step 10 today.
+    - **Step 10b — Plan-mode round**: fires only on `apply-all` after every applied project's bumps land. The main agent walks the improvements section ONCE across all affected projects, performs reconnaissance per (improvement, affected project), and presents the unified edit set for user approval.
+    - **Step 10c — End-of-flow cleanup**: invokes the workflow's `delete-plan` / `keep-plan` prompt exactly once per run; outcome feeds Step 11's `Suggested next steps`.
 
 **Rationale:**
 
 - **One skill, one cross-project contract.** Duplicating ~400 lines of cross-project plumbing into a sibling skill would create two places to fix the same bug. The orchestrator was already designed with deep variants in mind (see its own SKILL.md description: "Composed by future `commander-update-deep-*` commands together with the `parallel-research-workflow` skill").
 - **Backward-compatible default.** Shipped `/experiments:commander-update-patch` continues to invoke the orchestrator with no `mode` argument; the skill defaults to shallow. No regression risk for the shallow path.
-- **The deep-mode insertions are local to four named steps** (6.5, 7, 9, 10) — not pervasive. The shallow path's flow control is unchanged.
+- **The deep-mode insertions are local to four named steps** (6.5, 7, 9, 10 split into 10a/10b/10c) — not pervasive. The shallow path's flow control is unchanged.
 - **The orchestrator only grew in MON-194.** It is at v0 from a public-contract perspective (one consumer, one ticket cycle). Editing it now is cheaper than at v3 with eight consumers.
 
 **Alternatives considered:**
@@ -226,7 +229,7 @@ Parsing mirrors single-project deep-patch Step 6c exactly: substring match for i
 - **Override registry across N projects** has subtle semantics that compound in deep mode: the override prompt fires once per matched entry; the chosen action applies to every affected project. If the user picks `run-override` for Storybook spanning 4 projects, the Storybook upgrade command runs in each project sequentially with no opportunity to skip mid-loop. → Mitigation: the prompt copy already lists all affected projects so the user sees the blast radius; stop-on-fail aborts the run on the first failing override. Same posture as the shallow orchestrator.
 - **Plan dir growth.** Cross-project deep plan dirs are slightly bigger than single-project plans (`scan-by-project.json` × N + `cross-project-plan.json`). The workflow's 10-day stale-cleanup already covers this; user's `~/.claude/experiments/plans/` may grow proportionally to invocation frequency. → Mitigation: phase 0 stale-cleanup runs every invocation, prompting the user to bulk-delete. No new behavior beyond what already exists.
 - **Bumps applied but improvements rejected leaves the user with bumps applied without the research benefit.** Same posture as single-project deep-patch — bumps are preserved on plan-mode rejection. → Mitigation: the rejection message points the user to `git diff` per project; the user can also re-run if they want another pass at improvements (subject to changelog freshness).
-- **No tests.** Same posture as the rest of the experiments plugin. → Mitigation: the manual verification matrix in `tasks.md` covers single project, multi-project, missing path, scan-failed, conflict policy paths, override paths, cancel paths, and plan-mode rejection paths.
+- **No tests.** Same posture as the rest of the experiments plugin. → Mitigation: the manual verification matrix in `tasks.md` covers single-project, multi-project, missing path, scan-failed, conflict policy paths, override paths, cancel paths, and plan-mode rejection paths.
 - **Registry drift mid-run.** Theoretically a user could `commander-add` or `commander-delete` between scan dispatch and apply. The orchestrator reads the registry exactly once at resolution time and operates on the captured in-memory set; mid-run mutations have no effect. Inherited from shallow. → No additional mitigation needed.
 
 ## Migration Plan
