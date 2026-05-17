@@ -1,6 +1,7 @@
 {
     "name": "@m0n0lab/wealth-tracker-core",
     "version": "0.1.0",
+    "private": true,
     "author": "Pablo F.G.",
     "repository": {
         "type": "git",

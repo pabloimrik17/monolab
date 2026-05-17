@@ -1,7 +1,7 @@
 {
     "name": "@m0n0lab/qup-shared",
     "version": "0.1.0",
-    "private": false,
+    "private": true,
     "author": "Pablo F.G.",
     "repository": {
         "type": "git",

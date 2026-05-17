@@ -35,16 +35,6 @@
             "package-name": "@m0n0lab/solid-clean",
             "changelog-path": "CHANGELOG.md"
         },
-        "packages/wealth-tracker-core": {
-            "release-type": "node",
-            "package-name": "@m0n0lab/wealth-tracker-core",
-            "changelog-path": "CHANGELOG.md"
-        },
-        "packages/qup-shared": {
-            "release-type": "node",
-            "package-name": "@m0n0lab/qup-shared",
-            "changelog-path": "CHANGELOG.md"
-        },
         "claude-plugins/experiments": {
             "release-type": "simple",
             "package-name": "experiments",
