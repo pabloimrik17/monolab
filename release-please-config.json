@@ -54,8 +54,8 @@
                 },
                 {
                     "type": "json",
-                    "path": "../../.claude-plugin/marketplace.json",
-                    "jsonpath": "$.plugins[1].version"
+                    "path": "/.claude-plugin/marketplace.json",
+                    "jsonpath": "$.plugins[?(@.name=='experiments')].version"
                 }
             ]
         },
@@ -78,8 +78,8 @@
                 },
                 {
                     "type": "json",
-                    "path": "../../.claude-plugin/marketplace.json",
-                    "jsonpath": "$.plugins[0].version"
+                    "path": "/.claude-plugin/marketplace.json",
+                    "jsonpath": "$.plugins[?(@.name=='expo-developer')].version"
                 }
             ]
         }
