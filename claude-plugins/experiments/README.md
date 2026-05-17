@@ -23,6 +23,17 @@ Remove a project record from the Commander registry by `name`. Resolves the targ
 /experiments:commander-delete --name investlab
 ```
 
+### `/experiments:commander-update`
+
+Patch one or more editable fields (`keywords`, `description`, `specialRules`, `repoType`) on a registered project in place. Resolves the target via **A → B** (explicit name or interactive picker); resolves each field's proposed value via **A → B → C** (explicit flag → opt-in Haiku re-scan via `--refresh` → `AskUserQuestion`). Preserves `createdAt`, refreshes `updatedAt`, and reuses `commander-add`'s atomic-write recipe. A `Save` / `Edit` / `Abort` gate renders a side-by-side diff (`+`/`–` markers on `keywords`/`specialRules`, `← drift backfill` annotation when a legacy v1 record gains `repoType`); `Abort` is the safe default and leaves `projects.json` byte-equivalent. Empty diffs short-circuit to `"no changes"` without bumping `updatedAt`. The vocab-suggestion flow (`gh issue create` for dropped terms) is reused from `commander-add` and shares the session-skip flag.
+
+```bash
+/experiments:commander-update                              # interactive picker + field-pick menu
+/experiments:commander-update investlab --description "New summary."
+/experiments:commander-update investlab --refresh          # re-scan via Haiku before diff
+/experiments:commander-update investlab --repo-type single-repo  # legacy v1 backfill
+```
+
 ### `/experiments:commander-list`
 
 List every project registered in the user-scoped Commander registry. Read-only — never creates, modifies, or deletes `~/.claude/commander/projects.json`. Each project renders as a vertically-aligned YAML-ish block (insertion order); the project name is suffixed inline with `[legacy: missing repoType]` for v1 records and `[missing path]` when the recorded `path` no longer exists on disk. Empty registry prints a single discoverability hint pointing to `commander-add`.
