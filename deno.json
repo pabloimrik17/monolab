@@ -6,6 +6,7 @@
         "./packages/ts-configs",
         "./packages/ts-types"
     ],
+    "unstable": ["sloppy-imports"],
     "fmt": {
         "files": {
             "exclude": ["**/*"]
