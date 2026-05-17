@@ -1,5 +1,6 @@
 {
     "workspace": [
+        "./packages/http-client",
         "./packages/react-clean",
         "./packages/react-hooks",
         "./packages/ts-configs",
