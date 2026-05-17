@@ -1,28 +1,33 @@
 {
     "name": "@m0n0lab/ts-types",
     "version": "1.0.6",
+    "author": "Pablo F.G.",
     "repository": {
         "type": "git",
         "url": "https://github.com/pabloimrik17/monolab.git",
         "directory": "packages/ts-types"
     },
-    "author": "Pablo F.G.",
-    "sideEffects": false,
-    "type": "module",
-    "exports": {
-        ".": {
-            "import": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
-    },
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
     "files": [
         "dist",
         "README.md",
         "CHANGELOG.md",
         "LICENSE"
     ],
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true,
+        "registry": "https://registry.npmjs.org/"
+    },
     "scripts": {
         "build": "tsc -b",
         "lint:eslint": "eslint --cache --max-warnings 40 .",
@@ -30,8 +35,8 @@
         "lint:eslint:fix": "eslint --cache --max-warnings 40 --fix .",
         "lint:knip": "knip --max-issues 40",
         "lint:knip:fix": "knip --fix",
-        "lint:prettier": "prettier . --check",
-        "lint:prettier:fix": "prettier . --write",
+        "lint:oxfmt": "oxfmt --check .",
+        "lint:oxfmt:fix": "oxfmt .",
         "test:mutation": "stryker run",
         "test:mutation:report": "open reports/mutation/index.html",
         "test:types": "vitest --typecheck.enabled --run",
@@ -49,14 +54,9 @@
         "typescript": "5.9.3",
         "vitest": "catalog:"
     },
-    "packageManager": "pnpm@10.19.0",
     "engines": {
-        "node": "24.11.0",
-        "pnpm": "10.19.0"
+        "node": ">=22.0.0",
+        "pnpm": "10.27.0"
     },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true,
-        "registry": "https://registry.npmjs.org/"
-    }
+    "packageManager": "pnpm@10.27.0"
 }

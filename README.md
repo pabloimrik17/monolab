@@ -8,8 +8,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Monorepo](https://img.shields.io/badge/Monorepo-Nx-blue)](https://nx.dev)
 [![Nx Cloud](https://img.shields.io/badge/Nx%20Cloud-Enabled-blue?logo=nx)](https://nx.app/)
-[![Node.js](https://img.shields.io/badge/Node.js-24.11.0-green?logo=node.js)](https://nodejs.org)
-[![pnpm](https://img.shields.io/badge/pnpm-10.19.0-orange?logo=pnpm)](https://pnpm.io/)
+[![Node.js](https://img.shields.io/badge/Node.js-24.12.0-green?logo=node.js)](https://nodejs.org)
+[![pnpm](https://img.shields.io/badge/pnpm-10.27.0-orange?logo=pnpm)](https://pnpm.io/)
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/pabloimrik17/monolab?utm_source=oss&utm_medium=github&utm_campaign=pabloimrik17%2Fmonolab&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 [![Maintained with](https://img.shields.io/badge/Maintained%20with-❤️-red)](https://github.com/pabloimrik17/monolab)
 
@@ -18,32 +18,6 @@
 ## Published Packages
 
 This monorepo publishes several packages to both npm and JSR registries:
-
-### Utility Libraries
-
-**[@m0n0lab/is-odd](https://www.npmjs.com/package/@m0n0lab/is-odd)** | **[@m0n0lab/is-odd (JSR)](https://jsr.io/@m0n0lab/is-odd)**
-
-Check if a number is odd.
-
-```bash
-# npm
-npm install @m0n0lab/is-odd
-
-# JSR (Deno, Node.js, Bun)
-npx jsr add @m0n0lab/is-odd
-```
-
-**[@m0n0lab/is-even](https://www.npmjs.com/package/@m0n0lab/is-even)** | **[@m0n0lab/is-even (JSR)](https://jsr.io/@m0n0lab/is-even)**
-
-Check if a number is even.
-
-```bash
-# npm
-npm install @m0n0lab/is-even
-
-# JSR (Deno, Node.js, Bun)
-npx jsr add @m0n0lab/is-even
-```
 
 ### React Hooks
 
@@ -85,11 +59,25 @@ npm install -D @m0n0lab/ts-configs
 npx jsr add -D @m0n0lab/ts-configs
 ```
 
+### HTTP Clients
+
+**[@m0n0lab/http-client](https://www.npmjs.com/package/@m0n0lab/http-client)** | **[@m0n0lab/http-client (JSR)](https://jsr.io/@m0n0lab/http-client)**
+
+Abstracted HTTP client for web and Node.js environments. Foundation package for future implementations with neverthrow and effect-ts wrappers.
+
+```bash
+# npm
+npm install @m0n0lab/http-client
+
+# JSR (Deno, Node.js, Bun)
+npx jsr add @m0n0lab/http-client
+```
+
 ## Development Setup
 
 ### Node.js Installation
 
-This project uses Node.js version 24.11.0. To install and use this specific version:
+This project uses Node.js version 24.12.0. To install and use this specific version:
 
 <!-- markdownlint-disable MD013 MD029 -->
 
@@ -102,13 +90,13 @@ This project uses Node.js version 24.11.0. To install and use this specific vers
 nvm use
 ```
 
-This will automatically read the `.nvmrc` file and switch to Node.js version 24.11.0.
+This will automatically read the `.nvmrc` file and switch to Node.js version 24.12.0.
 
 ### Package Manager Setup
 
 <!-- markdownlint-disable MD013 MD029 -->
 
-This project uses pnpm as the package manager. To activate pnpm version 10.19.0 using corepack:
+This project uses pnpm as the package manager. To activate pnpm version 10.27.0 using corepack:
 
 1. Make sure you have corepack enabled:
 
@@ -116,10 +104,10 @@ This project uses pnpm as the package manager. To activate pnpm version 10.19.0 
 corepack enable
 ```
 
-2. Activate pnpm version 10.19.0:
+2. Activate pnpm version 10.27.0:
 
 ```bash
-corepack prepare pnpm@10.19.0 --activate
+corepack prepare pnpm@10.27.0 --activate
 ```
 
 3. Verify the installation:
@@ -129,7 +117,7 @@ corepack prepare pnpm@10.19.0 --activate
 pnpm --version
 ```
 
-The output should be `10.19.0`.
+The output should be `10.27.0`.
 
 ## Testing
 
@@ -139,29 +127,29 @@ This project uses Vitest for testing with separate test types organized by purpo
 
 **Unit Tests** (`*.test.ts`, `*.test.tsx`)
 
--   Fast, isolated tests for individual functions/components
--   Run with: `pnpm run test:unit` or `pnpm run test:unit:affected`
--   Watch mode: `pnpm run test:unit:watch`
+- Fast, isolated tests for individual functions/components
+- Run with: `pnpm run test:unit` or `pnpm run test:unit:affected`
+- Watch mode: `pnpm run test:unit:watch`
 
 **Integration Tests** (`*.integration.ts`)
 
--   Tests for module interactions and integration points
--   Run with: `pnpm run test:integration` or `pnpm run test:integration:affected`
--   Watch mode: `pnpm run test:integration:watch`
+- Tests for module interactions and integration points
+- Run with: `pnpm run test:integration` or `pnpm run test:integration:affected`
+- Watch mode: `pnpm run test:integration:watch`
 
 **Type Tests** (`*.test-d.ts`)
 
--   Compile-time TypeScript type validation using `expectTypeOf`
--   Prevents type regressions without runtime execution
--   Run with: `pnpm run test:types` or `pnpm run test:types:affected`
--   Watch mode: `pnpm run test:types:watch`
+- Compile-time TypeScript type validation using `expectTypeOf`
+- Prevents type regressions without runtime execution
+- Run with: `pnpm run test:types` or `pnpm run test:types:affected`
+- Watch mode: `pnpm run test:types:watch`
 
 **Browser Tests** (`*.browser.test.ts`, `*.browser.test.tsx`) - React packages only
 
--   Real browser testing with Playwright (Chromium)
--   Tests actual DOM behavior, not jsdom simulation
--   Run with: `pnpm run test:browser` or `pnpm run test:browser:affected`
--   Watch mode: `pnpm run test:browser:watch`
+- Real browser testing with Playwright (Chromium)
+- Tests actual DOM behavior, not jsdom simulation
+- Run with: `pnpm run test:browser` or `pnpm run test:browser:affected`
+- Watch mode: `pnpm run test:browser:watch`
 
 ### Interactive UI Mode
 
@@ -196,7 +184,7 @@ pnpm run test:browser:affected
 **Per-package tests:**
 
 ```bash
-pnpm --filter @monolab/is-odd run test:unit
+pnpm --filter @monolab/react-hooks run test:unit
 pnpm --filter @monolab/react-hooks run test:browser
 ```
 
@@ -205,27 +193,27 @@ pnpm --filter @monolab/react-hooks run test:browser
 **Unit Test Example:**
 
 ```typescript
-// src/utils/is-odd.test.ts
-import { expect, test } from "vitest";
-import { isOdd } from "./is-odd.js";
+// src/hooks/use-did-mount.test.ts
+import { renderHook } from "@testing-library/react";
+import { expect, test, vi } from "vitest";
+import { useDidMount } from "./use-did-mount.js";
 
-test("returns true for odd numbers", () => {
-    expect(isOdd(3)).toBe(true);
+test("calls callback on mount", () => {
+    const callback = vi.fn();
+    renderHook(() => useDidMount(callback));
+    expect(callback).toHaveBeenCalledTimes(1);
 });
 ```
 
 **Type Test Example:**
 
 ```typescript
-// src/utils/is-odd.test-d.ts
+// src/hooks/use-did-mount.test-d.ts
 import { expectTypeOf } from "vitest";
-import { isOdd } from "./is-odd.js";
+import { useDidMount } from "./use-did-mount.js";
 
-expectTypeOf(isOdd).parameter(0).toBeNumber();
-expectTypeOf(isOdd).returns.toBeBoolean();
-
-// @ts-expect-error - should not accept string
-isOdd("3");
+expectTypeOf(useDidMount).parameter(0).toBeFunction();
+expectTypeOf(useDidMount).returns.toBeVoid();
 ```
 
 **Browser Test Example (React):**
@@ -245,18 +233,18 @@ test("hook executes in real browser", () => {
 
 ### Configuration
 
--   **Workspace config**: `vitest.workspace.ts` (shared settings)
--   **Package configs**: `packages/*/vitest.config.ts` (per-package overrides)
--   **Shared settings**: `clearMocks`, `restoreMocks`, `unstubEnvs`,
-    `unstubGlobals`, `maxConcurrency: 10`
+- **Workspace config**: `vitest.workspace.ts` (shared settings)
+- **Package configs**: `packages/*/vitest.config.ts` (per-package overrides)
+- **Shared settings**: `clearMocks`, `restoreMocks`, `unstubEnvs`,
+  `unstubGlobals`, `maxConcurrency: 10`
 
 ### CI Testing
 
 Tests run automatically in CI via Nx Cloud distribution:
 
--   Pull Requests: Affected tests only (coverage thresholds disabled)
--   Main/Develop: All tests with full coverage enforcement
--   Distributed across 3 agents for optimal performance
+- Pull Requests: Affected tests only (coverage thresholds disabled)
+- Main/Develop: All tests with full coverage enforcement
+- Distributed across 3 agents for optimal performance
 
 ## Quality & Testing
 
@@ -291,13 +279,13 @@ pnpm exec nx affected -t test:mutation
 Run mutation testing on a specific package:
 
 ```bash
-pnpm exec nx run @monolab/is-odd:test:mutation
+pnpm exec nx run @monolab/react-hooks:test:mutation
 ```
 
 View HTML report for a package:
 
 ```bash
-pnpm exec nx run @monolab/is-odd:test:mutation:report
+pnpm exec nx run @monolab/react-hooks:test:mutation:report
 ```
 
 #### Mutation Score Interpretation
@@ -305,15 +293,14 @@ pnpm exec nx run @monolab/is-odd:test:mutation:report
 Mutation scores indicate the percentage of mutations that were detected
 (killed) by tests:
 
--   **High (80-100%)**: Excellent test quality, most edge cases covered
--   **Medium (60-79%)**: Good test quality, some improvements possible
--   **Low (0-59%)**: Weak test quality, significant gaps in test coverage
+- **High (80-100%)**: Excellent test quality, most edge cases covered
+- **Medium (60-79%)**: Good test quality, some improvements possible
+- **Low (0-59%)**: Weak test quality, significant gaps in test coverage
 
 Each package has graduated thresholds based on complexity:
 
--   **Utilities** (is-odd, is-even): 90% high / 75% low / 75% break
--   **React packages** (react-hooks, react-clean): 80% high / 65% low / 60% break
--   **Config packages** (ts-configs): 70% high / 50% low / 50% break
+- **React packages** (react-hooks, react-clean): 80% high / 65% low / 60% break
+- **Config packages** (ts-configs, ts-types): 70% high / 50% low / 50% break
 
 #### CI Behavior
 
@@ -321,15 +308,15 @@ Mutation testing runs automatically in CI with the following behavior:
 
 <!-- markdownlint-disable MD013 -->
 
--   **Execution**: Only on push to `main` or `develop` branches (skipped on PRs)
--   **Incremental Mode**: Reuses results from previous runs to minimize execution
-    time
--   **Caching**: Incremental cache is restored/saved with multi-level fallback
-    strategy
--   **Dashboard**: Results are uploaded to
-    [Stryker Dashboard](https://dashboard.stryker-mutator.io/reports/github.com/pabloimrik17/monolab/develop)
-    for historical tracking
--   **Artifacts**: Mutation reports are uploaded as CI artifacts for 30 days
+- **Execution**: Only on push to `main` or `develop` branches (skipped on PRs)
+- **Incremental Mode**: Reuses results from previous runs to minimize execution
+  time
+- **Caching**: Incremental cache is restored/saved with multi-level fallback
+  strategy
+- **Dashboard**: Results are uploaded to
+  [Stryker Dashboard](https://dashboard.stryker-mutator.io/reports/github.com/pabloimrik17/monolab/develop)
+  for historical tracking
+- **Artifacts**: Mutation reports are uploaded as CI artifacts for 30 days
 
 <!-- markdownlint-enable MD013 -->
 
@@ -360,16 +347,16 @@ must follow this format:
 
 #### Commit Types
 
--   **feat**: A new feature (triggers MINOR version bump)
--   **fix**: A bug fix (triggers PATCH version bump)
--   **docs**: Documentation only changes
--   **style**: Code style changes (formatting, missing semicolons, etc.)
--   **refactor**: Code changes that neither fix a bug nor add a feature
--   **perf**: Performance improvements
--   **test**: Adding or updating tests
--   **build**: Changes to build system or dependencies
--   **ci**: Changes to CI configuration files and scripts
--   **chore**: Other changes that don't modify src or test files
+- **feat**: A new feature (triggers MINOR version bump)
+- **fix**: A bug fix (triggers PATCH version bump)
+- **docs**: Documentation only changes
+- **style**: Code style changes (formatting, missing semicolons, etc.)
+- **refactor**: Code changes that neither fix a bug nor add a feature
+- **perf**: Performance improvements
+- **test**: Adding or updating tests
+- **build**: Changes to build system or dependencies
+- **ci**: Changes to CI configuration files and scripts
+- **chore**: Other changes that don't modify src or test files
 
 #### Breaking Changes
 
@@ -387,37 +374,41 @@ Use /v2/new-endpoint instead.
 
 The scope should be the package name without the `@m0n0lab/` prefix:
 
--   `is-odd`
--   `is-even`
--   `react-hooks`
--   `react-clean`
--   `ts-configs`
+- `react-hooks`
+- `react-clean`
+- `ts-configs`
+- `ts-types`
 
 #### Examples
 
 ```bash
 # Feature addition (minor version bump)
-feat(is-odd): add support for BigInt numbers
+feat(react-hooks): add useWillUnmount hook
 
 # Bug fix (patch version bump)
 fix(react-hooks): prevent memory leak in useDidMount
 
 # Breaking change (major version bump)
-feat(ts-configs)!: require Node.js 24.11.0 or higher
+feat(ts-configs)!: require Node.js 24.12.0 or higher
 
-BREAKING CHANGE: Dropped support for Node.js versions below 24.11.0
+BREAKING CHANGE: Dropped support for Node.js versions below 24.12.0
 
 # Documentation update (no version bump)
 docs(react-clean): improve usage examples in README
 
 # Multiple packages
-feat(is-odd,is-even): add type narrowing
+feat(react-hooks,react-clean): add TypeScript 5.9 support
 ```
 
 ### Release Process
 
 This project uses [release-please](https://github.com/googleapis/release-please)
 to automate versioning and publishing.
+
+> Plugin releases under `claude-plugins/` follow a separate but related flow
+> (git tags formatted `{plugin-name}--v{version}` instead of registry
+> publication). See [`RELEASE.md`](./RELEASE.md) for the plugin tag
+> convention, conventional-commit mapping, and the `develop → main` cadence.
 
 #### How It Works
 
@@ -433,11 +424,11 @@ to automate versioning and publishing.
 
 When commits are pushed to `main`, release-please automatically:
 
--   Calculates version bumps based on conventional commits
--   Updates `package.json` and `jsr.json` versions
--   Generates/updates `CHANGELOG.md` for each package
--   Updates `.release-please-manifest.json`
--   Creates or updates a single Release PR with all changes
+- Calculates version bumps based on conventional commits
+- Updates `package.json` and `jsr.json` versions
+- Generates/updates `CHANGELOG.md` for each package
+- Updates `.release-please-manifest.json`
+- Creates or updates a single Release PR with all changes
 
 The Release PR title follows the pattern: `chore(main): release packages`
 
@@ -458,10 +449,10 @@ When the Release PR is merged:
 
 **Important**:
 
--   Both npm and JSR use OIDC Trusted Publishers (no secrets/tokens needed)
--   JSR runs first to keep working directory clean (no `--allow-dirty` flag needed)
--   pnpm automatically transforms workspace protocol dependencies to proper semver
--   Both tools run full validation suites (no disabled checks)
+- Both npm and JSR use OIDC Trusted Publishers (no secrets/tokens needed)
+- JSR runs first to keep working directory clean (no `--allow-dirty` flag needed)
+- pnpm automatically transforms workspace protocol dependencies to proper semver
+- Both tools run full validation suites (no disabled checks)
 
 #### Workspace Protocol Dependencies
 
@@ -473,20 +464,20 @@ monorepo packages:
 ```json
 {
     "dependencies": {
-        "@m0n0lab/is-odd": "workspace:*",
-        "@m0n0lab/react-hooks": "workspace:*"
+        "@m0n0lab/react-hooks": "workspace:*",
+        "@m0n0lab/ts-types": "workspace:*"
     }
 }
 ```
 
 **Why this works:**
 
--   **Development**: pnpm links packages locally for fast iteration
--   **Publishing to npm**: pnpm automatically transforms `workspace:*` →
-    `^X.Y.Z` (published version)
--   **Publishing to JSR**: Deno workspaces automatically resolve to JSR
-    registry URLs
--   **No manual updates**: Dependency versions stay in sync automatically
+- **Development**: pnpm links packages locally for fast iteration
+- **Publishing to npm**: pnpm automatically transforms `workspace:*` →
+  `^X.Y.Z` (published version)
+- **Publishing to JSR**: Deno workspaces automatically resolve to JSR
+  registry URLs
+- **No manual updates**: Dependency versions stay in sync automatically
 
 **Important**: Never manually update internal dependency versions - the
 workspace protocol and publishing tools handle this automatically.
@@ -496,11 +487,9 @@ workspace protocol and publishing tools handle this automatically.
 JSR packages are published in the correct order to respect dependencies:
 
 1. `ts-types` (no internal dependencies)
-2. `is-odd` (no internal dependencies)
-3. `react-hooks` (no internal dependencies)
-4. `ts-configs` (no internal dependencies)
-5. `is-even` (depends on `is-odd`)
-6. `react-clean` (depends on `react-hooks` and `ts-types`)
+2. `react-hooks` (no internal dependencies)
+3. `ts-configs` (no internal dependencies)
+4. `react-clean` (depends on `react-hooks` and `ts-types`)
 
 This ordering is calculated dynamically using Nx's project graph.
 
@@ -531,7 +520,7 @@ cd packages/my-package
         "directory": "packages/my-package"
     },
     "engines": {
-        "node": "24.11.0"
+        "node": "24.12.0"
     },
     "publishConfig": {
         "access": "public",

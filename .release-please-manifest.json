@@ -1,9 +1,11 @@
 {
-    "packages/is-even": "2.1.4",
-    "packages/is-odd": "5.1.4",
+    "packages/http-client": "0.1.0",
     "packages/react-clean": "3.1.4",
     "packages/react-hooks": "1.1.4",
     "packages/ts-configs": "1.1.4",
     "packages/types": "0.1.0",
-    "packages/ts-types": "1.0.6"
+    "packages/ts-types": "1.0.6",
+    "packages/solid-clean": "0.1.0",
+    "claude-plugins/experiments": "0.8.0",
+    "claude-plugins/expo-developer": "0.2.0"
 }

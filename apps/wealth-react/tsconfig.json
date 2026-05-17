@@ -1,0 +1,24 @@
+{
+    "include": ["**/*.ts", "**/*.tsx", ".react-router/types/**/*"],
+    "compilerOptions": {
+        "lib": ["DOM", "DOM.Iterable", "ES2022"],
+        "target": "ES2022",
+        "module": "ES2022",
+        "moduleResolution": "bundler",
+        "jsx": "react-jsx",
+        "rootDirs": [".", "./.react-router/types"],
+        "outDir": "./dist",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "noEmit": true,
+        "isolatedModules": true,
+        "resolveJsonModule": true,
+        "types": ["vite/client"]
+    },
+    "references": [
+        {
+            "path": "../../packages/wealth-tracker-core"
+        }
+    ]
+}

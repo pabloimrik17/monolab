@@ -1,15 +1,11 @@
-import react from "@vitejs/plugin-react";
+import react from "@vitejs/plugin-react-swc";
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
     plugins: [react()],
     test: {
-        include: [
-            "**/*.{test,spec}.{ts,tsx}",
-            "**/*.browser.test.{ts,tsx}",
-            "**/*.integration.ts",
-        ],
+        include: ["**/*.{test,spec}.{ts,tsx}", "**/*.browser.test.{ts,tsx}", "**/*.integration.ts"],
         reporters: ["default", "junit"],
         outputFile: {
             junit: "./test-results.junit.xml",

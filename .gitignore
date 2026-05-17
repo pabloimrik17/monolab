@@ -344,7 +344,6 @@ sketch
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 /.claude/settings.local.json
-/.mcp.json
 
 # Git worktrees
 .worktrees/
@@ -352,3 +351,8 @@ sketch
 # Stryker mutation testing reports
 **/reports/
 .stryker-tmp/
+
+.nx/polygraph
+.claude/worktrees
+.output
+.vinxi

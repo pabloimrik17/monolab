@@ -45,13 +45,7 @@ describe("isNonUndefinable", () => {
     });
 
     it("should work with array filter", () => {
-        const values: (string | undefined)[] = [
-            "hello",
-            undefined,
-            "world",
-            undefined,
-            "!",
-        ];
+        const values: (string | undefined)[] = ["hello", undefined, "world", undefined, "!"];
         const filtered = values.filter(isNonUndefinable);
 
         expect(filtered).toEqual(["hello", "world", "!"]);

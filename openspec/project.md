@@ -3,7 +3,6 @@
 ## Purpose
 **MonoLab** is an Nx-powered monorepo containing a collection of modern JavaScript/TypeScript utility packages and libraries published to JSR (JavaScript Registry):
 
-- **Utility Packages**: Simple, focused utilities like `is-even` and `is-odd` for common programming tasks
 - **React Ecosystem**: Professional React libraries including:
   - `react-hooks`: Custom lifecycle hooks (useDidMount, useWillUnmount)
   - `react-clean`: MVVM pattern library using Inversify (IoC) and RxJS for reactive state management
@@ -15,8 +14,8 @@
 ## Tech Stack
 
 ### Core Technologies
-- **Node.js**: 24.11.0 (managed via `.nvmrc`)
-- **Package Manager**: pnpm 10.19.0 (locked with sha512 hash)
+- **Node.js**: 24.12.0 (managed via `.nvmrc`)
+- **Package Manager**: pnpm 10.27.0 (locked with sha512 hash)
 - **Language**: TypeScript 5.9.2 (strict mode enabled)
 - **Monorepo Tool**: Nx 21.3.11 with @nx/js plugin
 
@@ -53,7 +52,7 @@
 - **JSR**: Primary package registry for publishing
 - **Nx Cloud**: Distributed task execution (ID: 67f985a4bdd1693cbb6398fa)
 - **Codecov**: Code coverage reporting, test analytics, and bundle size analysis
-  - Coverage reports uploaded from CI with per-package flags (react-hooks, react-clean, is-even, is-odd, ts-configs)
+  - Coverage reports uploaded from CI with per-package flags (react-hooks, react-clean, ts-configs, ts-types)
   - Test results uploaded in JUnit XML format for test analytics (failure tracking, flaky test detection, performance metrics)
   - Bundle size tracking on main branch using Codecov Bundle Analysis
   - Global and per-package coverage badges available
@@ -95,7 +94,6 @@
 - `openspec/`: AI assistant guidelines and change proposals
 
 **Library Design Patterns**:
-- **Pure Utility Functions**: Stateless, side-effect-free functions (is-even, is-odd)
 - **MVVM Pattern**: `react-clean` uses Inversify decorators (@injectable) with BaseViewModel
 - **Reactive Programming**: RxJS Subscriptions for state management
 - **Custom React Hooks**: Lifecycle abstractions (useDidMount, useWillUnmount)
@@ -203,8 +201,8 @@
 ## Important Constraints
 
 **Runtime Requirements**:
-- **Node.js**: Exactly 24.11.0 (enforced via package.json engines field and `.nvmrc`)
-- **pnpm**: Exactly 10.19.0 with specific sha512 hash (use `corepack prepare pnpm@10.19.0 --activate`)
+- **Node.js**: Exactly 24.12.0 (enforced via package.json engines field and `.nvmrc`)
+- **pnpm**: Exactly 10.27.0 with specific sha512 hash (use `corepack prepare pnpm@10.27.0 --activate`)
 - Use `nvm use` to automatically switch to the correct Node version
 
 **TypeScript Strictness**:

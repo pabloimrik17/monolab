@@ -1,0 +1,26 @@
+{
+    "name": "monolab",
+    "owner": {
+        "name": "Pablo F.G.",
+        "email": "pabloimrik17@users.noreply.github.com"
+    },
+    "metadata": {
+        "description": "Claude Code plugins from the MonoLab monorepo",
+        "version": "0.1.0",
+        "pluginRoot": "./claude-plugins"
+    },
+    "plugins": [
+        {
+            "name": "expo-developer",
+            "source": "./claude-plugins/expo-developer",
+            "version": "0.2.0",
+            "description": "Expo/React Native developer tools with dependency validation"
+        },
+        {
+            "name": "experiments",
+            "source": "./claude-plugins/experiments",
+            "version": "0.10.0",
+            "description": "Beta skills and commands staging area for monolab"
+        }
+    ]
+}

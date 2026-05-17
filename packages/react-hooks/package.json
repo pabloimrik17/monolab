@@ -2,14 +2,23 @@
     "name": "@m0n0lab/react-hooks",
     "version": "1.1.4",
     "private": false,
+    "author": "Pablo F.G.",
     "repository": {
         "type": "git",
         "url": "https://github.com/pabloimrik17/monolab.git",
         "directory": "packages/react-hooks"
     },
-    "author": "Pablo F.G.",
-    "sideEffects": false,
+    "files": [
+        "dist",
+        "package.json",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE"
+    ],
     "type": "module",
+    "sideEffects": false,
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
@@ -18,15 +27,11 @@
         },
         "./package.json": "./package.json"
     },
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "files": [
-        "dist",
-        "package.json",
-        "README.md",
-        "CHANGELOG.md",
-        "LICENSE"
-    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true,
+        "registry": "https://registry.npmjs.org/"
+    },
     "scripts": {
         "build": "pnpm run build:typecheck && pnpm run build:lib",
         "build:check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
@@ -37,8 +42,8 @@
         "lint:eslint:fix": "eslint --cache --max-warnings 40 --fix .",
         "lint:knip": "knip --max-issues 40",
         "lint:knip:fix": "knip --fix",
-        "lint:prettier": "prettier . --check",
-        "lint:prettier:fix": "prettier . --write",
+        "lint:oxfmt": "oxfmt --check .",
+        "lint:oxfmt:fix": "oxfmt .",
         "test:browser": "vitest run --browser.enabled=true src/hooks/*.browser.test.tsx",
         "test:browser:watch": "vitest --browser.enabled=true src/hooks/*.browser.test.tsx",
         "test:integration": "vitest run src/**/*.integration.ts",
@@ -58,25 +63,20 @@
     "devDependencies": {
         "@arethetypeswrong/cli": "0.18.2",
         "@testing-library/react": "catalog:",
-        "@types/react": "18.3.26",
+        "@types/react": "18.3.28",
         "jsdom": "catalog:",
         "react": "18.3.1",
         "react-dom": "18.3.1",
-        "tsdown": "0.15.9",
+        "tsdown": "0.15.12",
         "typescript": "5.9.3",
         "vitest": "catalog:"
     },
     "peerDependencies": {
-        "react": "19.2.0"
+        "react": "19.2.1"
     },
-    "packageManager": "pnpm@10.19.0",
     "engines": {
-        "node": "24.11.0",
-        "pnpm": "10.19.0"
+        "node": ">=22.0.0",
+        "pnpm": "10.27.0"
     },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true,
-        "registry": "https://registry.npmjs.org/"
-    }
+    "packageManager": "pnpm@10.27.0"
 }

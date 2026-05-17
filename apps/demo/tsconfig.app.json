@@ -23,13 +23,5 @@
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": true
     },
-    "include": ["src"],
-    "references": [
-        {
-            "path": "../../packages/is-even"
-        },
-        {
-            "path": "../../packages/is-odd"
-        }
-    ]
+    "include": ["src"]
 }

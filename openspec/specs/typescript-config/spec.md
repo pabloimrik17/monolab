@@ -93,7 +93,7 @@ The monorepo SHALL provide a TypeScript configuration file (`tsconfig.node.app.j
 #### Scenario: Debugging support
 - **WHEN** developing a Node.js application
 - **THEN** source maps are enabled for debugging
-- **AND** the output is compatible with Node.js 24.11.0 runtime
+- **AND** the output is compatible with Node.js 24.12.0 runtime
 
 #### Scenario: Compatible with Hono APIs
 - **WHEN** a Hono API project uses this configuration
@@ -120,7 +120,7 @@ The monorepo SHALL provide a TypeScript configuration file (`tsconfig.node.lib.j
 - **AND** incremental builds work correctly across library dependencies
 
 #### Scenario: Compatible with utility libraries
-- **WHEN** utility libraries (is-even, is-odd) use this configuration
+- **WHEN** utility libraries (ts-types) use this configuration
 - **THEN** they compile successfully with proper type definitions
 - **AND** pass @arethetypeswrong/cli validation
 - **AND** produce Node.js-compatible, tree-shakeable output
@@ -131,7 +131,7 @@ The monorepo SHALL provide a base TypeScript configuration file (`tsconfig.node.
 #### Scenario: Node.js environment support
 - **WHEN** a Node.js project extends from `tsconfig.node.base.json`
 - **THEN** the configuration excludes DOM type definitions
-- **AND** the target is set to a modern ES version compatible with Node.js 24.11.0
+- **AND** the target is set to a modern ES version compatible with Node.js 24.12.0
 - **AND** the lib includes modern ES features without browser-specific APIs
 
 #### Scenario: Node.js module support

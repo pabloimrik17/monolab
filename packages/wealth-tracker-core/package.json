@@ -1,0 +1,70 @@
+{
+    "name": "@m0n0lab/wealth-tracker-core",
+    "version": "0.1.0",
+    "private": true,
+    "author": "Pablo F.G.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/pabloimrik17/monolab.git",
+        "directory": "packages/wealth-tracker-core"
+    },
+    "files": [
+        "dist",
+        "package.json",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE"
+    ],
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true,
+        "registry": "https://registry.npmjs.org/"
+    },
+    "scripts": {
+        "build": "pnpm run build:typecheck && pnpm run build:lib",
+        "build:check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
+        "build:lib": "tsdown",
+        "build:typecheck": "tsc --noEmit",
+        "lint:eslint": "eslint --cache --max-warnings 40 .",
+        "lint:eslint:config-check": "eslint-config-prettier src/index.ts",
+        "lint:eslint:fix": "eslint --cache --max-warnings 40 --fix .",
+        "lint:knip": "knip --max-issues 70",
+        "lint:knip:fix": "knip --fix",
+        "test:unit": "vitest run",
+        "test:unit:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui",
+        "test:unit:watch": "vitest",
+        "test:mutation": "stryker run",
+        "test:mutation:report": "open reports/mutation/index.html",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "tslib": "2.8.1"
+    },
+    "devDependencies": {
+        "@arethetypeswrong/cli": "0.18.2",
+        "@stryker-mutator/core": "9.3.0",
+        "@stryker-mutator/typescript-checker": "9.3.0",
+        "@stryker-mutator/vitest-runner": "9.3.0",
+        "tsdown": "0.15.12",
+        "typescript": "5.9.3",
+        "vitest": "catalog:"
+    },
+    "engines": {
+        "node": ">=22.0.0",
+        "pnpm": "10.27.0"
+    },
+    "packageManager": "pnpm@10.27.0"
+}

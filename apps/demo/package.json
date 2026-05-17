@@ -11,23 +11,21 @@
         "lint:eslint:fix": "eslint --cache --max-warnings 60 --fix .",
         "lint:knip": "knip --max-issues 100",
         "lint:knip:fix": "knip --fix",
-        "lint:prettier": "prettier . --check",
-        "lint:prettier:fix": "prettier . --write",
+        "lint:oxfmt": "oxfmt --check .",
+        "lint:oxfmt:fix": "oxfmt .",
         "preview": "vite preview"
     },
     "dependencies": {
-        "@m0n0lab/is-even": "workspace:*",
-        "@m0n0lab/is-odd": "workspace:*",
-        "solid-js": "1.9.9"
+        "solid-js": "1.9.12"
     },
     "devDependencies": {
         "typescript": "5.9.3",
-        "vite": "6.4.1",
-        "vite-plugin-solid": "2.11.10"
+        "vite": "6.4.2",
+        "vite-plugin-solid": "2.11.12"
     },
-    "packageManager": "pnpm@10.19.0",
     "engines": {
-        "node": "24.11.0",
-        "pnpm": "10.19.0"
-    }
+        "node": "24.12.0",
+        "pnpm": "10.27.0"
+    },
+    "packageManager": "pnpm@10.27.0"
 }
