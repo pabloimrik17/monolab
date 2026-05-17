@@ -178,7 +178,7 @@ Apply order in deep mode (`apply-all` path):
 The orchestrator's confirmation gate in deep mode offers four options (vs three in shallow):
 
 - `apply-all` — bumps + improvements (single unified plan-mode round).
-- `apply-bumps-only` — bumps only. Equivalent in net effect to `/experiments:commander-update-patch` against the same set, except without the override-registry's `run-override` path (which has already been resolved at Step 8). All `run-override` decisions still execute on this path because they were resolved before the gate; only the improvements section is skipped.
+- `apply-bumps-only` — bumps + already-resolved override actions, no improvements. Equivalent in net effect to `/experiments:commander-update-patch` against the same set: every `run-override` decision resolved in Step 8 still executes (override resolution happens before the gate, so the user has already committed to those actions), every generic ncu bump runs, every per-project install runs. The only thing this path SKIPS relative to `apply-all` is the Step 10b plan-mode improvements round; the Step 11 summary's `Applied improvements` section is omitted.
 - `pick-subset` — free-form selection of improvement bullets + package names (excludes from both).
 - `cancel` — no side effects.
 
