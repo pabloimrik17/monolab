@@ -4,6 +4,12 @@ on:
     push:
         branches:
             - main
+    workflow_dispatch:
+        inputs:
+            packages:
+                description: "Comma-separated package names to publish (e.g. http-client,react-clean). Required when running manually."
+                required: true
+                type: string
 
 permissions:
     contents: write
@@ -13,6 +19,7 @@ permissions:
 
 jobs:
     release-please:
+        if: ${{ github.event_name == 'push' }}
         runs-on: ubuntu-latest
         outputs:
             releases_created: ${{ steps.release.outputs.releases_created }}
@@ -30,7 +37,10 @@ jobs:
     publish:
         needs: release-please
         runs-on: ubuntu-latest
-        if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+        if: |
+            always() && !cancelled() &&
+            ((github.event_name == 'push' && needs.release-please.outputs.releases_created == 'true')
+              || github.event_name == 'workflow_dispatch')
         permissions:
             contents: read
             id-token: write
@@ -65,15 +75,21 @@ jobs:
               id: released-packages
               env:
                   PATHS_RELEASED: ${{ needs.release-please.outputs.paths_released }}
+                  DISPATCH_PACKAGES: ${{ inputs.packages }}
+                  EVENT_NAME: ${{ github.event_name }}
               run: |
-                  # Parse paths_released to get package names (using env var to prevent script injection)
-                  echo "Released paths: $PATHS_RELEASED"
+                  if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+                    # Manual run: read comma-separated input, normalize to space-separated
+                    PACKAGES=$(echo "$DISPATCH_PACKAGES" | tr ',' ' ' | tr -s ' ')
+                    echo "Manual dispatch packages: $PACKAGES"
+                  else
+                    # Push event: parse release-please paths_released
+                    echo "Released paths: $PATHS_RELEASED"
+                    PACKAGES=$(echo "$PATHS_RELEASED" | jq -r '.[] | select(startswith("packages/")) | sub("packages/"; "")' | tr '\n' ' ')
+                    echo "Released packages: $PACKAGES"
+                  fi
 
-                  # Extract package names from paths (packages/ts-types -> ts-types)
-                  # Convert to space-separated single line for GitHub Actions output
-                  PACKAGES=$(echo "$PATHS_RELEASED" | jq -r '.[] | select(startswith("packages/")) | sub("packages/"; "")' | tr '\n' ' ')
                   echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
-                  echo "Released packages: $PACKAGES"
 
             - name: Publish packages to JSR
               run: |
