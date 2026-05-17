@@ -103,6 +103,11 @@ jobs:
                       PKG_PATH="packages/$PKG_DIR"
                       PACKAGE_NAME="@m0n0lab/$PKG_DIR"
 
+                      if [ ! -f "$PKG_PATH/deno.json" ]; then
+                        echo "Skipping $PACKAGE_NAME for JSR — no deno.json"
+                        continue
+                      fi
+
                       echo "Publishing $PACKAGE_NAME to JSR..."
                       cd $PKG_PATH
                       deno publish
@@ -118,6 +123,11 @@ jobs:
                     if ! echo "$ORDERED_PACKAGES" | grep -q "$PKG_DIR"; then
                       PKG_PATH="packages/$PKG_DIR"
                       PACKAGE_NAME="@m0n0lab/$PKG_DIR"
+
+                      if [ ! -f "$PKG_PATH/deno.json" ]; then
+                        echo "Skipping standalone $PACKAGE_NAME for JSR — no deno.json"
+                        continue
+                      fi
 
                       echo "Publishing standalone package $PACKAGE_NAME to JSR..."
                       cd $PKG_PATH
