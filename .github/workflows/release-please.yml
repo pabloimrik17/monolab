@@ -126,7 +126,7 @@ jobs:
 
                       echo "Publishing $PACKAGE_NAME to JSR..."
                       cd $PKG_PATH
-                      deno publish
+                      deno publish --unstable-sloppy-imports
                       cd ../..
 
                       echo "Successfully published $PACKAGE_NAME to JSR"
@@ -147,7 +147,7 @@ jobs:
 
                       echo "Publishing standalone package $PACKAGE_NAME to JSR..."
                       cd $PKG_PATH
-                      deno publish
+                      deno publish --unstable-sloppy-imports
                       cd ../..
 
                       echo "Successfully published $PACKAGE_NAME to JSR"
