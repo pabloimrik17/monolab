@@ -52,6 +52,14 @@ Apply patch-level npm updates across every project registered in the Commander r
 
 The summary partitions the resolved set into applied / failed / pending so a partial-failure run can be resumed by re-invoking the command after fixing the failed project.
 
+### `/experiments:commander-update-deep-patch`
+
+Deep sibling of `/experiments:commander-update-patch`. Same scope (patch-level, cross-project plan, sequential apply with stop-on-fail) plus **research deduplicated by package**: every patch changelog is fetched once across the run (no per-project duplication), subagents produce universal findings only (no codebase cross-reference — that happens at apply time), and after the bumps loop the main agent enters plan mode ONCE with a unified document of (improvement, project) pairs spanning every applied project. Gate options expand to four: `apply-all` / `apply-bumps-only` / `pick-subset` / `cancel`. Plan dirs live under `~/.claude/experiments/plans/commander-deep-patch-<unix-ts>/` and inherit the workflow's 10-day stale-cleanup. Inherits every hard rule from the shallow command plus `npm-update-deep-patch` — no tests, no lint, no build, no commits, never mutates the registry, never auto-executes an override.
+
+```bash
+/experiments:commander-update-deep-patch
+```
+
 ### `/experiments:ralph`
 
 Generate Ralph loop infrastructure from a project description for autonomous AI coding.
@@ -126,7 +134,7 @@ Deterministic partition of `ScanResult.updates[]` into bounded subagent groups u
 
 ### `parallel-research-workflow`
 
-Two-phase parallel-subagent orchestration over a pre-grouped package set: phase 1 fetches every changelog via `experiments:npm-changelog`, phase 2 cross-references against this codebase, phase 3 verifies integrity (`retry-failed` / `continue-without` / `abort`), phase 4 enters plan mode and writes `plan.md`. Persists artifacts under `~/.claude/experiments/plans/<slug>-<level>-<unix-ts>/`. Reusable across `npm-update-deep-{patch,minor,major,engines}` — only the level changes.
+Multi-phase parallel-subagent orchestration over a pre-grouped package set: phase 0 stale-plan cleanup (>10d), phase 1 fetches every changelog via `experiments:npm-changelog`, phase 2 cross-references against this codebase (single-project mode) or produces universal findings only (cross-project mode), phase 3 verifies integrity (`retry-failed` / `continue-without` / `abort`), phase 4 enters plan mode and writes `plan.md`. Persists artifacts under `~/.claude/experiments/plans/<slug>-<level>-<unix-ts>/`. The `mode` input (`single-project` default, `cross-project` for commander deep) selects the subagent prompt template, plan-dir layout (`scan.json` vs `scan-by-project.json` + `cross-project-plan.json`), and `plan.md` template (single-project bump-set vs cross-project bump-set with `affects projects:` tags). Reusable across `npm-update-deep-{patch,minor,major,engines}` and `commander-update-deep-{patch,minor,major,engines}` — only the level and mode change.
 
 ### `commander-normalize`
 
@@ -134,7 +142,7 @@ Controlled-vocabulary keyword normalization for the Commander registry. Used by 
 
 ### `commander-update-orchestrator`
 
-Cross-project npm-update orchestration. Owns the fan-out / fan-in pipeline used by `/experiments:commander-update-patch` (and the future `-minor` / `-major` / `-engines` siblings, plus the deep variants): list+filter projects from the registry, dispatch parallel `experiments:scan-npm-updates` runs via Haiku subagents (one per project, in a single message), deduplicate updates by package, version-align (max-wins with a one-prompt per-project fallback on range conflicts), render a unified plan table, consult `pkg-upgrade-overrides.yaml` once per matched entry across the whole run, gate on `apply-all` / `pick-subset` / `cancel`, then apply each project sequentially (stop-on-fail) and emit an aggregated summary. Pure built-in tools (`Read`, `Bash`, `AskUserQuestion`, `Agent`, `Skill`, `Edit`); read-only against the registry.
+Cross-project npm-update orchestration. Owns the fan-out / fan-in pipeline used by `/experiments:commander-update-patch` and `/experiments:commander-update-deep-patch` (and the future `-minor` / `-major` / `-engines` siblings, plus their deep variants): list+filter projects from the registry, dispatch parallel `experiments:scan-npm-updates` runs via Haiku subagents (one per project, in a single message), deduplicate updates by package, version-align (max-wins with a one-prompt per-project fallback on range conflicts), render a unified plan, consult `pkg-upgrade-overrides.yaml` once per matched entry across the whole run, gate on the user's chosen apply path, then apply each project sequentially (stop-on-fail) and emit an aggregated summary. The `mode` input selects shallow (default) or deep — deep mode inserts Step 6.5 (cross-project research via `parallel-research-workflow`), expands the gate to four options (adds `apply-bumps-only`), and after the bumps loop enters plan-mode ONCE for a unified cross-project improvements round (Step 10b). Pure built-in tools (`Read`, `Bash`, `AskUserQuestion`, `Agent`, `Skill`, `Edit`, `Write`, `EnterPlanMode`); read-only against the registry.
 
 ## Testing
 
