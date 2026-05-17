@@ -98,7 +98,7 @@
     },
     "engines": {
         "deno": "2.6.4",
-        "node": "v25.9.0",
+        "node": "24.12.0",
         "pnpm": "10.27.0"
     },
     "packageManager": "pnpm@10.27.0"
