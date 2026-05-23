@@ -1,3 +1,4 @@
+import { codecovRollupPlugin } from "@codecov/rollup-plugin";
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
@@ -23,4 +24,12 @@ export default defineConfig({
     clean: true,
     minify: false,
     target: "ES2023",
+    plugins: [
+        codecovRollupPlugin({
+            enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+            bundleName: "investlab",
+            uploadToken: process.env.CODECOV_TOKEN,
+            gitService: "github",
+        }),
+    ],
 });
