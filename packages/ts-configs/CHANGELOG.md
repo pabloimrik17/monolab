@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.1](https://github.com/pabloimrik17/monolab/compare/ts-configs-v1.2.0...ts-configs-v1.2.1) (2026-05-23)
+
+
+### Bug Fixes
+
+* **release:** idempotent publish + ts-configs entry point ([c5309dd](https://github.com/pabloimrik17/monolab/commit/c5309ddd9f877f37aa73576431769ee826466786))
+* **release:** make JSR/npm publish idempotent and add ts-configs entry ([3a7d566](https://github.com/pabloimrik17/monolab/commit/3a7d5660dfa66f9f94ba1cd7b77f068caa4c2f5f))
+
 ## [1.2.0](https://github.com/pabloimrik17/monolab/compare/ts-configs-v1.1.4...ts-configs-v1.2.0) (2026-05-17)
 
 
