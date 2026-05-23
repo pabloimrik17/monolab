@@ -153,6 +153,8 @@ jobs:
                   done
 
             - name: Build and publish packages to npm
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
               run: |
                   # Get list of packages
                   PACKAGES="${{ steps.released-packages.outputs.packages }}"
