@@ -61,7 +61,6 @@ jobs:
               with:
                   node-version: "24.12.0"
                   cache: "pnpm"
-                  registry-url: "https://registry.npmjs.org"
 
             - name: Setup Deno
               uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
