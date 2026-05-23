@@ -1,6 +1,8 @@
 import { codecovVitePlugin } from "@codecov/vite-plugin";
 import { defineConfig } from "@solidjs/start/config";
 
+const codecovToken = process.env.CODECOV_TOKEN?.trim();
+
 export default defineConfig({
     server: {
         preset: "node-server",
@@ -17,9 +19,9 @@ export default defineConfig({
             router === "client"
                 ? [
                       codecovVitePlugin({
-                          enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+                          enableBundleAnalysis: Boolean(codecovToken),
                           bundleName: "qup-web",
-                          uploadToken: process.env.CODECOV_TOKEN,
+                          uploadToken: codecovToken,
                           gitService: "github",
                       }),
                   ]

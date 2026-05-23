@@ -1,6 +1,8 @@
 import { codecovRollupPlugin } from "@codecov/rollup-plugin";
 import { defineConfig } from "tsdown";
 
+const codecovToken = process.env.CODECOV_TOKEN?.trim();
+
 export default defineConfig({
     name: "@m0n0lab/investlab",
     entry: ["src/index.ts"],
@@ -26,9 +28,9 @@ export default defineConfig({
     target: "ES2023",
     plugins: [
         codecovRollupPlugin({
-            enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+            enableBundleAnalysis: Boolean(codecovToken),
             bundleName: "investlab",
-            uploadToken: process.env.CODECOV_TOKEN,
+            uploadToken: codecovToken,
             gitService: "github",
         }),
     ],

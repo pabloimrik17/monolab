@@ -4,10 +4,11 @@ import { defineConfig, type PluginOption } from "vite";
 
 // Cast: see note in apps/demo/vite.config.ts — @codecov/sveltekit-plugin
 // inherits the same vite@^6 peer range constraint.
+const codecovToken = process.env.CODECOV_TOKEN?.trim();
 const codecovPlugin = codecovSvelteKitPlugin({
-    enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+    enableBundleAnalysis: Boolean(codecovToken),
     bundleName: "green-beard",
-    uploadToken: process.env.CODECOV_TOKEN,
+    uploadToken: codecovToken,
     gitService: "github",
 }) as PluginOption;
 
