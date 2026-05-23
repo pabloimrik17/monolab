@@ -112,24 +112,35 @@ jobs:
 
                   echo "Publishing to JSR in dependency order: $ORDERED_PACKAGES"
 
+                  publish_to_jsr() {
+                    local pkg_path="$1"
+                    local pkg_name="$2"
+                    local label="$3"
+
+                    if [ ! -f "$pkg_path/deno.json" ]; then
+                      echo "Skipping $label$pkg_name for JSR — no deno.json"
+                      return 0
+                    fi
+
+                    local version
+                    version=$(jq -r '.version' "$pkg_path/deno.json")
+                    local meta_url="https://jsr.io/${pkg_name}/${version}_meta.json"
+
+                    if curl -sf -o /dev/null "$meta_url"; then
+                      echo "Skipping $label$pkg_name@$version for JSR — already published"
+                      return 0
+                    fi
+
+                    echo "Publishing $label$pkg_name@$version to JSR..."
+                    ( cd "$pkg_path" && deno publish --unstable-sloppy-imports )
+                    echo "Successfully published $pkg_name@$version to JSR"
+                  }
+
                   # First publish packages in dependency order (from graph)
                   for PKG_DIR in $ORDERED_PACKAGES; do
                     # Only publish if package was released
                     if echo "$PACKAGES" | grep -q "$PKG_DIR"; then
-                      PKG_PATH="packages/$PKG_DIR"
-                      PACKAGE_NAME="@m0n0lab/$PKG_DIR"
-
-                      if [ ! -f "$PKG_PATH/deno.json" ]; then
-                        echo "Skipping $PACKAGE_NAME for JSR — no deno.json"
-                        continue
-                      fi
-
-                      echo "Publishing $PACKAGE_NAME to JSR..."
-                      cd $PKG_PATH
-                      deno publish --unstable-sloppy-imports
-                      cd ../..
-
-                      echo "Successfully published $PACKAGE_NAME to JSR"
+                      publish_to_jsr "packages/$PKG_DIR" "@m0n0lab/$PKG_DIR" ""
                     fi
                   done
 
@@ -137,20 +148,7 @@ jobs:
                   for PKG_DIR in $PACKAGES; do
                     # Skip if already published in dependency order
                     if ! echo "$ORDERED_PACKAGES" | grep -q "$PKG_DIR"; then
-                      PKG_PATH="packages/$PKG_DIR"
-                      PACKAGE_NAME="@m0n0lab/$PKG_DIR"
-
-                      if [ ! -f "$PKG_PATH/deno.json" ]; then
-                        echo "Skipping standalone $PACKAGE_NAME for JSR — no deno.json"
-                        continue
-                      fi
-
-                      echo "Publishing standalone package $PACKAGE_NAME to JSR..."
-                      cd $PKG_PATH
-                      deno publish --unstable-sloppy-imports
-                      cd ../..
-
-                      echo "Successfully published $PACKAGE_NAME to JSR"
+                      publish_to_jsr "packages/$PKG_DIR" "@m0n0lab/$PKG_DIR" "standalone "
                     fi
                   done
 
@@ -169,7 +167,13 @@ jobs:
                       continue
                     fi
 
-                    echo "Processing package: $PACKAGE_NAME"
+                    VERSION=$(jq -r '.version' "$PKG_PATH/package.json")
+                    if npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
+                      echo "Skipping $PACKAGE_NAME@$VERSION for npm — already published"
+                      continue
+                    fi
+
+                    echo "Processing package: $PACKAGE_NAME@$VERSION"
 
                     # Build the package using Nx (NX_NO_CLOUD disables cloud)
                     echo "Building $PACKAGE_NAME..."
@@ -177,11 +181,9 @@ jobs:
 
                     # Publish to npm using pnpm (transforms workspace:* to semver)
                     echo "Publishing $PACKAGE_NAME to npm..."
-                    cd $PKG_PATH
-                    pnpm publish --access public
-                    cd ../..
+                    ( cd "$PKG_PATH" && pnpm publish --access public )
 
-                    echo "Successfully published $PACKAGE_NAME to npm"
+                    echo "Successfully published $PACKAGE_NAME@$VERSION to npm"
                   done
 
             - name: Summary
