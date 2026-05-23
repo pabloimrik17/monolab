@@ -175,9 +175,13 @@ jobs:
 
                     echo "Processing package: $PACKAGE_NAME@$VERSION"
 
-                    # Build the package using Nx (NX_NO_CLOUD disables cloud)
-                    echo "Building $PACKAGE_NAME..."
-                    pnpm nx run $PKG_DIR:build
+                    # Build the package using Nx (skip if no build target — e.g. config-only packages)
+                    if pnpm exec nx show project "$PACKAGE_NAME" --json 2>/dev/null | jq -e '.targets.build' >/dev/null; then
+                      echo "Building $PACKAGE_NAME..."
+                      pnpm nx run $PKG_DIR:build
+                    else
+                      echo "No build target for $PACKAGE_NAME — skipping build"
+                    fi
 
                     # Publish to npm using pnpm (transforms workspace:* to semver)
                     echo "Publishing $PACKAGE_NAME to npm..."
