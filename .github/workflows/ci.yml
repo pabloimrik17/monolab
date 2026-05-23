@@ -20,6 +20,10 @@ jobs:
             NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
             # Set to 'true' to disable Nx Cloud when monthly limit is reached
             NX_NO_CLOUD: ${{ vars.NX_NO_CLOUD }}
+        outputs:
+            # JSON map { "<flag>": true|false } consumed by the upload-codecov matrix job
+            # to gate per-package uploads. On push events, all flags are forced to true.
+            affected: ${{ steps.affected-codecov.outputs.json }}
         steps:
             - name: Checkout code
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -140,287 +144,60 @@ jobs:
               run: pnpm exec nx run-many -t test:types
               if: ${{ github.event_name == 'push' }}
 
-            # Detect which packages are affected by PR changes for conditional Codecov uploads
-            # This step only runs on PRs to optimize upload time and API usage
+            # Build an affected map consumed by the upload-codecov matrix job.
+            # PR: only affected packages upload. Push: force all to true (baseline run).
             - name: 🔍 Detect affected packages for Codecov
               id: affected-codecov
-              if: ${{ github.event_name == 'pull_request' }}
               run: |
-                  # Get list of affected projects from Nx
-                  AFFECTED_PROJECTS=$(pnpm exec nx show projects --affected)
-                  echo "Affected projects:"
-                  echo "$AFFECTED_PROJECTS"
+                  PACKAGES="react-hooks react-clean ts-configs ts-types http-client qup-api qup-data qup-domain solid-clean wealth-tracker-core green-beard qup-web wealth-react qup-shared"
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    AFFECTED_PROJECTS=$(pnpm exec nx show projects --affected)
+                    echo "Affected projects:"
+                    echo "$AFFECTED_PROJECTS"
+                    JSON="{"
+                    for package in $PACKAGES; do
+                      if echo "$AFFECTED_PROJECTS" | grep -Fxq "@m0n0lab/$package"; then
+                        JSON="$JSON\"$package\":true,"
+                        echo "✓ $package is affected"
+                      else
+                        JSON="$JSON\"$package\":false,"
+                        echo "⏭️  $package is not affected"
+                      fi
+                    done
+                    JSON="${JSON%,}}"
+                  else
+                    # On push events upload all flags for full baseline.
+                    JSON="{"
+                    for package in $PACKAGES; do
+                      JSON="$JSON\"$package\":true,"
+                    done
+                    JSON="${JSON%,}}"
+                  fi
+                  echo "json=$JSON" >> $GITHUB_OUTPUT
+                  echo "Affected JSON: $JSON"
 
-                  # Check each package and set boolean output
-                  for package in react-hooks react-clean ts-configs ts-types http-client qup-api qup-data qup-domain solid-clean wealth-tracker-core green-beard qup-web wealth-react qup-shared; do
-                    if echo "$AFFECTED_PROJECTS" | grep -Fxq "@m0n0lab/$package"; then
-                      echo "$package=true" >> $GITHUB_OUTPUT
-                      echo "✓ $package is affected"
-                    else
-                      echo "$package=false" >> $GITHUB_OUTPUT
-                      echo "⏭️  $package is not affected"
-                    fi
-                  done
-
-            # Upload coverage per package with individual flags for isolated tracking
-            # In PRs: only upload affected packages. On main/develop/pre: upload all packages for baseline
-            - name: 📊 Upload coverage to Codecov - react-hooks
-              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.react-hooks == 'true') }}
+            # Upload lcov + junit artifacts for the downstream matrix job to consume.
+            # Single small artifact (<2MB typically); retention 1 day is enough for the
+            # follow-up job to download.
+            - name: 📦 Upload coverage artifacts
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+              if: ${{ !cancelled() }}
               with:
-                  files: ./packages/react-hooks/coverage/lcov.info
-                  flags: react-hooks
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload coverage to Codecov - react-clean
-              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.react-clean == 'true') }}
-              with:
-                  files: ./packages/react-clean/coverage/lcov.info
-                  flags: react-clean
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload coverage to Codecov - ts-configs
-              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.ts-configs == 'true') }}
-              with:
-                  files: ./packages/ts-configs/coverage/lcov.info
-                  flags: ts-configs
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload coverage to Codecov - ts-types
-              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.ts-types == 'true') }}
-              with:
-                  files: ./packages/ts-types/coverage/lcov.info
-                  flags: ts-types
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload coverage to Codecov - http-client
-              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.http-client == 'true') }}
-              with:
-                  files: ./packages/http-client/coverage/lcov.info
-                  flags: http-client
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload coverage to Codecov - qup-api
-              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-api == 'true') }}
-              with:
-                  files: ./apps/qup-api/coverage/lcov.info
-                  flags: qup-api
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload coverage to Codecov - qup-data
-              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-data == 'true') }}
-              with:
-                  files: ./packages/qup-data/coverage/lcov.info
-                  flags: qup-data
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload coverage to Codecov - qup-domain
-              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-domain == 'true') }}
-              with:
-                  files: ./packages/qup-domain/coverage/lcov.info
-                  flags: qup-domain
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload coverage to Codecov - solid-clean
-              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.solid-clean == 'true') }}
-              with:
-                  files: ./packages/solid-clean/coverage/lcov.info
-                  flags: solid-clean
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload coverage to Codecov - wealth-tracker-core
-              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.wealth-tracker-core == 'true') }}
-              with:
-                  files: ./packages/wealth-tracker-core/coverage/lcov.info
-                  flags: wealth-tracker-core
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload coverage to Codecov - green-beard
-              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.green-beard == 'true') }}
-              with:
-                  files: ./apps/green-beard/coverage/lcov.info
-                  flags: green-beard
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload coverage to Codecov - qup-web
-              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-web == 'true') }}
-              with:
-                  files: ./apps/qup-web/coverage/lcov.info
-                  flags: qup-web
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload coverage to Codecov - wealth-react
-              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.wealth-react == 'true') }}
-              with:
-                  files: ./apps/wealth-react/coverage/lcov.info
-                  flags: wealth-react
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload coverage to Codecov - qup-shared
-              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-shared == 'true') }}
-              with:
-                  files: ./packages/qup-shared/coverage/lcov.info
-                  flags: qup-shared
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: false
-
-            # Upload test results per package with individual flags
-            # Critical: runs even if tests fail (via !cancelled()) to capture failure data for Test Analytics
-            # In PRs: only upload affected packages. On main/develop/pre: upload all packages for baseline
-            - name: 📊 Upload test results to Codecov - react-hooks
-              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.react-hooks == 'true') }}
-              with:
-                  files: ./packages/react-hooks/test-results.junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: react-hooks
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload test results to Codecov - react-clean
-              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.react-clean == 'true') }}
-              with:
-                  files: ./packages/react-clean/test-results.junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: react-clean
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload test results to Codecov - ts-configs
-              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.ts-configs == 'true') }}
-              with:
-                  files: ./packages/ts-configs/test-results.junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: ts-configs
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload test results to Codecov - ts-types
-              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.ts-types == 'true') }}
-              with:
-                  files: ./packages/ts-types/test-results.junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: ts-types
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload test results to Codecov - http-client
-              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.http-client == 'true') }}
-              with:
-                  files: ./packages/http-client/test-results.junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: http-client
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload test results to Codecov - qup-api
-              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-api == 'true') }}
-              with:
-                  files: ./apps/qup-api/test-results.junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: qup-api
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload test results to Codecov - qup-data
-              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-data == 'true') }}
-              with:
-                  files: ./packages/qup-data/test-results.junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: qup-data
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload test results to Codecov - qup-domain
-              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-domain == 'true') }}
-              with:
-                  files: ./packages/qup-domain/test-results.junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: qup-domain
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload test results to Codecov - solid-clean
-              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.solid-clean == 'true') }}
-              with:
-                  files: ./packages/solid-clean/test-results.junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: solid-clean
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload test results to Codecov - wealth-tracker-core
-              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.wealth-tracker-core == 'true') }}
-              with:
-                  files: ./packages/wealth-tracker-core/test-results.junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: wealth-tracker-core
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload test results to Codecov - green-beard
-              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.green-beard == 'true') }}
-              with:
-                  files: ./apps/green-beard/test-results.junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: green-beard
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload test results to Codecov - qup-web
-              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-web == 'true') }}
-              with:
-                  files: ./apps/qup-web/test-results.junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: qup-web
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload test results to Codecov - wealth-react
-              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.wealth-react == 'true') }}
-              with:
-                  files: ./apps/wealth-react/test-results.junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: wealth-react
-                  fail_ci_if_error: false
-
-            - name: 📊 Upload test results to Codecov - qup-shared
-              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
-              if: ${{ !cancelled() && (github.event_name == 'push' || steps.affected-codecov.outputs.qup-shared == 'true') }}
-              with:
-                  files: ./packages/qup-shared/test-results.junit.xml
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  flags: qup-shared
-                  fail_ci_if_error: false
+                  name: codecov-artifacts
+                  path: |
+                      packages/*/coverage/lcov.info
+                      apps/*/coverage/lcov.info
+                      packages/*/test-results.junit.xml
+                      apps/*/test-results.junit.xml
+                  if-no-files-found: warn
+                  retention-days: 1
 
             - name: 🏗 Execute build checks
-              # Builds all packages; Nx cache optimizes by skipping rebuild of non-affected packages
+              # Builds all packages; Nx cache optimizes by skipping rebuild of non-affected packages.
+              # CODECOV_TOKEN is propagated so app bundler plugins (@codecov/vite-plugin,
+              # @codecov/sveltekit-plugin, @codecov/rollup-plugin) upload bundle stats during build.
+              env:
+                  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
               run: pnpm exec nx run-many -t build
 
             - name: 🧬 Execute mutation testing (All)
@@ -470,3 +247,68 @@ jobs:
               with:
                   path: .nx
                   key: ${{ steps.cache-nx-restore.outputs.cache-primary-key }}
+
+    # Fan-out coverage + test-results uploads to Codecov.
+    # One matrix entry per flag; the gate step skips entries not affected by the PR.
+    # Single source of truth for the package list: this matrix block.
+    upload-codecov:
+        needs: main
+        if: ${{ !cancelled() }}
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                package:
+                    - { name: react-hooks, path: packages/react-hooks }
+                    - { name: react-clean, path: packages/react-clean }
+                    - { name: ts-configs, path: packages/ts-configs }
+                    - { name: ts-types, path: packages/ts-types }
+                    - { name: http-client, path: packages/http-client }
+                    - { name: qup-api, path: apps/qup-api }
+                    - { name: qup-data, path: packages/qup-data }
+                    - { name: qup-domain, path: packages/qup-domain }
+                    - { name: solid-clean, path: packages/solid-clean }
+                    - { name: wealth-tracker-core, path: packages/wealth-tracker-core }
+                    - { name: green-beard, path: apps/green-beard }
+                    - { name: qup-web, path: apps/qup-web }
+                    - { name: wealth-react, path: apps/wealth-react }
+                    - { name: qup-shared, path: packages/qup-shared }
+        steps:
+            - name: Download coverage artifacts
+              uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+              with:
+                  name: codecov-artifacts
+
+            - name: Gate by affected map
+              id: gate
+              run: |
+                  AFFECTED='${{ needs.main.outputs.affected }}'
+                  if [ -z "$AFFECTED" ] || [ "$AFFECTED" = "null" ]; then
+                    # If the upstream job didn't emit the map (e.g. early failure),
+                    # skip upload rather than crashing the matrix.
+                    echo "should_upload=false" >> $GITHUB_OUTPUT
+                    exit 0
+                  fi
+                  if echo "$AFFECTED" | jq -e '.["${{ matrix.package.name }}"] == true' > /dev/null; then
+                    echo "should_upload=true" >> $GITHUB_OUTPUT
+                  else
+                    echo "should_upload=false" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: 📊 Upload coverage to Codecov
+              uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
+              if: ${{ !cancelled() && steps.gate.outputs.should_upload == 'true' }}
+              with:
+                  files: ./${{ matrix.package.path }}/coverage/lcov.info
+                  flags: ${{ matrix.package.name }}
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  fail_ci_if_error: false
+
+            - name: 📊 Upload test results to Codecov
+              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
+              if: ${{ !cancelled() && steps.gate.outputs.should_upload == 'true' }}
+              with:
+                  files: ./${{ matrix.package.path }}/test-results.junit.xml
+                  flags: ${{ matrix.package.name }}
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  fail_ci_if_error: false

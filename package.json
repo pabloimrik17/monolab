@@ -45,7 +45,10 @@
         "test:unit:watch": "nx run-many --target=test:unit:watch"
     },
     "devDependencies": {
-        "@codecov/bundle-analyzer": "1.9.1",
+        "@codecov/bundle-analyzer": "2.0.1",
+        "@codecov/rollup-plugin": "2.0.1",
+        "@codecov/sveltekit-plugin": "2.0.1",
+        "@codecov/vite-plugin": "2.0.1",
         "@commitlint/cli": "19.8.1",
         "@commitlint/config-conventional": "19.8.1",
         "@commitlint/types": "19.8.1",
