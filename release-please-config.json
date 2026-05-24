@@ -35,6 +35,30 @@
             "package-name": "@m0n0lab/solid-clean",
             "changelog-path": "CHANGELOG.md"
         },
+        "claude-plugins/commander": {
+            "release-type": "simple",
+            "package-name": "commander",
+            "tag-separator": "--",
+            "include-v-in-tag": true,
+            "changelog-path": "CHANGELOG.md",
+            "extra-files": [
+                {
+                    "type": "json",
+                    "path": ".claude-plugin/plugin.json",
+                    "jsonpath": "$.version"
+                },
+                {
+                    "type": "json",
+                    "path": "package.json",
+                    "jsonpath": "$.version"
+                },
+                {
+                    "type": "json",
+                    "path": "/.claude-plugin/marketplace.json",
+                    "jsonpath": "$.plugins[?(@.name=='commander')].version"
+                }
+            ]
+        },
         "claude-plugins/experiments": {
             "release-type": "simple",
             "package-name": "experiments",

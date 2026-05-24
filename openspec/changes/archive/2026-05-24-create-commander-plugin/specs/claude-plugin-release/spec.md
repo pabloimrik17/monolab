@@ -1,10 +1,4 @@
-# claude-plugin-release Specification
-
-## Purpose
-
-Defines the automated release flow for Claude Code plugins in `claude-plugins/`. Plugin releases are driven by `release-please` and follow the `{plugin-name}--v{version}` git-tag convention recognized by `claude plugin tag` and the Claude Code 2.1.110+ plugin dependency resolver. Each plugin has an independent version lifecycle, version files are synchronized atomically, and conventional commits drive bump levels.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Release Tag Format
 
@@ -108,36 +102,6 @@ If any of these files would be left at the previous version after the PR is merg
 
 - **WHEN** examining `.claude-plugin/marketplace.json`
 - **THEN** the file SHALL include guidance (in repo documentation or as commentary in the README) noting that the order of entries in `plugins[]` is significant for release-please's `extra-files` jsonpath resolution
-
----
-
-### Requirement: Conventional Commit Bump Mapping
-
-Plugin version bumps SHALL be derived from conventional commit types in the commits since the last plugin tag, scoped to the plugin's path:
-
-| Commit type / footer | Bump |
-|----------------------|-------|
-| `feat(<plugin>)`, `feat: ` affecting plugin path | minor |
-| `fix(<plugin>)`, `fix: ` affecting plugin path | patch |
-| `feat!:` / `BREAKING CHANGE:` footer affecting plugin path | major |
-| `chore`, `docs`, `refactor`, `test`, `build`, `ci` (no `!`) | no bump |
-
-When no bumping commit exists for a plugin since its last tag, release-please SHALL NOT open a release PR for that plugin.
-
-#### Scenario: feature commit triggers minor bump
-
-- **WHEN** a `feat(experiments): add new skill` commit lands on main and the previous experiments tag was `experiments--v0.7.0`
-- **THEN** release-please SHALL propose `experiments--v0.8.0` in the next release PR
-
-#### Scenario: docs-only commit does not trigger release
-
-- **WHEN** only `docs(experiments): clarify README` commits have landed since the last experiments tag
-- **THEN** release-please SHALL NOT propose a new experiments release
-
-#### Scenario: breaking change triggers major bump
-
-- **WHEN** a commit affecting the experiments plugin contains `BREAKING CHANGE:` in its footer and the previous tag was `experiments--v0.7.0`
-- **THEN** release-please SHALL propose `experiments--v1.0.0` in the next release PR
 
 ---
 

@@ -347,6 +347,7 @@ sketch
 
 # Git worktrees
 .worktrees/
+.claude/.worktree-base
 
 # Stryker mutation testing reports
 **/reports/
