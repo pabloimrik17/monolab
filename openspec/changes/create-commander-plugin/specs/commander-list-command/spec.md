@@ -46,13 +46,13 @@ The command SHALL use the registry read contract documented in `commander-regist
 
 ### Requirement: Commander List Empty Registry Message
 
-When the registry is empty (file missing OR `projects` object empty), the command SHALL print exactly:
+When the registry is empty (file missing OR `projects` object empty), the command SHALL print the literal line:
 
 ```
 No projects registered. Use /commander:add to register one.
 ```
 
-The command SHALL exit with code zero.
+The command SHALL exit with code zero. When the spurious-arguments notice (see "Commander List No Arguments") also fires in the same invocation, the notice line SHALL precede the empty-registry line; no other output is permitted.
 
 #### Scenario: Registry file missing
 
@@ -66,6 +66,14 @@ The command SHALL exit with code zero.
 - **WHEN** the registry file exists with `{"version": 2, "projects": {}}`
 - **AND** the user invokes `/commander:list`
 - **THEN** the command SHALL print the same empty-registry message
+- **AND** SHALL exit with code zero
+
+#### Scenario: Empty registry with spurious arguments
+
+- **WHEN** the registry is empty (file missing OR `projects` empty)
+- **AND** the user invokes `/commander:list --foo bar`
+- **THEN** the command SHALL print `/commander:list takes no arguments; ignoring: --foo bar` first
+- **AND** SHALL then print `No projects registered. Use /commander:add to register one.`
 - **AND** SHALL exit with code zero
 
 ---
@@ -177,7 +185,7 @@ When the registry's `version` field is greater than `2`, the command SHALL surfa
 
 ### Requirement: Commander List No Arguments
 
-The `commander-list` command SHALL accept no arguments. When `ARGUMENTS` is non-empty (after trimming whitespace), the command SHALL print a single line of the form `commander-list takes no arguments; ignoring: <verbatim argument string>` and SHALL continue rendering the registry normally.
+The `/commander:list` command SHALL accept no arguments. When `ARGUMENTS` is non-empty (after trimming whitespace), the command SHALL print a single line of the form `/commander:list takes no arguments; ignoring: <verbatim argument string>` and SHALL continue with the regular render path (registry-content render on a populated registry; empty-registry line on an empty registry — see "Commander List Empty Registry Message" for precedence).
 
 The command SHALL exit with the same code it would have produced without the argument (zero on normal render, non-zero on `unsupported registry version`).
 
@@ -189,5 +197,5 @@ The command SHALL exit with the same code it would have produced without the arg
 #### Scenario: Spurious arguments emit notice and continue
 
 - **WHEN** the user invokes `/commander:list --foo bar`
-- **THEN** the command SHALL print `commander-list takes no arguments; ignoring: --foo bar`
+- **THEN** the command SHALL print `/commander:list takes no arguments; ignoring: --foo bar`
 - **AND** SHALL render the registry normally afterward

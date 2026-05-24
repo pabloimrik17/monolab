@@ -90,7 +90,7 @@ Option labels in the picker SHALL be `<name> — <path>`, mirroring `commander-d
 #### Scenario: Empty registry exits cleanly
 
 - **WHEN** the registry file is missing or `projects` is `{}`
-- **THEN** the command SHALL print `"no projects registered"` and exit
+- **THEN** the command SHALL print `No projects registered. Use /commander:add to register one.` and exit
 - **AND** SHALL NOT prompt the user
 - **AND** SHALL NOT create or modify any file
 
