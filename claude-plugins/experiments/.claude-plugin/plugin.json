@@ -9,10 +9,5 @@
     "license": "MIT",
     "repository": "https://github.com/pabloimrik17/monolab",
     "homepage": "https://github.com/pabloimrik17/monolab/tree/main/claude-plugins/experiments",
-    "keywords": [
-        "experiments",
-        "beta",
-        "staging",
-        "skills"
-    ]
+    "keywords": ["experiments", "beta", "staging", "skills"]
 }
