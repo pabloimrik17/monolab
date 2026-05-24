@@ -4,31 +4,61 @@
             "release-type": "node",
             "package-name": "@m0n0lab/react-clean",
             "changelog-path": "CHANGELOG.md",
-            "extra-files": ["deno.json"]
+            "extra-files": [
+                {
+                    "type": "json",
+                    "path": "deno.json",
+                    "jsonpath": "$.version"
+                }
+            ]
         },
         "packages/react-hooks": {
             "release-type": "node",
             "package-name": "@m0n0lab/react-hooks",
             "changelog-path": "CHANGELOG.md",
-            "extra-files": ["deno.json"]
+            "extra-files": [
+                {
+                    "type": "json",
+                    "path": "deno.json",
+                    "jsonpath": "$.version"
+                }
+            ]
         },
         "packages/ts-configs": {
             "release-type": "node",
             "package-name": "@m0n0lab/ts-configs",
             "changelog-path": "CHANGELOG.md",
-            "extra-files": ["deno.json"]
+            "extra-files": [
+                {
+                    "type": "json",
+                    "path": "deno.json",
+                    "jsonpath": "$.version"
+                }
+            ]
         },
         "packages/ts-types": {
             "release-type": "node",
             "package-name": "@m0n0lab/ts-types",
             "changelog-path": "CHANGELOG.md",
-            "extra-files": ["deno.json"]
+            "extra-files": [
+                {
+                    "type": "json",
+                    "path": "deno.json",
+                    "jsonpath": "$.version"
+                }
+            ]
         },
         "packages/http-client": {
             "release-type": "node",
             "package-name": "@m0n0lab/http-client",
             "changelog-path": "CHANGELOG.md",
-            "extra-files": ["deno.json"]
+            "extra-files": [
+                {
+                    "type": "json",
+                    "path": "deno.json",
+                    "jsonpath": "$.version"
+                }
+            ]
         },
         "packages/solid-clean": {
             "release-type": "node",
