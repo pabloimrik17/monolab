@@ -8,7 +8,7 @@ Apply **patch-level** npm dependency updates across every project registered in 
 
 The command is a thin wrapper around the `commander-update-orchestrator` skill — every prompt, table, summary, plan-mode entry, and error message is produced by the skill (which composes `parallel-research-workflow` in cross-project mode for Step 6.5). The command's sole responsibility is to invoke the skill with the deep-patch input set and surface its output verbatim.
 
-> Tip: pair with `/experiments:commander-list` (read-only registry render) before running this command if you want to inspect the current project set first.
+> Tip: pair with `/commander:list` (read-only registry render) before running this command if you want to inspect the current project set first.
 
 ## Invocation
 
@@ -49,7 +49,7 @@ The command MUST NOT:
 
 Every line the skill emits — including:
 
-- the empty-registry message (`No projects registered. Use /experiments:commander-add to register one.`),
+- the empty-registry message (`No projects registered. Use /commander:add to register one.`),
 - the project picker (`AskUserQuestion` multi-select),
 - the workflow's phase 0 stale-cleanup prompt (`delete-stale` / `keep-stale` / `cancel`),
 - the per-batch progress messages from phase 1 changelog fetch,

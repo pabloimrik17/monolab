@@ -4,43 +4,7 @@ Beta skills and commands staging area for monolab. Features here are experimenta
 
 ## Commands
 
-### `/experiments:commander-add`
-
-Register the current (or specified) project in the user-scoped Commander registry at `~/.claude/commander/projects.json`. Collects `name`, `path`, `keywords`, `description`, and optional `specialRules` via **A → B → C** priority: explicit args, then a Haiku auto-detection subagent, then `AskUserQuestion` prompts. Writes are atomic.
-
-```bash
-/experiments:commander-add
-/experiments:commander-add --name investlab --path /Users/me/code/investlab --keywords react,typescript --description "Portfolio tracker built with SolidStart."
-```
-
-### `/experiments:commander-delete`
-
-Remove a project record from the Commander registry by `name`. Resolves the target via **A → B** priority: explicit name (positional or `--name`), else interactive pick from `list()` via `AskUserQuestion`. A confirmation prompt (default = cancel) renders `name`, `path`, and `description` before the atomic temp-write + rename. Empty/missing registry exits cleanly without prompting; unknown names abort without touching the file.
-
-```bash
-/experiments:commander-delete                # interactive picker
-/experiments:commander-delete investlab      # explicit positional
-/experiments:commander-delete --name investlab
-```
-
-### `/experiments:commander-update`
-
-Patch one or more editable fields (`keywords`, `description`, `specialRules`, `repoType`) on a registered project in place. Resolves the target via **A → B** (explicit name or interactive picker); resolves each field's proposed value via **A → B → C** (explicit flag → opt-in Haiku re-scan via `--refresh` → `AskUserQuestion`). Preserves `createdAt`, refreshes `updatedAt`, and reuses `commander-add`'s atomic-write recipe. A `Save` / `Edit` / `Abort` gate renders a side-by-side diff (`+`/`–` markers on `keywords`/`specialRules`, `← drift backfill` annotation when a legacy v1 record gains `repoType`); `Abort` is the safe default and leaves `projects.json` byte-equivalent. Empty diffs short-circuit to `"no changes"` without bumping `updatedAt`. The vocab-suggestion flow (`gh issue create` for dropped terms) is reused from `commander-add` and shares the session-skip flag.
-
-```bash
-/experiments:commander-update                              # interactive picker + field-pick menu
-/experiments:commander-update investlab --description "New summary."
-/experiments:commander-update investlab --refresh          # re-scan via Haiku before diff
-/experiments:commander-update investlab --repo-type single-repo  # legacy v1 backfill
-```
-
-### `/experiments:commander-list`
-
-List every project registered in the user-scoped Commander registry. Read-only — never creates, modifies, or deletes `~/.claude/commander/projects.json`. Each project renders as a vertically-aligned YAML-ish block (insertion order); the project name is suffixed inline with `[legacy: missing repoType]` for v1 records and `[missing path]` when the recorded `path` no longer exists on disk. Empty registry prints a single discoverability hint pointing to `commander-add`.
-
-```bash
-/experiments:commander-list
-```
+> **Commander CRUD has graduated.** `/commander:add`, `/commander:list`, `/commander:update`, `/commander:delete` and the `commander-normalize` skill now live in their own plugin — see [`claude-plugins/commander/README.md`](../commander/README.md). The orchestration commands below remain here.
 
 ### `/experiments:commander-update-patch`
 
@@ -135,10 +99,6 @@ Deterministic partition of `ScanResult.updates[]` into bounded subagent groups u
 ### `parallel-research-workflow`
 
 Multi-phase parallel-subagent orchestration over a pre-grouped package set: phase 0 stale-plan cleanup (>10d), phase 1 fetches every changelog via `experiments:npm-changelog`, phase 2 cross-references against this codebase (single-project mode) or produces universal findings only (cross-project mode), phase 3 verifies integrity (`retry-failed` / `continue-without` / `abort`), phase 4 enters plan mode and writes `plan.md`. Persists artifacts under `~/.claude/experiments/plans/<slug>-<level>-<unix-ts>/`. The `mode` input (`single-project` default, `cross-project` for commander deep) selects the subagent prompt template, plan-dir layout (`scan.json` vs `scan-by-project.json` + `cross-project-plan.json`), and `plan.md` template (single-project bump-set vs cross-project bump-set with `affects projects:` tags). Reusable across `npm-update-deep-{patch,minor,major,engines}` and `commander-update-deep-{patch,minor,major,engines}` — only the level and mode change.
-
-### `commander-normalize`
-
-Controlled-vocabulary keyword normalization for the Commander registry. Used by `/experiments:commander-add` (Step 2.5) and future `commander-update` / `commander-list` to turn raw, stochastic Haiku-detected keywords into the deterministic, alphabetically-sorted list persisted in `~/.claude/commander/projects.json`. Ships `references/vocabulary.json` with `canonical`, `synonyms`, and `excludes` lists; reports `droppedTerms` so callers can surface vocabulary gaps via a `gh issue create` suggestion flow.
 
 ### `commander-update-orchestrator`
 

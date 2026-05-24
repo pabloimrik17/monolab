@@ -19,7 +19,7 @@ A diff (`current → proposed`) renders before any write, with `+`/`–` markers
 
 ## Registry contract (update operation)
 
-The full registry contract — path, schema (v2), record shape, read behaviour, atomic write recipe, JSON formatting — is documented in [`commander-add.md`](./commander-add.md). This section adds only the new `update(name, patch)` write primitive; everything else is reused verbatim.
+The full registry contract — path, schema (v2), record shape, read behaviour, atomic write recipe, JSON formatting — is documented in [`add.md`](./add.md). This section adds only the new `update(name, patch)` write primitive; everything else is reused verbatim.
 
 ### Path
 
@@ -67,7 +67,7 @@ Same as `commander-add`:
 ## Invocation
 
 ```text
-/experiments:commander-update [<name> | --name <name>] [--keywords <csv>] [--description <text>] [--rules <csv>] [--repo-type <enum>] [--refresh]
+/commander:update [<name> | --name <name>] [--keywords <csv>] [--description <text>] [--rules <csv>] [--repo-type <enum>] [--refresh]
 ```
 
 All flags are optional. Both positional `<name>` and `--name <name>` are accepted and equivalent.
@@ -150,7 +150,7 @@ When the user picks `Edit repoType`, present a 3-option `AskUserQuestion` with o
 
 Run only when `--refresh` was supplied in Step 1 OR the user picked `"Re-scan via Haiku"` in the Step 3 menu.
 
-1. Dispatch the Haiku subagent against the record's current `path` (NOT `monorepoRoot`) using the same prompt as `commander-add` Step 2. The subagent prompt and CRITICAL OUTPUT FORMAT block are reused verbatim — see [`commander-add.md`](./commander-add.md#subagent-prompt).
+1. Dispatch the Haiku subagent against the record's current `path` (NOT `monorepoRoot`) using the same prompt as `commander-add` Step 2. The subagent prompt and CRITICAL OUTPUT FORMAT block are reused verbatim — see [`add.md`](./add.md#subagent-prompt).
 2. Apply the same tolerant-recovery + single re-dispatch parsing rules documented in `commander-add` Step 2 "Parse the response". If the re-dispatch still does not parse, abandon Priority B for this invocation and fall through to per-field prompts via `AskUserQuestion` (Step 5) at the user's next edit pass.
 3. On successful parse, overwrite the in-memory proposed values for the fields that Priority A did NOT supply:
     - `keywords` ← Haiku-detected `keywords` (whole-tree list for `single-repo`/`monorepo`; per-subproject list is NOT recomputed — `commander-update` cannot edit `path`/`monorepoRoot`).
@@ -300,7 +300,7 @@ Otherwise present a single `AskUserQuestion` with three options, identical to `c
     Project: <name>
     Date (UTC): <YYYY-MM-DD>
 
-    Consider adding these to `claude-plugins/experiments/skills/commander-normalize/references/vocabulary.json` (canonical, synonyms, or excludes as appropriate).
+    Consider adding these to `claude-plugins/commander/skills/commander-normalize/references/vocabulary.json` (canonical, synonyms, or excludes as appropriate).
     ```
 
     On `gh` non-zero exit, surface stderr to the user but do NOT roll back the registry write — the suggestion is post-hoc.
