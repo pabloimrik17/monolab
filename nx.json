@@ -79,6 +79,16 @@
             "dependsOn": ["^lint:stylelint"],
             "inputs": ["default", "{workspaceRoot}/.stylelintrc*", "{projectRoot}/.stylelintrc*"]
         },
+        "test:types": {
+            "cache": true,
+            "dependsOn": ["^build", "^test:types"],
+            "inputs": [
+                "default",
+                "{workspaceRoot}/vitest.config.ts",
+                "{projectRoot}/vitest.config.ts"
+            ],
+            "outputs": ["{projectRoot}/test-results.junit.xml"]
+        },
         "test:unit": {
             "cache": true,
             "dependsOn": ["^build", "^test:unit"],
