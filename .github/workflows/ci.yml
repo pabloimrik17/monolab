@@ -56,7 +56,17 @@ jobs:
             # Learn more at https://nx.dev/ci/reference/nx-cloud-cli#npx-nxcloud-startcirun
             - name: Start Nx Cloud CI Run
               if: ${{ env.NX_NO_CLOUD != 'true' }}
-              run: pnpm dlx nx-cloud start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="build"
+              # --stop-agents-after must match the last distributed target of the run.
+              # On push to main/develop the test:mutation step runs after build, so agents
+              # must survive past it; on other events mutation is skipped and we stop at build.
+              run: |
+                  if [ "${{ github.event_name }}" = "push" ] && \
+                     { [ "${{ github.ref_name }}" = "main" ] || [ "${{ github.ref_name }}" = "develop" ]; }; then
+                    STOP_AFTER="test:mutation"
+                  else
+                    STOP_AFTER="build"
+                  fi
+                  pnpm dlx nx-cloud start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="$STOP_AFTER"
 
             - name: Restore cached npm dependencies
               id: cache-dependencies-restore
