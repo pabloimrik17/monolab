@@ -24,6 +24,8 @@ jobs:
         outputs:
             releases_created: ${{ steps.release.outputs.releases_created }}
             paths_released: ${{ steps.release.outputs.paths_released }}
+            prs_created: ${{ steps.release.outputs.prs_created }}
+            head_branch: ${{ fromJson(steps.release.outputs.pr || '{}').headBranchName }}
         steps:
             - uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4.4.1
               id: release
@@ -33,6 +35,52 @@ jobs:
                   manifest-file: .release-please-manifest.json
                   # Explicitly target main branch for release PRs
                   target-branch: main
+
+    # release-please round-trips JSON files through JSON.parse/JSON.stringify when
+    # updating versions, which expands compact arrays to multi-line (e.g.
+    # `["ES2023", "DOM"]` → multi-line). Upstream WONTFIX (release-please#2319).
+    # We re-format the release PR with oxfmt so the lint:oxfmt CI check passes.
+    prettify-pr:
+        needs: release-please
+        if: ${{ github.event_name == 'push' && needs.release-please.outputs.prs_created == 'true' && needs.release-please.outputs.head_branch != '' }}
+        runs-on: ubuntu-latest
+        continue-on-error: true
+        permissions:
+            contents: write
+        steps:
+            - name: Checkout release PR branch
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+              with:
+                  ref: ${{ needs.release-please.outputs.head_branch }}
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+              with:
+                  version: 10.27.0
+
+            - name: Setup Node.js
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+              with:
+                  node-version: "24.12.0"
+                  cache: "pnpm"
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Apply oxfmt
+              run: pnpm exec oxfmt
+
+            - name: Commit and push if changed
+              run: |
+                  if git diff --quiet; then
+                    echo "No formatting changes to commit"
+                    exit 0
+                  fi
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git add -A
+                  git commit -m "chore: apply oxfmt to release PR"
+                  git push
 
     publish:
         needs: release-please
