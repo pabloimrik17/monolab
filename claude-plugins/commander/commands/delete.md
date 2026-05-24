@@ -17,7 +17,7 @@ A confirmation prompt (`AskUserQuestion`, default = cancel) renders the record's
 
 ## Registry contract (delete operation)
 
-The full registry contract — path, schema (v2), record shape, read behaviour, atomic write recipe, JSON formatting — is documented in [`commander-add.md`](./commander-add.md). This section adds only the new `delete(name)` write primitive; everything else is reused verbatim.
+The full registry contract — path, schema (v2), record shape, read behaviour, atomic write recipe, JSON formatting — is documented in [`add.md`](./add.md). This section adds only the new `delete(name)` write primitive; everything else is reused verbatim.
 
 ### Path
 
@@ -58,7 +58,7 @@ Same as `commander-add`:
 ## Invocation
 
 ```text
-/experiments:commander-delete [<name> | --name <name>]
+/commander:delete [<name> | --name <name>]
 ```
 
 Both forms are equivalent. Omit the argument to enter the interactive picker.

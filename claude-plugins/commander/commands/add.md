@@ -112,7 +112,7 @@ Always:
 ## Invocation
 
 ```text
-/experiments:commander-add [--name <slug>] [--path <dir>] [--keywords <csv>] [--description <text>] [--rules <csv>]
+/commander:add [--name <slug>] [--path <dir>] [--keywords <csv>] [--description <text>] [--rules <csv>]
 ```
 
 All flags are optional. Any missing field is first attempted via auto-detection (B), then prompted (C).
@@ -241,7 +241,7 @@ Populate any required field still missing from Step 1 with the detected equivale
 
 Run after Step 2, before Step 3. **Skip entirely if the user supplied `--keywords`** (see Step 1 Rule 5).
 
-Invoke the `commander-normalize` skill (from the `experiments` plugin) to transform the raw Haiku keyword output into the final persisted `keywords[]`.
+Invoke the `commander-normalize` skill (from the `commander` plugin) to transform the raw Haiku keyword output into the final persisted `keywords[]`.
 
 ### Skill invocation contract
 
@@ -409,7 +409,7 @@ Otherwise present a single `AskUserQuestion` with three options:
     Project: <name>
     Date (UTC): <YYYY-MM-DD>
 
-    Consider adding these to `claude-plugins/experiments/skills/commander-normalize/references/vocabulary.json` (canonical, synonyms, or excludes as appropriate).
+    Consider adding these to `claude-plugins/commander/skills/commander-normalize/references/vocabulary.json` (canonical, synonyms, or excludes as appropriate).
     ```
 
     On `gh` non-zero exit, surface the stderr to the user but do NOT roll back the registry write — the suggestion is post-hoc.

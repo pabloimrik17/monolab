@@ -45,7 +45,10 @@
         "test:unit:watch": "nx run-many --target=test:unit:watch"
     },
     "devDependencies": {
-        "@codecov/bundle-analyzer": "1.9.1",
+        "@codecov/bundle-analyzer": "2.0.1",
+        "@codecov/rollup-plugin": "2.0.1",
+        "@codecov/sveltekit-plugin": "2.0.1",
+        "@codecov/vite-plugin": "2.0.1",
         "@commitlint/cli": "19.8.1",
         "@commitlint/config-conventional": "19.8.1",
         "@commitlint/types": "19.8.1",
@@ -55,7 +58,7 @@
         "@stryker-mutator/typescript-checker": "9.3.0",
         "@stryker-mutator/vitest-runner": "9.3.0",
         "@swc-node/register": "1.11.1",
-        "@swc/core": "1.15.32",
+        "@swc/core": "1.15.40",
         "@swc/helpers": "0.5.21",
         "@types/node": "22.18.13",
         "@vitejs/plugin-react-swc": "4.2.3",

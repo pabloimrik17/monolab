@@ -227,16 +227,22 @@ ignore:
     - "**/coverage/"
     - "**/.nx/"
     - "**/*.config.ts"
+    - "**/*.config.tsx"
     - "**/*.config.js"
     - "**/*.config.cjs"
     - "**/*.config.mjs"
     - "**/vite.config.ts"
     - "**/vitest.config.ts"
+    - "**/vitest.setup.ts"
     - "**/eslint.config.ts"
+    - "**/stryker.config.*"
+    - "**/tsdown.config.*"
+    - "**/drizzle.config.*"
+    - "**/setup.ts"
 
 # Enable inline annotations on pull requests
 comment:
-    layout: "header, diff, flags,  files, footer"
+    layout: "header, diff, flags, files, footer"
     behavior: default # Update existing comment
     require_changes: false # Always comment, even if no coverage changes
 

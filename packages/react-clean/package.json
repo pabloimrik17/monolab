@@ -65,7 +65,7 @@
         "@arethetypeswrong/cli": "0.18.2",
         "@m0n0lab/ts-types": "workspace:*",
         "@testing-library/react": "catalog:",
-        "@types/react": "18.3.28",
+        "@types/react": "18.3.29",
         "inversify": "7.11.0",
         "jsdom": "catalog:",
         "react": "18.3.1",

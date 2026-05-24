@@ -24,6 +24,12 @@ The double-dash separator (`--`) is required; it is the convention recognized by
 - **THEN** a git tag `expo-developer--v0.2.0` SHALL exist on the release commit
 - **AND** that commit's `claude-plugins/expo-developer/.claude-plugin/plugin.json` SHALL have `version: "0.2.0"`
 
+#### Scenario: commander plugin release tag
+
+- **WHEN** the `commander` plugin is released at version `1.0.0`
+- **THEN** a git tag `commander--v1.0.0` SHALL exist on the release commit
+- **AND** that commit's `claude-plugins/commander/.claude-plugin/plugin.json` SHALL have `version: "1.0.0"`
+
 #### Scenario: tag separator format
 
 - **WHEN** examining any plugin release tag
@@ -59,11 +65,20 @@ The configuration files `release-please-config.json` and `.release-please-manife
 - **AND** that entry SHALL have `tag-separator: "--"`
 - **AND** that entry's `extra-files` SHALL include `.claude-plugin/plugin.json` (jsonpath `$.version`) and the root `.claude-plugin/marketplace.json` (jsonpath targeting the expo-developer plugin entry's version)
 
+#### Scenario: commander entry in release-please-config.json
+
+- **WHEN** examining `release-please-config.json`
+- **THEN** there SHALL be a `packages["claude-plugins/commander"]` entry
+- **AND** that entry SHALL have `release-type: "simple"`
+- **AND** that entry SHALL have `tag-separator: "--"`
+- **AND** that entry SHALL have `package-name: "commander"`
+- **AND** that entry's `extra-files` SHALL include `.claude-plugin/plugin.json` (jsonpath `$.version`), `package.json` (jsonpath `$.version`), and the root `.claude-plugin/marketplace.json` (jsonpath `$.plugins[?(@.name=='commander')].version`)
+
 #### Scenario: manifest seeded with current versions
 
 - **WHEN** examining `.release-please-manifest.json`
-- **THEN** it SHALL contain `"claude-plugins/experiments": "<current version>"` and `"claude-plugins/expo-developer": "<current version>"`
-- **AND** the seed values SHALL match the `version` field in each plugin's `.claude-plugin/plugin.json` at change-merge time
+- **THEN** it SHALL contain entries for `"claude-plugins/experiments"`, `"claude-plugins/expo-developer"`, and `"claude-plugins/commander"` keyed to each plugin's current version
+- **AND** each seed value SHALL match the `version` field in that plugin's `.claude-plugin/plugin.json` at change-merge time
 
 ---
 
@@ -71,7 +86,7 @@ The configuration files `release-please-config.json` and `.release-please-manife
 
 For every plugin release PR opened by release-please, the PR SHALL update both `.claude-plugin/plugin.json` and the matching entry in the root `.claude-plugin/marketplace.json` to the same new version atomically.
 
-For the `experiments` plugin, the PR SHALL also update `claude-plugins/experiments/package.json` to the same version.
+For the `experiments` and `commander` plugins, the PR SHALL also update `claude-plugins/<plugin>/package.json` to the same version.
 
 If any of these files would be left at the previous version after the PR is merged, the configuration SHALL be considered broken and the PR SHALL NOT be merged.
 
@@ -81,6 +96,13 @@ If any of these files would be left at the previous version after the PR is merg
 - **THEN** the PR diff SHALL update `claude-plugins/experiments/.claude-plugin/plugin.json` `version` to `"0.8.0"`
 - **AND** the PR diff SHALL update the experiments entry in `.claude-plugin/marketplace.json` `version` to `"0.8.0"`
 - **AND** the PR diff SHALL update `claude-plugins/experiments/package.json` `version` to `"0.8.0"`
+
+#### Scenario: commander breaking-change bump synchronizes all three manifests
+
+- **WHEN** release-please opens the first commander release PR bumping `commander` from 0.1.0 to 1.0.0 (driven by `feat(commander)!:` on the graduation commit)
+- **THEN** the PR diff SHALL update `claude-plugins/commander/.claude-plugin/plugin.json` `version` to `"1.0.0"`
+- **AND** the PR diff SHALL update the commander entry in `.claude-plugin/marketplace.json` `version` to `"1.0.0"`
+- **AND** the PR diff SHALL update `claude-plugins/commander/package.json` `version` to `"1.0.0"`
 
 #### Scenario: marketplace.json array order is documented
 
@@ -129,6 +151,12 @@ For each plugin, release-please SHALL generate or update a `CHANGELOG.md` file a
 - **THEN** `claude-plugins/experiments/CHANGELOG.md` SHALL exist
 - **AND** it SHALL contain a section for the released version
 
+#### Scenario: commander CHANGELOG created on first release
+
+- **WHEN** release-please first releases the commander plugin
+- **THEN** `claude-plugins/commander/CHANGELOG.md` SHALL exist
+- **AND** it SHALL contain a section for the released version
+
 #### Scenario: subsequent releases append entries
 
 - **WHEN** release-please releases experiments a second time
@@ -154,5 +182,5 @@ The documentation SHALL include:
 
 #### Scenario: plugin READMEs link to release docs
 
-- **WHEN** reading `claude-plugins/experiments/README.md` or `claude-plugins/expo-developer/README.md`
+- **WHEN** reading `claude-plugins/experiments/README.md`, `claude-plugins/expo-developer/README.md`, or `claude-plugins/commander/README.md`
 - **THEN** the README SHALL describe how a release is triggered for that plugin (or link to the central release flow document)

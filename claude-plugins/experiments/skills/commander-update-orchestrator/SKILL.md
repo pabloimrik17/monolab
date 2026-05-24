@@ -100,13 +100,13 @@ Apply the input validation listed above. If validation fails, abort with the exa
 
 1. Resolve `REGISTRY_PATH` = `<HOME>/.claude/commander/projects.json`.
 2. Probe with `Bash test -f "<REGISTRY_PATH>"`.
-    - If missing: print exactly `No projects registered. Use /experiments:commander-add to register one.` and exit `0`. Do NOT create the directory or the file.
+    - If missing: print exactly `No projects registered. Use /commander:add to register one.` and exit `0`. Do NOT create the directory or the file.
 3. `Read` the file and JSON-parse the contents.
     - On parse failure: print `registry file is not valid JSON`, exit non-zero, do NOT touch the file.
 4. Inspect `version`:
     - If `version > 2`: print `unsupported registry version: <n>`, exit non-zero, do NOT touch the file.
 5. Inspect `projects`:
-    - If absent, `null`, or an empty object: print `No projects registered. Use /experiments:commander-add to register one.` and exit `0`.
+    - If absent, `null`, or an empty object: print `No projects registered. Use /commander:add to register one.` and exit `0`.
 6. Iterate `projects` in JSON insertion order. Build the candidate list `RESOLVED = [{ name, path, repoType? }, ...]` preserving that order.
 
 ### 2.1 Apply `projectsFilter` (when provided)
@@ -133,7 +133,7 @@ Records lacking `repoType` are kept as-is. Do NOT synthesize the field, do NOT a
 
 If `RESOLVED` is empty after Step 2.2 (every retained record has a missing path), print:
 
-- `No projects registered. Use /experiments:commander-add to register one.` — when the registry was empty initially (the empty-registry / empty-`projects`-object branches in Step 2 already exited there; this branch is effectively dead unless Step 2.2 emptied a non-empty list).
+- `No projects registered. Use /commander:add to register one.` — when the registry was empty initially (the empty-registry / empty-`projects`-object branches in Step 2 already exited there; this branch is effectively dead unless Step 2.2 emptied a non-empty list).
 - Otherwise, print `No selectable projects after path-drift filtering.` followed by every `pathMissing[]` entry as a `- <name> — <path>` bullet, and exit `0`.
 
 ## Step 3 — Project subset selection (skipped when `projectsFilter` is set)
@@ -964,7 +964,7 @@ After the run completes (success, partial, cancel), the user-scoped registry `<H
 - `Error: invalid level "<value>". Expected patch|minor|major|engines.` — Step 1 input validation.
 - `Error: invalid target "<value>". Expected patch|minor|major|engines.` — Step 1 input validation.
 - `Error: invalid mode "<value>". Expected shallow|deep.` — Step 1 input validation (deep-mode addition).
-- `No projects registered. Use /experiments:commander-add to register one.` — Step 2 empty registry.
+- `No projects registered. Use /commander:add to register one.` — Step 2 empty registry.
 - `unsupported registry version: <n>` — Step 2 version gate.
 - `registry file is not valid JSON` — Step 2 parse failure.
 - `Filter name not found: <name>` — Step 2.1 unmatched filter.

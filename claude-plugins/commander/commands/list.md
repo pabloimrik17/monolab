@@ -12,7 +12,7 @@ Strictly read-only. Never creates, modifies, or deletes any file under `<HOME>/.
 
 ## Registry contract (read-only excerpt)
 
-This command implements the read side of the contract documented in full in [`commander-add.md`](./commander-add.md). The relevant invariants are repeated here so this file is self-contained — no shared sidecar yet (extraction is deferred until a third commander consumer exists).
+This command implements the read side of the contract documented in full in [`add.md`](./add.md). The relevant invariants are repeated here so this file is self-contained — no shared sidecar yet (extraction is deferred until a third commander consumer exists).
 
 ### Path
 
@@ -62,7 +62,7 @@ Drift never alters the registry and never changes the exit code.
 ## Invocation
 
 ```text
-/experiments:commander-list
+/commander:list
 ```
 
 The command takes no flags or arguments in v1.
@@ -71,7 +71,7 @@ The command takes no flags or arguments in v1.
 
 1. Trim leading/trailing whitespace from `ARGUMENTS`.
 2. If the trimmed string is empty: proceed silently to Step 2.
-3. If non-empty: print exactly one line — `commander-list takes no arguments; ignoring: <verbatim trimmed argument string>` — then continue with Step 2 normally. Do NOT exit early. The exit code is whatever Step 2–5 produce (zero on normal render, non-zero on `unsupported registry version`).
+3. If non-empty: print exactly one line — `/commander:list takes no arguments; ignoring: <verbatim trimmed argument string>` — then continue with Step 2 normally. Do NOT exit early. The exit code is whatever Step 2–5 produce (zero on normal render, non-zero on `unsupported registry version`).
 
 ## Step 2 — Read the registry
 
@@ -80,7 +80,7 @@ The command takes no flags or arguments in v1.
     - If missing: skip to Step 5 (empty render). Do NOT create the directory or the file.
 3. `Read` the file.
 4. JSON-parse the contents.
-    - On parse failure: print `registry file is not valid JSON`, exit non-zero, do NOT render any blocks. (Mirrors the `commander-add` reader contract.)
+    - On parse failure: print `registry file is not valid JSON`, exit non-zero, do NOT render any blocks. (Mirrors the `/commander:add` reader contract.)
 5. Inspect `version`:
     - If `version > 2`: print `unsupported registry version: <n>` (where `<n>` is the literal value), exit non-zero, do NOT render any blocks.
 6. Inspect `projects`:
@@ -164,7 +164,7 @@ Exit `0`.
 Print exactly:
 
 ```text
-No projects registered. Use /experiments:commander-add to register one.
+No projects registered. Use /commander:add to register one.
 ```
 
 Exit `0`. No count line, no decoration.
@@ -231,7 +231,7 @@ qup
 
 - `registry file is not valid JSON` — `Read` succeeded but JSON parse failed. Exit non-zero. Mirrors the reader contract.
 - `unsupported registry version: <n>` — `version > 2`. Exit non-zero. The on-disk file is left untouched.
-- `commander-list takes no arguments; ignoring: <verbatim>` — soft notice on extra arguments. Continues to render normally.
+- `/commander:list takes no arguments; ignoring: <verbatim>` — soft notice on extra arguments. Continues to render normally.
 
 ## Exit codes
 
