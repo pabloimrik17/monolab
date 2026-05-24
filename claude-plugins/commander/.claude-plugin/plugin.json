@@ -9,9 +9,5 @@
     "license": "MIT",
     "repository": "https://github.com/pabloimrik17/monolab",
     "homepage": "https://github.com/pabloimrik17/monolab/tree/main/claude-plugins/commander",
-    "keywords": [
-        "commander",
-        "registry",
-        "crud"
-    ]
+    "keywords": ["commander", "registry", "crud"]
 }
