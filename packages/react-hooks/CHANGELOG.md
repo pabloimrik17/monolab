@@ -8,6 +8,13 @@
 
 -   Pablo F. Guerra @pabloimrik17
 
+## [1.3.0](https://github.com/pabloimrik17/monolab/compare/react-hooks-v1.2.0...react-hooks-v1.3.0) (2026-05-24)
+
+
+### Features
+
+* **codecov:** matrix-driven uploads + bundle tracking for apps ([b33dc0a](https://github.com/pabloimrik17/monolab/commit/b33dc0a161f672e518315f8b365958f66abc32f6))
+
 ## [1.2.0](https://github.com/pabloimrik17/monolab/compare/react-hooks-v1.1.4...react-hooks-v1.2.0) (2026-05-17)
 
 

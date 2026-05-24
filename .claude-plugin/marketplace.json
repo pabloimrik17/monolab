@@ -13,13 +13,13 @@
         {
             "name": "commander",
             "source": "./claude-plugins/commander",
-            "version": "0.1.0",
+            "version": "0.2.0",
             "description": "User-scoped project registry with CRUD over ~/.claude/commander/projects.json"
         },
         {
             "name": "experiments",
             "source": "./claude-plugins/experiments",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "description": "Beta skills and commands staging area for monolab"
         },
         {

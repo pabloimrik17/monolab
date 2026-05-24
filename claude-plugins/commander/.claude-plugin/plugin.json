@@ -1,6 +1,6 @@
 {
     "name": "commander",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "User-scoped project registry with CRUD over ~/.claude/commander/projects.json",
     "author": {
         "name": "Pablo F.G.",
@@ -9,5 +9,9 @@
     "license": "MIT",
     "repository": "https://github.com/pabloimrik17/monolab",
     "homepage": "https://github.com/pabloimrik17/monolab/tree/main/claude-plugins/commander",
-    "keywords": ["commander", "registry", "crud"]
+    "keywords": [
+        "commander",
+        "registry",
+        "crud"
+    ]
 }
