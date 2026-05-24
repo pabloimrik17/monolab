@@ -17,8 +17,8 @@
     },
     "dependencies": {
         "@m0n0lab/wealth-tracker-core": "workspace:*",
-        "react": "19.2.6",
-        "react-dom": "19.2.6",
+        "react": "19.2.5",
+        "react-dom": "19.2.5",
         "react-router": "7.13.2"
     },
     "devDependencies": {

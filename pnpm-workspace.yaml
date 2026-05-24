@@ -4,11 +4,19 @@ packages:
     - claude-plugins/*
 
 allowBuilds:
+    # postinstall: loads the native NAPI binding (Rust compiler)
     "@swc/core": true
+    # postinstall: places the platform binary and sets the execute bit
     esbuild: true
+    # postinstall: copies mockServiceWorker.js for browser-based mocking
     msw: true
+    # postinstall: initializes the Nx daemon and native cache
     nx: true
+    # postinstall: napi-postinstall verifies the native binding
     oxc-resolver: true
+    # NOTE: @parcel/watcher (via solid-start → vinxi) is intentionally omitted.
+    # Its install script is a no-op unless npm_config_build_from_source=true;
+    # the binding ships through the @parcel/watcher-<plat> optionalDependency.
 
 blockExoticSubdeps: true
 
@@ -22,6 +30,3 @@ catalog:
     vitest: 4.0.18
 
 minimumReleaseAge: 1440
-
-patchedDependencies:
-    "@codecov/sveltekit-plugin@2.0.1": patches/@codecov__sveltekit-plugin@2.0.1.patch
