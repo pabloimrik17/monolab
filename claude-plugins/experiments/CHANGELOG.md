@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/pabloimrik17/monolab/compare/experiments--v1.0.0...experiments--v1.1.0) (2026-05-24)
+
+
+### Features
+
+* **commander:** graduate commander to its own plugin ([#221](https://github.com/pabloimrik17/monolab/issues/221)) ([fad82da](https://github.com/pabloimrik17/monolab/commit/fad82da0c866bf9fbaf355c433e1c9035eaaf6d8))
+
 ## [1.0.0](https://github.com/pabloimrik17/monolab/compare/experiments--v0.8.0...experiments--v1.0.0) (2026-05-17)
 
 
