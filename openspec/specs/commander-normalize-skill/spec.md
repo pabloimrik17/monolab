@@ -2,21 +2,21 @@
 
 ## Purpose
 
-Defines the `commander-normalize` skill shipped by the `experiments` plugin: a controlled-vocabulary normalization pipeline that transforms raw detected keyword inputs (from Haiku auto-detection, prose description, and special rules) into the final persisted `keywords[]` stored on a Commander project record. The skill ships a vocabulary sidecar (`references/vocabulary.json`), applies a deterministic six-step pipeline (synonym expansion, vocabulary filter, exclusion, multi-monorepo aggregation, promotion from prose, dedup+sort), and reports dropped terms so callers can surface vocabulary gaps to the user. The skill is invoked by `/experiments:commander-add` and is the authoritative source of truth for what ends up in a registry record's `keywords` field.
+Defines the `commander-normalize` skill shipped by the `commander` plugin: a controlled-vocabulary normalization pipeline that transforms raw detected keyword inputs (from Haiku auto-detection, prose description, and special rules) into the final persisted `keywords[]` stored on a Commander project record. The skill ships a vocabulary sidecar (`references/vocabulary.json`), applies a deterministic six-step pipeline (synonym expansion, vocabulary filter, exclusion, multi-monorepo aggregation, promotion from prose, dedup+sort), and reports dropped terms so callers can surface vocabulary gaps to the user. The skill is invoked by `/commander:add` and is the authoritative source of truth for what ends up in a registry record's `keywords` field.
 
 ## Requirements
 
 ### Requirement: Commander Normalize Skill File
 
-The `experiments` plugin SHALL provide a `commander-normalize` skill at `claude-plugins/experiments/skills/commander-normalize/SKILL.md`.
+The `commander` plugin SHALL provide a `commander-normalize` skill at `claude-plugins/commander/skills/commander-normalize/SKILL.md`.
 
 The skill file SHALL have YAML frontmatter including `name: commander-normalize` and a `description` field that mentions controlled-vocabulary keyword normalization for the Commander registry.
 
 #### Scenario: Skill file exists and is discoverable
 
-- **WHEN** the `experiments` plugin is installed
-- **THEN** `claude-plugins/experiments/skills/commander-normalize/SKILL.md` SHALL exist with valid YAML frontmatter
-- **AND** the skill SHALL appear in the available skills list as `experiments:commander-normalize`
+- **WHEN** the `commander` plugin is installed
+- **THEN** `claude-plugins/commander/skills/commander-normalize/SKILL.md` SHALL exist with valid YAML frontmatter
+- **AND** the skill SHALL appear in the available skills list as `commander:commander-normalize`
 
 #### Scenario: Skill description mentions normalization
 
@@ -27,7 +27,7 @@ The skill file SHALL have YAML frontmatter including `name: commander-normalize`
 
 ### Requirement: Vocabulary Sidecar
 
-The skill SHALL ship a `references/vocabulary.json` file at `claude-plugins/experiments/skills/commander-normalize/references/vocabulary.json` containing three top-level keys:
+The skill SHALL ship a `references/vocabulary.json` file at `claude-plugins/commander/skills/commander-normalize/references/vocabulary.json` containing three top-level keys:
 
 - `canonical` (string[]): the closed set of terms permitted in persisted `keywords[]`.
 - `synonyms` (object): map of non-canonical input terms to the list of canonical terms they expand into.
@@ -120,7 +120,7 @@ Callers SHALL NOT issue per-subproject invocations to obtain subproject normaliz
 
 The skill SHALL return, alongside the normalized keyword list, a list of raw terms that were dropped by the vocabulary filter (step 2) and are NOT in `excludes`.
 
-This list enables the caller to surface vocabulary gaps to the user (see the experiments-plugin `commander-add` vocabulary suggestion flow).
+This list enables the caller to surface vocabulary gaps to the user (see the `commander-add-command` capability's vocabulary suggestion flow).
 
 Terms dropped because they are in `excludes` SHALL NOT appear in this list (they are intentional drops, not gaps).
 

@@ -61,9 +61,9 @@ The skill SHALL reject invocations with an unknown `level`, `target`, or `mode` 
 
 ### Requirement: Project resolution from registry
 
-The skill SHALL read the user-scoped Commander registry via the `commander-registry` reader contract documented in `commander-add.md` (path `<HOME>/.claude/commander/projects.json`, lazy-create-aware, version-gate on `version > 2`). The skill SHALL NOT mutate `projects.json` or its temp sibling.
+The skill SHALL read the user-scoped Commander registry via the `commander-registry` reader contract documented in `claude-plugins/commander/commands/add.md` (path `<HOME>/.claude/commander/projects.json`, lazy-create-aware, version-gate on `version > 2`). The skill SHALL NOT mutate `projects.json` or its temp sibling.
 
-If the registry is missing or `projects` is empty, the skill SHALL print `No projects registered. Use /experiments:commander-add to register one.` and exit zero without performing scan or apply.
+If the registry is missing or `projects` is empty, the skill SHALL print `No projects registered. Use /commander:add to register one.` and exit zero without performing scan or apply.
 
 If the registry is present but every record after applying `projectsFilter` is filtered out (e.g. a name in the filter that does not match any record), the skill SHALL print a one-line warning identifying the unmatched names and proceed with the remaining matched records (if any). If no record matches, the skill SHALL exit zero with a clear "no projects matched the filter" message.
 
@@ -75,7 +75,7 @@ For each record retained after filtering, the skill SHALL classify drift:
 #### Scenario: Empty registry exits cleanly
 
 - **WHEN** the registry file is missing
-- **THEN** the skill prints `No projects registered. Use /experiments:commander-add to register one.` and exits zero with no scan, no apply, and no summary block
+- **THEN** the skill prints `No projects registered. Use /commander:add to register one.` and exits zero with no scan, no apply, and no summary block
 
 #### Scenario: Missing path skipped with warning
 
