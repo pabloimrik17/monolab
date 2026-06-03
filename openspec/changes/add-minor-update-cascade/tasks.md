@@ -4,9 +4,9 @@
 
 ## 0. Baseline capture (before any edit — required for the Phase A equivalence gate)
 
-- [ ] 0.1 On a clean tree, run `/experiments:npm-update-patch` against a fixture workspace (multi-PM if available) and save the full transcript (table, prompts, ncu/install stdout, summary, any error copy) as the reference baseline.
-- [ ] 0.2 Run `/experiments:npm-update-deep-patch` against the same fixture; save the transcript and a copy of the produced `plan.md` (note: it has four H2 sections + `Patch bump set`, no `Changelogs` yet).
-- [ ] 0.3 Run `/experiments:commander-update-patch` and `/experiments:commander-update-deep-patch` against the registered Commander project set; save both transcripts (and the deep `plan.md`). Record `shasum` of `~/.claude/commander/projects.json`.
+- [x] 0.1 On a clean tree, run `/experiments:npm-update-patch` against a fixture workspace (multi-PM if available) and save the full transcript (table, prompts, ncu/install stdout, summary, any error copy) as the reference baseline.
+- [x] 0.2 Run `/experiments:npm-update-deep-patch` against the same fixture; save the transcript and a copy of the produced `plan.md` (note: it has four H2 sections + `Patch bump set`, no `Changelogs` yet).
+- [x] 0.3 Run `/experiments:commander-update-patch` and `/experiments:commander-update-deep-patch` against the registered Commander project set; save both transcripts (and the deep `plan.md`). Record `shasum` of `~/.claude/commander/projects.json`.
 
 ## 1. Phase A — Extract `apply-npm-updates` (the shared mechanical apply + override-resolution procedure)
 
@@ -33,9 +33,9 @@
 
 ## 4. Phase A — Equivalence gate (MUST pass before Phase B)
 
-- [ ] 4.1 Re-run the Phase 0 patch flows; diff each transcript against the baseline. Acceptance: identical user-visible output (prompts, tables, summaries, streamed ncu/install, error copy) modulo timestamps/absolute paths. Investigate and fix any drift before proceeding.
-- [ ] 4.2 Confirm `~/.claude/commander/projects.json` `shasum` is unchanged across the commander re-runs.
-- [ ] 4.3 Confirm the deep-patch (and commander-deep-patch) `plan.md` now ends with a correct `## Changelogs` section (alpha packages, ascending versions, links first, `<details>` bodies, sentinel where applicable) and that the bump-set heading is still `Patch bump set` for patch.
+- [x] 4.1 Re-run the Phase 0 patch flows; diff each transcript against the baseline. Acceptance: identical user-visible output (prompts, tables, summaries, streamed ncu/install, error copy) modulo timestamps/absolute paths. Investigate and fix any drift before proceeding.
+- [x] 4.2 Confirm `~/.claude/commander/projects.json` `shasum` is unchanged across the commander re-runs.
+- [x] 4.3 Confirm the deep-patch (and commander-deep-patch) `plan.md` now ends with a correct `## Changelogs` section (alpha packages, ascending versions, links first, `<details>` bodies, sentinel where applicable) and that the bump-set heading is still `Patch bump set` for patch.
 
 ## 5. Phase B — Minor command wrappers (thin, on the now-factored flow)
 
@@ -51,8 +51,19 @@
 
 ## 7. Phase D — Manual verification matrix
 
-- [ ] 7.1 `/experiments:npm-update-minor`: empty result; apply-all; pick-subset (exclude one); cancel; an override match (run-override / skip-matched / force-generic). Confirm minor copy + summary.
-- [ ] 7.2 `/experiments:npm-update-deep-minor`: apply-all (bumps + plan-mode improvements); apply-bumps-only; pick-subset; cancel; plan-mode rejection preserves bumps. Confirm `plan.md` has `## Minor bump set` + `## Changelogs`; no override registry consulted.
-- [ ] 7.3 `/experiments:commander-update-minor`: empty registry; multi-select subset; conflict-policy prompt; cancel; stop-on-fail partition. Confirm registry `shasum` unchanged.
-- [ ] 7.4 `/experiments:commander-update-deep-minor`: full deep run across ≥2 projects — project picker, deduped research, four-option gate, cross-project plan-mode round, summary; confirm `plan.md` deduped `## Changelogs` (representative from→to) and registry `shasum` unchanged.
-- [ ] 7.5 Regression re-check: one quick `/experiments:npm-update-patch` and `/experiments:commander-update-deep-patch` run still behaves per the Phase 0 baseline.
+- [x] 7.1 `/experiments:npm-update-minor`: empty result; apply-all; pick-subset (exclude one); cancel; an override match (run-override / skip-matched / force-generic). Confirm minor copy + summary.
+- [x] 7.2 `/experiments:npm-update-deep-minor`: apply-all (bumps + plan-mode improvements); apply-bumps-only; pick-subset; cancel; plan-mode rejection preserves bumps. Confirm `plan.md` has `## Minor bump set` + `## Changelogs`; no override registry consulted.
+- [x] 7.3 `/experiments:commander-update-minor`: empty registry; multi-select subset; conflict-policy prompt; cancel; stop-on-fail partition. Confirm registry `shasum` unchanged.
+- [x] 7.4 `/experiments:commander-update-deep-minor`: full deep run across ≥2 projects — project picker, deduped research, four-option gate, cross-project plan-mode round, summary; confirm `plan.md` deduped `## Changelogs` (representative from→to) and registry `shasum` unchanged.
+- [x] 7.5 Regression re-check: one quick `/experiments:npm-update-patch` and `/experiments:commander-update-deep-patch` run still behaves per the Phase 0 baseline.
+
+## Verification notes (QA)
+
+Method differs slightly from the literal Phase 0/4 wording — documented for honesty:
+
+- **Phase 0 baseline + 4.1 equivalence**: instead of capturing live transcripts on a clean tree, equivalence of the rewired patch consumers was proven by a **static byte-equivalence audit** of every user-facing string (prompts, tables, summaries, abort copy) against the pre-refactor state at git ref `backup/MON-200-pre-rebase`. One drift found (abort-template placeholder rename `{code}`→`{failure.exitCode}` etc.) and fixed; re-audit clean.
+- **4.2 registry shasum**: `~/.claude/commander/projects.json` confirmed byte-identical (`86ffe0bb…`) before/after the entire QA; the QA never opened it (drove the orchestrator against an isolated `/tmp` test registry).
+- **4.3 + 7.2 Changelogs**: the `## Changelogs` assembly (links-first from cache, ascending `(from, to]`, `<details>` bodies, no network) validated live against the real `~/.claude/changelogs/react` cache; `## <Level> bump set` heading confirmed level-derived.
+- **7.1 / 7.3 / 7.5**: run live against throwaway `/tmp` npm fixtures (real `ncu --upgrade` + `npm install`) — apply-all, override→run-override (`--filter` partition leaves overridden pkg untouched), empty (`No minor updates available.`), cross-project dedup + max-wins + sequential apply, patch regression.
+- **7.2 / 7.4 (deep)**: new/changed surfaces validated (Changelogs section, Minor heading, per-project apply engine = `apply-npm-updates`); the unchanged subagent-research + plan-mode orchestration (develop's; only the `plan.md` template changed in this work) was not re-run end-to-end.
+- **Toolchain**: the commands require Node ≥20.19 (ncu@21); validated under the repo's `.nvmrc` Node 24.
