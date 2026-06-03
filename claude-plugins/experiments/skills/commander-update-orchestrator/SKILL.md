@@ -250,9 +250,9 @@ If `any package.conflict === true`, raise exactly **one** `AskUserQuestion` (reg
 
 - `multiSelect: false`
 - **Options**:
-    - `use-max-where-possible` — Apply `proposedTarget` only to occurrences whose range admits it; non-admitting occurrences keep their per-project `targetVersion`.
-    - `per-project` — Every occurrence retains its per-project `targetVersion`; no max-alignment for the conflicting packages.
-    - `skip-package` — Drop every conflicting package from the run entirely (their occurrences are removed from the plan).
+  - `use-max-where-possible` — Apply `proposedTarget` only to occurrences whose range admits it; non-admitting occurrences keep their per-project `targetVersion`.
+  - `per-project` — Every occurrence retains its per-project `targetVersion`; no max-alignment for the conflicting packages.
+  - `skip-package` — Drop every conflicting package from the run entirely (their occurrences are removed from the plan).
 
 The chosen policy applies to **every** conflicting package in the run. Do NOT prompt per-package.
 
@@ -387,13 +387,14 @@ Render a single markdown table:
 
 When the workflow returned successfully in Step 6.5 (i.e. `<plan-dir>/plan.md` exists at the plan-dir root):
 
-1. **Read** `<plan-dir>/plan.md` and surface its content verbatim. The workflow's cross-project plan template emits these four H2 sections, in this exact order:
+1. **Read** `<plan-dir>/plan.md` and surface its content verbatim. The workflow's cross-project plan template emits these five H2 sections, in this exact order:
     - `## Improvements (universal — applicability checked per project at apply time)`
     - `## Workarounds resolved`
     - `## Skipped or unavailable`
     - `## Cross-project bump set`
+    - `## Changelogs`
 
-    The `Cross-project bump set` table uses three columns: `package`, `proposed target`, `projects (locations)`. The third column merges per-project + per-location data: e.g., a row for `react` bumped to `^19.0.14` across `proj-A` (root) and `proj-B` (root) renders `proj-A (root); proj-B (root)` (`;` separates projects, `,` separates multiple locations within the same project). The orchestrator SHALL NOT regenerate this table inline — the workflow already produced it from the `<plan-dir>/cross-project-plan.json` artifact persisted in Step 6.5.5.
+    The `Cross-project bump set` table uses three columns: `package`, `proposed target`, `projects (locations)`. The third column merges per-project + per-location data: e.g., a row for `react` bumped to `^19.0.14` across `proj-A` (root) and `proj-B` (root) renders `proj-A (root); proj-B (root)` (`;` separates projects, `,` separates multiple locations within the same project). The orchestrator SHALL NOT regenerate this table inline — the workflow already produced it from the `<plan-dir>/cross-project-plan.json` artifact persisted in Step 6.5.5. The `## Changelogs` section is workflow-produced (per the `parallel-research-workflow` changelog requirement) and is surfaced verbatim along with the rest of `plan.md`; the orchestrator SHALL NOT regenerate or summarize it.
 
 2. **Append** the orchestrator-owned drift sections after the workflow's content, in this exact order. Each section is omitted when its count is zero:
     - `**Warnings:**` heading with each warning as a `-` bullet, when the orchestrator's `warnings[]` list (the running list across Step 5, Step 6.5.2 grouping-skill warnings, Step 6.5.3 mixed-pm warning, and any later source) is non-empty.
@@ -425,32 +426,15 @@ The plan-dir is preserved on disk; the workflow's end-of-flow cleanup runs separ
 
 **Mode-independent.** Step 8 runs identically in both `shallow` and `deep` modes — same registry path default, same first-win matching, same `run-override` / `skip-matched` / `force-generic` prompt, same `OVERRIDE_RUN` / `OVERRIDE_SKIP` / `GENERIC` partitioning. This is Decision 5 in `design.md`: cross-project deep mode IS consulted for overrides (explicit divergence from single-project `npm-update-deep-patch`, which deliberately skips overrides). Rationale: in cross-project context, Storybook-style families spanning multiple projects need the same coordinated handling shallow already provides; degrading to "run shallow first, then deep" would defeat the one-command UX.
 
-Load the override registry from `overrideRegistryPath` (default `claude-plugins/experiments/skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml`). Apply the same first-win matching logic as `npm-update-patch.md` Step 5.5.
+Resolve overrides using the **`apply-npm-updates` override-resolution procedure** (R1–R3) for registry load, first-win matching, and `{version}` resolution — the shared procedure, NOT an inline copy of the algorithm. The cross-project prompt (8.4) and the cross-project resolution **scope** stay owned by this skill.
 
-### 8.1 Load
+### 8.1 Load + match + resolve (procedure R1–R3)
 
-- `Read` the file. If missing or unparseable: print `Override registry unavailable: <reason>. Proceeding without overrides.` and treat the registry as empty. Do NOT abort.
+Invoke the procedure with the registry path from `overrideRegistryPath` (default `claude-plugins/experiments/skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml`) and the resolution source set to the **cross-project aggregated `proposedTarget` set** (NOT per-project):
 
-### 8.2 Compute matches across the cross-project package set
-
-For each package in the post-policy plan, find the first override entry whose `matches` list includes a pattern matching the package `name`. Pattern semantics (mirror `npm-update-patch.md` Step 5.5):
-
-- `*` matches any run of characters within a package name.
-- No other glob metacharacters.
-
-Matching is **first-win**: a package binds to at most one entry. Build `MATCHED_BY_ENTRY = { entry.id → [packages bound to this entry] }`.
-
-### 8.3 Resolve `{version}` against the cross-project aggregated `proposedTarget` set
-
-For each entry in `MATCHED_BY_ENTRY`, resolve `versionSource`:
-
-- `target-of:<name>` → the `proposedTarget` of the package whose `name == <name>` in the cross-project plan (prefix-stripped). If not present, source is unresolved.
-- `max-target-of:<glob>` → the max semver across `proposedTarget` of packages whose `name` matches `<glob>` in the cross-project plan (prefix-stripped). If no match, source is unresolved.
-- `latest` → the literal string `latest`.
-
-If `versionSource` is unresolved and `fallbackVersionSource` is defined, try it. If both fail, emit a warning, drop this entry from `MATCHED_BY_ENTRY`, and let its matched packages rejoin the generic flow.
-
-Interpolate the resolved version into `command` by replacing the literal token `{version}`.
+- **R1 (load)** — on a missing/unparseable registry the procedure prints `Override registry unavailable: <reason>. Proceeding without overrides.` and treats it as empty. Do NOT abort.
+- **R2 (first-win glob match)** — over the post-policy plan's package names. Build `MATCHED_BY_ENTRY = { entry.id → [packages bound to this entry] }`.
+- **R3 (resolve + interpolate)** — resolve `{version}` against the cross-project `proposedTarget` set: `target-of:<name>` → the `proposedTarget` of the package whose `name == <name>` in the cross-project plan (prefix-stripped); `max-target-of:<glob>` → the max semver across `proposedTarget` of packages whose `name` matches `<glob>` (prefix-stripped); `latest` → the literal `latest`; with `fallbackVersionSource` fallback. `{version}` resolution SHALL run against the cross-project aggregate, never per-project. On an unresolvable entry the procedure warns, drops the entry, and its matched packages rejoin the generic flow. Otherwise the resolved version is interpolated into `command`.
 
 ### 8.4 Prompt once per matched entry across the run
 
@@ -469,9 +453,9 @@ For each remaining entry, raise exactly **one** `AskUserQuestion`:
 
 - `multiSelect: false`
 - **Options**:
-    - `run-override` — Execute the command once per affected project; skip generic ncu bump for these packages.
-    - `skip-matched` — Leave these packages untouched in every project; do not run the override and do not bump generically.
-    - `force-generic` — Ignore the override and bump these packages with the generic ncu flow in every affected project.
+  - `run-override` — Execute the command once per affected project; skip generic ncu bump for these packages.
+  - `skip-matched` — Leave these packages untouched in every project; do not run the override and do not bump generically.
+  - `force-generic` — Ignore the override and bump these packages with the generic ncu flow in every affected project.
 
 Record the chosen action per entry into `OVERRIDE_ACTIONS: Map<entry.id, "run-override"|"skip-matched"|"force-generic">` along with the interpolated command.
 
@@ -494,19 +478,19 @@ Raise exactly **one** `AskUserQuestion`. The option set depends on `mode`.
 - **Question copy**: `Apply <level> updates across <N> project(s)?`
 - `multiSelect: false`
 - **Options** (in this exact order):
-    - `apply-all` — Proceed with the entire (post-policy, post-override) plan.
-    - `pick-subset` — Accept a free-form package-name list to exclude before apply.
-    - `cancel` — Exit without modifying any file.
+  - `apply-all` — Proceed with the entire (post-policy, post-override) plan.
+  - `pick-subset` — Accept a free-form package-name list to exclude before apply.
+  - `cancel` — Exit without modifying any file.
 
 ### 9.D — Deep-mode options (four)
 
 - **Question copy**: `Apply <level> updates across <N> project(s)?` (same as shallow)
 - `multiSelect: false`
 - **Options** (in this exact order):
-    - `apply-all` — Proceed with the entire (post-policy, post-override) plan, INCLUDING the post-bumps plan-mode improvements round (Step 10b).
-    - `apply-bumps-only` — Apply bumps + overrides + installs sequentially per project (Step 10a), but SKIP the plan-mode improvements round (Step 10b) entirely. The Step 11 summary's `Applied improvements` section is omitted (zero items). All `run-override` decisions resolved in Step 8 still execute on this path because they were resolved before the gate.
-    - `pick-subset` — Accept a free-form selection combining improvement-bullet titles AND package names. Substring match (case-insensitive) for improvements; exact match for bumps. Excluded improvements skip Step 10b for those bullets; excluded packages skip Step 10a for those names.
-    - `cancel` — Exit without modifying any file. In deep mode the plan-dir IS preserved on disk and the orchestrator invokes Step 10c (end-of-flow cleanup) before exiting; in shallow mode there is no plan-dir.
+  - `apply-all` — Proceed with the entire (post-policy, post-override) plan, INCLUDING the post-bumps plan-mode improvements round (Step 10b).
+  - `apply-bumps-only` — Apply bumps + overrides + installs sequentially per project (Step 10a), but SKIP the plan-mode improvements round (Step 10b) entirely. The Step 11 summary's `Applied improvements` section is omitted (zero items). All `run-override` decisions resolved in Step 8 still execute on this path because they were resolved before the gate.
+  - `pick-subset` — Accept a free-form selection combining improvement-bullet titles AND package names. Substring match (case-insensitive) for improvements; exact match for bumps. Excluded improvements skip Step 10b for those bullets; excluded packages skip Step 10a for those names.
+  - `cancel` — Exit without modifying any file. In deep mode the plan-dir IS preserved on disk and the orchestrator invokes Step 10c (end-of-flow cleanup) before exiting; in shallow mode there is no plan-dir.
 
 ### 9.1 `apply-all`
 
@@ -598,7 +582,7 @@ Iterate the resolved project set in **registry insertion order** (already preser
 Collect occurrences in `ACCEPTED` whose `projectName` matches this project. Apply:
 
 - The chosen conflict policy (Step 6) — drop occurrences for `skip-package`-dropped packages; preserve per-project `effectiveTarget` under `per-project`; honor partition under `use-max-where-possible`.
-- The override partition (Step 8.5) — drop occurrences in `OVERRIDE_SKIP`; route `OVERRIDE_RUN` packages to step 10.4; route everything else to step 10.3.
+- The override partition (Step 8.5) — drop occurrences in `OVERRIDE_SKIP`; route `OVERRIDE_RUN` packages to the apply spec's `overrideCommands`; route everything else (GENERIC) to the apply spec's `manifestBumps` / `catalogEdits` (built in Step 10.3).
 - The user exclusion (Step 9.2) — already excluded from `ACCEPTED`.
 
 If the per-project subset is empty (no generic occurrences AND no override entries touch this project), skip apply AND install for this project. Continue to the next.
@@ -607,104 +591,53 @@ If the per-project subset is empty (no generic occurrences AND no override entri
 
 For every Bash invocation in the apply for this project, prepend `cd "<record.path>" &&` (or use absolute paths for ncu's `--packageFile`). The skill SHALL NOT mutate the user's shell state across iterations.
 
-### 10.3 Generic ncu apply (`GENERIC` subset for this project)
+### 10.3 Build the per-project apply spec and invoke `apply-npm-updates`
 
-Group occurrences by `sourceFile` and distinguish two manifest kinds:
+The `apply-npm-updates` skill is the single source of truth for the per-project mechanical apply (generic `ncu` `package.json` bumps, `pnpm-workspace.yaml` catalog edits, override commands, single install). The orchestrator builds the resolved spec for this project and invokes the skill **once**; it SHALL NOT restate the `ncu` / catalog / install recipe inline.
 
-#### `package.json` files
+Build the spec from this project's subset (Step 10.1):
 
-Invoke `npm-check-updates@21.0.2` once per distinct `sourceFile`:
+- `packageManager` = this project's `ScanResult.packageManager`. `cwd` = `<record.path>`. `target` = the orchestrator's `target` input. `cooldown` = the value `scan-npm-updates` resolved for this project (omit for `pnpm`).
+- `manifestBumps` — one element per distinct `GENERIC` `package.json` `sourceFile`: `{ sourceFile, names: <GENERIC names for this file, space-separated>, includeFilter }`. Set `includeFilter: true` when **any** of: the user picked `pick-subset` and excluded ≥1 package for this project; any update for the file was removed by `OVERRIDE_RUN`/`OVERRIDE_SKIP`; or the conflict policy is `use-max-where-possible` and ncu's full set ≠ this project's effective subset. Otherwise `false` (ncu's own set equals the target set for this file).
+- `catalogEdits` — one element per `GENERIC` occurrence with `sourceFile === "pnpm-workspace.yaml"`: `{ name, targetVersion: <effectiveTarget> }`.
+- `overrideCommands` — the `OVERRIDE_RUN` entries that touch this project, as `{ id, command: <interpolated command> }`, in declaration order (run once per affected project).
+- `skipInstall` — `true` when every accepted package for this project went through `run-override` AND no generic ncu bump ran AND no catalog edit happened for this project (every override handles its own install); otherwise `false`.
 
-```bash
-<runner-prefix> npm-check-updates@21.0.2 \
-  -p <pm> \
-  --target <target> \
-  --upgrade \
-  --packageFile <sourceFile> \
-  [--cooldown <period>]        # mirror the value scan-npm-updates resolved for this project; omit for pnpm
-  [--filter "<names>"]         # see "When to filter" below
-```
+Invoke `apply-npm-updates` once with this spec and `cwd: <record.path>`. The skill streams `ncu` / install / override stdout/stderr verbatim and returns `{ appliedGeneric, appliedOverrides, installRan, failure }`. Fold the returned fragment into this project's entry of the cross-project summary (Step 11).
 
-Where:
+### 10.4 On structured failure — format the cross-project abort copy
 
-- `<runner-prefix>` matches the per-project package manager (`pnpm dlx`, `npx -y`, `yarn dlx`, `bunx`, `deno run --allow-read --allow-net npm:`).
-- `-p <pm>` is the project's package manager from `ScanResult.packageManager`. MUST be passed to mirror scan semantics and prevent ncu auto-detection drift.
-- `--target <target>` — the orchestrator's `target` input (e.g., `patch`).
-- `<names>` is the GENERIC package names for this `sourceFile`, joined by single spaces, double-quoted.
+If `apply-npm-updates` returns a non-null `failure`, **stop the entire run** (Step 10.6) and print the orchestrator-owned cross-project abort copy for the failing `step` (the skill never prints this copy):
 
-##### When to include `--filter`
+- `step: "ncu"` →
 
-- The user picked `pick-subset` and at least one package was excluded for this project, OR
-- Any update for this `sourceFile` was removed by `OVERRIDE_RUN` / `OVERRIDE_SKIP` (so ncu must NOT bump packages routed elsewhere), OR
-- The conflict policy is `use-max-where-possible` and ncu's full set ≠ this project's effective subset.
+    ```text
+    ncu --upgrade failed on {sourceFile} ({projectName}, exit {code}).
+    Stopping the run. Subsequent projects not attempted.
+    ```
 
-Otherwise omit `--filter` (ncu's own set equals the target set for this file).
+- `step: "catalog"` →
 
-##### Failure handling
+    ```text
+    Failed to bump {name} in pnpm-workspace.yaml ({projectName}): {reason}.
+    Stopping the run. Subsequent projects not attempted.
+    ```
 
-Stream stdout/stderr through to the user. If ncu exits non-zero, abort the entire run with:
+- `step: "override"` →
 
-```text
-ncu --upgrade failed on {sourceFile} ({projectName}, exit {code}).
-Stopping the run. Subsequent projects not attempted.
-```
+    ```text
+    Override command failed ({entry.id}, {projectName}, exit {code}): {interpolated command}.
+    Stopping the run. Subsequent projects not attempted.
+    ```
+
+- `step: "install"` →
+
+    ```text
+    Install failed ({pm}, {projectName}, exit {code}). Manifests already bumped; review changes before retrying.
+    Stopping the run. Subsequent projects not attempted.
+    ```
 
 Then jump to Step 11 (summary) with the run partition (applied / failed / pending).
-
-#### `pnpm-workspace.yaml` (catalog updates)
-
-For each occurrence with `sourceFile === "pnpm-workspace.yaml"`:
-
-- Under the top-level `catalog:` block, locate the key matching `name`.
-- Replace the value with `effectiveTarget`. Preserve surrounding whitespace, comments, and other keys' order.
-- Do NOT touch any consumer `package.json` that references `catalog:`.
-
-If a key is unexpectedly missing, abort the entire run with:
-
-```text
-Failed to bump {name} in pnpm-workspace.yaml ({projectName}): {reason}.
-Stopping the run. Subsequent projects not attempted.
-```
-
-### 10.4 Override commands (`OVERRIDE_RUN` entries that touch this project)
-
-After the generic path has written every manifest successfully for this project, execute each `OVERRIDE_RUN` entry's interpolated command **in declaration order**, exactly **once per affected project**. Stream stdout/stderr.
-
-If any override exits non-zero, abort the entire run with:
-
-```text
-Override command failed ({entry.id}, {projectName}, exit {code}): {interpolated command}.
-Stopping the run. Subsequent projects not attempted.
-```
-
-Do NOT run `ncu --upgrade` as a fallback. Do NOT run the final install for this project.
-
-### 10.5 Install
-
-After all generic bumps and overrides land for this project, run exactly **one** install command using this project's package manager:
-
-| `packageManager` | Command        |
-| ---------------- | -------------- |
-| `pnpm`           | `pnpm install` |
-| `npm`            | `npm install`  |
-| `yarn`           | `yarn install` |
-| `bun`            | `bun install`  |
-| `deno`           | `deno install` |
-
-**Skip the install** when:
-
-- Every accepted package for this project went through `run-override` AND
-- No generic ncu bump ran for this project AND
-- No `pnpm-workspace.yaml` catalog edit happened for this project.
-
-In that case, every override command is assumed to have handled its own install. Record this in the summary.
-
-If the install exits non-zero, abort the entire run with:
-
-```text
-Install failed ({pm}, {projectName}, exit {code}). Manifests already bumped; review changes before retrying.
-Stopping the run. Subsequent projects not attempted.
-```
 
 ### 10.6 Stop-on-fail
 
@@ -808,8 +741,8 @@ The workflow prompts the user via `AskUserQuestion`:
 - **Question**: `Plan dir at <plan-dir>. Keep for inspection or delete?`
 - `multiSelect: false`
 - **Options**:
-    - `delete-plan` — recursively `rm -rf <plan-dir>`.
-    - `keep-plan` — leave it on disk; the next deep invocation's phase 0 stale-cleanup catches it after 10 days.
+  - `delete-plan` — recursively `rm -rf <plan-dir>`.
+  - `keep-plan` — leave it on disk; the next deep invocation's phase 0 stale-cleanup catches it after 10 days.
 
 Capture the user's choice into `cleanupOutcome ∈ { "delete-plan", "keep-plan" }`. The Step 11 summary's `Suggested next steps` uses `cleanupOutcome` to decide whether to include the `Review <plan-dir>/plan.md before re-running.` bullet.
 
@@ -931,8 +864,8 @@ Print a markdown summary. The H1 varies by mode. Render sections conditionally; 
 
 - **Applied improvements**: one line per applied (bullet, project) pair. Format `- {bullet title} → {projectName} ({sourceFile or general path hint})`. The `sourceFile or hint` cell is the absolute path of the primary file edited under that pair when a single file is dominant; otherwise a generic hint like `multiple files under apps/<workspace>/src/`.
 - **Skipped improvements**: distinguish the two skip reasons with the parenthetical:
-    - `(excluded via pick-subset)` — when the user excluded the bullet at the gate (9.2.D).
-    - `(rejected at plan-mode review)` — when the user rejected the whole plan-mode round at 10b.3.
+  - `(excluded via pick-subset)` — when the user excluded the bullet at the gate (9.2.D).
+  - `(rejected at plan-mode review)` — when the user rejected the whole plan-mode round at 10b.3.
 - **Inapplicable improvements**: one line per (bullet, project) pair marked inapplicable during 10b.1. Format `- {bullet title} → {projectName} ({one-sentence reason captured during reconnaissance})`.
 - **Skipped or unavailable groups**: copied verbatim from `<plan-dir>/plan.md`'s `## Skipped or unavailable` section (workflow-owned). Heading count `<N>` is the bullet count under that section in `plan.md`.
 
@@ -979,10 +912,10 @@ After the run completes (success, partial, cancel), the user-scoped registry `<H
 - `Unknown selection(s): {invalid items}. Valid improvements: {titles}. Valid bumps: {names}.` — Step 9.2.D invalid pick-subset (deep).
 - `All updates excluded; nothing to apply.` — Step 9.2.S empty post-exclusion (shallow).
 - `Cancelled. No files modified.` — Step 9.3 user cancel (both modes); also Step 9.2.D empty selection treated as cancel.
-- `ncu --upgrade failed on {sourceFile} ({projectName}, exit {code}). Stopping the run. Subsequent projects not attempted.` — Step 10.3 ncu failure.
-- `Failed to bump {name} in pnpm-workspace.yaml ({projectName}): {reason}. Stopping the run. Subsequent projects not attempted.` — Step 10.3 catalog failure.
-- `Override command failed ({entry.id}, {projectName}, exit {code}): {interpolated command}. Stopping the run. Subsequent projects not attempted.` — Step 10.4 override failure.
-- `Install failed ({pm}, {projectName}, exit {code}). Manifests already bumped; review changes before retrying. Stopping the run. Subsequent projects not attempted.` — Step 10.5 install failure.
+- `ncu --upgrade failed on {sourceFile} ({projectName}, exit {code}). Stopping the run. Subsequent projects not attempted.` — Step 10.4 `apply-npm-updates` `ncu` failure.
+- `Failed to bump {name} in pnpm-workspace.yaml ({projectName}): {reason}. Stopping the run. Subsequent projects not attempted.` — Step 10.4 `apply-npm-updates` `catalog` failure.
+- `Override command failed ({entry.id}, {projectName}, exit {code}): {interpolated command}. Stopping the run. Subsequent projects not attempted.` — Step 10.4 `apply-npm-updates` `override` failure.
+- `Install failed ({pm}, {projectName}, exit {code}). Manifests already bumped; review changes before retrying. Stopping the run. Subsequent projects not attempted.` — Step 10.4 `apply-npm-updates` `install` failure.
 - `Improvements rejected at plan-mode review. No improvement edits applied; bumps are preserved.` — Step 10b.3 plan-mode rejection (deep mode).
 
 ## Non-goals (deferred)
