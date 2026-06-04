@@ -16,12 +16,28 @@ Apply patch-level npm updates across every project registered in the Commander r
 
 The summary partitions the resolved set into applied / failed / pending so a partial-failure run can be resumed by re-invoking the command after fixing the failed project.
 
+### `/experiments:commander-update-minor`
+
+Minor sibling of `/experiments:commander-update-patch` — identical cross-project flow (registry-driven project picker, parallel Haiku scans, dedup, max-wins alignment with the conflict-policy prompt, override consultation once per matched entry, sequential apply with stop-on-fail), only the level/target are `minor`. Thin wrapper over `commander-update-orchestrator` (`level: "minor"`, `target: "minor"`, shallow). Inherits every `npm-update-minor` hard rule: no tests, no lint, no build, no commits, never mutates the registry.
+
+```bash
+/experiments:commander-update-minor
+```
+
 ### `/experiments:commander-update-deep-patch`
 
 Deep sibling of `/experiments:commander-update-patch`. Same scope (patch-level, cross-project plan, sequential apply with stop-on-fail) plus **research deduplicated by package**: every patch changelog is fetched once across the run (no per-project duplication), subagents produce universal findings only (no codebase cross-reference — that happens at apply time), and after the bumps loop the main agent enters plan mode ONCE with a unified document of (improvement, project) pairs spanning every applied project. Gate options expand to four: `apply-all` / `apply-bumps-only` / `pick-subset` / `cancel`. Plan dirs live under `~/.claude/experiments/plans/commander-deep-patch-<unix-ts>/` and inherit the workflow's 10-day stale-cleanup. Inherits every hard rule from the shallow command plus `npm-update-deep-patch` — no tests, no lint, no build, no commits, never mutates the registry, never auto-executes an override.
 
 ```bash
 /experiments:commander-update-deep-patch
+```
+
+### `/experiments:commander-update-deep-minor`
+
+Minor sibling of `/experiments:commander-update-deep-patch` — identical deep cross-project flow (research deduplicated by package, universal-only findings, four-option gate `apply-all` / `apply-bumps-only` / `pick-subset` / `cancel`, one unified cross-project plan-mode round for improvements after the bumps loop), only the level/target are `minor`. Thin wrapper over `commander-update-orchestrator` (`level: "minor"`, `target: "minor"`, `mode: "deep"`). The surfaced `plan.md` ends with the `## Changelogs` chronology section. Plan dirs live under `~/.claude/experiments/plans/commander-deep-minor-<unix-ts>/` with the 10-day stale-cleanup. Inherits every hard rule from the shallow command plus `npm-update-deep-minor` — no tests, no lint, no build, no commits, never mutates the registry, never auto-executes an override.
+
+```bash
+/experiments:commander-update-deep-minor
 ```
 
 ### `/experiments:ralph`
@@ -54,6 +70,14 @@ Same scope as `npm-update-patch` (patch-level, semver-safe, manifest bump + one 
 /experiments:npm-update-deep-patch
 ```
 
+### `/experiments:npm-update-deep-minor`
+
+Minor sibling of `/experiments:npm-update-deep-patch` — same deep single-project flow (parallel changelog research, plan-mode synthesis, `apply-all` / `apply-bumps-only` / `pick-subset` / `cancel` gate), only the level differs. Scans at `level=minor`, runs `parallel-research-workflow` at `level: "minor"`, and applies bumps via the shared `apply-npm-updates` skill (generic-only — the deep path consults no override registry). The synthesized `plan.md` carries a `## Minor bump set` table and a final `## Changelogs` chronology section. Never runs tests, lint, build, or commits.
+
+```bash
+/experiments:npm-update-deep-minor
+```
+
 ### `/experiments:npm-update-patch`
 
 Scan the current project for patch-level npm updates and interactively apply the subset you accept. Works on pnpm/npm/yarn/bun/deno, single-repo or workspace; treats pnpm `catalog:` entries as first-class. Bumps `package.json` manifests via a single `ncu --upgrade` per file (prefix- and format-preserving), edits `pnpm-workspace.yaml#catalog` in-memory, and runs one final install unless all accepted updates were handled via `run-override`. Never runs tests, lint, or commits.
@@ -67,6 +91,14 @@ When the accepted set contains packages that ship their own upgrade command (e.g
 **Extending the override registry.** Entries live in [`skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml`](./skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml). Append an entry (fields: `id`, `matches`, `command`, `versionSource`, optional `fallbackVersionSource` / `reference` / `notes`) and the command picks it up on the next invocation — no logic change required. The file comment block documents each field.
 
 Tip: pair with `/experiments:npm-changelog <pkg> <from>..<to>` before accepting if you want to skim the changelog for any listed patch.
+
+### `/experiments:npm-update-minor`
+
+Minor sibling of `/experiments:npm-update-patch` — same shallow single-project flow (scan → table → `apply-all` / `pick-subset` / `cancel`, override-registry consultation per matched family), only the level differs. Scans at `level=minor` and applies the accepted set via the shared `apply-npm-updates` skill (`target: minor`): one `ncu --upgrade` per `package.json`, in-memory `pnpm-workspace.yaml#catalog` edits, one final install. Never runs tests, lint, build, or commits.
+
+```bash
+/experiments:npm-update-minor
+```
 
 ### `/experiments:npm-changelog`
 
@@ -90,7 +122,11 @@ Checks for updates to globally-installed skills.sh skills once per session. Dete
 
 ### `scan-npm-updates`
 
-Shared scan backend used by `/experiments:npm-update-patch` (and by future `npm-update-minor`/`major`/`engines` siblings). Invokes `npm-check-updates@21.0.2` via the detected package manager's dlx runner, post-processes pnpm `catalog:` entries, and returns a structured `ScanResult` JSON object. Read-only — never edits files.
+Shared scan backend used by `/experiments:npm-update-{patch,minor}` (and by future `npm-update-major`/`engines` siblings). Invokes `npm-check-updates@21.0.2` via the detected package manager's dlx runner, post-processes pnpm `catalog:` entries, and returns a structured `ScanResult` JSON object. Read-only — never edits files.
+
+### `apply-npm-updates`
+
+Shared single-project apply backend — the single source of truth for the apply mechanism. Given a fully-resolved apply spec (`packageManager`, `cwd`, `target`, `manifestBumps[]`, `catalogEdits[]`, `overrideCommands[]`, `skipInstall`), it runs one `npm-check-updates@21.0.2 --upgrade` per `package.json`, edits `pnpm-workspace.yaml#catalog` in place, runs override commands in declaration order, and runs one install — streaming `ncu`/install/override output verbatim and returning a structured result fragment (it never prints a consumer summary or abort message). Level-agnostic (parameterized solely by `target`). Also documents the caller-invoked override-resolution procedure (registry load → first-win glob match → `{version}` resolution → GENERIC/OVERRIDE_RUN/OVERRIDE_SKIP partition) consumed by the shallow single-project commands and the orchestrator. Consumed by `/experiments:npm-update-{patch,minor}`, `/experiments:npm-update-deep-{patch,minor}`, and `commander-update-orchestrator` (once per project). Never runs tests/lint/build/commits.
 
 ### `group-packages-for-research`
 
