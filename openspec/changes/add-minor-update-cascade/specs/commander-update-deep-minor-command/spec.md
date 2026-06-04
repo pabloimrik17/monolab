@@ -58,7 +58,7 @@ The command SHALL NOT override `level`/`target` to anything other than `minor`, 
 
 ### Requirement: Hard rules inherited from the orchestrator and the deep flow
 
-The command SHALL inherit and preserve every hard rule from `commander-update-orchestrator` (deep mode) and the single-project deep flow. The command SHALL NOT run tests/lint/build; SHALL NOT create commits/branches/PRs; SHALL NOT modify any file when the user selects `cancel` at the gate or rejects the plan-mode round; SHALL NOT mutate `<HOME>/.claude/commander/projects.json` (byte-identical, verifiable via `shasum`); SHALL NOT mutate a `catalog:` consumer `package.json` (only `pnpm-workspace.yaml`); SHALL NOT auto-execute an override without explicit `run-override`; and SHALL NOT run `ncu --upgrade` as a fallback after an override fails.
+The command SHALL inherit and preserve every hard rule from `commander-update-orchestrator` (deep mode) and the single-project deep flow. The command SHALL NOT run tests/lint/build; SHALL NOT create commits/branches/PRs; SHALL NOT modify any file when the user selects `cancel` at the gate; on plan-mode rejection it SHALL NOT apply any improvement edits, but already-applied bumps (from the Step 10a bumps loop) are preserved, not reverted; SHALL NOT mutate `<HOME>/.claude/commander/projects.json` (byte-identical, verifiable via `shasum`); SHALL NOT mutate a `catalog:` consumer `package.json` (only `pnpm-workspace.yaml`); SHALL NOT auto-execute an override without explicit `run-override`; and SHALL NOT run `ncu --upgrade` as a fallback after an override fails.
 
 #### Scenario: Cancel at the gate leaves the workspace untouched
 
