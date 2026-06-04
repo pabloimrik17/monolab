@@ -245,14 +245,9 @@ The command SHALL:
 - Render a table with columns: `name`, `currentVersion → targetVersion`, `location`.
 - Present the user with a single `AskUserQuestion` with options `apply-all`, `pick-subset`, `cancel`.
 - If `pick-subset`: ask for names to exclude (comma-separated or one package per line; empty = include all); validate that names exist in the list and re-prompt if not.
-- Load the Package Upgrade Override Registry at `claude-plugins/experiments/skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml` and compute matched entries against the accepted set. For each matched entry, present the user with an `AskUserQuestion` with options `run-override`, `skip-matched`, `force-generic`.
-- Apply bumps to `package.json` manifests by invoking `npm-check-updates` with `--upgrade` once per manifest in the accepted, non-overridden subset, mirroring the `--target` and `--cooldown` flags resolved by the scan. The invocation SHALL include `--filter "<names>"` — where `<names>` is the per-manifest GENERIC partition (accepted package names minus any handled by `OVERRIDE_RUN`/`OVERRIDE_SKIP` for that manifest), space-separated and literal — whenever that set is a strict subset of ncu's detected candidates (i.e. `pick-subset`, or any `OVERRIDE_RUN`/`OVERRIDE_SKIP` touches this manifest).
-- Apply bumps to `pnpm-workspace.yaml#catalog` entries with the existing in-memory edit path (locate the key under `catalog:`, replace the value preserving surrounding whitespace and comments).
-- For override entries where the user selected `run-override`: execute the interpolated override command exactly once (with `{version}` resolved from the entry's `versionSource`), and skip the generic `ncu --upgrade` bump for all packages matched by that entry.
-- For override entries where the user selected `skip-matched`: exclude all packages matched by the entry from both the generic bump and the override command.
-- For override entries where the user selected `force-generic`: include the matched packages in the generic `ncu --upgrade` bump as if the registry did not match.
-- Execute a single install invocation for the detected PM (`pnpm install` / `npm install` / `yarn install` / `bun install` / `deno install`) at the end, SKIPPING this final install when every package in the accepted set was handled by `run-override` and nothing was written outside the override command.
-- Display a textual summary: what was applied (generic vs. override), what was skipped, what overrides ran (if any), and a message suggesting (not executing) verification steps to the dev/agent (tests, lint, commit).
+- Resolve overrides via the `npm-update-apply` override-resolution procedure against the accepted set (loading the Package Upgrade Override Registry at `claude-plugins/experiments/skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml`). For each matched entry, present the user with an `AskUserQuestion` with options `run-override`, `skip-matched`, `force-generic`, then partition the accepted set into `GENERIC` / `OVERRIDE_RUN` / `OVERRIDE_SKIP` per the chosen actions (`run-override` → handled by the override command and excluded from generic ncu; `skip-matched` → excluded from everything; `force-generic` → bumped generically as if unmatched).
+- Build the resolved apply spec and invoke the `npm-update-apply` skill once with `target: patch` to perform the mechanical apply: generic `package.json` updates as `manifestBumps` (with `--filter "<names>"` membership — the per-manifest GENERIC partition, space-separated and literal — whenever that set is a strict subset of ncu's detected candidates, i.e. `pick-subset` or any `OVERRIDE_RUN`/`OVERRIDE_SKIP` touching the manifest); `pnpm-workspace.yaml#catalog` updates as `catalogEdits` (in-memory key edit preserving whitespace and comments); interpolated `run-override` commands as `overrideCommands` (executed once each, skipping generic ncu for their matched packages); and `skipInstall` set when every accepted package was handled by `run-override` and nothing was written outside the override command. The skill runs `npm-check-updates@21.0.2` per manifest (mirroring the `--target` and `--cooldown` flags resolved by the scan), performs the catalog edits, runs the override commands, and runs the single `<pm> install`. The command SHALL NOT restate that recipe inline.
+- Display a textual summary composed from the `npm-update-apply` result fragment: what was applied (generic vs. override), what was skipped, what overrides ran (if any), and a message suggesting (not executing) verification steps to the dev/agent (tests, lint, commit).
 - Not execute tests, lint, build, or create commits.
 
 #### Scenario: Command file exists with frontmatter
@@ -273,14 +268,14 @@ The command SHALL:
 #### Scenario: Apply-all delegates to ncu --upgrade
 
 - **WHEN** the skill returns N updates targeting M distinct `package.json` manifests AND the user selects `apply-all` AND no registry entry matches
-- **THEN** the command SHALL run `ncu --target patch --upgrade --packageFile <path>` exactly once per manifest
+- **THEN** the command SHALL run `ncu --target patch --upgrade --packageFile <path>` exactly once per manifest (via `npm-update-apply`)
 - **AND** SHALL NOT perform per-entry `Edit` calls on those manifests
 - **AND** SHALL reuse the `--cooldown` flag value resolved by the scan (omit when the scan relied on pnpm's native read)
 
 #### Scenario: Pick-subset passes accepted names as ncu --filter
 
 - **WHEN** the skill returns updates AND the user selects `pick-subset` AND excludes one package
-- **THEN** the command SHALL invoke `ncu --target patch --upgrade --packageFile <path> --filter "<space-separated accepted names>"` per manifest
+- **THEN** the command SHALL invoke `ncu --target patch --upgrade --packageFile <path> --filter "<space-separated accepted names>"` per manifest (via `npm-update-apply`)
 - **AND** only the accepted packages SHALL be rewritten in each manifest
 - **AND** the excluded packages SHALL remain unchanged
 
@@ -297,7 +292,7 @@ The command SHALL:
 #### Scenario: Catalog update edits pnpm-workspace.yaml
 
 - **WHEN** an applied update has `sourceFile: "pnpm-workspace.yaml"`
-- **THEN** the command SHALL bump the version under `catalog:` in `pnpm-workspace.yaml` using the in-memory edit path
+- **THEN** the command SHALL bump the version under `catalog:` in `pnpm-workspace.yaml` using the in-memory edit path (via `npm-update-apply`)
 - **AND** SHALL NOT invoke `ncu --upgrade` on the catalog file
 - **AND** SHALL NOT touch the consumer `package.json`
 
@@ -363,7 +358,7 @@ The registry SHALL declare an `overrides` top-level key whose value is a list of
 - `reference` (string, optional): URL to official documentation for the upgrade command.
 - `notes` (string, optional): human-readable explanation of what the override does, surfaced in the AskUserQuestion prompt.
 
-The registry SHALL be used exclusively by the `/experiments:npm-update-patch` command (future commands MAY reuse the same data file). The `scan-npm-updates` skill SHALL NOT read or emit overrides.
+The registry is a single, level-independent data file. It SHALL be consumed via the `npm-update-apply` override-resolution procedure by the single-project shallow commands (`/experiments:npm-update-patch`, `/experiments:npm-update-minor`) and, cross-project, by the `commander-update-orchestrator` skill; the single-project deep path does not consult it. The `scan-npm-updates` skill SHALL NOT read or emit overrides.
 
 The registry SHALL include a seed entry for Storybook with:
 
@@ -423,7 +418,7 @@ Glob semantics for `matches`: `*` matches any sequence of characters within a pa
 #### Scenario: Adding a new entry requires no command logic change
 
 - **WHEN** a new entry is appended to `overrides:` in the YAML file with valid `id`, `matches`, `command`, and `versionSource`
-- **THEN** the `/experiments:npm-update-patch` command SHALL pick it up on next invocation without any change to `commands/npm-update-patch.md`
+- **THEN** the consuming commands SHALL pick it up on next invocation without any change to their command files
 
 ### Requirement: Commander Update Orchestrator Skill File
 
