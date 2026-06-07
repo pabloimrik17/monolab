@@ -8,6 +8,22 @@
 
 -   Pablo F. Guerra @pabloimrik17
 
+## [1.3.1](https://github.com/pabloimrik17/monolab/compare/react-hooks-v1.3.0...react-hooks-v1.3.1) (2026-05-24)
+
+
+### Bug Fixes
+
+* **release-please:** preserve JSON formatting in deno.json on version bump ([036d503](https://github.com/pabloimrik17/monolab/commit/036d503b9bdfb2468ba8d4a09c5c591ab734845b))
+* **release:** restore compact array format in deno.json ([d4ed32d](https://github.com/pabloimrik17/monolab/commit/d4ed32d8631fcd92b5658beec3fc00a258575d42))
+* **release:** restore compact array format in deno.json ([7bf3c10](https://github.com/pabloimrik17/monolab/commit/7bf3c101ec8501e83d6ef98068921158f68845a8))
+
+## [1.3.0](https://github.com/pabloimrik17/monolab/compare/react-hooks-v1.2.0...react-hooks-v1.3.0) (2026-05-24)
+
+
+### Features
+
+* **codecov:** matrix-driven uploads + bundle tracking for apps ([b33dc0a](https://github.com/pabloimrik17/monolab/commit/b33dc0a161f672e518315f8b365958f66abc32f6))
+
 ## [1.2.0](https://github.com/pabloimrik17/monolab/compare/react-hooks-v1.1.4...react-hooks-v1.2.0) (2026-05-17)
 
 
