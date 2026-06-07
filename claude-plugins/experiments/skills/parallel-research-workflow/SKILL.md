@@ -46,7 +46,7 @@ The workflow ships two research contracts selected by the `mode` input. Phases 0
 | Phase 4 `plan.md` H1                              | `Deep-<level> plan: <slug>`                                                                                                                   | `Deep-<level> plan (cross-project): <slug>`                                                                                                                                                                                              |
 | Phase 4 `plan.md` Improvements heading            | `## Improvements (applicable to this codebase)`                                                                                               | `## Improvements (universal — applicability checked per project at apply time)`                                                                                                                                                          |
 | Phase 4 `plan.md` improvement / workaround bullet | `... (group: <groupId>)`                                                                                                                      | `... (group: <groupId>; affects projects: <comma-separated names>)`                                                                                                                                                                      |
-| Phase 4 `plan.md` bump-set table H2               | `## Patch bump set` (or matching level)                                                                                                       | `## Cross-project bump set`                                                                                                                                                                                                              |
+| Phase 4 `plan.md` bump-set table H2               | `## <Level> bump set` — title-cased level (`Patch`/`Minor`/`Major`/`Engines`), level-derived (never hardcoded `Patch`)                        | `## Cross-project bump set`                                                                                                                                                                                                              |
 | Phase 4 `plan.md` bump-set table columns          | `package`, `current → target`, `location`                                                                                                     | `package`, `proposed target`, `projects (locations)`                                                                                                                                                                                     |
 | Phases 0, 1, 3, end-of-flow cleanup               | Identical machinery.                                                                                                                          | Identical machinery. No new phases introduced; no phase transition order changed.                                                                                                                                                        |
 
@@ -154,9 +154,9 @@ If at least one entry is stale, prompt the user once via `AskUserQuestion`:
 - **Question**: `Found <N> stale plan dir(s) under ~/.claude/experiments/plans/. What do you want to do?`
 - **Multi-select**: `false`
 - **Options**:
-    - `delete-stale` — recursively remove every stale entry, then continue.
-    - `keep-stale` — leave them alone for this invocation; continue.
-    - `cancel` — abort the deep-\* run; print `Cancelled. No files modified.`; do not create a new plan dir; exit.
+  - `delete-stale` — recursively remove every stale entry, then continue.
+  - `keep-stale` — leave them alone for this invocation; continue.
+  - `cancel` — abort the deep-\* run; print `Cancelled. No files modified.`; do not create a new plan dir; exit.
 
 If no stale entries exist, do not prompt — proceed silently. The skill SHALL NOT delete any directory without explicit `delete-stale` selection. The 10-day threshold is fixed in v1.
 
@@ -242,9 +242,9 @@ If a batch hard-walls (all subagents stalled at `pending/pending`), prompt the u
 - **Question**: `Subagent dispatch was denied or rate-limited for batch <n>/<total> (<groupIds>). How do you want to proceed?`
 - **Multi-select**: `false`
 - **Options**:
-    - `retry-current-batch` — re-dispatch this batch only (no backoff sleep — the user has already paused the flow). Repeats the same batch with the same `maxConcurrent`.
-    - `degrade-to-main-agent` — abandon subagent dispatch for the remaining groups; the main agent synthesizes `plan.md` directly using already-cached changelogs under `~/.claude/changelogs/`. The main agent SHALL prepend a one-line banner to `plan.md`: `> Research consolidated in main agent due to subagent dispatch limits. Per-group research.md files were not produced for: <comma-separated groupIds of un-dispatched batches>.`
-    - `abort` — exit cleanly. Plan dir is preserved on disk.
+  - `retry-current-batch` — re-dispatch this batch only (no backoff sleep — the user has already paused the flow). Repeats the same batch with the same `maxConcurrent`.
+  - `degrade-to-main-agent` — abandon subagent dispatch for the remaining groups; the main agent synthesizes `plan.md` directly using already-cached changelogs under `~/.claude/changelogs/`. The main agent SHALL prepend a one-line banner to `plan.md`: `> Research consolidated in main agent due to subagent dispatch limits. Per-group research.md files were not produced for: <comma-separated groupIds of un-dispatched batches>.`
+  - `abort` — exit cleanly. Plan dir is preserved on disk.
 
 If the user picks `retry-current-batch` and the same batch hard-walls again, the prompt re-fires with the question text prefixed `Retried and still hard-walled.` — same three options, no automatic escalation. If the user picks `degrade-to-main-agent`, the workflow skips directly to a modified phase 3 (see "Degraded phase 3" below) and then phase 4 with the banner.
 
@@ -465,9 +465,9 @@ If at least one group is `failed` or `missing` (excluding `expected-missing` in 
 - **Question**: `Research integrity check: <healthy>/<total> groups healthy. Non-healthy: <comma-separated groupIds>. How do you want to proceed?`
 - **Multi-select**: `false`
 - **Options**:
-    - `retry-failed` — re-dispatch phase 1 + phase 2 from scratch only for the non-healthy groups. Healthy groups are NOT touched and their `research.md` files are preserved.
-    - `continue-without` — proceed to phase 4 using only the healthy groups. Non-healthy groups will be documented in `plan.md`'s `## Skipped or unavailable` section with their `errorReason`.
-    - `abort` — exit cleanly. The plan dir is preserved on disk for manual inspection.
+  - `retry-failed` — re-dispatch phase 1 + phase 2 from scratch only for the non-healthy groups. Healthy groups are NOT touched and their `research.md` files are preserved.
+  - `continue-without` — proceed to phase 4 using only the healthy groups. Non-healthy groups will be documented in `plan.md`'s `## Skipped or unavailable` section with their `errorReason`.
+  - `abort` — exit cleanly. The plan dir is preserved on disk for manual inspection.
 
 The skill SHALL NOT auto-retry. There is no default option — the user must explicitly pick.
 
@@ -498,7 +498,7 @@ When all groups are healthy or the user chose `continue-without`:
 
 1. Update the global `_meta.json.phase` to `"planning"`.
 2. The main agent enters Claude Code plan mode.
-3. The main agent reads every healthy `groups/<id>/research.md` plus the original `scan.json` (single-project mode) or both `scan-by-project.json` and `cross-project-plan.json` (cross-project mode), then writes `<plan-dir>/plan.md`. The template depends on `mode`.
+3. The main agent reads every healthy `groups/<id>/research.md` plus the original `scan.json` (single-project mode) or both `scan-by-project.json` and `cross-project-plan.json` (cross-project mode), and — for the `## Changelogs` section — the on-disk `experiments:npm-changelog` cache under `~/.claude/changelogs/` (no network), then writes `<plan-dir>/plan.md`. The template depends on `mode`.
 
 ### 4.S — Single-project `plan.md` template (`mode: "single-project"`, default)
 
@@ -520,19 +520,25 @@ When all groups are healthy or the user chose `continue-without`:
 - <groupId> — <reason>.
 - ...
 
-## Patch bump set
+## <Level> bump set
 
 | package | current → target | location |
 | ------- | ---------------- | -------- |
 | ...     | ...              | ...      |
+
+## Changelogs
+
+<one block per package — see "4.C — Changelog chronology section">
 ```
 
 Rules:
 
-- The four `H2` sections SHALL appear in this exact order: `Improvements (applicable to this codebase)`, `Workarounds resolved`, `Skipped or unavailable`, `Patch bump set`.
-- Sections with zero items still render with a single sentinel line (e.g. `_no improvements identified_`) — never omit the heading.
+- The five `H2` sections SHALL appear in this exact order: `Improvements (applicable to this codebase)`, `Workarounds resolved`, `Skipped or unavailable`, `<Level> bump set`, `Changelogs`.
+- The bump-set heading is **level-derived**: the title-cased `level` input followed by `bump set` — `Patch bump set`, `Minor bump set`, `Major bump set`, or `Engines bump set`. It SHALL NOT be hardcoded to `Patch`.
+- Sections with zero items still render with a single sentinel line (e.g. `_no improvements identified_`) — never omit the heading. The `Changelogs` section uses the per-package `_no changelog available_` sentinel defined in 4.C.
 - The `<reason>` cell in `Skipped or unavailable` rows: for `failed`/`missing` groups, copy `groups/<id>/_meta.json.errorReason` verbatim; for `expected-missing` groups (degraded path), use the constant string `research consolidated in main agent (subagent dispatch limited)` without reading per-group meta.
-- The `Patch bump set` table SHALL list every update from `scan.json` regardless of group health. Columns are exactly `package`, `current → target`, `location`. Rows sorted by `location` then `name` for stability.
+- The `<Level> bump set` table SHALL list every update from `scan.json` regardless of group health. Columns are exactly `package`, `current → target`, `location`. Rows sorted by `location` then `name` for stability.
+- The `Changelogs` section is the final section and is assembled per "4.C — Changelog chronology section (both modes)". In single-project mode `<from>`/`<to>` per package are the `currentVersion`/`targetVersion` from `scan.json`.
 
 ### 4.D — Cross-project `plan.md` template (`mode: "cross-project"`)
 
@@ -562,17 +568,22 @@ Projects covered: <comma-separated project names from scan-by-project.json keys,
 | ------- | --------------- | ---------------------------- |
 | react   | ^19.0.14        | proj-A (root); proj-B (root) |
 | ...     | ...             | ...                          |
+
+## Changelogs
+
+<one block per package — see "4.C — Changelog chronology section"; cross-project variant uses representative from → to>
 ```
 
 Rules:
 
 - H1 form: `# Deep-<level> plan (cross-project): <slug>`. The H1 SHALL include the `(cross-project)` parenthetical and SHALL use the `slugOverride`-derived `<slug>` (NOT the CWD/`package.json`-derived slug).
 - A single descriptive line `Projects covered: <comma-separated project names from scan-by-project.json keys, alphabetical>` SHALL appear directly under the H1.
-- The four H2 sections SHALL appear in this exact order: `Improvements (universal — applicability checked per project at apply time)`, `Workarounds resolved`, `Skipped or unavailable`, `Cross-project bump set`.
+- The five H2 sections SHALL appear in this exact order: `Improvements (universal — applicability checked per project at apply time)`, `Workarounds resolved`, `Skipped or unavailable`, `Cross-project bump set`, `Changelogs`.
 - Sections with zero items still render with a single sentinel line:
-    - `_no improvements identified_` under the Improvements heading.
-    - `_no workarounds resolved_` under the Workarounds heading.
-    - `_no skipped groups_` under the Skipped or unavailable heading.
+  - `_no improvements identified_` under the Improvements heading.
+  - `_no workarounds resolved_` under the Workarounds heading.
+  - `_no skipped groups_` under the Skipped or unavailable heading.
+  - The `Changelogs` section uses the per-package `_no changelog available_` sentinel defined in 4.C.
 - Each improvement / workaround bullet SHALL end with the parenthetical `(group: <groupId>; affects projects: <comma-separated project names>)`. The `affects projects:` list is derived from the cross-project scan artifacts: for each package in the bullet, list every project whose `ScanResult.updates[]` includes the package (sourced from `<plan-dir>/scan-by-project.json` and `<plan-dir>/cross-project-plan.json`, which the orchestrator caller wrote before / during Step 6.5.5). Names are alphabetical within the parenthetical, comma-separated.
 - The `<reason>` cell in `Skipped or unavailable` rows follows the same rule as single-project: for `failed`/`missing` groups, copy `groups/<id>/_meta.json.errorReason` verbatim; for `expected-missing` groups (degraded path), use the constant string `research consolidated in main agent (subagent dispatch limited)`.
 - The `Cross-project bump set` table columns are exactly `package`, `proposed target`, `projects (locations)`.
@@ -580,6 +591,47 @@ Rules:
 - Table rows sorted by `package` name (alphabetical, stable).
 - The table SHALL list every package in the cross-project bump set regardless of group health (even if its research group is `failed`/`missing`/`expected-missing`, the bump row appears so the orchestrator's apply step still considers it).
 - Hint lines on improvement / workaround bullets carry abstract context only (file globs by convention, framework names, idiomatic patterns) — same restriction as the cross-project subagent prompt template. The main agent SHALL NOT promote a single-project path discovered during phase 4 into a Hint line; if no universal hint exists, write `Hint: none`.
+- The `Changelogs` section is the final section and is assembled per "4.C — Changelog chronology section (both modes)". The cross-project variant uses a **representative** `<from>` (the most-common `currentVersion` across occurrences) → `<to>` (the package's `effectiveTarget` from `cross-project-plan.json`), deduped to **one block per package** — it SHALL NOT enumerate per-project version variations (the `Cross-project bump set` table is the source for those).
+
+### 4.C — Changelog chronology section (both modes)
+
+Phase 4 synthesis SHALL append a final `## Changelogs` section to `plan.md` in **both** modes, assembled entirely from changelog data **already on disk** — the per-group `changelogs/<package-basename>/` outputs written in phase 1 and the `experiments:npm-changelog` cache under `~/.claude/changelogs/<normalized-name>/`. Synthesis SHALL NOT issue any network call (`npm view`, `gh api`, `curl`, …) to build this section.
+
+The section contains **one block per package in the bump set**, ordered **alphabetically** by package name. Each block:
+
+1. **Header** `### <package> (<from> → <to>)`. Single-project: `<from>`/`<to>` = the package's `currentVersion`/`targetVersion` from `scan.json`. Cross-project: the representative `currentVersion` (most-common across occurrences; ties broken by first-occurrence order) → the `effectiveTarget` from `cross-project-plan.json`.
+2. **Links line first**, reused from the npm-changelog cache metadata — no network. Read the repository URL from `~/.claude/changelogs/<normalized-name>/_meta.json.repository` (and `changelogFiles` when useful), plus the per-version source/release URLs from each `<ver>.meta.json.sourceUrl` for the covered versions. Emit these as the first line of the block.
+3. **Bodies** — the full verbatim changelog body for each **stable version in `(from, to]`** (every version newer than the installed `from`, up to and including `to`; the installed `from` is **excluded** — its changelog is not "new"), in **ascending** order (oldest→newest). Each version's body is the cached `~/.claude/changelogs/<normalized-name>/<ver>.md` content verbatim, wrapped in a collapsible `<details><summary>{ver}</summary>` … `</details>` block.
+
+Reading the section top-to-bottom therefore advances through versions chronologically (oldest first) — the reverse of repository changelog ordering.
+
+**Missing / empty:** if no changelog body is available for a package (every covered version failed, `no_changelog_source`, or `from == to` so the half-open span is empty), render the links line (when a repository is known) followed by the sentinel `_no changelog available_`.
+
+**Normalized name:** the `<normalized-name>` is the `npm-changelog` cache key for the package (the same normalization `experiments:npm-changelog` applies). The `<package-basename>` of the per-group `changelogs/` output is the package name's last path segment.
+
+**Degraded path:** when `degrade-to-main-agent` was selected at the phase-1 hard wall (no per-group `research.md`), the cached `<ver>.md` files still exist under `~/.claude/changelogs/`; the main agent SHALL build the `## Changelogs` section from that cache anyway.
+
+**Always render when there is a bump:** the `## Changelogs` section SHALL render whenever the bump set has ≥1 package, independent of whether any improvements or workarounds were found. Because `plan.md` is a file the user opens deliberately (not chat output), embedding verbatim changelog bodies does not violate the `experiments:npm-changelog` "never paste into chat" rule.
+
+Example block:
+
+```markdown
+### axios (1.7.0 → 1.7.9)
+
+Repo: https://github.com/axios/axios — releases: [1.7.1](…), … [1.7.9](…)
+
+<details><summary>1.7.1</summary>
+
+<verbatim cached 1.7.1.md body>
+
+</details>
+
+<details><summary>1.7.9</summary>
+
+<verbatim cached 1.7.9.md body>
+
+</details>
+```
 
 ### 4 — Common rules (both modes)
 
@@ -594,8 +646,8 @@ When the consumer re-invokes the workflow for cleanup, the workflow SHALL prompt
 - **Question**: `Plan dir at <plan-dir>. Keep for inspection or delete?`
 - **Multi-select**: `false`
 - **Options**:
-    - `delete-plan` — recursively `rm -rf <plan-dir>`.
-    - `keep-plan` — leave it on disk; the next invocation's stale-cleanup (phase 0) will catch it after 10 days.
+  - `delete-plan` — recursively `rm -rf <plan-dir>`.
+  - `keep-plan` — leave it on disk; the next invocation's stale-cleanup (phase 0) will catch it after 10 days.
 
 Cleanup re-entry is consumer-driven and optional: when phase 1 or phase 3 returns `abort`, the workflow itself exits cleanly with the plan dir preserved (per lines covering each abort option) and does NOT prompt for cleanup on its own. The consumer decides whether to re-invoke the workflow for cleanup; if it does, the workflow MUST present the `delete-plan` / `keep-plan` prompt above. If the consumer skips re-invocation, the plan dir stays on disk until the next stale-cleanup pass (phase 0).
 

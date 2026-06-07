@@ -5,7 +5,6 @@ openspec/
 .claude/
 .codex/
 .junie/
-.cursor/
 .opencode/
 node_modules/
 dist/

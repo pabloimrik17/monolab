@@ -78,10 +78,10 @@ When the workflow returns successfully (i.e. `plan.md` exists at the plan-dir ro
 - **Question**: `Plan synthesized. <plan-dir>/plan.md is ready for review. How do you want to proceed?`
 - **Multi-select**: `false`
 - **Options** (in this exact order):
-    - `apply-all` — execute every item in the plan: bump every package in the `Patch bump set` table AND apply every bullet in the `Improvements (applicable to this codebase)` section.
-    - `apply-bumps-only` — bump every package in the `Patch bump set` table; skip improvements entirely. Equivalent in net effect to running the shallow `/experiments:npm-update-patch` against the same set, with no override-registry logic (see hard rules).
-    - `pick-subset` — accept a free-form list of plan items (specific improvements + specific bumps) to apply.
-    - `cancel` — exit without modifying any file. Plan dir is preserved on disk pending the cleanup prompt.
+  - `apply-all` — execute every item in the plan: bump every package in the `Patch bump set` table AND apply every bullet in the `Improvements (applicable to this codebase)` section.
+  - `apply-bumps-only` — bump every package in the `Patch bump set` table; skip improvements entirely. Equivalent in net effect to running the shallow `/experiments:npm-update-patch` against the same set, with no override-registry logic (see hard rules).
+  - `pick-subset` — accept a free-form list of plan items (specific improvements + specific bumps) to apply.
+  - `cancel` — exit without modifying any file. Plan dir is preserved on disk pending the cleanup prompt.
 
 The command SHALL show this prompt exactly once per invocation. The command SHALL NOT auto-apply any plan item without an explicit option selection.
 
@@ -91,23 +91,21 @@ Branch on the selected option.
 
 ### Step 6a — `apply-all` and `apply-bumps-only` (bumps mechanism, shared)
 
-Apply patch-level bumps using the **same mechanism as `/experiments:npm-update-patch`**:
+Apply patch-level bumps by invoking the **`apply-npm-updates` skill** — the single source of truth for the single-project apply mechanism (generic `ncu` `package.json` bumps, `pnpm-workspace.yaml` catalog edits, single install). The command builds the resolved spec and invokes the skill **once** with `target: "patch"`; it does NOT restate the `ncu` / catalog / install recipe inline.
 
-- For every `sourceFile` ending in `package.json` (i.e., manifest kind `package.json`), invoke `npm-check-updates@21.0.2` once per distinct file via the resolved runner prefix:
+Build the resolved apply spec from the accepted set (all updates for `apply-all`/`apply-bumps-only`; `ACCEPTED_BUMPS` for `pick-subset`):
 
-    ```bash
-    <runner-prefix> npm-check-updates@21.0.2 \
-        -p <pm> \
-        --target patch \
-        --upgrade \
-        --packageFile <sourceFile> \
-        [--cooldown <period>]   # mirror the value the scan resolved; omit for pnpm (ncu reads pnpm-workspace.yaml natively)
-        [--filter "<names>"]    # only when this invocation's bumps for this file are a strict subset of ncu's own detected set (i.e., pick-subset partial inclusion)
-    ```
+- `packageManager` = the scan's `packageManager`. `cwd` = the project root. `target` = `"patch"`. `cooldown` = the value the scan resolved (omit for `pnpm`).
+- `manifestBumps` — one element per distinct `package.json` `sourceFile`: `{ sourceFile, names, includeFilter }`. Set `includeFilter: true` only when this invocation's bumps for the file are a strict subset of ncu's own detected set (i.e. `pick-subset` partial inclusion); otherwise `false`.
+- `catalogEdits` — one element per accepted update with `sourceFile === "pnpm-workspace.yaml"`: `{ name, targetVersion }`.
+- `overrideCommands` — **empty** (`[]`). The deep path consults NO override registry: the override flow stays the shallow `/experiments:npm-update-patch` path's responsibility (see hard rules).
+- `skipInstall` — `false` (the deep path always runs the single install after writing manifests).
 
-    The `<runner-prefix>` and `<pm>` come from the same logic `scan-npm-updates` applied — `pnpm dlx`, `npx -y`, `yarn dlx`, `bunx`, `deno run --allow-read --allow-net npm:`. `-p <pm>` is mandatory to mirror scan semantics (prevents ncu auto-detect drift on `deno.json`-adjacent layouts).
+The skill runs `npm-check-updates@21.0.2` per manifest, performs the in-memory catalog edits, runs **exactly one** install at the end, streams `ncu`/install stdout/stderr verbatim, and returns `{ appliedGeneric, appliedOverrides, installRan, failure }`.
 
-    Stream ncu's stdout/stderr through. If ncu exits non-zero on any file, abort with:
+On a structured `failure`, print the command-owned abort copy for the failing `step`, then stop immediately (do NOT run the install or anything further):
+
+- `step: "ncu"` →
 
     ```text
     ncu --upgrade failed on {sourceFile} (exit {code}).
@@ -115,37 +113,19 @@ Apply patch-level bumps using the **same mechanism as `/experiments:npm-update-p
     Re-run /experiments:npm-update-deep-patch to retry the rest.
     ```
 
-    Stop immediately; do NOT run the install.
+- `step: "catalog"` →
 
-- For `pnpm-workspace.yaml#catalog` entries (i.e., `sourceFile === "pnpm-workspace.yaml"`), edit in-memory:
-    - Under the top-level `catalog:` block, locate the key matching `name`. Replace the value with `targetVersion`. Preserve surrounding whitespace, comments, and other keys' order.
-    - Do NOT touch any consumer `package.json` that references `catalog:` — those stay as-is by design.
+    ```text
+    Failed to bump {name} in pnpm-workspace.yaml: {reason}.
+    Applied so far: {names already written on disk}.
+    Re-run /experiments:npm-update-deep-patch to retry the rest.
+    ```
 
-If a `pnpm-workspace.yaml#catalog` key is unexpectedly missing, abort with:
+- `step: "install"` →
 
-```text
-Failed to bump {name} in pnpm-workspace.yaml: {reason}.
-Applied so far: {names already written on disk}.
-Re-run /experiments:npm-update-deep-patch to retry the rest.
-```
-
-Stop immediately; do NOT run the install.
-
-After every manifest has been written successfully, run **exactly one** install command based on `packageManager`:
-
-| PM   | Command        |
-| ---- | -------------- |
-| pnpm | `pnpm install` |
-| npm  | `npm install`  |
-| yarn | `yarn install` |
-| bun  | `bun install`  |
-| deno | `deno install` |
-
-Stream output. If install exits non-zero, abort with:
-
-```text
-Install failed ({pm} exit {code}). Manifests are already bumped; review changes before retrying.
-```
+    ```text
+    Install failed ({pm} exit {code}). Manifests are already bumped; review changes before retrying.
+    ```
 
 For `apply-bumps-only`: stop here, jump to Step 7. Improvements are skipped entirely.
 
@@ -229,12 +209,12 @@ Then emit, **conditionally**, these sections (omit any whose count is zero, exce
 - `Skipped improvements ({N}):` — one line per improvement bullet declined under `pick-subset`: `- {bullet title} ({groupId})`.
 - `Skipped or unavailable groups ({N}):` — copied from `plan.md`'s `## Skipped or unavailable` section verbatim.
 - `Install:` — exactly one of:
-    - `<pm> install executed` — when at least one bump was applied.
-    - `skipped (no bumps applied)` — when the apply path produced zero bumps (e.g., `cancel`, or `pick-subset` with only improvements selected).
+  - `<pm> install executed` — when at least one bump was applied.
+  - `skipped (no bumps applied)` — when the apply path produced zero bumps (e.g., `cancel`, or `pick-subset` with only improvements selected).
 - `Suggested next steps (not executed):` — always present, with three bullets:
-    - `Run your test suite.`
-    - `Run lint / typecheck.`
-    - `Review changes (\`git diff\`) and commit.`
+  - `Run your test suite.`
+  - `Run lint / typecheck.`
+  - `Review changes (\`git diff\`) and commit.`
 
 For the `cancel` path specifically, the summary contains:
 

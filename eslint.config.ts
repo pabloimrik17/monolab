@@ -15,7 +15,6 @@ export default tseslint.config(
             ".agents/**",
             ".claude/**",
             ".codex/**",
-            ".cursor/**",
             ".junie/**",
             ".opencode/**",
             "**/CHANGELOG.md",
