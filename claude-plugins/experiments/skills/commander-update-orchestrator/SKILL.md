@@ -250,9 +250,9 @@ If `any package.conflict === true`, raise exactly **one** `AskUserQuestion` (reg
 
 - `multiSelect: false`
 - **Options**:
-  - `use-max-where-possible` — Apply `proposedTarget` only to occurrences whose range admits it; non-admitting occurrences keep their per-project `targetVersion`.
-  - `per-project` — Every occurrence retains its per-project `targetVersion`; no max-alignment for the conflicting packages.
-  - `skip-package` — Drop every conflicting package from the run entirely (their occurrences are removed from the plan).
+    - `use-max-where-possible` — Apply `proposedTarget` only to occurrences whose range admits it; non-admitting occurrences keep their per-project `targetVersion`.
+    - `per-project` — Every occurrence retains its per-project `targetVersion`; no max-alignment for the conflicting packages.
+    - `skip-package` — Drop every conflicting package from the run entirely (their occurrences are removed from the plan).
 
 The chosen policy applies to **every** conflicting package in the run. Do NOT prompt per-package.
 
@@ -403,6 +403,8 @@ When the workflow returned successfully in Step 6.5 (i.e. `<plan-dir>/plan.md` e
 
     These three sections are orchestrator-owned (they originate at Steps 2.2, 4.2, 5, and 6.5.3) — the workflow does NOT know about per-project scan failures or path-missing drift, so it cannot emit them in `plan.md`. The orchestrator MUST append them at Step 7 rendering time.
 
+3. **(level=major only) Append the `## PR plan`.** When `level === "major"`, after reading `plan.md`, invoke the `partition-breaking-changes` skill and append its `## PR plan` section (ordered buckets + count-by-policy summary) after the drift sections. Build its inputs from already-available data: `bumpSet` = the rows of `plan.md`'s `## Cross-project bump set`; `breakingFindings` = the per-package items under `plan.md`'s `## Breaking changes & migration`; `depGraph` = a per-project `peerDependencies` + import-site read (reuse `ScanResultByProject`); `overrideFamilies` = the shipped registry families. The `## PR plan` is **advisory** cross-project — v1 isolation is one worktree per project (Step 9.5), NOT per bucket. For `level ∈ {patch, minor, engines}` this step SHALL NOT run (no `## PR plan` is appended — output unchanged).
+
 ### 7.1 Empty-plan early exit
 
 #### 7.1.S — Shallow mode
@@ -453,9 +455,9 @@ For each remaining entry, raise exactly **one** `AskUserQuestion`:
 
 - `multiSelect: false`
 - **Options**:
-  - `run-override` — Execute the command once per affected project; skip generic ncu bump for these packages.
-  - `skip-matched` — Leave these packages untouched in every project; do not run the override and do not bump generically.
-  - `force-generic` — Ignore the override and bump these packages with the generic ncu flow in every affected project.
+    - `run-override` — Execute the command once per affected project; skip generic ncu bump for these packages.
+    - `skip-matched` — Leave these packages untouched in every project; do not run the override and do not bump generically.
+    - `force-generic` — Ignore the override and bump these packages with the generic ncu flow in every affected project.
 
 Record the chosen action per entry into `OVERRIDE_ACTIONS: Map<entry.id, "run-override"|"skip-matched"|"force-generic">` along with the interpolated command.
 
@@ -478,19 +480,19 @@ Raise exactly **one** `AskUserQuestion`. The option set depends on `mode`.
 - **Question copy**: `Apply <level> updates across <N> project(s)?`
 - `multiSelect: false`
 - **Options** (in this exact order):
-  - `apply-all` — Proceed with the entire (post-policy, post-override) plan.
-  - `pick-subset` — Accept a free-form package-name list to exclude before apply.
-  - `cancel` — Exit without modifying any file.
+    - `apply-all` — Proceed with the entire (post-policy, post-override) plan.
+    - `pick-subset` — Accept a free-form package-name list to exclude before apply.
+    - `cancel` — Exit without modifying any file.
 
 ### 9.D — Deep-mode options (four)
 
 - **Question copy**: `Apply <level> updates across <N> project(s)?` (same as shallow)
 - `multiSelect: false`
 - **Options** (in this exact order):
-  - `apply-all` — Proceed with the entire (post-policy, post-override) plan, INCLUDING the post-bumps plan-mode improvements round (Step 10b).
-  - `apply-bumps-only` — Apply bumps + overrides + installs sequentially per project (Step 10a), but SKIP the plan-mode improvements round (Step 10b) entirely. The Step 11 summary's `Applied improvements` section is omitted (zero items). All `run-override` decisions resolved in Step 8 still execute on this path because they were resolved before the gate.
-  - `pick-subset` — Accept a free-form selection combining improvement-bullet titles AND package names. Substring match (case-insensitive) for improvements; exact match for bumps. Excluded improvements skip Step 10b for those bullets; excluded packages skip Step 10a for those names.
-  - `cancel` — Exit without modifying any file. In deep mode the plan-dir IS preserved on disk and the orchestrator invokes Step 10c (end-of-flow cleanup) before exiting; in shallow mode there is no plan-dir.
+    - `apply-all` — Proceed with the entire (post-policy, post-override) plan, INCLUDING the post-bumps plan-mode improvements round (Step 10b).
+    - `apply-bumps-only` — Apply bumps + overrides + installs sequentially per project (Step 10a), but SKIP the plan-mode improvements round (Step 10b) entirely. The Step 11 summary's `Applied improvements` section is omitted (zero items). All `run-override` decisions resolved in Step 8 still execute on this path because they were resolved before the gate.
+    - `pick-subset` — Accept a free-form selection combining improvement-bullet titles AND package names. Substring match (case-insensitive) for improvements; exact match for bumps. Excluded improvements skip Step 10b for those bullets; excluded packages skip Step 10a for those names.
+    - `cancel` — Exit without modifying any file. In deep mode the plan-dir IS preserved on disk and the orchestrator invokes Step 10c (end-of-flow cleanup) before exiting; in shallow mode there is no plan-dir.
 
 ### 9.1 `apply-all`
 
@@ -561,6 +563,24 @@ In **shallow mode**: exit `0` without touching files. Do NOT run any apply, inst
 
 In **deep mode**: the plan-dir exists (Step 6.5 created it). Do NOT run any apply, install, or override command, but DO invoke Step 10c (end-of-flow cleanup) before rendering the Step 11 summary. The summary's H1 SHALL be the deep H1 (`## commander-update-deep-<level> summary`) and the summary SHALL contain a single body line `Cancelled. No files modified.` plus the always-rendered `Suggested next steps` section.
 
+## Step 9.5 — Optional isolation gate (default `none`, both modes)
+
+After the Step 9 gate resolves to an apply path (`apply-all` / `apply-bumps-only` / `pick-subset` with a non-empty accepted set) and before Step 10, raise exactly **one** `AskUserQuestion` offering branch/worktree isolation. On Step 9 `cancel`, this step SHALL NOT run.
+
+- **Question copy**: `Isolate these updates before applying?`
+- `multiSelect: false`
+- **Options** (in this exact order):
+    - `none` — Apply each project in its current working tree (default; **no VCS action** — byte-equivalent to pre-isolation behavior).
+    - `worktree` — For each resolved project, create a branch + worktree via `update-isolation` (worktrunk-preferred) and apply there; the project's current checkout stays untouched.
+    - `branch` — For each resolved project, create a branch in place via `update-isolation` and apply on it.
+
+Build `ISOLATION_BY_PROJECT` (consumed by Step 10.2/10.3):
+
+- `none` → for every project, `workdir = <record.path>`, no VCS action.
+- `worktree` / `branch` → for each resolved project, invoke the `update-isolation` skill once with `{ projectPath: <record.path>, branchName: "deps/<level>-<YYYY-MM-DD>", strategy: <worktree → "auto"; branch → "branch"> }`; record the returned `workdir` and `installAlreadyRan`. **v1 cross-project isolation is one worktree per project** — the deep-major `## PR plan` buckets stay advisory; per-(project, bucket) worktrees are deferred.
+
+`update-isolation` creates a branch/worktree only — it never commits, pushes, or opens a PR. On any `update-isolation` failure it degrades to `none` for that project (apply in place) with a surfaced note, never aborting the run.
+
 ## Step 10 — Sequential apply (one project at a time, stop-on-fail)
 
 The apply step splits by mode.
@@ -589,7 +609,7 @@ If the per-project subset is empty (no generic occurrences AND no override entri
 
 ### 10.2 Set the working directory
 
-For every Bash invocation in the apply for this project, prepend `cd "<record.path>" &&` (or use absolute paths for ncu's `--packageFile`). The skill SHALL NOT mutate the user's shell state across iterations.
+Resolve this project's apply directory from `ISOLATION_BY_PROJECT` (Step 9.5): `WORKDIR = ISOLATION_BY_PROJECT[project].workdir` — which is `<record.path>` under `none`, or the isolation branch/worktree path otherwise. For every Bash invocation in the apply for this project, prepend `cd "<WORKDIR>" &&` (or use absolute paths for ncu's `--packageFile`). The skill SHALL NOT mutate the user's shell state across iterations.
 
 ### 10.3 Build the per-project apply spec and invoke `apply-npm-updates`
 
@@ -597,11 +617,11 @@ The `apply-npm-updates` skill is the single source of truth for the per-project 
 
 Build the spec from this project's subset (Step 10.1):
 
-- `packageManager` = this project's `ScanResult.packageManager`. `cwd` = `<record.path>`. `target` = the orchestrator's `target` input. `cooldown` = the value `scan-npm-updates` resolved for this project (omit for `pnpm`).
-- `manifestBumps` — one element per distinct `GENERIC` `package.json` `sourceFile`: `{ sourceFile, names: <GENERIC names for this file, space-separated>, includeFilter }`. Set `includeFilter: true` when **any** of: the user picked `pick-subset` and excluded ≥1 package for this project; any update for the file was removed by `OVERRIDE_RUN`/`OVERRIDE_SKIP`; or the conflict policy is `use-max-where-possible` and ncu's full set ≠ this project's effective subset. Otherwise `false` (ncu's own set equals the target set for this file).
+- `packageManager` = this project's `ScanResult.packageManager`. `cwd` = `WORKDIR` (Step 10.2 — `<record.path>` under `none`, else the isolation branch/worktree). `target` = the orchestrator's `target` input (passed **unchanged** — the `target → ncuTarget` mapping, `major→latest`, `engines→latest`+`--enginesNode`, and the exact-pin `--removeRange` write are owned by `npm-update-apply`, the single source of truth). `cooldown` = the value `scan-npm-updates` resolved for this project (omit for `pnpm`).
+- `manifestBumps` — one element per distinct `GENERIC` `package.json` `sourceFile`: `{ sourceFile, names: <GENERIC names for this file, space-separated>, includeFilter }`. Set `includeFilter: true` when **any** of: the user picked `pick-subset` and excluded ≥1 package for this project; any update for the file was removed by `OVERRIDE_RUN`/`OVERRIDE_SKIP`; or the conflict policy is `use-max-where-possible` and ncu's full set ≠ this project's effective subset. Otherwise `false` (ncu's own set equals the target set for this file). **Additionally, when `target` is `major` or `engines`** (it maps to `ncu --target latest`), `includeFilter` SHALL ALWAYS be `true` for every element regardless of the above — the per-project `names` list is authoritative, preventing over-bumping dependencies that `scan-npm-updates` deliberately excluded. (`npm-update-apply` also forces the filter for `latest`-mapped targets; this explicit set is defense-in-depth and keeps the spec readable. The `patch`/`minor` branch is unchanged.)
 - `catalogEdits` — one element per `GENERIC` occurrence with `sourceFile === "pnpm-workspace.yaml"`: `{ name, targetVersion: <effectiveTarget> }`.
 - `overrideCommands` — the `OVERRIDE_RUN` entries that touch this project, as `{ id, command: <interpolated command> }`, in declaration order (run once per affected project).
-- `skipInstall` — `true` when every accepted package for this project went through `run-override` AND no generic ncu bump ran AND no catalog edit happened for this project (every override handles its own install); otherwise `false`.
+- `skipInstall` — `true` when every accepted package for this project went through `run-override` AND no generic ncu bump ran AND no catalog edit happened for this project (every override handles its own install); also `true` when Step 9.5's `update-isolation` reported `installAlreadyRan` for this project's worktree (a worktrunk hook already installed); otherwise `false`.
 
 Invoke `apply-npm-updates` once with this spec and `cwd: <record.path>`. The skill streams `ncu` / install / override stdout/stderr verbatim and returns `{ appliedGeneric, appliedOverrides, installRan, failure }`. Fold the returned fragment into this project's entry of the cross-project summary (Step 11).
 
@@ -729,7 +749,7 @@ Plan mode pauses until the user accepts or rejects.
 
 - The plan-mode round SHALL NOT expand scope beyond bullets present in `plan.md`. Adjacent opportunities the main agent discovers during reconnaissance SHALL be surfaced in the Step 11 `Suggested next steps` list, NEVER silently added to the plan-mode document.
 - The plan-mode round SHALL NOT execute tests, lint, or build.
-- The plan-mode round SHALL NOT create commits, branches, or pull requests.
+- The plan-mode round SHALL NOT create commits or pull requests (or push). Branch/worktree isolation is a separate pre-apply step (Step 9.5); the plan-mode round itself creates no branch.
 - The plan-mode round SHALL NOT touch any file outside the bullet's `affects projects:` set.
 
 ### Step 10c — End-of-flow cleanup invocation (deep mode only)
@@ -741,8 +761,8 @@ The workflow prompts the user via `AskUserQuestion`:
 - **Question**: `Plan dir at <plan-dir>. Keep for inspection or delete?`
 - `multiSelect: false`
 - **Options**:
-  - `delete-plan` — recursively `rm -rf <plan-dir>`.
-  - `keep-plan` — leave it on disk; the next deep invocation's phase 0 stale-cleanup catches it after 10 days.
+    - `delete-plan` — recursively `rm -rf <plan-dir>`.
+    - `keep-plan` — leave it on disk; the next deep invocation's phase 0 stale-cleanup catches it after 10 days.
 
 Capture the user's choice into `cleanupOutcome ∈ { "delete-plan", "keep-plan" }`. The Step 11 summary's `Suggested next steps` uses `cleanupOutcome` to decide whether to include the `Review <plan-dir>/plan.md before re-running.` bullet.
 
@@ -833,6 +853,8 @@ Print a markdown summary. The H1 varies by mode. Render sections conditionally; 
 - {projectName}: {warning text}
 - ...
 
+**Isolation:** {"none (applied in current tree)" | "worktree — one per applied project" | "branch — one per applied project"}
+
 **Suggested next steps (not executed):**
 
 - Run your test suite in each modified project.
@@ -858,14 +880,15 @@ Print a markdown summary. The H1 varies by mode. Render sections conditionally; 
 | Skipped by conflict policy    | both      | `skip-package` policy chosen with at least one match.                                           |
 | Skipped by override           | both      | At least one override entry got `skip-matched`.                                                 |
 | Warnings                      | both      | `warnings[]` non-empty.                                                                         |
+| Isolation                     | both      | Always (reflects the Step 9.5 choice; `none` when not isolated).                                |
 | Suggested next steps          | both      | Always.                                                                                         |
 
 ### 11.1.D Deep-mode section formats
 
 - **Applied improvements**: one line per applied (bullet, project) pair. Format `- {bullet title} → {projectName} ({sourceFile or general path hint})`. The `sourceFile or hint` cell is the absolute path of the primary file edited under that pair when a single file is dominant; otherwise a generic hint like `multiple files under apps/<workspace>/src/`.
 - **Skipped improvements**: distinguish the two skip reasons with the parenthetical:
-  - `(excluded via pick-subset)` — when the user excluded the bullet at the gate (9.2.D).
-  - `(rejected at plan-mode review)` — when the user rejected the whole plan-mode round at 10b.3.
+    - `(excluded via pick-subset)` — when the user excluded the bullet at the gate (9.2.D).
+    - `(rejected at plan-mode review)` — when the user rejected the whole plan-mode round at 10b.3.
 - **Inapplicable improvements**: one line per (bullet, project) pair marked inapplicable during 10b.1. Format `- {bullet title} → {projectName} ({one-sentence reason captured during reconnaissance})`.
 - **Skipped or unavailable groups**: copied verbatim from `<plan-dir>/plan.md`'s `## Skipped or unavailable` section (workflow-owned). Heading count `<N>` is the bullet count under that section in `plan.md`.
 
@@ -886,7 +909,7 @@ After the run completes (success, partial, cancel), the user-scoped registry `<H
 ## Hard rules
 
 - The skill SHALL NOT run tests, lint, or build at any point in any project.
-- The skill SHALL NOT create git commits, branches, or pull requests in any project.
+- The skill SHALL NOT create git commits or pull requests (or push) in any project. Branch/worktree isolation via the `update-isolation` skill (Step 9.5) is permitted (opt-in; default `none` = apply in place); creating an isolation branch/worktree is allowed, committing/pushing/PR-ing is not.
 - The skill SHALL NOT modify any file outside the per-project manifests it bumps. In particular, `<HOME>/.claude/commander/projects.json` SHALL remain byte-identical before and after every run.
 - The skill SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
 - The skill SHALL NOT auto-execute an override command without the user selecting `run-override` for that entry.

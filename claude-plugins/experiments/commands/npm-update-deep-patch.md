@@ -78,12 +78,25 @@ When the workflow returns successfully (i.e. `plan.md` exists at the plan-dir ro
 - **Question**: `Plan synthesized. <plan-dir>/plan.md is ready for review. How do you want to proceed?`
 - **Multi-select**: `false`
 - **Options** (in this exact order):
-  - `apply-all` — execute every item in the plan: bump every package in the `Patch bump set` table AND apply every bullet in the `Improvements (applicable to this codebase)` section.
-  - `apply-bumps-only` — bump every package in the `Patch bump set` table; skip improvements entirely. Equivalent in net effect to running the shallow `/experiments:npm-update-patch` against the same set, with no override-registry logic (see hard rules).
-  - `pick-subset` — accept a free-form list of plan items (specific improvements + specific bumps) to apply.
-  - `cancel` — exit without modifying any file. Plan dir is preserved on disk pending the cleanup prompt.
+    - `apply-all` — execute every item in the plan: bump every package in the `Patch bump set` table AND apply every bullet in the `Improvements (applicable to this codebase)` section.
+    - `apply-bumps-only` — bump every package in the `Patch bump set` table; skip improvements entirely. Equivalent in net effect to running the shallow `/experiments:npm-update-patch` against the same set, with no override-registry logic (see hard rules).
+    - `pick-subset` — accept a free-form list of plan items (specific improvements + specific bumps) to apply.
+    - `cancel` — exit without modifying any file. Plan dir is preserved on disk pending the cleanup prompt.
 
 The command SHALL show this prompt exactly once per invocation. The command SHALL NOT auto-apply any plan item without an explicit option selection.
+
+## Step 5.5 — Optional isolation gate (default `none`)
+
+When the Step 5 option is an apply path (not `cancel`), offer to isolate the update in a branch/worktree (your current checkout stays untouched). Use **AskUserQuestion**:
+
+- **Question**: `Isolate this patch update before applying?`
+- **Multi-select**: `false`
+- **Options** (in this exact order):
+    - `none` — "Apply in the current working tree (default; no VCS action)."
+    - `worktree` — "Create a branch + worktree via `update-isolation` (worktrunk-preferred); apply there. Current checkout untouched."
+    - `branch` — "Create a branch in place via `update-isolation` and apply on it."
+
+On `none`, set `APPLY_CWD = <project root>`. Otherwise invoke the `update-isolation` skill once with `{ projectPath: <project root>, branchName: "deps/patch-<YYYY-MM-DD>", strategy: <worktree → "auto"; branch → "branch"> }`, set `APPLY_CWD = <returned workdir>`, and set `skipInstall: true` if it reports `installAlreadyRan`. `update-isolation` creates the branch/worktree only — never commits, pushes, or opens a PR. On `cancel`, this step SHALL NOT run.
 
 ## Step 6 — Apply
 
@@ -95,11 +108,11 @@ Apply patch-level bumps by invoking the **`apply-npm-updates` skill** — the si
 
 Build the resolved apply spec from the accepted set (all updates for `apply-all`/`apply-bumps-only`; `ACCEPTED_BUMPS` for `pick-subset`):
 
-- `packageManager` = the scan's `packageManager`. `cwd` = the project root. `target` = `"patch"`. `cooldown` = the value the scan resolved (omit for `pnpm`).
+- `packageManager` = the scan's `packageManager`. `cwd` = `APPLY_CWD` (Step 5.5 — the project root for `none`, else the isolation workdir). `target` = `"patch"`. `cooldown` = the value the scan resolved (omit for `pnpm`).
 - `manifestBumps` — one element per distinct `package.json` `sourceFile`: `{ sourceFile, names, includeFilter }`. Set `includeFilter: true` only when this invocation's bumps for the file are a strict subset of ncu's own detected set (i.e. `pick-subset` partial inclusion); otherwise `false`.
 - `catalogEdits` — one element per accepted update with `sourceFile === "pnpm-workspace.yaml"`: `{ name, targetVersion }`.
 - `overrideCommands` — **empty** (`[]`). The deep path consults NO override registry: the override flow stays the shallow `/experiments:npm-update-patch` path's responsibility (see hard rules).
-- `skipInstall` — `false` (the deep path always runs the single install after writing manifests).
+- `skipInstall` — `false` (the deep path always runs the single install after writing manifests), except `true` when Step 5.5's `update-isolation` reported `installAlreadyRan` for the worktree (a worktrunk hook already installed).
 
 The skill runs `npm-check-updates@21.0.2` per manifest, performs the in-memory catalog edits, runs **exactly one** install at the end, streams `ncu`/install stdout/stderr verbatim, and returns `{ appliedGeneric, appliedOverrides, installRan, failure }`.
 
@@ -144,7 +157,7 @@ After the bumps install completes successfully, the command SHALL apply the `Imp
 
 The improvements step SHALL NOT expand scope beyond bullets present in `plan.md`. If during reconnaissance or plan-mode review the agent identifies adjacent improvements not in `plan.md`, those are surfaced as suggestions in the Step 7 summary's `Suggested next steps` list — never silently added to the plan-mode plan.
 
-The improvements step SHALL NOT execute tests, lint, or build. SHALL NOT create commits or PRs.
+The improvements step SHALL NOT execute tests, lint, or build. SHALL NOT create commits or PRs (or push) — branch/worktree isolation is the separate Step 5.5 pre-apply step.
 
 **Why plan mode is mandatory here**: this is the only point in the workflow where the command modifies workspace files based on synthesized research that the user has not yet seen rendered as concrete edits. The earlier apply-choice prompt (Step 5) commits the user to a path; plan mode lets them veto specifically the improvements before any source file is touched. Without it, the user only learns "0 of 10 improvements were actually applicable to my codebase" via the Step 7 summary, which is too late to course-correct.
 
@@ -208,13 +221,14 @@ Then emit, **conditionally**, these sections (omit any whose count is zero, exce
 - `Applied improvements ({N}):` — one line per improvement bullet successfully applied: `- {bullet title} ({groupId})`.
 - `Skipped improvements ({N}):` — one line per improvement bullet declined under `pick-subset`: `- {bullet title} ({groupId})`.
 - `Skipped or unavailable groups ({N}):` — copied from `plan.md`'s `## Skipped or unavailable` section verbatim.
+- `Isolation:` — always present: `none (applied in current tree)` or `<mode> — <workdir>` (the Step 5.5 choice).
 - `Install:` — exactly one of:
-  - `<pm> install executed` — when at least one bump was applied.
-  - `skipped (no bumps applied)` — when the apply path produced zero bumps (e.g., `cancel`, or `pick-subset` with only improvements selected).
+    - `<pm> install executed` — when at least one bump was applied.
+    - `skipped (no bumps applied)` — when the apply path produced zero bumps (e.g., `cancel`, or `pick-subset` with only improvements selected).
 - `Suggested next steps (not executed):` — always present, with three bullets:
-  - `Run your test suite.`
-  - `Run lint / typecheck.`
-  - `Review changes (\`git diff\`) and commit.`
+    - `Run your test suite.`
+    - `Run lint / typecheck.`
+    - `Review changes (\`git diff\`) and commit.`
 
 For the `cancel` path specifically, the summary contains:
 
@@ -239,7 +253,7 @@ The command invokes the workflow's cleanup exactly once at this step. The workfl
 ## Hard rules
 
 - The command SHALL NOT run tests, lint, or build at any point.
-- The command SHALL NOT create git commits or open pull requests.
+- The command SHALL NOT create git commits or open pull requests (or push). Branch/worktree isolation via `update-isolation` is permitted (Step 5.5, opt-in, default `none`).
 - The command SHALL NOT modify any file when the user selects `cancel`. The plan dir under `~/.claude/experiments/plans/` is preserved (it is not part of the workspace) until the user selects `delete-plan` at cleanup.
 - The command SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
 - The command SHALL NOT consult the package upgrade override registry. Override flows (Storybook, etc.) belong to `/experiments:npm-update-patch`'s shallow path; the deep path goes straight through ncu + catalog edits. (The plan can mention overridable family upgrades as improvements; the user then picks whether to apply them via the standard mechanism.)

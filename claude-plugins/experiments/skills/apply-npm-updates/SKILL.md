@@ -10,7 +10,7 @@ The single source of truth for the **single-project npm apply mechanism**. The c
 Two things live here:
 
 - **(a) A mechanical apply contract** — Steps A1–A6 below. Caller passes a fully-resolved per-project apply spec; the skill writes manifests, runs overrides, runs one install, and streams `ncu`/install/override stdout/stderr verbatim.
-- **(b) A reusable override-resolution procedure** — the "Override-resolution procedure" section below. Callers that opt into overrides invoke it to turn a candidate package set into matched entries + interpolated commands + a GENERIC/OVERRIDE_RUN/OVERRIDE_SKIP partition. The interactive prompt and the resolution *scope* stay caller-owned.
+- **(b) A reusable override-resolution procedure** — the "Override-resolution procedure" section below. Callers that opt into overrides invoke it to turn a candidate package set into matched entries + interpolated commands + a GENERIC/OVERRIDE_RUN/OVERRIDE_SKIP partition. The interactive prompt and the resolution _scope_ stay caller-owned.
 
 ## When to use
 
@@ -30,16 +30,16 @@ This skill is implemented entirely with Claude Code built-in tools (`Read`, `Bas
 
 The caller passes a fully-resolved, single-project apply spec with exactly these fields:
 
-| Field              | Type                                                          | Required | Notes                                                                                                                                                                       |
-| ------------------ | ------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packageManager`   | `"pnpm" \| "npm" \| "yarn" \| "bun" \| "deno"`                | yes      | Selects the runner prefix and the install command. Rejected if unknown.                                                                                                     |
+| Field              | Type                                                          | Required | Notes                                                                                                                                                                        |
+| ------------------ | ------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packageManager`   | `"pnpm" \| "npm" \| "yarn" \| "bun" \| "deno"`                | yes      | Selects the runner prefix and the install command. Rejected if unknown.                                                                                                      |
 | `cwd`              | `string` (absolute)                                           | yes      | Project root whose manifests are bumped. Every `Bash` call runs with this working directory (`cd "<cwd>" && …`) or uses absolute `--packageFile` paths. No shell-state leak. |
-| `target`           | `"patch" \| "minor" \| "major" \| "engines"`                  | yes      | Passed verbatim to `ncu --target`. Rejected if unknown.                                                                                                                     |
+| `target`           | `"patch" \| "minor" \| "major" \| "engines"`                  | yes      | Mapped to an internal `ncuTarget` before reaching `ncu --target` (see Step A1). Rejected if unknown.                                                                         |
 | `cooldown`         | `string`                                                      | no       | Release-age period for `ncu --cooldown`. Omitted for `pnpm` (ncu reads `pnpm-workspace.yaml` natively).                                                                      |
 | `manifestBumps`    | `Array<{ sourceFile, names: string[], includeFilter: bool }>` | no       | One `package.json` manifest per element. One `ncu` call per element.                                                                                                         |
 | `catalogEdits`     | `Array<{ name, targetVersion }>`                              | no       | `pnpm-workspace.yaml` `catalog:` key edits, in-place.                                                                                                                        |
-| `overrideCommands` | `Array<{ id, command }>`                                      | no       | Already-interpolated override commands, in declaration order.                                                                                                               |
-| `skipInstall`      | `boolean` (default `false`)                                   | no       | When `true`, skip the final install (every accepted package was handled by an override that runs its own install).                                                          |
+| `overrideCommands` | `Array<{ id, command }>`                                      | no       | Already-interpolated override commands, in declaration order.                                                                                                                |
+| `skipInstall`      | `boolean` (default `false`)                                   | no       | When `true`, skip the final install (every accepted package was handled by an override that runs its own install).                                                           |
 
 The spec is consumed **as-is**: the skill performs no override matching, no conflict resolution, and no `pick-subset` parsing of its own. The caller already partitioned `manifestBumps` / `catalogEdits` / `overrideCommands`.
 
@@ -67,19 +67,42 @@ For each `manifestBumps` element (each a distinct `package.json` `sourceFile`), 
 ```bash
 <runner-prefix> npm-check-updates@21.0.2 \
   -p <packageManager> \
-  --target <target> \
+  --target <ncuTarget> \
   --upgrade \
+  --removeRange \
   --packageFile <sourceFile> \
   [--cooldown <cooldown>]      # include only when `cooldown` is set AND packageManager !== "pnpm"
-  [--filter "<names>"]         # include only when the element's `includeFilter` is true
+  [--enginesNode]              # include only when `target === "engines"`
+  [--filter "<names>"]         # see the filter rule below (ALWAYS on when ncuTarget === latest)
 ```
+
+#### Resolve `<ncuTarget>` from `target` (same table `scan-npm-updates` uses)
+
+The skill SHALL NOT pass `target` verbatim. Resolve `<ncuTarget>` first:
+
+| `target` (= level) | `<ncuTarget>` | extra flag      |
+| ------------------ | ------------- | --------------- |
+| `patch`            | `patch`       | —               |
+| `minor`            | `minor`       | —               |
+| `major`            | `latest`      | —               |
+| `engines`          | `latest`      | `--enginesNode` |
+
+The mapping is an identity for `patch`/`minor` (their `--target` is unchanged). `major` and `engines` both resolve to `--target latest`; `engines` additionally passes `--enginesNode`. The `target` validation list (Step A0) is unchanged — callers keep passing `target: "major"` etc.
 
 Rules:
 
 - `-p <packageManager>` is **always** passed — mirror scan semantics and prevent ncu auto-detect drift (e.g. ncu otherwise auto-detects `deno` when a sibling `deno.json` exists, collapsing `--dep` to `['imports']` and dropping `dependencies`/`devDependencies` updates).
+- `--removeRange` is **always** passed, at every level and every bump type — see "Exact version pinning" below.
 - `--cooldown <cooldown>` is included when `cooldown` is set and `packageManager !== "pnpm"`; omitted otherwise.
-- `--filter "<names>"` is included **only** when the element's `includeFilter === true`. `<names>` = the element's `names`, joined by single spaces, double-quoted. It is a literal list — ncu treats it as exact names (see `scan-npm-updates/research/ncu-filter-spike.md`). When `includeFilter === false`, `--filter` is omitted (ncu's own detected set equals the target set for this file).
+- `--enginesNode` is included **only** when `target === "engines"`.
+- `--filter "<names>"` membership: `<names>` = the element's `names`, joined by single spaces, double-quoted. It is a literal list — ncu treats it as exact names (see `scan-npm-updates/research/ncu-filter-spike.md`).
+    - When `<ncuTarget> === latest` (i.e. `target` is `major` or `engines`), `--filter "<names>"` is **ALWAYS** included regardless of the element's `includeFilter` value — the caller's `names` list is authoritative. Required because `scan-npm-updates` builds the `latest`-level candidate set by running `ncu --target latest` and then post-filtering (e.g. major-only); re-running `ncu --target latest` without `--filter` would bump every dependency with any newer version, exceeding the accepted set.
+    - Otherwise (`patch`/`minor`), `--filter` is included **only** when the element's `includeFilter === true`; when `false` it is omitted (ncu's own detected set equals the target set for this file).
 - Stream `ncu` stdout/stderr to the user verbatim so diffs are observable.
+
+#### Exact version pinning (`--removeRange`, family-wide)
+
+`--removeRange` is passed on **every** `ncu` bump, at **all** levels (`patch`/`minor`/`major`/`engines`) and both shallow/deep. Each bumped dependency is therefore written as an **exact version** — `"react": "19.0.2"`, never `"^19.0.2"`/`"~19.0.2"`. This is a deliberate, family-wide behavior change: the whole update cascade pins exact, so it is **NOT** byte-equivalent to the pre-change `patch`/`minor` output (which preserved the existing range operator). Override-managed families (run via `overrideCommands`) pin according to their own upgrade tool and are out of scope of this rule.
 
 On success, append each bumped package to `appliedGeneric` (with its `location` from the caller's spec context) and push `<sourceFile>` to `appliedSoFar`.
 
@@ -96,7 +119,7 @@ Do NOT run any catalog edit, override command, or install after this point. Do N
 For each `catalogEdits` element (`name`, `targetVersion`):
 
 - Under the top-level `catalog:` block of `<cwd>/pnpm-workspace.yaml`, locate the key matching `name`.
-- Replace its value with `targetVersion`. Preserve surrounding whitespace, comments, and the order of other keys. (ncu 21.0.2 does not rewrite catalog entries — see `scan-npm-updates/research/ncu-catalog-spike.md`; this is an in-place `Edit`, NOT an `ncu` invocation.)
+- Replace its value with the **exact** version — `targetVersion` with any leading range operator (`^`/`~`/`=`) stripped (e.g. `^3.24.1` → `3.24.1`). This keeps catalog entries consistent with the family-wide exact-pin rule applied to `package.json` bumps via `--removeRange`. Preserve surrounding whitespace, comments, and the order of other keys. (ncu 21.0.2 does not rewrite catalog entries — see `scan-npm-updates/research/ncu-catalog-spike.md`; this is an in-place `Edit`, NOT an `ncu` invocation.)
 - Do NOT touch any consumer `package.json` entry that references `catalog:` — only `pnpm-workspace.yaml`.
 
 On success, append the package to `appliedGeneric` (location `catalog:<key>` / the caller-supplied location) and push `pnpm-workspace.yaml` to `appliedSoFar`.
@@ -159,7 +182,7 @@ The skill streams `ncu` / install / override stdout/stderr verbatim (observabili
 
 ## Override-resolution procedure (b) — caller-invoked
 
-Callers that opt into overrides invoke this procedure to turn a candidate package set into the inputs for the apply contract. The procedure is the **matching / version-resolution / partition algorithm only** — the interactive `run-override` / `skip-matched` / `force-generic` prompt and the *scope* of resolution (which packages, single-project vs cross-project) remain caller-owned.
+Callers that opt into overrides invoke this procedure to turn a candidate package set into the inputs for the apply contract. The procedure is the **matching / version-resolution / partition algorithm only** — the interactive `run-override` / `skip-matched` / `force-generic` prompt and the _scope_ of resolution (which packages, single-project vs cross-project) remain caller-owned.
 
 ### R1 — Load the registry
 
@@ -207,7 +230,7 @@ The caller then builds the apply spec: GENERIC `package.json` candidates → `ma
 
 ## Level-agnostic operation
 
-The skill contains **no** level-specific logic. Behavior is parameterized solely by `target` (passed to `ncu --target`); a `target: "minor"` invocation differs from `target: "patch"` only in the `--target` value threaded through every `ncu` call — nothing else changes.
+The skill contains **no** level-specific branching logic. Behavior is parameterized solely by `target`, which is mapped to an `ncuTarget` (`patch→patch`, `minor→minor`, `major→latest`, `engines→latest`+`--enginesNode`) threaded through every `ncu --target` call. `--removeRange` is applied uniformly at all levels. The validation list for `target` stays `patch|minor|major|engines`. A `target: "minor"` invocation differs from `target: "patch"` only in the mapped `--target` value; a `target: "major"` invocation differs from `minor` only in the mapped target (`latest`) and the forced `--filter` — nothing else changes.
 
 ## Hard rules
 

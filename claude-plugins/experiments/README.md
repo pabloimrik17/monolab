@@ -24,6 +24,14 @@ Minor sibling of `/experiments:commander-update-patch` — identical cross-proje
 /experiments:commander-update-minor
 ```
 
+### `/experiments:commander-update-major`
+
+Major sibling of `/experiments:commander-update-patch` — identical cross-project flow (registry-driven project picker, parallel Haiku scans, dedup, max-wins alignment with the conflict-policy prompt, override consultation once per matched entry, sequential apply with stop-on-fail), only the level/target are `major`. Thin wrapper over `commander-update-orchestrator` (`level: "major"`, `target: "major"`, shallow). **Major updates may include breaking changes.** Per-project apply always filters (`ncu --target latest --filter`) so only the accepted majors bump; deps are written exact (no `^`/`~`). Inherits every `npm-update-major` hard rule: no tests, no lint, no build, no commits/PRs (branch/worktree isolation via `update-isolation` is allowed, opt-in default `none`), never mutates the registry.
+
+```bash
+/experiments:commander-update-major
+```
+
 ### `/experiments:commander-update-deep-patch`
 
 Deep sibling of `/experiments:commander-update-patch`. Same scope (patch-level, cross-project plan, sequential apply with stop-on-fail) plus **research deduplicated by package**: every patch changelog is fetched once across the run (no per-project duplication), subagents produce universal findings only (no codebase cross-reference — that happens at apply time), and after the bumps loop the main agent enters plan mode ONCE with a unified document of (improvement, project) pairs spanning every applied project. Gate options expand to four: `apply-all` / `apply-bumps-only` / `pick-subset` / `cancel`. Plan dirs live under `~/.claude/experiments/plans/commander-deep-patch-<unix-ts>/` and inherit the workflow's 10-day stale-cleanup. Inherits every hard rule from the shallow command plus `npm-update-deep-patch` — no tests, no lint, no build, no commits, never mutates the registry, never auto-executes an override.
@@ -38,6 +46,14 @@ Minor sibling of `/experiments:commander-update-deep-patch` — identical deep c
 
 ```bash
 /experiments:commander-update-deep-minor
+```
+
+### `/experiments:commander-update-deep-major`
+
+Major sibling of `/experiments:commander-update-deep-minor` — identical deep cross-project flow (research deduplicated by package, four-option gate), with research weighted toward **breaking changes & migration** and a `## PR plan` (from `partition-breaking-changes`) surfaced in the cross-project `plan.md`. Thin wrapper over `commander-update-orchestrator` (`level: "major"`, `target: "major"`, `mode: "deep"`). The surfaced `plan.md` carries `## Breaking changes & migration` + `## PR plan` + `## Changelogs`; the unified plan-mode round applies improvements **and** reviewed migration edits. v1 isolation caps at **one worktree per project** (per-(project,bucket) deferred). Inherits every hard rule from the shallow command plus `npm-update-deep-major` — no tests/lint/build, no commits/PRs (worktree isolation allowed, opt-in default `none`), never mutates the registry, never auto-executes an override.
+
+```bash
+/experiments:commander-update-deep-major
 ```
 
 ### `/experiments:ralph`
@@ -78,6 +94,14 @@ Minor sibling of `/experiments:npm-update-deep-patch` — same deep single-proje
 /experiments:npm-update-deep-minor
 ```
 
+### `/experiments:npm-update-deep-major`
+
+Major sibling of `/experiments:npm-update-deep-minor` — same deep single-project flow (parallel changelog research, plan-mode synthesis, four-option gate), with research weighted toward **breaking changes & migration**. After research the accepted set is partitioned into PR-sized buckets (`partition-breaking-changes`) surfaced as a `## PR plan`; optionally each bucket applies into its own worktree (`update-isolation`). The synthesized `plan.md` carries `## Breaking changes & migration` + `## Major bump set` + `## PR plan` + `## Changelogs`. On `apply-all` the plan-mode round applies improvements **and** reviewed migration edits. Deps are written exact (no `^`/`~`); the deep path consults no override registry. Never runs tests/lint/build, never commits/PRs (worktree isolation allowed, opt-in default `none`).
+
+```bash
+/experiments:npm-update-deep-major
+```
+
 ### `/experiments:npm-update-patch`
 
 Scan the current project for patch-level npm updates and interactively apply the subset you accept. Works on pnpm/npm/yarn/bun/deno, single-repo or workspace; treats pnpm `catalog:` entries as first-class. Bumps `package.json` manifests via a single `ncu --upgrade` per file (prefix- and format-preserving), edits `pnpm-workspace.yaml#catalog` in-memory, and runs one final install unless all accepted updates were handled via `run-override`. Never runs tests, lint, or commits.
@@ -98,6 +122,14 @@ Minor sibling of `/experiments:npm-update-patch` — same shallow single-project
 
 ```bash
 /experiments:npm-update-minor
+```
+
+### `/experiments:npm-update-major`
+
+Major sibling of `/experiments:npm-update-minor` — same shallow single-project flow (scan → table → `apply-all` / `pick-subset` / `cancel`, override-registry consultation per matched family), only the level differs. **Major updates may include breaking changes** — the prompt carries a caution; review changelogs (or use the deep variant) first. Scans at `level=major` and applies via `apply-npm-updates` (`target: major`), which maps `major → ncu --target latest`, always applies `--filter` (no over-bump of minor/patch-only deps), and writes exact versions (no `^`/`~`). Never runs tests/lint/build, never commits/PRs (branch/worktree isolation allowed, opt-in default `none`).
+
+```bash
+/experiments:npm-update-major
 ```
 
 ### `/experiments:npm-changelog`
@@ -139,6 +171,14 @@ Multi-phase parallel-subagent orchestration over a pre-grouped package set: phas
 ### `commander-update-orchestrator`
 
 Cross-project npm-update orchestration. Owns the fan-out / fan-in pipeline used by `/experiments:commander-update-patch` and `/experiments:commander-update-deep-patch` (and the future `-minor` / `-major` / `-engines` siblings, plus their deep variants): list+filter projects from the registry, dispatch parallel `experiments:scan-npm-updates` runs via Haiku subagents (one per project, in a single message), deduplicate updates by package, version-align (max-wins with a one-prompt per-project fallback on range conflicts), render a unified plan, consult `pkg-upgrade-overrides.yaml` once per matched entry across the whole run, gate on the user's chosen apply path, then apply each project sequentially (stop-on-fail) and emit an aggregated summary. The `mode` input selects shallow (default) or deep — deep mode inserts Step 6.5 (cross-project research via `parallel-research-workflow`), expands the gate to four options (adds `apply-bumps-only`), and after the bumps loop enters plan-mode ONCE for a unified cross-project improvements round (Step 10b). Pure built-in tools (`Read`, `Bash`, `AskUserQuestion`, `Agent`, `Skill`, `Edit`, `Write`, `EnterPlanMode`); read-only against the registry.
+
+### `update-isolation`
+
+Resolves and creates an isolated branch/worktree for an update **before** manifests are bumped, returning the working directory the caller hands to `apply-npm-updates`. Strategy `auto` (worktrunk via `wt` if usable → plain `git worktree` fallback), plus `worktrunk` / `worktree` / `branch` / `ask` / `none`. Opt-in across the whole update family with `none` as the default (in-place, today's behavior). Creates a branch/worktree **only** — never commits, pushes, or opens a PR; worktree modes leave the current checkout untouched. Honors the apply install-skip when a worktrunk `post-start` hook already installed.
+
+### `partition-breaking-changes`
+
+Pure (no network / no write / no VCS) partition of a major breaking-change set into PR-sized buckets. Builds HARD co-upgrade sets first (peer/lockstep + override-registry families + a `peerDependencies` read — never split across buckets), scores risk per set (blast radius, breaking-change weight, centrality, codemod count), applies tunable policy knobs (`isolateHighRisk`, `batchLowRisk`, `maxPackagesPerBucket`, `maxRiskPerBucket`), and returns ordered buckets `{ title, packages, riskTier, rationale, suggestedBranch, suggestedMergeOrder }` plus a count-by-policy summary. Rendered as the `## PR plan` section by `/experiments:npm-update-deep-major` and the cross-project deep-major flow.
 
 ## Testing
 

@@ -1,20 +1,22 @@
 ---
-description: Scan and interactively apply npm minor-level updates across a workspace or single repo (bump + install only, no tests/commits).
+description: Scan and interactively apply npm major-level updates across a workspace or single repo (bump + install only, no tests/commits). Major updates may include breaking changes — review changelogs first.
 ---
 
-# npm-update-minor
+# npm-update-major
 
-Scan the current project for **minor-level** dependency updates, present them to the user, and apply the accepted subset. The shallow single-project sibling of `/experiments:npm-update-patch` — identical flow, only the level differs. Project-agnostic: works on pnpm/npm/yarn/bun/deno, single-repo or workspace, and treats pnpm `catalog:` entries as first-class.
+Scan the current project for **major-level** dependency updates, present them to the user, and apply the accepted subset. The shallow single-project sibling of `/experiments:npm-update-minor` — identical flow, only the level differs. Project-agnostic: works on pnpm/npm/yarn/bun/deno, single-repo or workspace, and treats pnpm `catalog:` entries as first-class.
+
+> **Major updates may include breaking changes.** This command bumps + installs only; it does not migrate code. Review each package's changelog (and consider `/experiments:npm-update-deep-major` for researched migration guidance) before applying.
 
 The command **only bumps manifests and runs a single install** (via the `apply-npm-updates` skill). It does NOT run tests, lint, build, or create commits — that is explicitly out of scope. The final summary suggests those as next steps; the caller decides.
 
-This command operates exclusively at **minor level**. It always passes `level=minor` to the scan skill and ignores any user-supplied level argument.
+This command operates exclusively at **major level**. It always passes `level=major` to the scan skill and `target: "major"` to `apply-npm-updates`, and ignores any user-supplied level argument.
 
 > Tip: if you want to read a dep's changelog before accepting, use `/experiments:npm-changelog <pkg> <from>..<to>` as a natural pre-step.
 
 ## Step 1 — Scan
 
-Invoke the `experiments:scan-npm-updates` skill with `level=minor`. Parse the JSON result into a `ScanResult` value with shape:
+Invoke the `experiments:scan-npm-updates` skill with `level=major`. Parse the JSON result into a `ScanResult` value with shape:
 
 ```ts
 {
@@ -35,7 +37,7 @@ If `updates.length === 0`:
 2. Print exactly:
 
     ```text
-    No minor updates available.
+    No major updates available.
     ```
 
 3. Exit without prompting.
@@ -61,7 +63,7 @@ If `updates.length > 0`, render a markdown table to the user:
 
 Use **AskUserQuestion** with one question:
 
-- **Question**: `Apply minor updates?`
+- **Question**: `Apply major updates? Major updates may include breaking changes — review the changelogs before applying.`
 - **Multi-select**: `false`
 - **Options**:
     - `apply-all` — "Bump every listed update and run a single install."
@@ -114,7 +116,7 @@ This step uses the **`apply-npm-updates` override-resolution procedure** (R1–R
 Invoke the procedure against `ACCEPTED`, loading the registry from `claude-plugins/experiments/skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml`:
 
 - **R1 (load)** — on a missing/unparseable registry the procedure prints `Override registry unavailable: {reason}. Proceeding without overrides.` and treats it as empty (no abort).
-- **R2 (first-win glob match)** — builds `MATCHED_BY_ENTRY = { entry.id → [updates bound to this entry] }`. If empty, skip to Step 6 without prompting.
+- **R2 (first-win glob match)** — builds `MATCHED_BY_ENTRY = { entry.id → [updates bound to this entry] }`. If empty, skip to Step 5.6 without prompting.
 - **R3 (resolve + interpolate)** — resolves `{version}` (`target-of:` / `max-target-of:` / `latest` + `fallbackVersionSource`) against `ACCEPTED` and interpolates `command`. On an unresolvable entry the procedure prints `Cannot resolve {version} for override {id}: …` and drops the entry so its packages rejoin the generic flow.
 
 ### Prompt the user (one AskUserQuestion per matched entry)
@@ -151,31 +153,31 @@ If every update in `ACCEPTED` falls under `OVERRIDE_SKIP` and `OVERRIDE_RUN` is 
 
 ## Step 5.6 — Optional isolation gate (default `none`)
 
-Before applying, offer to isolate the update in a branch/worktree (your current checkout stays untouched). Use **AskUserQuestion**:
+Before applying, offer to isolate the update in a branch/worktree so the user's current checkout is left untouched. Use **AskUserQuestion**:
 
-- **Question**: `Isolate this minor update before applying?`
+- **Question**: `Isolate this major update before applying?`
 - **Multi-select**: `false`
 - **Options** (in this exact order):
     - `none` — "Apply in the current working tree (default; no VCS action)."
     - `worktree` — "Create a branch + worktree via `update-isolation` (worktrunk-preferred); apply there. Current checkout untouched."
     - `branch` — "Create a branch in place via `update-isolation` and apply on it."
 
-On `none`, set `APPLY_CWD = <project root>`. Otherwise invoke the `update-isolation` skill once with `{ projectPath: <project root>, branchName: "deps/minor-<YYYY-MM-DD>", strategy: <worktree → "auto"; branch → "branch"> }`, set `APPLY_CWD = <returned workdir>`, and set `skipInstall: true` if it reports `installAlreadyRan`. `update-isolation` creates the branch/worktree only — never commits, pushes, or opens a PR.
+If the user picks `none`, set `APPLY_CWD = <project root>` and `skipInstall` stays as computed in Step 6. Otherwise invoke the `update-isolation` skill once with `{ projectPath: <project root>, branchName: "deps/major-<YYYY-MM-DD>", strategy: <worktree → "auto"; branch → "branch"> }` (one target for the whole accepted set — there is no breaking-change partition at shallow depth). Set `APPLY_CWD = <returned workdir>`; if the skill returns `installAlreadyRan: true`, set `skipInstall: true` for Step 6. The isolation skill creates the branch/worktree only — it never commits, pushes, or opens a PR.
 
 ## Step 6 — Build the apply spec and invoke `apply-npm-updates`
 
-The `apply-npm-updates` skill is the single source of truth for the mechanical apply (generic `ncu` bumps, catalog edits, override commands, single install). The command builds the resolved spec and invokes it **once** with `target: minor`; it does NOT restate the `ncu` / catalog / install recipe inline.
+The `apply-npm-updates` skill is the single source of truth for the mechanical apply (generic `ncu` bumps, catalog edits, override commands, single install). The command builds the resolved spec and invokes it **once** with `target: "major"`; it does NOT restate the `ncu` / catalog / install recipe inline. `apply-npm-updates` maps `major → ncu --target latest`, always passes `--filter` for the accepted `names` (no over-bump of minor/patch-only deps), and writes exact versions via `--removeRange`.
 
 ### Build the resolved apply spec
 
 From the partition computed in Step 5.5:
 
-- `packageManager` = the scan's `packageManager`. `cwd` = `APPLY_CWD` (Step 5.6 — the project root for `none`, else the isolation workdir). `target` = `"minor"`.
+- `packageManager` = the scan's `packageManager`. `cwd` = `APPLY_CWD` (Step 5.6 — the project root for `none`, else the isolation workdir). `target` = `"major"`.
 - `cooldown` = the release-age period the scan resolved (omit for `pnpm`).
-- `manifestBumps` — one element per distinct `GENERIC` `package.json` `sourceFile`: `{ sourceFile, names: <GENERIC names for this file>, includeFilter }`. Set `includeFilter: true` when the GENERIC set for the file is a strict subset of ncu's detectable candidates — i.e. the primary prompt was `pick-subset` with at least one exclusion, OR any update for this file was removed by `OVERRIDE_RUN`/`OVERRIDE_SKIP`. Otherwise `includeFilter: false`.
+- `manifestBumps` — one element per distinct `GENERIC` `package.json` `sourceFile`: `{ sourceFile, names: <GENERIC names for this file>, includeFilter }`. `includeFilter` may be set per the strict-subset rule, but at `target: "major"` `apply-npm-updates` forces `--filter` on regardless (the `names` list is authoritative).
 - `catalogEdits` — one element per `GENERIC` update with `sourceFile === "pnpm-workspace.yaml"`: `{ name, targetVersion }`.
 - `overrideCommands` — the `OVERRIDE_RUN` entries as `{ id, command: <interpolated command> }`, in declaration order.
-- `skipInstall` — `true` when `OVERRIDE_RUN` is non-empty and every accepted update was handled by `run-override` with nothing written outside the override commands; otherwise `false`.
+- `skipInstall` — `true` when `OVERRIDE_RUN` is non-empty and every accepted update was handled by `run-override` with nothing written outside the override commands, OR when Step 5.6 reported a worktrunk hook already installed; otherwise `false`.
 
 ### Invoke and handle the result
 
@@ -188,7 +190,7 @@ On a structured `failure`, print the command-owned abort copy for the failing `s
     ```text
     ncu --upgrade failed on {sourceFile} (exit {code}).
     Applied before this failure: {manifest paths already rewritten}.
-    Re-run /experiments:npm-update-minor to retry the rest.
+    Re-run /experiments:npm-update-major to retry the rest.
     ```
 
 - `step: "catalog"` →
@@ -196,7 +198,7 @@ On a structured `failure`, print the command-owned abort copy for the failing `s
     ```text
     Failed to bump {name} in pnpm-workspace.yaml: {reason}.
     Applied so far: {names already written on disk}.
-    Re-run /experiments:npm-update-minor to retry the rest.
+    Re-run /experiments:npm-update-major to retry the rest.
     ```
 
 - `step: "override"` →
@@ -221,7 +223,9 @@ On success, proceed to Step 8 with the returned result fragment.
 Compose the summary from the `apply-npm-updates` result fragment (Step 6) — `{Ng}` = `appliedGeneric.length`, `{No}` = `appliedOverrides.length`, the `Install:` line from `installRan` — plus the command-owned skip sets (`{Ns_o}` = `OVERRIDE_SKIP`, `{Ns_u}` = user-excluded). After a successful apply, print:
 
 ```markdown
-## npm-update-minor summary
+## npm-update-major summary
+
+> Major updates may include breaking changes. Review each package's changelog and run your tests before relying on this.
 
 **Applied generically via ncu ({Ng}):**
 
@@ -267,4 +271,4 @@ Compose the summary from the `apply-npm-updates` result fragment (Step 6) — `{
 - Never mutate a consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
 - Never auto-execute an override command without the user selecting `run-override` explicitly for that entry.
 - Never run `ncu --upgrade` as a fallback after an override command fails.
-- Always pass `level=minor` to `scan-npm-updates`; ignore any user-supplied level argument.
+- Always pass `level=major` to `scan-npm-updates` and `target: "major"` to `apply-npm-updates`; ignore any user-supplied level argument.
