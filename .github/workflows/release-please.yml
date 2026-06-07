@@ -247,3 +247,29 @@ jobs:
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "Published packages:" >> $GITHUB_STEP_SUMMARY
                   echo "${{ steps.released-packages.outputs.packages }}" >> $GITHUB_STEP_SUMMARY
+
+    # release-please bumps versions only on `main` (target-branch: main), but the
+    # repo's default branch is `develop` — which is what Claude Code plugin
+    # marketplaces consume. Without syncing the bumps back, `develop` stays on the
+    # old version forever, so Claude Code never sees new plugin releases (it
+    # resolves updates by version number). Back-merge main → develop after each
+    # release so develop reflects the published versions. Standard git-flow sync.
+    back-merge:
+        needs: release-please
+        if: ${{ github.event_name == 'push' && needs.release-please.outputs.releases_created == 'true' }}
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - name: Checkout develop
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+              with:
+                  ref: develop
+                  fetch-depth: 0
+            - name: Merge main into develop
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git fetch origin main
+                  git merge --no-edit origin/main
+                  git push origin develop
