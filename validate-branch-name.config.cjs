@@ -1,4 +1,4 @@
 module.exports = {
     pattern:
-        "^(origin|master|main|pre|develop){1}$|^(feature|bugfix|fix|hotfix|release|renovate)/.+$",
+        "^(origin|master|main|pre|develop){1}$|^(feature|bugfix|fix|hotfix|release|renovate)/.+$|^release-please--branches--.+$",
 };
