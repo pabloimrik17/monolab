@@ -47,6 +47,9 @@ jobs:
         continue-on-error: true
         permissions:
             contents: write
+        env:
+            NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+            NX_NO_CLOUD: ${{ vars.NX_NO_CLOUD }}
         steps:
             - name: Checkout release PR branch
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
