@@ -1,11 +1,11 @@
 ---
 name: update-isolation
-description: Use when an npm update command (`/experiments:npm-update-{major,minor,patch}`, their deep variants, or the `commander-update-orchestrator`) wants to apply bumps in an isolated branch/worktree instead of the current checkout. Resolves a strategy (auto → worktrunk → plain git worktree → in-place branch → ask → none) and creates the branch/worktree BEFORE apply runs, returning the working directory the caller hands to `npm-update-apply`. Branch/worktree creation only — NEVER commits, pushes, or opens a PR. Opt-in; the default `none` is byte-equivalent to today's in-place behavior.
+description: Use when an npm update command (`/experiments:npm-update-{major,minor,patch}`, their deep variants, or the `commander-update-orchestrator`) wants to apply bumps in an isolated branch/worktree instead of the current checkout. Resolves a strategy (auto → worktrunk → plain git worktree → in-place branch → ask → none) and creates the branch/worktree BEFORE apply runs, returning the working directory the caller hands to `apply-npm-updates`. Branch/worktree creation only — NEVER commits, pushes, or opens a PR. Opt-in; the default `none` is byte-equivalent to today's in-place behavior.
 ---
 
 # update-isolation
 
-Resolve and create an isolated workspace for an update **before** any manifest is bumped, then return the directory the caller uses as `cwd` for `npm-update-apply`. This is the single source of truth for the family's branch/worktree isolation step.
+Resolve and create an isolated workspace for an update **before** any manifest is bumped, then return the directory the caller uses as `cwd` for `apply-npm-updates`. This is the single source of truth for the family's branch/worktree isolation step.
 
 The contract refinement this skill enables: the update family no longer forbids branches. It now forbids **commits, pushes, and PRs** only — branch/worktree creation is allowed (it is the manual step users kept doing by hand). This skill performs that step and nothing more.
 
@@ -33,7 +33,7 @@ Return exactly:
 {
   mode: "worktrunk" | "worktree" | "branch" | "none",
   branchName: string,   // the branch actually created (or echoed back); for `none`, the caller's branchName unused
-  workdir: string,      // absolute dir the caller passes as `cwd` to `npm-update-apply`
+  workdir: string,      // absolute dir the caller passes as `cwd` to `apply-npm-updates`
   installAlreadyRan?: boolean   // true only when a worktrunk post-start hook already ran <pm> install in the new worktree
 }
 ```
@@ -105,13 +105,13 @@ For `worktrunk` and `worktree` modes, the repository's currently checked-out bra
 
 ## worktrunk hook / install interaction
 
-Worktrunk may run `post-start` hooks when a worktree is created (e.g. a configured `<pm> install`). When the worktrunk path is taken AND a `post-start` hook has already run an install in the new worktree, the skill SHALL set `installAlreadyRan: true` in the return value so the caller can pass `skipInstall: true` to the subsequent `npm-update-apply` invocation and avoid a redundant install. Detect this from `wt`'s verbose output / the configured hooks (`wt config` shows configured hooks); when unsure, default `installAlreadyRan: false` (a redundant install is safe, just slower).
+Worktrunk may run `post-start` hooks when a worktree is created (e.g. a configured `<pm> install`). When the worktrunk path is taken AND a `post-start` hook has already run an install in the new worktree, the skill SHALL set `installAlreadyRan: true` in the return value so the caller can pass `skipInstall: true` to the subsequent `apply-npm-updates` invocation and avoid a redundant install. Detect this from `wt`'s verbose output / the configured hooks (`wt config` shows configured hooks); when unsure, default `installAlreadyRan: false` (a redundant install is safe, just slower).
 
 ## Hard rules
 
 - SHALL create at most a **branch and/or worktree**. SHALL NOT run `git commit`. SHALL NOT run `git push`. SHALL NOT run `gh pr create` or any other PR-creation command.
 - SHALL NOT run tests, lint, or build.
-- SHALL NOT bump any manifest or run any install itself — that is `npm-update-apply`'s job, invoked by the caller with the returned `workdir`.
+- SHALL NOT bump any manifest or run any install itself — that is `apply-npm-updates`'s job, invoked by the caller with the returned `workdir`.
 - `none` mode SHALL touch no VCS state at all.
 - On any worktrunk failure, degrade gracefully (worktrunk → plain worktree; if even plain worktree fails, surface the error and return `{ mode: "none", workdir: projectPath }` with a note so the caller can apply in place rather than aborting the whole update).
 

@@ -173,7 +173,7 @@ From the partition computed in Step 5.5:
 - `manifestBumps` — one element per distinct `GENERIC` `package.json` `sourceFile`: `{ sourceFile, names: <GENERIC names for this file>, includeFilter }`. Set `includeFilter: true` when the GENERIC set for the file is a strict subset of ncu's detectable candidates — i.e. the primary prompt was `pick-subset` with at least one exclusion, OR any update for this file was removed by `OVERRIDE_RUN`/`OVERRIDE_SKIP`. Otherwise `includeFilter: false` (full-set apply; ncu's own set equals the target set).
 - `catalogEdits` — one element per `GENERIC` update with `sourceFile === "pnpm-workspace.yaml"`: `{ name, targetVersion }`.
 - `overrideCommands` — the `OVERRIDE_RUN` entries as `{ id, command: <interpolated command> }`, in declaration order.
-- `skipInstall` — `true` when `OVERRIDE_RUN` is non-empty, `OVERRIDE_SKIP`/`GENERIC` produce no write (every accepted update handled by `run-override` and nothing written outside the override commands); otherwise `false`.
+- `skipInstall` — `true` when `OVERRIDE_RUN` is non-empty, `OVERRIDE_SKIP`/`GENERIC` produce no write (every accepted update handled by `run-override` and nothing written outside the override commands); **also `true` when Step 5.6's `update-isolation` reported `installAlreadyRan`** (a worktrunk `post-start` hook already installed); otherwise `false`.
 
 ### Invoke and handle the result
 
@@ -243,7 +243,7 @@ Compose the summary from the `apply-npm-updates` result fragment (Step 6) — `{
 
 **Isolation:** {"none (applied in current tree)" | "<mode> — <workdir>"}
 
-**Install:** {"<pm> install executed" | "skipped (overrides handled install)"}
+**Install:** {"<pm> install executed" | "skipped (overrides handled install)" | "skipped (isolation already ran install)"}
 
 **Suggested next steps (not executed):**
 

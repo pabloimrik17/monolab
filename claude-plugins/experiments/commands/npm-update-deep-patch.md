@@ -223,7 +223,8 @@ Then emit, **conditionally**, these sections (omit any whose count is zero, exce
 - `Skipped or unavailable groups ({N}):` — copied from `plan.md`'s `## Skipped or unavailable` section verbatim.
 - `Isolation:` — always present: `none (applied in current tree)` or `<mode> — <workdir>` (the Step 5.5 choice).
 - `Install:` — exactly one of:
-    - `<pm> install executed` — when at least one bump was applied.
+    - `<pm> install executed` — when `apply-npm-updates` reported `installRan: true`.
+    - `skipped (isolation already ran install)` — when bumps were applied but `installRan` is `false` because Step 5.5 set `skipInstall: true` (a worktrunk `post-start` hook already installed).
     - `skipped (no bumps applied)` — when the apply path produced zero bumps (e.g., `cancel`, or `pick-subset` with only improvements selected).
 - `Suggested next steps (not executed):` — always present, with three bullets:
     - `Run your test suite.`
