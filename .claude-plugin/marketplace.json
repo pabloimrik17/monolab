@@ -19,7 +19,7 @@
         {
             "name": "experiments",
             "source": "./claude-plugins/experiments",
-            "version": "1.1.0",
+            "version": "1.2.0",
             "description": "Beta skills and commands staging area for monolab"
         },
         {
