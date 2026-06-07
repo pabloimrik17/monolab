@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0](https://github.com/pabloimrik17/monolab/compare/experiments--v1.1.0...experiments--v1.2.0) (2026-06-07)
+
+
+### Features
+
+* **experiments:** minor update cascade + shared apply-npm-updates skill ([202f188](https://github.com/pabloimrik17/monolab/commit/202f1881710c216cd2aaca61be196827f80ccc1a))
+* **experiments:** minor update cascade + shared apply-npm-updates skill ([cb6ffbd](https://github.com/pabloimrik17/monolab/commit/cb6ffbdca97dc9c6e353fdf8b8cfd42491353c87))
+
+
+### Documentation
+
+* **experiments:** apply CodeRabbit review fixes (PR [#229](https://github.com/pabloimrik17/monolab/issues/229)) ([12807f1](https://github.com/pabloimrik17/monolab/commit/12807f14f49679bc30c9bc3a820ecf80a862b0ae))
+
 ## [1.1.0](https://github.com/pabloimrik17/monolab/compare/experiments--v1.0.0...experiments--v1.1.0) (2026-05-24)
 
 
