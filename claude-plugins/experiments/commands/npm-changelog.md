@@ -41,6 +41,41 @@ If ARGUMENTS is empty or could not be parsed, use **AskUserQuestion** to prompt:
 
 Wait for the user's response, then re-parse.
 
+## Engine release-note retrieval (capability `npm-changelog-retrieval`)
+
+In addition to npm-registry **package** changelogs (Steps 1–9 below), this command retrieves **engine release notes** for the toolchain engines — `node`, `pnpm`, `npm`, `yarn`, `deno`, `bun` — over a `current → target` range. This is the source the `parallel-research-workflow` deep flow reads when `level=engines` (Node/PM toolchain bump), not a dependency update.
+
+### When the engine path applies (disambiguation)
+
+`node`, `deno`, and `bun` requests are **always** treated as engines (no npm-package collision for changelog purposes here). `npm`, `pnpm`, and `yarn` requests are treated as engines **only in engine context** — i.e. when the caller is the engines-level research flow (`parallel-research-workflow` at `level=engines`, driven by `/experiments:npm-update-deep-engines` / `/experiments:commander-update-deep-engines`). Outside engine context, `PKG` is resolved as an ordinary npm package via Steps 1–9 (the package path is unchanged). When in doubt, the engine path is opt-in by the caller's engine context; the default for a bare CLI invocation is the package path.
+
+If the request is an engine request, follow this section and SKIP Steps 1–9 (the package path). Otherwise continue to Step 1.
+
+### Cache key and layout
+
+Engine notes are cached **exactly like** package changelogs — keyed by **engine name + version range**, under `~/.claude/changelogs/<engine>/` with the same `_meta.json`, per-version `<ver>.md` + `<ver>.meta.json`, and SHA256 verify/TTL machinery (Steps 3, 8). The per-version body + source-link output shape is reused verbatim so downstream `## Changelogs` / `## Breaking changes & migration` rendering is unchanged. Version enumeration, filtering (stable-only, inclusive `from..to`), and the all-cached fast path mirror Step 2 / Step 9.
+
+### Canonical sources per engine
+
+| Engine | Version set                                                | Release notes source                                                    |
+| ------ | ---------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `node` | `https://nodejs.org/dist/index.json` (stable, `lts`-aware) | `github.com/nodejs/node` releases / `nodejs.org/en/blog/release/v<ver>` |
+| `pnpm` | GitHub tags of `pnpm/pnpm`                                 | `github.com/pnpm/pnpm` Releases / `CHANGELOG`                           |
+| `yarn` | GitHub tags of `yarnpkg/berry`                             | `github.com/yarnpkg/berry` Releases / `CHANGELOG`                       |
+| `npm`  | GitHub tags of `npm/cli`                                   | `github.com/npm/cli` Releases / `CHANGELOG.md`                          |
+| `deno` | GitHub releases of `denoland/deno`                         | `github.com/denoland/deno` Releases                                     |
+| `bun`  | GitHub releases of `oven-sh/bun`                           | `github.com/oven-sh/bun` Releases / `bun.sh/blog`                       |
+
+Resolve the GitHub releases / CHANGELOG with the **same Strategy A (raw CHANGELOG) / Strategy B (GitHub Releases API) / verification** machinery already documented for packages (Steps 4–8), pointed at the engine's repository above instead of an `npm view`-resolved repo. For `node`, prefer the per-version release notes; enumerate the stable versions in `from..to` from the dist index.
+
+### Missing notes
+
+When release notes for a requested engine/version cannot be retrieved, emit the existing **`_no changelog available_`** sentinel for that version — never fabricate content (same rule as the package path's `no_changelog_source`).
+
+### Output
+
+Use the same Step 9 summary table shape, with the engine name in the title (`## npm-changelog: node`). Do NOT paste changelog content into chat — only paths/summary, identical to the package path.
+
 ## Step 1: Resolve Package to GitHub Repository
 
 Run:
