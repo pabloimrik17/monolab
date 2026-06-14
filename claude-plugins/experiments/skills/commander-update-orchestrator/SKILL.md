@@ -1,6 +1,6 @@
 ---
 name: commander-update-orchestrator
-description: Use when a Commander update command (`/experiments:commander-update-patch` and the future `-minor` / `-major` / `-engines` siblings, plus the deep variants) needs to apply npm dependency updates across every project registered in the user-scoped Commander registry. Owns the cross-project pipeline — list+filter projects, parallel scan dispatch, deduplicate updates, version-align (max-wins with per-project fallback), render unified plan, sequential apply with stop-on-fail, aggregated summary. Read-only against the registry; writes go to each project's own manifests via `ncu --upgrade` and one `<pm> install` per project. Never runs tests, lint, build, or commits.
+description: Use when a Commander update command (`/experiments:commander-update-{patch,minor,major,engines}` and their deep variants) needs to apply npm dependency or toolchain-engine updates across every project registered in the user-scoped Commander registry. Owns the cross-project pipeline — list+filter projects, parallel scan dispatch, deduplicate updates, version-align (max-wins with per-project fallback; engine-version alignment at `level=engines`), render unified plan, sequential apply with stop-on-fail, aggregated summary. Read-only against the registry; dependency-level writes go to each project's own manifests via `ncu --upgrade` + one `<pm> install`, engines-level writes via `apply-engine-bumps` (runtime surfaces, no ncu). Never runs tests, lint, build, or commits.
 ---
 
 # commander-update-orchestrator
@@ -11,7 +11,7 @@ Cross-project npm-update orchestration. Parameterized by `level` / `target`, so 
 
 - Invoked by `/experiments:commander-update-patch` with `level=patch`, `target=patch` (shallow mode, default).
 - Invoked by `/experiments:commander-update-deep-patch` with `level=patch`, `target=patch`, `mode=deep` (deep mode, MON-199).
-- Future `commander-update-{minor,major,engines}` and `commander-update-deep-{minor,major,engines}` commands wire the matching `level`/`target`/`mode` trio.
+- `commander-update-{minor,major,engines}` and `commander-update-deep-{minor,major,engines}` wire the matching `level`/`target`/`mode` trio. At `level=engines` the scan/apply steps route to the engine toolchain skills — see "Level-conditional routing: `level=engines`".
 - Composes with `parallel-research-workflow` (in cross-project mode) for the deep-mode research insertion (Step 6.5).
 
 Never invoke directly from the user side. The skill is meant for command-layer composition.
@@ -49,6 +49,20 @@ This skill ships two execution paths selected by the `mode` input. The shallow p
 | Step 11 (summary) sections        | Shallow set (Applied / Failed / Pending / Skipped-by-{path,scan,user,policy,override} / Warnings). | Shallow set PLUS `Applied improvements`, `Skipped improvements`, `Inapplicable improvements`, `Skipped or unavailable groups`. Conditional `Review plan.md` bullet on keep-plan. |
 
 The shallow path SHALL NOT execute Step 6.5, SHALL NOT enter plan mode at apply time, SHALL NOT invoke the workflow's end-of-flow cleanup, and SHALL NOT render deep-mode summary sections. The deep-mode insertions are local to Steps 6.5, 7, 9, 10a/10b/10c, and 11 — Steps 1, 2, 3, 4, 5, 6, and 8 behave identically across modes (in particular, Step 8 override registry consultation is shared verbatim — Decision 5 in `design.md`).
+
+## Level-conditional routing: `level=engines` (toolchain bump)
+
+`engines` is **not** an ncu dependency level. When `level === "engines"` (and `target === "engines"`), the orchestrator swaps the per-project **scan** and **apply** steps to the engine toolchain skills and aligns cross-project on the **engine version**, while reusing the rest of the cross-project skeleton unchanged (project resolution Steps 1–3, subset selection, plan rendering Step 7, sequential apply with stop-on-fail Step 10, aggregated summary Step 11). For `level ∈ {patch, minor, major}` this entire section is inert — those levels use `scan-npm-updates` / `apply-npm-updates` exactly as before (design D6, additive delta).
+
+The engines branch overrides exactly these surfaces:
+
+- **Step 4 — scan.** The per-project scan agent invokes **`detect-toolchain-surfaces`** (capability `engine-surface-scanning`) instead of `scan-npm-updates`. Each agent returns that skill's `EngineSurfaceInventory` JSON verbatim (or `{"_error": "<string>"}` on a precondition abort). The CWD + parse-and-tag plumbing of Step 4 is unchanged; only the skill name in the agent prompt changes.
+- **Steps 5–6 — aggregation + alignment.** Aggregate per-engine across projects instead of per-package. **Cross-project alignment is on the resolved engine version**: resolve one target per engine **once** (Node → latest LTS; pnpm/npm/yarn/bun/deno → latest — via `apply-engine-bumps`'s resolution) and reuse it for every project. There is no per-package max-wins computation and no range-admission conflict prompt. A project already pinned **above** the resolved target is surfaced and **left higher** unless the user opts to converge. Intra-repo misalignment reported by `detect-toolchain-surfaces` is surfaced and converged to the resolved target (runtime loci only).
+- **Step 8 — override registry consultation is SKIPPED.** Package-name overrides (Storybook-style families) have no meaning for runtime/PM surfaces. `OVERRIDE_RUN` / `OVERRIDE_SKIP` are empty; every eligible runtime surface is in the generic apply set.
+- **Step 10.3 — apply.** The per-project apply invokes **`apply-engine-bumps`** (capability `engine-update-apply`) instead of `apply-npm-updates`. No `ncu` is invoked at engines level. The orchestrator passes the project's inventory + the resolved per-engine targets (with `confirmed: true` — the user already gated at Step 9, and any `ambiguous` loci were resolved by the command/orchestrator before apply) and folds the returned `{ resolvedTargets, applied, skipped, droppedHashes, failure? }` fragment into the project's summary entry. `support` and `unknownSurfaces` loci are never touched; publishable-lib `engines.<engine>` support ranges are preserved across every project.
+- **Step 6.5 / 7.D — deep mode.** When `mode === "deep"`, Step 6.5 invokes `parallel-research-workflow` with `level=engines` (research targets **engine release notes**, deduplicated once per engine/version) and Step 7.D surfaces the resulting `plan.md` `## Breaking changes & migration` + `## Changelogs` sections. **No `## PR plan` / `partition-breaking-changes`** applies (Step 7.D point 3 runs only for `level === "major"`): an engine bump is a single coordinated co-upgrade (Node + its PM, moved together), so the PR-partition is meaningless — one bucket. Isolation, when chosen (Step 9.5), wraps the whole engine bump as one workspace per project.
+
+Everything else (the project picker, the gate's `apply-all`/`pick-subset`/`cancel` shape, stop-on-fail, the summary skeleton, the hard rules, registry read-only) is reused verbatim. Where the steps below describe ncu/package mechanics, read them through this section's overrides when `level === "engines"`.
 
 ## Registry contract (read-only excerpt)
 
@@ -154,6 +168,8 @@ When `projectsFilter` is unset and `RESOLVED` is non-empty, raise exactly **one*
 
 ## Step 4 — Parallel scan dispatch
 
+> **`level=engines`:** substitute `detect-toolchain-surfaces` for `experiments:scan-npm-updates` in the agent prompt below (the agent returns an `EngineSurfaceInventory` JSON, or `{"_error": …}` on abort). The CWD config (4.1), the JSON parse + project-tag plumbing (4.2), and the per-project map (4.3) are unchanged — an `EngineSurfaceInventory` is tagged and stored exactly like a `ScanResult`. See "Level-conditional routing: `level=engines`".
+
 For the resolved project set, send a **single message** containing N `Agent` tool-uses (one per project). Each agent call:
 
 - `model: "haiku"` — latency-optimized; the agent only produces a small JSON blob.
@@ -250,9 +266,9 @@ If `any package.conflict === true`, raise exactly **one** `AskUserQuestion` (reg
 
 - `multiSelect: false`
 - **Options**:
-  - `use-max-where-possible` — Apply `proposedTarget` only to occurrences whose range admits it; non-admitting occurrences keep their per-project `targetVersion`.
-  - `per-project` — Every occurrence retains its per-project `targetVersion`; no max-alignment for the conflicting packages.
-  - `skip-package` — Drop every conflicting package from the run entirely (their occurrences are removed from the plan).
+    - `use-max-where-possible` — Apply `proposedTarget` only to occurrences whose range admits it; non-admitting occurrences keep their per-project `targetVersion`.
+    - `per-project` — Every occurrence retains its per-project `targetVersion`; no max-alignment for the conflicting packages.
+    - `skip-package` — Drop every conflicting package from the run entirely (their occurrences are removed from the plan).
 
 The chosen policy applies to **every** conflicting package in the run. Do NOT prompt per-package.
 
@@ -403,6 +419,8 @@ When the workflow returned successfully in Step 6.5 (i.e. `<plan-dir>/plan.md` e
 
     These three sections are orchestrator-owned (they originate at Steps 2.2, 4.2, 5, and 6.5.3) — the workflow does NOT know about per-project scan failures or path-missing drift, so it cannot emit them in `plan.md`. The orchestrator MUST append them at Step 7 rendering time.
 
+3. **(level=major only) Append the `## PR plan`.** When `level === "major"`, after reading `plan.md`, invoke the `partition-breaking-changes` skill and append its `## PR plan` section (ordered buckets + count-by-policy summary) after the drift sections. Build its inputs from already-available data: `bumpSet` = the rows of `plan.md`'s `## Cross-project bump set`; `breakingFindings` = the per-package items under `plan.md`'s `## Breaking changes & migration`; `depGraph` = a per-project `peerDependencies` + import-site read (reuse `ScanResultByProject`); `overrideFamilies` = the shipped registry families. The `## PR plan` is **advisory** cross-project — v1 isolation is one worktree per project (Step 9.5), NOT per bucket. For `level ∈ {patch, minor, engines}` this step SHALL NOT run (no `## PR plan` is appended — output unchanged).
+
 ### 7.1 Empty-plan early exit
 
 #### 7.1.S — Shallow mode
@@ -423,6 +441,8 @@ If the workflow's `plan.md` reports zero bumps (the `Cross-project bump set` tab
 The plan-dir is preserved on disk; the workflow's end-of-flow cleanup runs separately when the next deep-mode invocation hits phase 0 stale-cleanup (>10 days). The orchestrator SHALL NOT delete the plan-dir on the empty-plan exit path.
 
 ## Step 8 — Override registry consultation
+
+> **`level=engines`:** this entire step is **SKIPPED** (package-name overrides have no meaning for runtime/PM surfaces). Treat `OVERRIDE_RUN` and `OVERRIDE_SKIP` as empty and proceed to Step 9. See "Level-conditional routing: `level=engines`".
 
 **Mode-independent.** Step 8 runs identically in both `shallow` and `deep` modes — same registry path default, same first-win matching, same `run-override` / `skip-matched` / `force-generic` prompt, same `OVERRIDE_RUN` / `OVERRIDE_SKIP` / `GENERIC` partitioning. This is Decision 5 in `design.md`: cross-project deep mode IS consulted for overrides (explicit divergence from single-project `npm-update-deep-patch`, which deliberately skips overrides). Rationale: in cross-project context, Storybook-style families spanning multiple projects need the same coordinated handling shallow already provides; degrading to "run shallow first, then deep" would defeat the one-command UX.
 
@@ -453,9 +473,9 @@ For each remaining entry, raise exactly **one** `AskUserQuestion`:
 
 - `multiSelect: false`
 - **Options**:
-  - `run-override` — Execute the command once per affected project; skip generic ncu bump for these packages.
-  - `skip-matched` — Leave these packages untouched in every project; do not run the override and do not bump generically.
-  - `force-generic` — Ignore the override and bump these packages with the generic ncu flow in every affected project.
+    - `run-override` — Execute the command once per affected project; skip generic ncu bump for these packages.
+    - `skip-matched` — Leave these packages untouched in every project; do not run the override and do not bump generically.
+    - `force-generic` — Ignore the override and bump these packages with the generic ncu flow in every affected project.
 
 Record the chosen action per entry into `OVERRIDE_ACTIONS: Map<entry.id, "run-override"|"skip-matched"|"force-generic">` along with the interpolated command.
 
@@ -478,19 +498,19 @@ Raise exactly **one** `AskUserQuestion`. The option set depends on `mode`.
 - **Question copy**: `Apply <level> updates across <N> project(s)?`
 - `multiSelect: false`
 - **Options** (in this exact order):
-  - `apply-all` — Proceed with the entire (post-policy, post-override) plan.
-  - `pick-subset` — Accept a free-form package-name list to exclude before apply.
-  - `cancel` — Exit without modifying any file.
+    - `apply-all` — Proceed with the entire (post-policy, post-override) plan.
+    - `pick-subset` — Accept a free-form package-name list to exclude before apply.
+    - `cancel` — Exit without modifying any file.
 
 ### 9.D — Deep-mode options (four)
 
 - **Question copy**: `Apply <level> updates across <N> project(s)?` (same as shallow)
 - `multiSelect: false`
 - **Options** (in this exact order):
-  - `apply-all` — Proceed with the entire (post-policy, post-override) plan, INCLUDING the post-bumps plan-mode improvements round (Step 10b).
-  - `apply-bumps-only` — Apply bumps + overrides + installs sequentially per project (Step 10a), but SKIP the plan-mode improvements round (Step 10b) entirely. The Step 11 summary's `Applied improvements` section is omitted (zero items). All `run-override` decisions resolved in Step 8 still execute on this path because they were resolved before the gate.
-  - `pick-subset` — Accept a free-form selection combining improvement-bullet titles AND package names. Substring match (case-insensitive) for improvements; exact match for bumps. Excluded improvements skip Step 10b for those bullets; excluded packages skip Step 10a for those names.
-  - `cancel` — Exit without modifying any file. In deep mode the plan-dir IS preserved on disk and the orchestrator invokes Step 10c (end-of-flow cleanup) before exiting; in shallow mode there is no plan-dir.
+    - `apply-all` — Proceed with the entire (post-policy, post-override) plan, INCLUDING the post-bumps plan-mode improvements round (Step 10b).
+    - `apply-bumps-only` — Apply bumps + overrides + installs sequentially per project (Step 10a), but SKIP the plan-mode improvements round (Step 10b) entirely. The Step 11 summary's `Applied improvements` section is omitted (zero items). All `run-override` decisions resolved in Step 8 still execute on this path because they were resolved before the gate.
+    - `pick-subset` — Accept a free-form selection combining improvement-bullet titles AND package names. Substring match (case-insensitive) for improvements; exact match for bumps. Excluded improvements skip Step 10b for those bullets; excluded packages skip Step 10a for those names.
+    - `cancel` — Exit without modifying any file. In deep mode the plan-dir IS preserved on disk and the orchestrator invokes Step 10c (end-of-flow cleanup) before exiting; in shallow mode there is no plan-dir.
 
 ### 9.1 `apply-all`
 
@@ -561,6 +581,24 @@ In **shallow mode**: exit `0` without touching files. Do NOT run any apply, inst
 
 In **deep mode**: the plan-dir exists (Step 6.5 created it). Do NOT run any apply, install, or override command, but DO invoke Step 10c (end-of-flow cleanup) before rendering the Step 11 summary. The summary's H1 SHALL be the deep H1 (`## commander-update-deep-<level> summary`) and the summary SHALL contain a single body line `Cancelled. No files modified.` plus the always-rendered `Suggested next steps` section.
 
+## Step 9.5 — Optional isolation gate (default `none`, both modes)
+
+After the Step 9 gate resolves to an apply path (`apply-all` / `apply-bumps-only` / `pick-subset` with a non-empty accepted set) and before Step 10, raise exactly **one** `AskUserQuestion` offering branch/worktree isolation. On Step 9 `cancel`, this step SHALL NOT run.
+
+- **Question copy**: `Isolate these updates before applying?`
+- `multiSelect: false`
+- **Options** (in this exact order):
+    - `none` — Apply each project in its current working tree (default; **no VCS action** — byte-equivalent to pre-isolation behavior).
+    - `worktree` — For each resolved project, create a branch + worktree via `update-isolation` (worktrunk-preferred) and apply there; the project's current checkout stays untouched.
+    - `branch` — For each resolved project, create a branch in place via `update-isolation` and apply on it.
+
+Build `ISOLATION_BY_PROJECT` (consumed by Step 10.2/10.3):
+
+- `none` → for every project, `workdir = <record.path>`, no VCS action.
+- `worktree` / `branch` → for each resolved project, invoke the `update-isolation` skill once with `{ projectPath: <record.path>, branchName: "deps/<level>-<YYYY-MM-DD>", strategy: <worktree → "auto"; branch → "branch"> }`; record the returned `workdir` and `installAlreadyRan`. **v1 cross-project isolation is one worktree per project** — the deep-major `## PR plan` buckets stay advisory; per-(project, bucket) worktrees are deferred.
+
+`update-isolation` creates a branch/worktree only — it never commits, pushes, or opens a PR. On any `update-isolation` failure it degrades to `none` for that project (apply in place) with a surfaced note, never aborting the run.
+
 ## Step 10 — Sequential apply (one project at a time, stop-on-fail)
 
 The apply step splits by mode.
@@ -589,19 +627,21 @@ If the per-project subset is empty (no generic occurrences AND no override entri
 
 ### 10.2 Set the working directory
 
-For every Bash invocation in the apply for this project, prepend `cd "<record.path>" &&` (or use absolute paths for ncu's `--packageFile`). The skill SHALL NOT mutate the user's shell state across iterations.
+Resolve this project's apply directory from `ISOLATION_BY_PROJECT` (Step 9.5): `WORKDIR = ISOLATION_BY_PROJECT[project].workdir` — which is `<record.path>` under `none`, or the isolation branch/worktree path otherwise. For every Bash invocation in the apply for this project, prepend `cd "<WORKDIR>" &&` (or use absolute paths for ncu's `--packageFile`). The skill SHALL NOT mutate the user's shell state across iterations.
 
 ### 10.3 Build the per-project apply spec and invoke `apply-npm-updates`
+
+> **`level=engines`:** invoke **`apply-engine-bumps`** (capability `engine-update-apply`) for this project instead of `apply-npm-updates`. Pass `{ cwd: WORKDIR, inventory: <this project's EngineSurfaceInventory from Step 4>, resolvedTargets: <the per-engine targets resolved once in Step 6>, ambiguousResolutions: <any ambiguous loci the user resolved before the gate>, confirmed: true }`. No `ncu`, no `manifestBumps`/`catalogEdits`/`overrideCommands` spec. Fold the returned `{ resolvedTargets, applied, skipped, droppedHashes, failure? }` fragment into this project's summary entry; on a non-null `failure` apply Step 10.4/10.6 stop-on-fail exactly as below (the `failure.step` is `resolve`/`write` rather than `ncu`/`catalog`/`override`/`install` — surface its `detail` in the cross-project abort copy). The rest of 10.1–10.6 (subset, workdir, stop-on-fail) is unchanged. See "Level-conditional routing: `level=engines`".
 
 The `apply-npm-updates` skill is the single source of truth for the per-project mechanical apply (generic `ncu` `package.json` bumps, `pnpm-workspace.yaml` catalog edits, override commands, single install). The orchestrator builds the resolved spec for this project and invokes the skill **once**; it SHALL NOT restate the `ncu` / catalog / install recipe inline.
 
 Build the spec from this project's subset (Step 10.1):
 
-- `packageManager` = this project's `ScanResult.packageManager`. `cwd` = `<record.path>`. `target` = the orchestrator's `target` input. `cooldown` = the value `scan-npm-updates` resolved for this project (omit for `pnpm`).
-- `manifestBumps` — one element per distinct `GENERIC` `package.json` `sourceFile`: `{ sourceFile, names: <GENERIC names for this file, space-separated>, includeFilter }`. Set `includeFilter: true` when **any** of: the user picked `pick-subset` and excluded ≥1 package for this project; any update for the file was removed by `OVERRIDE_RUN`/`OVERRIDE_SKIP`; or the conflict policy is `use-max-where-possible` and ncu's full set ≠ this project's effective subset. Otherwise `false` (ncu's own set equals the target set for this file).
+- `packageManager` = this project's `ScanResult.packageManager`. `cwd` = `WORKDIR` (Step 10.2 — `<record.path>` under `none`, else the isolation branch/worktree). `target` = the orchestrator's `target` input (passed **unchanged** — the `target → ncuTarget` mapping, `major→latest`, and the exact-pin `--removeRange` write are owned by `apply-npm-updates`, the single source of truth). `cooldown` = the value `scan-npm-updates` resolved for this project (omit for `pnpm`). (This step runs only for `target ∈ {patch, minor, major}`; `target=engines` routes to `apply-engine-bumps` per the note above and never reaches this spec.)
+- `manifestBumps` — one element per distinct `GENERIC` `package.json` `sourceFile`: `{ sourceFile, names: <GENERIC names for this file, space-separated>, includeFilter }`. Set `includeFilter: true` when **any** of: the user picked `pick-subset` and excluded ≥1 package for this project; any update for the file was removed by `OVERRIDE_RUN`/`OVERRIDE_SKIP`; or the conflict policy is `use-max-where-possible` and ncu's full set ≠ this project's effective subset. Otherwise `false` (ncu's own set equals the target set for this file). **Additionally, when `target` is `major`** (it maps to `ncu --target latest`), `includeFilter` SHALL ALWAYS be `true` for every element regardless of the above — the per-project `names` list is authoritative, preventing over-bumping dependencies that `scan-npm-updates` deliberately excluded. (`apply-npm-updates` also forces the filter for `latest`-mapped targets; this explicit set is defense-in-depth and keeps the spec readable. The `patch`/`minor` branch is unchanged.)
 - `catalogEdits` — one element per `GENERIC` occurrence with `sourceFile === "pnpm-workspace.yaml"`: `{ name, targetVersion: <effectiveTarget> }`.
 - `overrideCommands` — the `OVERRIDE_RUN` entries that touch this project, as `{ id, command: <interpolated command> }`, in declaration order (run once per affected project).
-- `skipInstall` — `true` when every accepted package for this project went through `run-override` AND no generic ncu bump ran AND no catalog edit happened for this project (every override handles its own install); otherwise `false`.
+- `skipInstall` — `true` when every accepted package for this project went through `run-override` AND no generic ncu bump ran AND no catalog edit happened for this project (every override handles its own install); also `true` when Step 9.5's `update-isolation` reported `installAlreadyRan` for this project's worktree (a worktrunk hook already installed); otherwise `false`.
 
 Invoke `apply-npm-updates` once with this spec and `cwd: <record.path>`. The skill streams `ncu` / install / override stdout/stderr verbatim and returns `{ appliedGeneric, appliedOverrides, installRan, failure }`. Fold the returned fragment into this project's entry of the cross-project summary (Step 11).
 
@@ -729,7 +769,7 @@ Plan mode pauses until the user accepts or rejects.
 
 - The plan-mode round SHALL NOT expand scope beyond bullets present in `plan.md`. Adjacent opportunities the main agent discovers during reconnaissance SHALL be surfaced in the Step 11 `Suggested next steps` list, NEVER silently added to the plan-mode document.
 - The plan-mode round SHALL NOT execute tests, lint, or build.
-- The plan-mode round SHALL NOT create commits, branches, or pull requests.
+- The plan-mode round SHALL NOT create commits or pull requests (or push). Branch/worktree isolation is a separate pre-apply step (Step 9.5); the plan-mode round itself creates no branch.
 - The plan-mode round SHALL NOT touch any file outside the bullet's `affects projects:` set.
 
 ### Step 10c — End-of-flow cleanup invocation (deep mode only)
@@ -741,8 +781,8 @@ The workflow prompts the user via `AskUserQuestion`:
 - **Question**: `Plan dir at <plan-dir>. Keep for inspection or delete?`
 - `multiSelect: false`
 - **Options**:
-  - `delete-plan` — recursively `rm -rf <plan-dir>`.
-  - `keep-plan` — leave it on disk; the next deep invocation's phase 0 stale-cleanup catches it after 10 days.
+    - `delete-plan` — recursively `rm -rf <plan-dir>`.
+    - `keep-plan` — leave it on disk; the next deep invocation's phase 0 stale-cleanup catches it after 10 days.
 
 Capture the user's choice into `cleanupOutcome ∈ { "delete-plan", "keep-plan" }`. The Step 11 summary's `Suggested next steps` uses `cleanupOutcome` to decide whether to include the `Review <plan-dir>/plan.md before re-running.` bullet.
 
@@ -833,6 +873,8 @@ Print a markdown summary. The H1 varies by mode. Render sections conditionally; 
 - {projectName}: {warning text}
 - ...
 
+**Isolation:** {"none (applied in current tree)" | "worktree — one per applied project" | "branch — one per applied project"}
+
 **Suggested next steps (not executed):**
 
 - Run your test suite in each modified project.
@@ -858,14 +900,15 @@ Print a markdown summary. The H1 varies by mode. Render sections conditionally; 
 | Skipped by conflict policy    | both      | `skip-package` policy chosen with at least one match.                                           |
 | Skipped by override           | both      | At least one override entry got `skip-matched`.                                                 |
 | Warnings                      | both      | `warnings[]` non-empty.                                                                         |
+| Isolation                     | both      | Always (reflects the Step 9.5 choice; `none` when not isolated).                                |
 | Suggested next steps          | both      | Always.                                                                                         |
 
 ### 11.1.D Deep-mode section formats
 
 - **Applied improvements**: one line per applied (bullet, project) pair. Format `- {bullet title} → {projectName} ({sourceFile or general path hint})`. The `sourceFile or hint` cell is the absolute path of the primary file edited under that pair when a single file is dominant; otherwise a generic hint like `multiple files under apps/<workspace>/src/`.
 - **Skipped improvements**: distinguish the two skip reasons with the parenthetical:
-  - `(excluded via pick-subset)` — when the user excluded the bullet at the gate (9.2.D).
-  - `(rejected at plan-mode review)` — when the user rejected the whole plan-mode round at 10b.3.
+    - `(excluded via pick-subset)` — when the user excluded the bullet at the gate (9.2.D).
+    - `(rejected at plan-mode review)` — when the user rejected the whole plan-mode round at 10b.3.
 - **Inapplicable improvements**: one line per (bullet, project) pair marked inapplicable during 10b.1. Format `- {bullet title} → {projectName} ({one-sentence reason captured during reconnaissance})`.
 - **Skipped or unavailable groups**: copied verbatim from `<plan-dir>/plan.md`'s `## Skipped or unavailable` section (workflow-owned). Heading count `<N>` is the bullet count under that section in `plan.md`.
 
@@ -886,7 +929,7 @@ After the run completes (success, partial, cancel), the user-scoped registry `<H
 ## Hard rules
 
 - The skill SHALL NOT run tests, lint, or build at any point in any project.
-- The skill SHALL NOT create git commits, branches, or pull requests in any project.
+- The skill SHALL NOT create git commits or pull requests (or push) in any project. Branch/worktree isolation via the `update-isolation` skill (Step 9.5) is permitted (opt-in; default `none` = apply in place); creating an isolation branch/worktree is allowed, committing/pushing/PR-ing is not.
 - The skill SHALL NOT modify any file outside the per-project manifests it bumps. In particular, `<HOME>/.claude/commander/projects.json` SHALL remain byte-identical before and after every run.
 - The skill SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
 - The skill SHALL NOT auto-execute an override command without the user selecting `run-override` for that entry.
