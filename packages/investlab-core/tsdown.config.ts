@@ -5,13 +5,15 @@ export default defineConfig({
     entry: ["src/index.ts"],
     format: ["esm"],
     outDir: "dist",
-    external: [
-        /^@m0n0lab\/investlab-domain($|\/)/,
-        /^@m0n0lab\/wealth-tracker-core($|\/)/,
-        /^ioredis($|\/)/,
-        /^inversify($|\/)/,
-        /^neverthrow($|\/)/,
-    ],
+    deps: {
+        neverBundle: [
+            /^@m0n0lab\/investlab-domain($|\/)/,
+            /^@m0n0lab\/wealth-tracker-core($|\/)/,
+            /^ioredis($|\/)/,
+            /^inversify($|\/)/,
+            /^neverthrow($|\/)/,
+        ],
+    },
     dts: {
         compilerOptions: {
             composite: false,

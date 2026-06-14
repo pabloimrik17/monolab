@@ -26,12 +26,42 @@ export default tseslint.config(
     },
     eslint.configs.recommended,
     tseslint.configs.recommended,
+    // Type-aware linting (project service; excludes out-of-project config files).
+    {
+        files: ["**/*.{ts,tsx,mts,cts}"],
+        ignores: ["**/*.config.{ts,mts,cts}", "eslint.config.ts", "**/*.test-d.ts"],
+        languageOptions: {
+            parserOptions: {
+                projectService: true,
+                tsconfigRootDir: import.meta.dirname,
+            },
+        },
+        rules: {
+            "@typescript-eslint/no-unnecessary-type-assertion": "warn",
+        },
+    },
+    // Files not covered by a build tsconfig (JS, configs, tests, setup, type-tests):
+    // disable the type-checked project service so they don't trip the parser.
+    {
+        files: [
+            "**/*.{js,cjs,mjs}",
+            "**/*.config.{ts,mts,cts}",
+            "eslint.config.ts",
+            "**/*.test.{ts,tsx,mts,cts}",
+            "**/*.spec.{ts,tsx,mts,cts}",
+            "**/*.integration.{ts,tsx}",
+            "**/*.test-d.ts",
+            "**/*.setup.{ts,mts,cts}",
+        ],
+        extends: [tseslint.configs.disableTypeChecked],
+    },
     {
         rules: {
             "@typescript-eslint/no-unused-vars": [
                 "error",
                 { enableAutofixRemoval: { imports: true } },
             ],
+            "preserve-caught-error": "warn",
         },
     },
     {

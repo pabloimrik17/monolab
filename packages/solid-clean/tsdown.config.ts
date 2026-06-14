@@ -5,7 +5,7 @@ export default defineConfig({
     entry: ["src/index.ts"],
     format: ["esm"],
     outDir: "dist",
-    external: [/^solid-js($|\/)/],
+    deps: { neverBundle: [/^solid-js($|\/)/] },
     dts: {
         compilerOptions: {
             composite: false,

@@ -8,14 +8,16 @@ export default defineConfig({
     entry: ["src/index.ts"],
     format: ["esm"],
     outDir: "dist",
-    external: [
-        /^@m0n0lab\//,
-        /^hono($|\/)/,
-        /^inversify($|\/)/,
-        /^neverthrow($|\/)/,
-        /^drizzle-orm($|\/)/,
-        /^pg($|\/)/,
-    ],
+    deps: {
+        neverBundle: [
+            /^@m0n0lab\//,
+            /^hono($|\/)/,
+            /^inversify($|\/)/,
+            /^neverthrow($|\/)/,
+            /^drizzle-orm($|\/)/,
+            /^pg($|\/)/,
+        ],
+    },
     dts: {
         compilerOptions: {
             composite: false,

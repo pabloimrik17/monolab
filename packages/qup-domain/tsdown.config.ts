@@ -5,7 +5,7 @@ export default defineConfig({
     entry: ["src/index.ts"],
     format: ["esm"],
     outDir: "dist",
-    external: [/^inversify($|\/)/, /^neverthrow($|\/)/],
+    deps: { neverBundle: [/^inversify($|\/)/, /^neverthrow($|\/)/] },
     dts: {
         compilerOptions: {
             composite: false,

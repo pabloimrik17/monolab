@@ -5,13 +5,15 @@ export default defineConfig({
     entry: ["src/index.ts"],
     format: ["esm"],
     outDir: "dist",
-    external: [
-        /^@m0n0lab\/qup-domain($|\/)/,
-        /^drizzle-orm($|\/)/,
-        /^pg($|\/)/,
-        /^inversify($|\/)/,
-        /^neverthrow($|\/)/,
-    ],
+    deps: {
+        neverBundle: [
+            /^@m0n0lab\/qup-domain($|\/)/,
+            /^drizzle-orm($|\/)/,
+            /^pg($|\/)/,
+            /^inversify($|\/)/,
+            /^neverthrow($|\/)/,
+        ],
+    },
     dts: {
         compilerOptions: {
             composite: false,
