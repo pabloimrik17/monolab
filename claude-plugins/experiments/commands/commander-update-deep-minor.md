@@ -49,7 +49,7 @@ The command MUST NOT:
 
 Every line the skill emits — including:
 
-- the empty-registry message (`No projects registered. Use /experiments:commander-add to register one.`),
+- the empty-registry message (`No projects registered. Use /commander:add to register one.`),
 - the project picker (`AskUserQuestion` multi-select),
 - the workflow's phase 0 stale-cleanup prompt (`delete-stale` / `keep-stale` / `cancel`),
 - the per-batch progress messages from phase 1 changelog fetch,

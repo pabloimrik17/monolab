@@ -66,7 +66,7 @@ Everything else (the project picker, the gate's `apply-all`/`pick-subset`/`cance
 
 ## Registry contract (read-only excerpt)
 
-This skill reads the user-scoped Commander registry. The full contract is in [`commander-add.md`](../../commands/commander-add.md). Relevant invariants repeated here so this file is self-contained — no shared sidecar yet (extraction deferred until the third commander consumer requires it).
+This skill reads the user-scoped Commander registry. The full contract is in [`commander:add`](../../../commander/commands/add.md). Relevant invariants repeated here so this file is self-contained — no shared sidecar yet (extraction deferred until the third commander consumer requires it).
 
 ### Path
 
