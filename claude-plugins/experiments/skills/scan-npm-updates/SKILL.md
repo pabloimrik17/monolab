@@ -1,6 +1,6 @@
 ---
 name: scan-npm-updates
-description: Scan a JavaScript/TypeScript project for available npm dependency updates filtered by level (patch/minor/major/engines). Use when a command or the user needs a structured list of upgrade candidates before applying them — for example `/experiments:npm-update-patch`, or any flow that asks "what patches are available?" or "which deps have a new minor?". Handles pnpm/npm/yarn/bun/deno, single-repo and workspace, pnpm `catalog:` entries, and `minimumReleaseAge`. Returns JSON; does NOT edit files or run installs — that's the caller's job.
+description: Scan a JavaScript/TypeScript project for available npm dependency updates filtered by level (patch/minor/major). Use when a command or the user needs a structured list of upgrade candidates before applying them — for example `/experiments:npm-update-patch`, or any flow that asks "what patches are available?" or "which deps have a new minor?". Handles pnpm/npm/yarn/bun/deno, single-repo and workspace, pnpm `catalog:` entries, and `minimumReleaseAge`. Returns JSON; does NOT edit files or run installs — that's the caller's job. (`engines` is NOT a level here — the runtime/toolchain bump is handled by `detect-toolchain-surfaces`.)
 ---
 
 # scan-npm-updates
@@ -11,7 +11,7 @@ Scan the current working directory's JS/TS project and return a structured list 
 
 ## Inputs
 
-- **`level`** (required): `patch` | `minor` | `major` | `engines`. The caller passes this; do not infer from arguments.
+- **`level`** (required): `patch` | `minor` | `major`. The caller passes this; do not infer from arguments. `engines` is **not** a valid level here — the toolchain bump (runtime / package manager) is resolved by `detect-toolchain-surfaces` (capability `engine-surface-scanning`), not by the dependency scan.
 
 ## Output contract
 
@@ -39,7 +39,7 @@ interface ScanResult {
 
 Perform these in order. Any failure aborts the skill:
 
-1. **`level` is one of the four accepted values.** Otherwise: `Error: invalid level "<value>". Expected patch|minor|major|engines.`
+1. **`level` is one of the three accepted values** (`patch` / `minor` / `major`). Otherwise — including `engines`, which is no longer a dependency-scan level — abort: `Error: invalid level "<value>". Expected patch|minor|major.` (`level=engines` aborts here; the toolchain bump is handled by `detect-toolchain-surfaces`.)
 2. **A package manager can be determined** (see Detection below). Otherwise: `Error: could not detect a package manager. Need one of: pnpm-lock.yaml, yarn.lock, bun.lock(b), deno.lock, package-lock.json in the repo root.`
 3. **The detected PM has a `minimumReleaseAge` lookup entry in this skill** (see table below). PMs without one abort: `Error: minimumReleaseAge lookup not yet documented for <pm>. Refusing to run until documented.`
 4. **The runner for the detected PM is on `PATH`** (see Runner Resolution). Otherwise: `Error: <runner> not found on PATH. Install <pm> to proceed.`
@@ -94,12 +94,11 @@ Build the command:
 
 ### `level` → `--target` mapping
 
-| `level`   | ncu `--target`             | Notes                                                                                                                                                                                                         |
-| --------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `patch`   | `patch`                    | Cap semantic: only reports packages with a patch available inside the current minor band.                                                                                                                     |
-| `minor`   | `minor`                    | Cap semantic: only reports packages with a minor available inside the current major band.                                                                                                                     |
-| `major`   | `latest`                   | ncu has no native `major` target. The skill passes `--target latest`, then post-filters results to keep only packages whose target major > current major (see Parsing below).                                 |
-| `engines` | `latest` + `--enginesNode` | `@engines` is not a valid ncu target. Pass `--target latest --enginesNode`; ncu filters candidates to versions whose `engines.node` satisfies the project's own `engines.node`. Most repos return empty here. |
+| `level` | ncu `--target` | Notes                                                                                                                                                                         |
+| ------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `patch` | `patch`        | Cap semantic: only reports packages with a patch available inside the current minor band.                                                                                     |
+| `minor` | `minor`        | Cap semantic: only reports packages with a minor available inside the current major band.                                                                                     |
+| `major` | `latest`       | ncu has no native `major` target. The skill passes `--target latest`, then post-filters results to keep only packages whose target major > current major (see Parsing below). |
 
 ### Which manifests to scan
 
