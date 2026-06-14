@@ -40,6 +40,14 @@ Minor sibling of `/experiments:commander-update-deep-patch` — identical deep c
 /experiments:commander-update-deep-minor
 ```
 
+### `/experiments:commander-config-add`
+
+Track a single config file (by project + project-relative path) for an already-registered Commander project, so the downstream `commander:config-*` family can act on it. Resolves the project (explicit `--project`/positional, else an interactive picker over the registry) and the file path (explicit `--file`/positional, else a prompt) — no auto-detection. Validates that the project is registered, the path stays inside the project, and the file exists on disk; normalizes to a project-relative POSIX path; idempotent on re-add. Persists to the sibling registry `~/.claude/commander/configs.json` (`version: 1`, keyed by project name) via an atomic temp+rename write after an explicit Save confirmation. Reads `~/.claude/commander/projects.json` read-only and never mutates it.
+
+```bash
+/experiments:commander-config-add --project investlab --file eslint.config.js
+```
+
 ### `/experiments:ralph`
 
 Generate Ralph loop infrastructure from a project description for autonomous AI coding.
