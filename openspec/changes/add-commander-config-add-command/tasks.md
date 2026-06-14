@@ -55,11 +55,13 @@ The `experiments` plugin is **release-please-managed** — versions are NOT hand
 
 ## 9. Manual Verification
 
-- [ ] 9.1 Invoke `/experiments:commander-config-add --project <name> --file <relpath>` for a registered project and existing file; confirm `~/.claude/commander/configs.json` is created with the entry
-- [ ] 9.2 Invoke with no args; confirm the project picker, then the file prompt, then confirmation → write
-- [ ] 9.3 Re-add the same path; confirm an idempotent no-op (file byte-equivalent, "already tracked" message)
-- [ ] 9.4 Invoke with a `--file` that does not exist on disk; confirm abort with a clear error and no write
-- [ ] 9.5 Invoke with a `--file` that escapes the project (`../outside`); confirm rejection
-- [ ] 9.6 Invoke with a `--project` not in the registry; confirm abort with `"project '<name>' is not registered"`
-- [ ] 9.7 Invoke when no projects are registered; confirm `"no projects registered"` and no file created
-- [ ] 9.8 Inspect the resulting JSON: 2-space indent, trailing newline, `version: 1`, entry shape `{ "path": ... }`, `projects.json` untouched
+> QA executed against an isolated `/tmp` fake-HOME fixture (real `~/.claude/commander/` never touched); the command's documented algorithm (parse → resolve → normalize → validate → dedup → atomic write) was run for real with shell/node/jq. `AskUserQuestion` menu selections were scripted (their surrounding branch logic ran for real).
+
+- [x] 9.1 Invoke `/experiments:commander-config-add --project <name> --file <relpath>` for a registered project and existing file; confirm `~/.claude/commander/configs.json` is created with the entry **(QA: RAN — `--project/--file` path lazy-created configs.json with `{version:1,configs:{<proj>:[{path:"eslint.config.js"}]}}`; projects.json shasum unchanged.)**
+- [x] 9.2 Invoke with no args; confirm the project picker, then the file prompt, then confirmation → write **(QA: RAN — executed no-args flow; three prompts confirmed in order at commander-config-add.md:129 picker / :136 file / :165-168 Save·Cancel; Save branch wrote byte-correct configs.json, Cancel branch wrote nothing + no `.tmp` residue, projects.json unchanged. Prompt selections scripted.)**
+- [x] 9.3 Re-add the same path; confirm an idempotent no-op (file byte-equivalent, "already tracked" message) **(QA: RAN — re-add (and `./`-normalized variant) printed "already tracked"; configs.json byte-equivalent (sha+size unchanged), no `.tmp` residue.)**
+- [x] 9.4 Invoke with a `--file` that does not exist on disk; confirm abort with a clear error and no write **(QA: RAN — missing `--file` aborts `"config file does not exist: <path>"` (test -f gate :152); configs.json unchanged / not created.)**
+- [x] 9.5 Invoke with a `--file` that escapes the project (`../outside`); confirm rejection **(QA: RAN — `../`, abs-outside, and nested `../..` escapes all abort `"config path must be inside the project"` (:148); abs-inside-project converts to relative; no write on reject.)**
+- [x] 9.6 Invoke with a `--project` not in the registry; confirm abort with `"project '<name>' is not registered"` **(QA: RAN — unregistered `--project` aborts `"project '<name>' is not registered"` (:128); configs.json unchanged / not created.)**
+- [x] 9.7 Invoke when no projects are registered; confirm `"no projects registered"` and no file created **(QA: RAN — missing AND empty projects.json both print `"no projects registered"` + `/commander:add` hint; configs.json not created.)**
+- [x] 9.8 Inspect the resulting JSON: 2-space indent, trailing newline, `version: 1`, entry shape `{ "path": ... }`, `projects.json` untouched **(QA: RAN — jq confirms version:1, entry keys `["path"]` only, 2-space indent, single trailing newline (od ends `7d 0a`), projects.json shasum untouched.)**
