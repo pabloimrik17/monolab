@@ -5,7 +5,7 @@ TBD - created by archiving change fix-scan-npm-updates-pm-detection. Update Purp
 ## Requirements
 ### Requirement: Level input validation
 
-El skill SHALL aceptar exactamente uno de `patch`, `minor`, `major`, `engines` como input `level`. Cualquier otro valor SHALL abortar con un mensaje de la forma `Error: invalid level "<value>". Expected patch|minor|major|engines.`
+El skill SHALL aceptar exactamente uno de `patch`, `minor`, `major` como input `level`. `engines` **ya NO** es un nivel válido para este skill: el bump de toolchain (runtime / package manager) se resuelve mediante `detect-toolchain-surfaces` (capability `engine-surface-scanning`), no mediante el escaneo de dependencias. Cualquier otro valor —incluido `engines`— SHALL abortar con un mensaje de la forma `Error: invalid level "<value>". Expected patch|minor|major.`
 
 #### Scenario: Valid level accepted
 
@@ -15,7 +15,12 @@ El skill SHALL aceptar exactamente uno de `patch`, `minor`, `major`, `engines` c
 #### Scenario: Invalid level aborts
 
 - **WHEN** el caller pasa `level=beta`
-- **THEN** el skill aborta con el error invalid-level y no invoca ncu
+- **THEN** el skill aborta con el error invalid-level (`Expected patch|minor|major.`) y no invoca ncu
+
+#### Scenario: Engines is no longer a dependency-scan level
+
+- **WHEN** el caller pasa `level=engines`
+- **THEN** el skill aborta con `Error: invalid level "engines". Expected patch|minor|major.` y no invoca ncu (el toolchain bump se maneja por `detect-toolchain-surfaces`)
 
 ### Requirement: Package manager detection
 
@@ -92,10 +97,9 @@ El skill SHALL invocar `npm-check-updates@21.0.2` (pinned) a través del runner 
 - `--target <mapped-target>` (ver "level → target mapping").
 - `--jsonUpgraded`.
 - `--cooldown <value>` sólo cuando corresponda según el lookup de `minimumReleaseAge`.
-- `--enginesNode` cuando `level=engines`.
 - `--packageFile <manifest-path>` para cada manifest enumerado.
 
-El skill SHALL NOT depender de la auto-detección de package manager por parte de ncu.
+El skill SHALL NOT depender de la auto-detección de package manager por parte de ncu. El skill SHALL NOT pasar `--enginesNode` (el bump de runtime/toolchain es responsabilidad de `apply-engine-bumps`, no de este escaneo de dependencias).
 
 #### Scenario: -p always present
 
@@ -114,7 +118,8 @@ El skill SHALL traducir `level` a `--target` de ncu:
 - `patch` → `--target patch` (cap dentro del minor actual).
 - `minor` → `--target minor` (cap dentro del major actual).
 - `major` → `--target latest`, luego post-filtrar descartando entries cuyo target-major no sea estrictamente mayor que el current-major.
-- `engines` → `--target latest` más `--enginesNode`.
+
+El skill SHALL NOT mapear `engines` a ningún `--target` (no es un nivel válido — ver "Level input validation").
 
 #### Scenario: Patch cap
 

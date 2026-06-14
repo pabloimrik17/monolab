@@ -101,4 +101,4 @@ If the user **approves** the plan-mode round, edits land via `Edit` / `Write` ac
 - Auto-rollback on failure — not a goal; the summary partition (applied / failed / pending) is the recovery surface.
 - Auto-rollback of applied bumps when the plan-mode round is rejected — bumps are preserved, user reviews `git diff` per project (same posture as single-project `/experiments:npm-update-deep-minor`).
 - Tests — manual verification only, mirroring the rest of the experiments plugin. See the change's `tasks.md` for the matrix.
-- `/experiments:commander-update-deep-engines` (MON-201) — a separate sub-issue, still deferred. It reuses the orchestrator's deep mode and the workflow's cross-project mode with a different `level`/`target` pair; this command is minor-only by contract. (`/experiments:commander-update-deep-major` now ships, see MON-202.)
+- `/experiments:commander-update-deep-engines` (MON-201) — a separate command (toolchain-engine bump, not an ncu level); this command is minor-only by contract. (`/experiments:commander-update-deep-{major,engines}` now ship, see MON-202/MON-201.)

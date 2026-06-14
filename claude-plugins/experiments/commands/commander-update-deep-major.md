@@ -106,4 +106,4 @@ The surfaced `plan.md` includes the `## PR plan` section (from `partition-breaki
 - One worktree per (project, bucket) cross-project — deferred (the N×M explosion); v1 caps at one worktree per project.
 - Auto-rollback on failure or on plan-mode rejection — bumps are preserved; user reviews `git diff` per project.
 - Tests — manual verification only, mirroring the rest of the experiments plugin. See the change's `tasks.md` for the matrix.
-- `/experiments:commander-update-deep-engines` (MON-201) — a separate sub-issue, not part of this command.
+- `/experiments:commander-update-deep-engines` (MON-201) — a separate command (toolchain-engine bump, not an ncu level), now shipped; not part of this command.
