@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/pabloimrik17/monolab/compare/solid-clean-v0.2.0...solid-clean-v0.2.1) (2026-05-24)
+
+
+### Bug Fixes
+
+* loosen solid-js peer dep range in @m0n0lab/solid-clean ([b505bec](https://github.com/pabloimrik17/monolab/commit/b505becaaca08342d116ffd95c4ec838b56f1071))
+
 ## [0.2.0](https://github.com/pabloimrik17/monolab/compare/solid-clean-v0.1.0...solid-clean-v0.2.0) (2026-05-17)
 
 

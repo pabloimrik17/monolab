@@ -59,6 +59,7 @@ Every line the skill emits — including:
 - the conflict-policy prompt (when applicable),
 - the override prompts (one per matched entry),
 - the four-option deep gate (`apply-all` / `apply-bumps-only` / `pick-subset` / `cancel`),
+- the optional isolation gate (`none` / `worktree` / `branch`, default `none`),
 - the per-project `ncu` and `<pm> install` stdout/stderr during Step 10a,
 - the `EnterPlanMode` document for Step 10b (when applicable),
 - the workflow's end-of-flow cleanup prompt (`delete-plan` / `keep-plan`) raised by Step 10c,
@@ -72,7 +73,7 @@ Every line the skill emits — including:
 Inherited from `commander-update-orchestrator` (deep mode) and `/experiments:npm-update-deep-patch`. The command preserves every one of them:
 
 - Never run tests, lint, or build at any point.
-- Never create git commits, branches, or pull requests.
+- Never create git commits or pull requests (or push). Branch/worktree isolation via `update-isolation` (the orchestrator's opt-in Step 9.5 gate, default `none`) is allowed.
 - Never modify any file when the user selects `cancel` at the orchestrator's confirmation gate or rejects the plan-mode round at Step 10b.3.
 - Never mutate `<HOME>/.claude/commander/projects.json` — the registry is read-only on this path. The on-disk file SHALL be byte-identical before and after every run (verifiable via `shasum`).
 - Never mutate a consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
@@ -100,4 +101,4 @@ If the user **approves** the plan-mode round, edits land via `Edit` / `Write` ac
 - Auto-rollback on failure — not a goal; the summary partition (applied / failed / pending) is the recovery surface.
 - Auto-rollback of applied bumps when the plan-mode round is rejected — bumps are preserved, user reviews `git diff` per project (same posture as single-project `/experiments:npm-update-deep-patch`).
 - Tests — manual verification only, mirroring the rest of the experiments plugin. See the change's `tasks.md` for the matrix.
-- `/experiments:commander-update-deep-{minor,major,engines}` — separate sub-issues (MON-200, MON-201, MON-202). They reuse the orchestrator's deep mode and the workflow's cross-project mode with a different `level`/`target` pair; this command is patch-only by contract.
+- `/experiments:commander-update-deep-engines` (MON-201) — a separate sub-issue, still deferred. It reuses the orchestrator's deep mode and the workflow's cross-project mode with a different `level`/`target` pair; this command is patch-only by contract. (`/experiments:commander-update-deep-{minor,major}` now ship, see MON-200/MON-202.)
