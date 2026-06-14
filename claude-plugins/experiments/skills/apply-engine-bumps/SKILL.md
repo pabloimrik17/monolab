@@ -1,6 +1,6 @@
 ---
 name: apply-engine-bumps
-description: Use when an engines-level update command (`/experiments:npm-update-engines`, `/experiments:npm-update-deep-engines`, or the `commander-update-orchestrator` at `level=engines`) needs to resolve runtime/package-manager targets and rewrite a project's runtime version loci. Resolves Node→latest LTS and pnpm/npm/yarn/bun/Deno→latest, confirms before any write, then pins + aligns every runtime locus exact (no ranges); leaves publishable-lib support ranges and unknown surfaces untouched. VCS-free — never commits, pushes, opens PRs, runs tests/lint/build, or runs ncu. The engines-level analog of `apply-npm-updates`.
+description: Resolves Node→latest LTS and pnpm/npm/yarn/bun/Deno→latest, confirms before any write, then pins + aligns every runtime locus exact (no ranges) across package.json, .nvmrc, CI configs, Dockerfiles, and version-manager files; leaves publishable-lib support ranges and unknown surfaces untouched. VCS-free — never commits, pushes, opens PRs, runs tests/lint/build, or runs ncu. The engines-level analog of `apply-npm-updates`; invoked by the engines update commands (`/experiments:npm-update-engines`, `/experiments:npm-update-deep-engines`) and the `commander-update-orchestrator` at `level=engines`.
 ---
 
 # apply-engine-bumps

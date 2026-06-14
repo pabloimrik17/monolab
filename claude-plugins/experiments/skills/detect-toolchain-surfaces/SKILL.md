@@ -1,6 +1,6 @@
 ---
 name: detect-toolchain-surfaces
-description: Use when an engines-level update command (`/experiments:npm-update-engines`, `/experiments:npm-update-deep-engines`, or the `commander-update-orchestrator` at `level=engines`) needs to find every place a runtime or package-manager version is pinned in a project. Scans package.json (engines/packageManager/devEngines/volta), .nvmrc/.node-version, .tool-versions/mise, Dockerfiles, and CI configs (GitHub Actions, GitLab CI, CircleCI), classifies each locus as runtime/support/ambiguous, detects intra-repo misalignment, and returns a structured inventory. Read-only — never edits files, runs installs, runs ncu, or performs any VCS action. The engines-level analog of `scan-npm-updates`.
+description: Scans package.json (engines/packageManager/devEngines/volta), .nvmrc/.node-version, .tool-versions/mise, Dockerfiles, and CI configs (GitHub Actions, GitLab CI, CircleCI) for runtime or package-manager version pins, classifies each locus as runtime/support/ambiguous, detects intra-repo misalignment, and returns a structured inventory. Read-only — never edits files, runs installs, runs ncu, or performs any VCS action. The engines-level analog of `scan-npm-updates`; invoked by the engines update commands (`/experiments:npm-update-engines`, `/experiments:npm-update-deep-engines`) and the `commander-update-orchestrator` at `level=engines`.
 ---
 
 # detect-toolchain-surfaces
