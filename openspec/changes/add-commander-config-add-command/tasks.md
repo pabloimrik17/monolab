@@ -49,7 +49,7 @@
 The `experiments` plugin is **release-please-managed** — versions are NOT hand-edited in this branch. `release-please-config.json` bumps `plugin.json`, `package.json`, and the `experiments` marketplace entry in lockstep on the release PR, derived from conventional commits (see `RELEASE.md`). This branch is off `develop`; the `develop → main` weekly cadence triggers the release.
 
 - [x] 8.1 Do NOT hand-edit the `version` in `claude-plugins/experiments/.claude-plugin/plugin.json`, `claude-plugins/experiments/package.json`, or the `experiments` entry in `.claude-plugin/marketplace.json` — leave them at their `develop` values; release-please owns the lockstep bump
-- [ ] 8.2 Ensure the implementing commit is a conventional `feat(experiments): …` touching `claude-plugins/experiments/` so release-please schedules the bump
+- [x] 8.2 Ensure the implementing commit is a conventional `feat(experiments): …` touching `claude-plugins/experiments/` so release-please schedules the bump
 - [x] 8.3 Update `claude-plugins/experiments/README.md` to list `/experiments:commander-config-add` under the Commands section with a short blurb and one example invocation (preserve existing entries)
 - [x] 8.4 Do NOT hand-edit `claude-plugins/experiments/CHANGELOG.md` — release-please generates it
 
