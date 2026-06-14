@@ -5,7 +5,7 @@
 For each `manifestBumps` element (a `package.json` `sourceFile`), the skill SHALL invoke `npm-check-updates@21.0.2` exactly once via the package-manager runner prefix (`pnpm dlx`, `npx -y`, `yarn dlx`, `bunx`, `deno run --allow-read --allow-net npm:`):
 
 ```bash
-<runner-prefix> npm-check-updates@21.0.2 -p <packageManager> --target <ncuTarget> --upgrade --removeRange --packageFile <sourceFile> [--cooldown <period>] [--enginesNode] [--filter "<names>"]
+<runner-prefix> npm-check-updates@21.0.2 -p <packageManager> --target <ncuTarget> --upgrade --removeRange --packageFile <sourceFile> [--cooldown <period>] [--filter "<names>"]
 ```
 
 The skill SHALL resolve `<ncuTarget>` from the `target` input via the same table `scan-npm-updates` uses (NOT passing `target` verbatim):
@@ -15,13 +15,12 @@ The skill SHALL resolve `<ncuTarget>` from the `target` input via the same table
 | `patch` | `patch` | — |
 | `minor` | `minor` | — |
 | `major` | `latest` | — |
-| `engines` | `latest` | `--enginesNode` |
 
-`-p <packageManager>` SHALL always be passed (mirror scan semantics, prevent ncu auto-detect drift). `--cooldown` SHALL be included when `cooldown` is set and omitted for `pnpm`. `--enginesNode` SHALL be included only when `target` is `engines`.
+`-p <packageManager>` SHALL always be passed (mirror scan semantics, prevent ncu auto-detect drift). `--cooldown` SHALL be included when `cooldown` is set and omitted for `pnpm`.
 
 **`--removeRange` SHALL always be passed**, at every level and every bump type: each bumped dependency is written as an **exact version** (no `^`/`~`/range operator) — e.g. `"react": "19.0.2"`, not `"^19.0.2"`. This is a deliberate, family-wide behavior change (the whole update cascade pins exact); it is NOT byte-equivalent to the pre-change patch/minor output, which preserved the existing range operator. Override-managed families (run via `overrideCommands`) pin according to their own upgrade tool and are out of scope of this rule.
 
-`--filter "<names>"` (the element's `names`, space-separated, double-quoted) SHALL be included when `includeFilter` is `true`. Additionally, when `<ncuTarget>` resolves to `latest` (i.e. `target` is `major` or `engines`), the skill SHALL ALWAYS include `--filter "<names>"` regardless of the element's `includeFilter` value — the caller's `names` list is authoritative. This is required because `scan-npm-updates` produces the `latest`-level candidate set by running `ncu --target latest` and then post-filtering (e.g. major-only); running `ncu --target latest` without `--filter` would bump every dependency with any newer version, exceeding the accepted set. For `patch`/`minor` targets `--filter` is omitted when `includeFilter` is `false`.
+`--filter "<names>"` (the element's `names`, space-separated, double-quoted) SHALL be included when `includeFilter` is `true`. Additionally, when `<ncuTarget>` resolves to `latest` (i.e. `target` is `major`), the skill SHALL ALWAYS include `--filter "<names>"` regardless of the element's `includeFilter` value — the caller's `names` list is authoritative. This is required because `scan-npm-updates` produces the `latest`-level candidate set by running `ncu --target latest` and then post-filtering (e.g. major-only); running `ncu --target latest` without `--filter` would bump every dependency with any newer version, exceeding the accepted set. For `patch`/`minor` targets `--filter` is omitted when `includeFilter` is `false`.
 
 The skill SHALL stream `ncu` stdout/stderr to the user verbatim.
 
@@ -36,7 +35,7 @@ If `ncu` exits non-zero for a manifest, the skill SHALL stop immediately and ret
 
 - **WHEN** the skill bumps `react` to `19.0.2` (any level)
 - **THEN** the written `package.json` value is `"react": "19.0.2"` with no `^`/`~` prefix
-- **AND** the same exact-pin rule applies to `patch`, `minor`, `major`, and `engines` bumps
+- **AND** the same exact-pin rule applies to `patch`, `minor`, and `major` bumps
 
 #### Scenario: Major maps to latest and always filters
 
@@ -79,7 +78,7 @@ If a catalog key is unexpectedly missing, the skill SHALL stop and return `{ ste
 
 ### Requirement: Level-agnostic operation
 
-The skill SHALL contain no level-specific branching logic; behavior is parameterized solely by `target`. The `target` input SHALL be mapped to an `ncuTarget` (`patch→patch`, `minor→minor`, `major→latest`, `engines→latest`+`--enginesNode`) threaded through every `ncu --target` call, `--removeRange` is applied uniformly, and the same skill SHALL serve `patch`, `minor`, `major`, and `engines` callers via that single mapping. The validation list for `target` remains `patch|minor|major|engines`.
+The skill SHALL contain no level-specific branching logic; behavior is parameterized solely by `target`. The `target` input SHALL be mapped to an `ncuTarget` (`patch→patch`, `minor→minor`, `major→latest`) threaded through every `ncu --target` call, `--removeRange` is applied uniformly, and the same skill SHALL serve `patch`, `minor`, and `major` callers via that single mapping. The validation list for `target` is `patch|minor|major`. (`engines` is out of scope — `apply-engine-bumps` handles the toolchain bump with no `ncu`.)
 
 #### Scenario: Minor target threads through unchanged behaviorally
 
