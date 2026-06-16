@@ -2,52 +2,52 @@
 
 ### Requirement: Renovate SHALL maintain pinned action SHAs automatically
 
-`renovate.json` SHALL habilitar el pinning de digests de GitHub Actions a semver, ya sea de forma explícita con el preset `helpers:pinGitHubActionDigestsToSemver` en `extends`, o de forma transitiva al extender `config:best-practices` (que ya incluye dicho preset). NO se requiere que el string literal `"helpers:pinGitHubActionDigestsToSemver"` aparezca explícitamente en `extends` cuando `config:best-practices` está presente. En cualquiera de los dos casos, Renovate:
+`renovate.json` SHALL enable pinning of GitHub Action digests to semver, either explicitly via the `helpers:pinGitHubActionDigestsToSemver` preset in `extends`, or transitively by extending `config:best-practices` (which already bundles that preset). The literal string `"helpers:pinGitHubActionDigestsToSemver"` is NOT required to appear explicitly in `extends` when `config:best-practices` is present. In either case, Renovate:
 
-- Pinea a SHA cualquier action nueva que aparezca con un major/minor tag (incluidas `actions/*`)
-- Actualiza el SHA pineado cuando se publique una nueva versión, conservando el comentario `# vX.Y.Z` actualizado
-- Genera PRs separadas por update type (patch/minor/major) respetando los `packageRules` existentes
+- Pins to SHA any new action that appears with a major/minor tag (including `actions/*`)
+- Updates the pinned SHA when a new version is published, keeping the `# vX.Y.Z` comment current
+- Generates separate PRs per update type (patch/minor/major) honoring the existing `packageRules`
 
-`renovate.json` SHALL NOT contener `packageRules` que pongan `pinDigests: false` para `actions/*` u otros owners.
+`renovate.json` SHALL NOT contain `packageRules` that set `pinDigests: false` for `actions/*` or other owners.
 
 #### Scenario: Pin preset enabled via config:best-practices
 
-- **WHEN** se inspecciona `renovate.json`
-- **THEN** `extends` contiene `"config:best-practices"` (que aporta `helpers:pinGitHubActionDigestsToSemver` transitivamente)
-- **AND** no hay `packageRules` que excluyan `actions/*` del pinning
+- **WHEN** `renovate.json` is inspected
+- **THEN** `extends` contains `"config:best-practices"` (which provides `helpers:pinGitHubActionDigestsToSemver` transitively)
+- **AND** there are no `packageRules` excluding `actions/*` from pinning
 
 #### Scenario: Pin preset enabled explicitly
 
-- **WHEN** un `renovate.json` lista `"helpers:pinGitHubActionDigestsToSemver"` explícitamente en `extends`
-- **THEN** la referencia sigue siendo válida y conforme
+- **WHEN** a `renovate.json` lists `"helpers:pinGitHubActionDigestsToSemver"` explicitly in `extends`
+- **THEN** the reference is still valid and compliant
 
 #### Scenario: Renovate updates a pinned SHA
 
-- **WHEN** se publica `nrwl/nx-set-shas@v5.0.2` upstream
-- **THEN** Renovate abre una PR que reemplaza el SHA actual y actualiza el comentario a `# v5.0.2` sin perder el formato
+- **WHEN** `nrwl/nx-set-shas@v5.0.2` is published upstream
+- **THEN** Renovate opens a PR replacing the current SHA and updating the comment to `# v5.0.2` without losing the format
 
 ### Requirement: Renovate SHALL stagger PR creation across update types
 
-`renovate.json` SHALL definir schedules separados por `matchUpdateTypes` para evitar spikes de PRs cuando ciclos coinciden:
+`renovate.json` SHALL define separate schedules per `matchUpdateTypes` to avoid PR spikes when cycles coincide:
 
-- `patch` → primer día del mes
-- `minor` → día 8 del mes cada 2 meses
-- `major` → día 15 del mes cada 3 meses
+- `patch` → first day of the month
+- `minor` → 8th day of the month every 2 months
+- `major` → 15th day of the month every 3 months
 
-Adicionalmente, el `minimumReleaseAge` efectivo SHALL ser de al menos `14 days` para reducir exposición a paquetes comprometidos recientemente publicados. Al extender `config:best-practices`, que incluye `security:minimumReleaseAgeNpm` (ventana de 3 días para npm), la configuración SHALL preservar el piso de 14 días para paquetes npm — es decir, el preset NO SHALL reducir silenciosamente la ventana npm por debajo de 14 días; si fuese necesario, se reafirma con un `packageRule` o con el `minimumReleaseAge` top-level vigente.
+Additionally, the effective `minimumReleaseAge` SHALL be at least `14 days` to reduce exposure to recently published, potentially compromised packages. When extending `config:best-practices`, which bundles `security:minimumReleaseAgeNpm` (a shorter window for npm), the configuration SHALL preserve the 14-day floor for npm packages — that is, the preset SHALL NOT silently lower the npm window below 14 days; if needed, it is re-asserted with a trailing `packageRule` or via the existing top-level `minimumReleaseAge`.
 
 #### Scenario: Schedules are staggered
 
-- **WHEN** se inspecciona `renovate.json`
-- **THEN** los `packageRules` con `matchUpdateTypes: ["patch"|"minor"|"major"]` tienen `schedule` distintos por día/mes
+- **WHEN** `renovate.json` is inspected
+- **THEN** the `packageRules` with `matchUpdateTypes: ["patch"|"minor"|"major"]` have distinct `schedule` values by day/month
 
 #### Scenario: Release age window enforced
 
-- **WHEN** se publica una nueva versión de un paquete
-- **AND** han pasado menos de 14 días desde la publicación
-- **THEN** Renovate NO abre PR para esa versión hasta que la ventana se cumpla (excepto vulnerabilidades cubiertas por `:enableVulnerabilityAlertsWithLabel(security)`)
+- **WHEN** a new version of a package is published
+- **AND** fewer than 14 days have passed since publication
+- **THEN** Renovate does NOT open a PR for that version until the window is met (except vulnerabilities covered by `:enableVulnerabilityAlertsWithLabel(security)`)
 
 #### Scenario: best-practices npm window does not undercut the 14-day floor
 
-- **WHEN** `renovate.json` extiende `config:best-practices` (que aporta `security:minimumReleaseAgeNpm` con 3 días)
-- **THEN** el `minimumReleaseAge` efectivo para paquetes npm permanece en al menos 14 días
+- **WHEN** `renovate.json` extends `config:best-practices` (which provides `security:minimumReleaseAgeNpm` with a shorter window)
+- **THEN** the effective `minimumReleaseAge` for npm packages remains at least 14 days
