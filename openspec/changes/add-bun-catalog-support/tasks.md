@@ -1,6 +1,6 @@
 ## 1. Scan — Bun catalog detection (`scan-npm-updates`)
 
-- [ ] 1.1 In `skills/scan-npm-updates/SKILL.md` "Catalog post-processing" section, add a `bun` branch alongside the pnpm branch: when `packageManager === "bun"`, read the root `package.json` and parse `catalog`, `workspaces.catalog`, `catalogs.<name>`, `workspaces.catalogs.<name>`.
+- [ ] 1.1 In `skills/scan-npm-updates/SKILL.md` "Catalog post-processing" section, add a `bun` branch alongside the pnpm branch: when `packageManager === "bun"`, read the root `package.json` catalog maps (may use `bun pm pkg get catalog` / `bun pm pkg get catalogs`) and parse `catalog`, `workspaces.catalog`, `catalogs.<name>`, `workspaces.catalogs.<name>`.
 - [ ] 1.2 Emit catalog records: bare `catalog` → `location: "catalog:default"`; `catalogs.<name>` → `location: "catalog:<name>"`. Reuse the existing `npm view` + `level` + `minimumReleaseAge` candidate filtering unchanged.
 - [ ] 1.3 Attach `catalogSource = { sourceFile, manager: "bun", field: {kind:"default"} | {kind:"named", name}, underWorkspaces }` to every Bun catalog record; also attach the pnpm-default `catalogSource` to existing pnpm records.
 - [ ] 1.4 Remove the "named catalog … not yet supported" warning for the bun path (named catalogs are first-class); keep it for the pnpm path.
@@ -10,7 +10,7 @@
 ## 2. Apply — Bun catalog edits + guard (`apply-npm-updates`)
 
 - [ ] 2.1 In `skills/apply-npm-updates/SKILL.md` input spec, extend `catalogEdits` element to `{ name, targetVersion, catalogSource? }` and document the pnpm-default fallback when `catalogSource` is omitted.
-- [ ] 2.2 Generalize Step A2 ("pnpm-workspace.yaml catalog edits" → "Catalog source edits"): route by `catalogSource.manager` — pnpm edits `pnpm-workspace.yaml#catalog`; bun edits the resolved node in the root `package.json` (`catalog` / `catalogs.<name>`, under `workspaces` when flagged) via a targeted in-place `Edit` (no `JSON.parse`→`stringify`).
+- [ ] 2.2 Generalize Step A2 ("pnpm-workspace.yaml catalog edits" → "Catalog source edits"): route by `catalogSource.manager` — pnpm edits `pnpm-workspace.yaml#catalog`; bun edits the resolved node in the root `package.json` (`catalog` / `catalogs.<name>`, under `workspaces` when flagged) via a targeted in-place `Edit` (no `JSON.parse`→`stringify`; NOT `bun pm pkg set` — it corrupts dotted package names, see `research/bun-cli-spike.md`).
 - [ ] 2.3 Handle the non-unique-token case: scope the `Edit` match to the resolved catalog block.
 - [ ] 2.4 Add the package-manager-agnostic guard in Step A1: never add a `/^catalog:/` consumer value to `--filter`; never write a pinned version over a `catalog:*` value.
 - [ ] 2.5 Generalize the Hard rules bullet: "(only `pnpm-workspace.yaml`)" → "(only the catalog source file: `pnpm-workspace.yaml` for pnpm, root `package.json` for Bun)".
