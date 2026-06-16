@@ -1,32 +1,32 @@
 ## Why
 
-Step 6 ("Apply bumps") del comando `/experiments:npm-update-patch` edita `package.json` entrada por entrada con llamadas `Edit` secuenciales. Es lento, frágil frente a prefijos (`^`/`~`/exact) y trailing commas, y gasta contexto. Paralelamente, paquetes como Storybook publican su propio comando de upgrade (`storybook upgrade`) que sincroniza toda la familia `@storybook/*` y corre automigrations; bumpear manifest a manifest los desalinea.
+Step 6 ("Apply bumps") of the `/experiments:npm-update-patch` command edits `package.json` entry by entry with sequential `Edit` calls. It is slow, fragile against prefixes (`^`/`~`/exact) and trailing commas, and burns context. In parallel, packages like Storybook publish their own upgrade command (`storybook upgrade`) that syncs the whole `@storybook/*` family and runs automigrations; bumping manifest by manifest misaligns them.
 
-Issue origen: GitHub monolab#189 (dos mejoras independientes pero co-localizadas en la fase de apply, por eso se empaquetan en un solo change).
+Origin issue: GitHub monolab#189 (two independent but co-located improvements in the apply phase, hence bundled into a single change).
 
 ## What Changes
 
-- **MODIFICADO**: Step 6 del comando delega la reescritura de `package.json` a una única invocación `ncu --target patch --upgrade --packageFile <manifest>` por archivo. Para `pick-subset` se añade `--filter "name1 name2 ..."` (lista literal, tras spike que confirma la semántica). Las flags de cooldown/minimumReleaseAge resueltas en el scan se espejan en el apply para evitar drift ncu→ncu.
-- **NUEVO**: registry de "package upgrade overrides" en `claude-plugins/experiments/skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml`. Primera entry: Storybook (`storybook`, `@storybook/*`, `eslint-plugin-storybook`, `storybook-addon-*`) con plantilla `npx storybook@{version} upgrade`. Formato trivialmente extensible (añadir entry sin tocar lógica del comando).
-- **NUEVO**: antes de aplicar, si `ACCEPTED` contiene paquetes que matchean una entry del registry, el comando lanza un `AskUserQuestion` con opciones `run-override` / `skip-matched` / `force-generic`. Decisión explícita por invocación; nunca se auto-ejecuta una migración.
-- **SE MANTIENE**: entradas `pnpm-workspace.yaml#catalog` siguen editándose por el camino actual en memoria (ncu 21.x no reescribe catalogs; un spike lo confirma antes de congelar la decisión).
-- Bump del plugin `experiments`: 0.6.0 → 0.7.0 (cambio de comportamiento del comando + data artifact nuevo).
+- **MODIFIED**: Step 6 of the command delegates the `package.json` rewrite to a single `ncu --target patch --upgrade --packageFile <manifest>` invocation per file. For `pick-subset`, `--filter "name1 name2 ..."` is added (literal list, after a spike confirming the semantics). The cooldown/minimumReleaseAge flags resolved in the scan are mirrored in the apply to avoid ncu→ncu drift.
+- **NEW**: a "package upgrade overrides" registry at `claude-plugins/experiments/skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml`. First entry: Storybook (`storybook`, `@storybook/*`, `eslint-plugin-storybook`, `storybook-addon-*`) with template `npx storybook@{version} upgrade`. Trivially extensible format (add an entry without touching the command logic).
+- **NEW**: before applying, if `ACCEPTED` contains packages that match a registry entry, the command raises an `AskUserQuestion` with options `run-override` / `skip-matched` / `force-generic`. Explicit decision per invocation; a migration is never auto-executed.
+- **KEPT**: `pnpm-workspace.yaml#catalog` entries are still edited via the current in-memory path (ncu 21.x does not rewrite catalogs; a spike confirms this before freezing the decision).
+- Bump of the `experiments` plugin: 0.6.0 → 0.7.0 (command behavior change + new data artifact).
 
-Sin breaking changes a nivel de interfaz: mismas opciones primarias (`apply-all | pick-subset | cancel`), mismo resultado observable en el working tree para paquetes fuera del registry.
+No breaking changes at the interface level: same primary options (`apply-all | pick-subset | cancel`), same observable result in the working tree for packages outside the registry.
 
 ## Capabilities
 
 ### New Capabilities
 
-- ninguna
+- none
 
 ### Modified Capabilities
 
-- `experiments-plugin`: reescribe la Requirement "npm-update-patch Command" (sustituye la sección de apply y añade el flujo de override registry), y añade una Requirement "Package Upgrade Override Registry" que codifica el formato del data file y su semántica. El bump de versión del plugin se aplica vía la skill `plugin-version-bump` y no se codifica como Requirement.
+- `experiments-plugin`: rewrites the "npm-update-patch Command" Requirement (replaces the apply section and adds the override-registry flow), and adds a "Package Upgrade Override Registry" Requirement that encodes the data file format and its semantics. The plugin version bump is applied via the `plugin-version-bump` skill and is not encoded as a Requirement.
 
 ## Impact
 
-- Código: edita `claude-plugins/experiments/commands/npm-update-patch.md` (Step 6 + nueva fase de registry prompt). Nuevo archivo `claude-plugins/experiments/skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml` con el seed de Storybook. Bump en `plugin.json`, `package.json` y entry de `marketplace.json`.
-- Deps: ninguna dep npm nueva en el workspace. `npm-check-updates@21.0.2` ya invocada vía dlx en la skill; ahora también en la fase de apply.
-- Superficie externa: misma interfaz de comando; aparece una pregunta interactiva nueva solo cuando hay paquetes en el registry en el set aceptado.
-- Sin breaking changes.
+- Code: edits `claude-plugins/experiments/commands/npm-update-patch.md` (Step 6 + new registry-prompt phase). New file `claude-plugins/experiments/skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml` with the Storybook seed. Bump in `plugin.json`, `package.json` and the `marketplace.json` entry.
+- Deps: no new npm dep in the workspace. `npm-check-updates@21.0.2` is already invoked via dlx in the skill; now also in the apply phase.
+- External surface: same command interface; a new interactive question appears only when there are registry packages in the accepted set.
+- No breaking changes.

@@ -1,99 +1,99 @@
 ## Context
 
-El comando `/experiments:npm-update-patch` (spec `experiments-plugin` líneas 361–424) aplica bumps editando cada `sourceFile` con un `Edit` por paquete aceptado. Funcional, pero:
+The `/experiments:npm-update-patch` command (spec `experiments-plugin` lines 361–424) applies bumps by editing each `sourceFile` with one `Edit` per accepted package. Functional, but:
 
-- La skill ya preserva prefijos `^`/`~`/exact → Claude tiene que hacer match exacto del string previo para no perderlos.
-- Llamadas secuenciales `Edit` gastan contexto proporcional a N.
-- Sin garantías sobre trailing commas, indentación exótica, o secciones duplicadas (mismo name en `dependencies` y `devDependencies` de repos mal higienizados).
+- The skill already preserves `^`/`~`/exact prefixes → Claude has to exactly match the previous string so as not to lose them.
+- Sequential `Edit` calls burn context proportional to N.
+- No guarantees about trailing commas, exotic indentation, or duplicate sections (same name in `dependencies` and `devDependencies` of poorly-hygienized repos).
 
-Paralelamente, familias de paquetes con herramientas oficiales (Storybook el caso más claro) pierden automigrations y sincronización cross-package cuando se bumpean entry por entry.
+In parallel, package families with official tooling (Storybook being the clearest case) lose automigrations and cross-package synchronization when bumped entry by entry.
 
-La skill `scan-npm-updates` ya ejecuta `ncu` con `--jsonUpgraded` en modo read-only; la herramienta también sabe reescribir manifests con `--upgrade`. La premisa del change es reusar esa capacidad en la fase de apply, mantener catalogs por el camino actual (ncu no los soporta en 21.x salvo confirmación del spike), y añadir un gancho de overrides para casos como Storybook.
+The `scan-npm-updates` skill already runs `ncu` with `--jsonUpgraded` in read-only mode; the tool also knows how to rewrite manifests with `--upgrade`. The premise of the change is to reuse that capability in the apply phase, keep catalogs on the current path (ncu does not support them in 21.x unless the spike confirms otherwise), and add an overrides hook for cases like Storybook.
 
 ## Goals / Non-Goals
 
 **Goals:**
 
-- Reemplazar el bucle de `Edit` en Step 6 por una invocación `ncu --upgrade` por manifest (`package.json`) cuando el tipo de `sourceFile` sea un manifest normal.
-- Permitir `pick-subset` con `--filter` literal (lista de nombres separados por espacios).
-- Mantener determinismo entre scan y apply: el apply usa las mismas flags de `--target`, `--cooldown` y `minimumReleaseAge` resueltas en el scan.
-- Introducir un registry de overrides por paquete en forma de data file (YAML), leído por el comando, fácilmente extensible (añadir entry = editar YAML).
-- Storybook como primera entry del registry; acción por defecto: preguntar al usuario qué hacer.
-- Mantener catalogs (`pnpm-workspace.yaml#catalog`) en el camino actual hasta que un spike confirme/refute soporte en ncu 21.x.
-- Ningún cambio visible fuera de Step 6 para paquetes no-registry en set aceptado no-catalog.
+- Replace the `Edit` loop in Step 6 with one `ncu --upgrade` invocation per manifest (`package.json`) when the `sourceFile` type is a normal manifest.
+- Allow `pick-subset` with a literal `--filter` (space-separated list of names).
+- Keep determinism between scan and apply: the apply uses the same `--target`, `--cooldown` and `minimumReleaseAge` flags resolved in the scan.
+- Introduce a per-package override registry as a data file (YAML), read by the command, easily extensible (adding an entry = editing YAML).
+- Storybook as the first registry entry; default action: ask the user what to do.
+- Keep catalogs (`pnpm-workspace.yaml#catalog`) on the current path until a spike confirms/refutes support in ncu 21.x.
+- No visible change outside Step 6 for non-registry packages in a non-catalog accepted set.
 
 **Non-Goals:**
 
-- Ejecutar tests, lint, build, commits (sigue igual: hard rule).
-- Soportar catalogs nombrados (`catalog:test`, etc.). Tracked separately (MON).
-- Añadir más entries al registry más allá de Storybook. El change deja el formato listo; entries futuras van en changes siguientes.
-- Escribir un script TS: la lógica sigue viviendo en el markdown del comando, interpretado por Claude, con datos externos solo para el registry.
-- Detectar automáticamente que un paquete "tiene codemod oficial" (heurística imposible sin telemetría upstream). El registry es la única fuente de verdad.
+- Run tests, lint, build, commits (still unchanged: hard rule).
+- Support named catalogs (`catalog:test`, etc.). Tracked separately (MON).
+- Add more entries to the registry beyond Storybook. The change leaves the format ready; future entries go in subsequent changes.
+- Write a TS script: the logic still lives in the command markdown, interpreted by Claude, with external data only for the registry.
+- Automatically detect that a package "has an official codemod" (impossible heuristic without upstream telemetry). The registry is the only source of truth.
 
 ## Decisions
 
-### Decisión 1: `ncu --upgrade` por manifest para Step 6 (no edit-loop)
+### Decision 1: `ncu --upgrade` per manifest for Step 6 (no edit-loop)
 
-**Elegido.** Para cada `sourceFile` que sea un `package.json` (no catalog), el comando ejecuta **una** invocación:
+**Chosen.** For each `sourceFile` that is a `package.json` (not a catalog), the command runs **one** invocation:
 
 ```
 <runner-prefix> npm-check-updates@21.0.2 \
   --target patch \
   --upgrade \
   --packageFile <path> \
-  [--cooldown <period>]        # solo cuando el scan usó --cooldown
-  [--filter "<names...>"]      # cuando el set objetivo sea subconjunto estricto
-                               # (pick-subset o exclusiones por OVERRIDE_RUN/OVERRIDE_SKIP)
+  [--cooldown <period>]        # only when the scan used --cooldown
+  [--filter "<names...>"]      # when the target set is a strict subset
+                               # (pick-subset or exclusions via OVERRIDE_RUN/OVERRIDE_SKIP)
 ```
 
-El runner-prefix se resuelve igual que en el scan (`pnpm dlx`, `npx -y`, `yarn dlx`, `bunx`, `deno run ...`).
+The runner-prefix is resolved the same way as in the scan (`pnpm dlx`, `npx -y`, `yarn dlx`, `bunx`, `deno run ...`).
 
 Rationale:
 
-- Reusa la lógica de prefix-preservation y format-preservation de ncu (battle-tested upstream).
-- Reduce el coste de contexto: una bash call por manifest en lugar de N Edit calls.
-- El upstream de ncu es explícito sobre idempotencia de `--upgrade` y trabajo en-place.
+- Reuses ncu's prefix-preservation and format-preservation logic (battle-tested upstream).
+- Reduces context cost: one bash call per manifest instead of N Edit calls.
+- ncu's upstream is explicit about the idempotency of `--upgrade` and in-place work.
 
-**Alternativas consideradas.**
+**Alternatives considered.**
 
-- **(A) Parseo JSON explícito del package.json y set de version keys.** Deterministic pero perderíamos la detección de prefix que ncu ya hace; además, cada PM puede tener quirks (bun usa `dependenciesOverride`, pnpm tiene `pnpm.overrides`, etc.) que ncu conoce.
-- **(B) Un solo `ncu -ws` global en workspaces.** El shape de output varía entre versiones y mezcla manifests en un blob; la invocación por manifest es predecible y alineada con lo que el scan ya hace.
+- **(A) Explicit JSON parsing of package.json and the set of version keys.** Deterministic but we would lose the prefix detection ncu already does; besides, each PM can have quirks (bun uses `dependenciesOverride`, pnpm has `pnpm.overrides`, etc.) that ncu knows.
+- **(B) A single global `ncu -ws` in workspaces.** The output shape varies across versions and mixes manifests into one blob; the per-manifest invocation is predictable and aligned with what the scan already does.
 
-### Decisión 2: `--filter` con lista literal de nombres separados por espacios
+### Decision 2: `--filter` with a literal space-separated list of names
 
-**Elegido.** `pick-subset` materializa `ACCEPTED` como `"name-a name-b @scope/name-c"`. Ncu documenta que `--filter` acepta (a) una lista space-separated, (b) un glob, o (c) un regex. Para evitar interpretaciones accidentales (por ejemplo, un nombre con `+` se lee como regex), el comando pasa la lista literal tras un spike de verificación.
+**Chosen.** `pick-subset` materializes `ACCEPTED` as `"name-a name-b @scope/name-c"`. ncu documents that `--filter` accepts (a) a space-separated list, (b) a glob, or (c) a regex. To avoid accidental interpretations (for example, a name with `+` being read as regex), the command passes the literal list after a verification spike.
 
-**Spike requerido (tasks §1.1):**
+**Required spike (tasks §1.1):**
 
-- Crear fixture con 3 paquetes con patch disponible, nombres que incluyan caracteres regex-significativos (`@scope/foo`, `postcss-import`, `eslint-plugin-storybook`).
-- Ejecutar `ncu --upgrade --packageFile pkg.json --filter "@scope/foo postcss-import"`.
-- Confirmar: solo esos dos se reescriben; el tercero no se toca.
-- Si falla (ncu interpreta como regex): fallback a `--filter` con N invocaciones (una por paquete), o serializar nombres con escaping. Registrar decisión en el spike.
+- Create a fixture with 3 packages with an available patch, names that include regex-significant characters (`@scope/foo`, `postcss-import`, `eslint-plugin-storybook`).
+- Run `ncu --upgrade --packageFile pkg.json --filter "@scope/foo postcss-import"`.
+- Confirm: only those two are rewritten; the third is untouched.
+- If it fails (ncu interprets it as regex): fall back to `--filter` with N invocations (one per package), or serialize names with escaping. Record the decision in the spike.
 
-**Alternativa considerada.** Usar `ncu --upgrade --reject "excluded"` (es la opción opuesta). Rechazada: `pick-subset` ya produce la lista de aceptados; passar aceptados es menos ambiguo que passar rechazados cuando hay paquetes fuera del scan-output que nunca estuvieron en juego.
+**Alternative considered.** Use `ncu --upgrade --reject "excluded"` (the opposite option). Rejected: `pick-subset` already produces the list of accepted ones; passing accepted ones is less ambiguous than passing rejected ones when there are packages outside the scan-output that were never in play.
 
-### Decisión 3: Flag mirroring scan↔apply
+### Decision 3: Flag mirroring scan↔apply
 
-El scan resuelve `minimumReleaseAge` y usa `--cooldown` o delega al read-native de ncu (pnpm). El apply DEBE usar exactamente las mismas flags. Razón: el apply re-invoca ncu, que re-descubre el target. Sin las mismas flags, un candidate filtrado por age en el scan podría aparecer como target en el apply (TOCTOU ↑ window).
+The scan resolves `minimumReleaseAge` and uses `--cooldown` or delegates to ncu's read-native (pnpm). The apply MUST use exactly the same flags. Reason: the apply re-invokes ncu, which re-discovers the target. Without the same flags, a candidate filtered by age in the scan could appear as a target in the apply (TOCTOU ↑ window).
 
-**Implementación.** El comando guarda en memoria las flags computadas por la skill (ya estaban ahí; se propagan explícitamente a Step 6) y las mete en la invocación de apply. En el caso pnpm, ncu lee `pnpm-workspace.yaml` también en apply → no hace falta propagar nada.
+**Implementation.** The command keeps in memory the flags computed by the skill (they were already there; they are propagated explicitly to Step 6) and puts them into the apply invocation. In the pnpm case, ncu reads `pnpm-workspace.yaml` in the apply too → nothing needs to be propagated.
 
-**Trade-off aceptado.** Pequeña ventana de TOCTOU entre scan y apply (segundos). El filtro `minimumReleaseAge` ya descarta versiones publicadas muy recientemente, así que el riesgo real de drift es bajo.
+**Accepted trade-off.** A small TOCTOU window between scan and apply (seconds). The `minimumReleaseAge` filter already discards versions published very recently, so the real risk of drift is low.
 
-### Decisión 4: Catalogs siguen por el camino en-memoria (con spike)
+### Decision 4: Catalogs stay on the in-memory path (with a spike)
 
-`pnpm-workspace.yaml#catalog` sigue editado por el comando directamente (como en la spec actual). Antes de cerrar el change, un spike verifica si ncu 21.x ya sabe reescribir catalogs.
+`pnpm-workspace.yaml#catalog` is still edited by the command directly (as in the current spec). Before closing the change, a spike verifies whether ncu 21.x already knows how to rewrite catalogs.
 
-**Spike requerido (tasks §1.2).**
+**Required spike (tasks §1.2).**
 
-- Fixture con `pnpm-workspace.yaml` y un catalog entry desactualizado.
-- Ejecutar `ncu --target patch --upgrade --packageFile pnpm-workspace.yaml` (o con `--packageManager pnpm`).
-- Resultado esperado (basado en issue del reporter): "no updates". Si sorprende y funciona, documentar y extender Step 6 a catalogs.
-- Si no funciona: el camino actual (find-replace el key `name:` dentro de `catalog:` preservando indentación) se mantiene sin cambios.
+- Fixture with a `pnpm-workspace.yaml` and an out-of-date catalog entry.
+- Run `ncu --target patch --upgrade --packageFile pnpm-workspace.yaml` (or with `--packageManager pnpm`).
+- Expected result (based on the reporter's issue): "no updates". If it surprisingly works, document it and extend Step 6 to catalogs.
+- If it does not work: the current path (find-replace the `name:` key inside `catalog:` preserving indentation) is kept unchanged.
 
-### Decisión 5: Registry de overrides como data file YAML
+### Decision 5: Override registry as a YAML data file
 
-**Ubicación:** `claude-plugins/experiments/skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml` (respuesta del usuario: bajo la propia skill).
+**Location:** `claude-plugins/experiments/skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml` (user's answer: under the skill itself).
 
 **Shape:**
 
@@ -107,100 +107,100 @@ overrides:
       - eslint-plugin-storybook
       - "storybook-addon-*"
     command: "npx storybook@{version} upgrade"
-    versionSource: target-of:storybook    # ver semántica abajo
+    versionSource: target-of:storybook    # see semantics below
     fallbackVersionSource: max-target-of:@storybook/*
     reference: https://storybook.js.org/docs/releases/upgrading
-    notes: "Sincroniza todos los @storybook/* a {version} y corre automigrations."
+    notes: "Syncs all @storybook/* to {version} and runs automigrations."
 ```
 
-**Semántica de matching.**
+**Matching semantics.**
 
-- `matches` es una lista de patrones con glob simple (`*` como wildcard). Un paquete del scan matchea si su nombre coincide con cualquier patrón.
-- Un paquete matchea como máximo **una** entry (primera que coincida en orden de declaración).
+- `matches` is a list of patterns with simple glob (`*` as wildcard). A scan package matches if its name coincides with any pattern.
+- A package matches at most **one** entry (the first that coincides in declaration order).
 
-**Semántica de versionSource.**
+**versionSource semantics.**
 
-- `target-of:<name>`: usa el `targetVersion` del paquete `<name>` si está en ACCEPTED; si no, cae a `fallbackVersionSource`.
-- `max-target-of:<glob>`: max semver de los `targetVersion` de los paquetes que matcheen el glob en ACCEPTED.
-- `latest`: literal `latest` (para entries que acepten "bump a lo que sea el último stable").
+- `target-of:<name>`: uses the `targetVersion` of package `<name>` if it is in ACCEPTED; if not, falls back to `fallbackVersionSource`.
+- `max-target-of:<glob>`: max semver of the `targetVersion`s of the packages matching the glob in ACCEPTED.
+- `latest`: literal `latest` (for entries that accept "bump to whatever is the latest stable").
 
-Storybook usa `target-of:storybook` con fallback a `max-target-of:@storybook/*` porque el paquete `storybook` suele estar presente; si no, se usa la máxima del resto de `@storybook/*`.
+Storybook uses `target-of:storybook` with a fallback to `max-target-of:@storybook/*` because the `storybook` package is usually present; if not, the max of the remaining `@storybook/*` is used.
 
-**Formato elegido: YAML.** Alternativas: JSON (verboso para los comentarios que documentan cada entry) y prose markdown dentro de `SKILL.md` (no parseable, difícil de extender). YAML se alinea con `pnpm-workspace.yaml` del repo principal y tiene comentarios.
+**Chosen format: YAML.** Alternatives: JSON (verbose for the comments that document each entry) and prose markdown inside `SKILL.md` (not parseable, hard to extend). YAML aligns with the main repo's `pnpm-workspace.yaml` and has comments.
 
-**Lector.** El comando lee el YAML con `cat <path>` + parseo estructural (Claude interpreta YAML nativamente; no necesita `yq`). Si el archivo falta o es inválido, el comando emite warning y procede sin registry (legacy behavior).
+**Reader.** The command reads the YAML with `cat <path>` + structural parsing (Claude interprets YAML natively; it does not need `yq`). If the file is missing or invalid, the command emits a warning and proceeds without the registry (legacy behavior).
 
-### Decisión 6: UX cuando el registry matchea
+### Decision 6: UX when the registry matches
 
-Inmediatamente después del primary prompt (`apply-all` / `pick-subset` / `cancel`) y antes de Step 6, si `ACCEPTED` contiene paquetes que matchean alguna entry del registry:
+Immediately after the primary prompt (`apply-all` / `pick-subset` / `cancel`) and before Step 6, if `ACCEPTED` contains packages that match some registry entry:
 
 ```
 > AskUserQuestion: "<entry.id> detected in accepted set. <entry.notes>
   Suggested: <interpolated command>. What do you want to do?"
 
-  [run-override]   → ejecuta el command override; excluye paquetes matcheados del flujo ncu --upgrade
-  [skip-matched]   → omite los paquetes matcheados (ni se bumpean ni se corre override)
-  [force-generic]  → bumpea los paquetes matcheados con ncu --upgrade normal (legacy)
+  [run-override]   → runs the override command; excludes matched packages from the ncu --upgrade flow
+  [skip-matched]   → omits the matched packages (neither bumped nor override-run)
+  [force-generic]  → bumps the matched packages with normal ncu --upgrade (legacy)
 ```
 
-Una pregunta por entry (si hubiera varias entries matcheando en una sola invocación, que es edge case raro pero posible con glob amplio, se hace N preguntas secuenciales, una por entry).
+One question per entry (if there were several entries matching in a single invocation, which is a rare edge case but possible with a wide glob, N sequential questions are asked, one per entry).
 
-**Interpolación `{version}`.**
+**`{version}` interpolation.**
 
-- Se resuelve con el `versionSource` de la entry antes de presentar la pregunta.
-- Si la resolución falla (p. ej. `target-of:storybook` y el paquete no está en ACCEPTED y no hay fallback válido): warning + skip de la override prompt (sigue con ncu --upgrade legacy para los matcheados).
+- Resolved with the entry's `versionSource` before presenting the question.
+- If resolution fails (e.g. `target-of:storybook` and the package is not in ACCEPTED and there is no valid fallback): warning + skip of the override prompt (continues with legacy ncu --upgrade for the matched ones).
 
-**Alternativas descartadas.**
+**Discarded alternatives.**
 
-- **Auto-run.** Rechazada: `storybook upgrade` lanza automigrations y prompts interactivos (depende de versión); auto-ejecutarlo sin consentimiento explícito rompe el principio "the command does bump + install only".
-- **Warn-and-skip silencioso.** Rechazada: obliga al usuario a leer el summary final y correr el comando después; high friction para el happy path.
+- **Auto-run.** Rejected: `storybook upgrade` launches automigrations and interactive prompts (depends on version); auto-running it without explicit consent breaks the principle "the command does bump + install only".
+- **Silent warn-and-skip.** Rejected: it forces the user to read the final summary and run the command afterward; high friction for the happy path.
 
-### Decisión 7: Post-override, no se corre el `<pm> install` final
+### Decision 7: Post-override, the final `<pm> install` is not run
 
-`storybook upgrade` (y overrides futuras) típicamente gestionan su propio install. Si se ejecutó un override:
+`storybook upgrade` (and future overrides) typically manage their own install. If an override was run:
 
-- El comando **no** corre el `<pm> install` final automático para los paquetes matcheados.
-- Si además hay paquetes NO matcheados bumpeados por ncu, SÍ se corre un `<pm> install` al final (lo normal).
-- Caso raro: todos los aceptados son override-matched → no install separado; se asume que el override lo hizo.
+- The command does **not** run the automatic final `<pm> install` for the matched packages.
+- If there are also NON-matched packages bumped by ncu, a `<pm> install` IS run at the end (the normal one).
+- Rare case: all accepted ones are override-matched → no separate install; it is assumed the override did it.
 
-Esto va documentado en el summary final, para que el usuario sepa qué se ejecutó.
+This is documented in the final summary, so the user knows what was run.
 
 ## Risks / Trade-offs
 
-- **Riesgo**: ncu reinterpreta `--filter "a b c"` como regex en alguna edge y reescribe paquetes no aceptados.
-  **Mitigación**: spike §1.1 con fixture que incluye caracteres regex-significativos antes de implementar.
+- **Risk**: ncu reinterprets `--filter "a b c"` as regex in some edge case and rewrites non-accepted packages.
+  **Mitigation**: spike §1.1 with a fixture that includes regex-significant characters before implementing.
 
-- **Riesgo**: `ncu --upgrade` reescribe el manifest con formato ligeramente distinto al original (ordering, indentation, trailing newline).
-  **Mitigación**: documentar en el summary que el formato puede variar ligeramente; ncu upstream es estable respecto a preservación pero no es un round-trip parser. Aceptado: el diff es reviewable.
+- **Risk**: `ncu --upgrade` rewrites the manifest with a slightly different format than the original (ordering, indentation, trailing newline).
+  **Mitigation**: document in the summary that the format may vary slightly; ncu upstream is stable regarding preservation but is not a round-trip parser. Accepted: the diff is reviewable.
 
-- **Riesgo**: el override de Storybook corre automigrations destructivas en el working tree del usuario (mueve código, renombra archivos).
-  **Mitigación**: la pregunta del Step 6.5 lo explica en `notes`. El usuario decide; si dice `run-override`, asume la consecuencia. El comando no oculta nada.
+- **Risk**: the Storybook override runs destructive automigrations in the user's working tree (moves code, renames files).
+  **Mitigation**: the Step 6.5 question explains it in `notes`. The user decides; if they say `run-override`, they assume the consequence. The command hides nothing.
 
-- **Riesgo**: el YAML del registry contiene errores (typo en glob, versionSource inválida) y el comando falla en un lugar no relacionado.
-  **Mitigación**: al cargar el YAML, validar shape mínimo; si falla, warning + skip registry (no aborta la invocación entera).
+- **Risk**: the registry YAML contains errors (typo in a glob, invalid versionSource) and the command fails in an unrelated place.
+  **Mitigation**: when loading the YAML, validate a minimal shape; if it fails, warning + skip registry (does not abort the whole invocation).
 
-- **Riesgo**: entre scan y apply alguien publica una patch nueva que sortea `minimumReleaseAge`.
-  **Mitigación**: mirroring de flags (Decisión 3); la ventana real es de segundos. Aceptado.
+- **Risk**: between scan and apply someone publishes a new patch that bypasses `minimumReleaseAge`.
+  **Mitigation**: flag mirroring (Decision 3); the real window is seconds. Accepted.
 
-- **Trade-off**: el registry es un data file mantenido a mano. Sin auto-sync con upstream (storybook-next publica una nueva versión → nadie actualiza el YAML). Aceptado: el registry solo dicta el command template, no versiones; `{version}` viene del scan en cada invocación.
+- **Trade-off**: the registry is a hand-maintained data file. No auto-sync with upstream (storybook-next publishes a new version → nobody updates the YAML). Accepted: the registry only dictates the command template, not versions; `{version}` comes from the scan on each invocation.
 
-- **Trade-off**: añadir overrides futuras (next, nx, turbo, astro) requiere editar YAML + validar UX. No se pre-arman entries; este change solo establece formato.
+- **Trade-off**: adding future overrides (next, nx, turbo, astro) requires editing YAML + validating UX. Entries are not pre-armed; this change only establishes the format.
 
 ## Migration Plan
 
-No aplica como migración de datos. Pasos de corte:
+Does not apply as a data migration. Cutover steps:
 
-1. Implementar spikes (tasks §1.1, §1.2) y cerrar decisiones.
-2. Editar `commands/npm-update-patch.md` con nuevo Step 6 y nueva fase de registry prompt.
-3. Crear `skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml` con el seed de Storybook.
-4. Bump plugin version 0.6.0 → 0.7.0 en los tres archivos (via `experiments:plugin-version-bump`).
-5. Sync de `openspec/specs/experiments-plugin/spec.md` via `/opsx:sync`.
-6. Validación manual en monolab (mismo patrón que el change original) + en fixture con Storybook instalado.
+1. Implement the spikes (tasks §1.1, §1.2) and close the decisions.
+2. Edit `commands/npm-update-patch.md` with the new Step 6 and the new registry-prompt phase.
+3. Create `skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml` with the Storybook seed.
+4. Bump plugin version 0.6.0 → 0.7.0 in the three files (via `experiments:plugin-version-bump`).
+5. Sync `openspec/specs/experiments-plugin/spec.md` via `/opsx:sync`.
+6. Manual validation on monolab (same pattern as the original change) + on a fixture with Storybook installed.
 
-Sin rollback necesario: el comportamiento viejo (edit-loop) vive solo en el spec previo; revertir el change restaura el comportamiento anterior.
+No rollback needed: the old behavior (edit-loop) lives only in the previous spec; reverting the change restores the previous behavior.
 
 ## Open Questions
 
-- **¿Glob engine para `matches`?** Propuesta: minimatch-like (solo `*` como wildcard literal de un segmento de nombre). No hace falta full-blown glob; los patrones son cortos y la implementación en prompt instruction es mínima. Confirmar si algún caso real necesita `?` o `{a,b}` (no identificado).
-- **¿El override prompt debe aparecer también en `apply-all`?** Sí (decidido). Cualquier apply que involucre paquetes matcheados dispara la pregunta, da igual cómo llegaron al set aceptado.
-- **¿Qué pasa si la invocación `npx storybook@X upgrade` falla?** Propuesta: capturar exit code ≠ 0, mostrar mensaje claro, **no** correr `ncu --upgrade` como fallback (el estado queda mixto). El usuario relanza el comando si quiere.
+- **Which glob engine for `matches`?** Proposal: minimatch-like (only `*` as a literal wildcard for a name segment). A full-blown glob is not needed; the patterns are short and the prompt-instruction implementation is minimal. Confirm whether any real case needs `?` or `{a,b}` (not identified).
+- **Should the override prompt also appear in `apply-all`?** Yes (decided). Any apply involving matched packages triggers the question, regardless of how they reached the accepted set.
+- **What happens if the `npx storybook@X upgrade` invocation fails?** Proposal: capture exit code ≠ 0, show a clear message, do **not** run `ncu --upgrade` as a fallback (the state stays mixed). The user re-launches the command if they want.

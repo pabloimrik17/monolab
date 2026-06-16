@@ -1,83 +1,83 @@
 ## Context
 
-El skill `scan-npm-updates` vive en `claude-plugins/experiments/skills/scan-npm-updates/SKILL.md` pero no está versionado en `openspec/specs/`. El spike del 2026-04-24 aisló un fallo silencioso: en repos con `deno.json` vecino a `package.json` (JSR + npm dual-publish), ncu 21.0.2 con `--packageFile <sub>/package.json` auto-detecta `packageManager: 'deno'`, lo que colapsa `--dep` a `['imports']` y devuelve `{}`, ignorando bumps reales de `dependencies`/`devDependencies`.
+The `scan-npm-updates` skill lives in `claude-plugins/experiments/skills/scan-npm-updates/SKILL.md` but is not versioned in `openspec/specs/`. The 2026-04-24 spike isolated a silent failure: in repos with `deno.json` next to `package.json` (JSR + npm dual-publish), ncu 21.0.2 with `--packageFile <sub>/package.json` auto-detects `packageManager: 'deno'`, which collapses `--dep` to `['imports']` and returns `{}`, ignoring real bumps in `dependencies`/`devDependencies`.
 
-Evidencia reproducible en la raíz del repo:
+Reproducible evidence at the repo root:
 
 ```
 ncu --packageFile packages/react-clean/package.json     → packageManager: 'deno', {}
 ncu -p pnpm --packageFile packages/react-clean/package.json
                                                          → packageManager: 'pnpm', {"@types/react":"18.3.28","tsdown":"0.15.12"}
-ncu --deep (desde raíz)                                  → packageManager: 'pnpm', bumps en todos
+ncu --deep (from repo root)                              → packageManager: 'pnpm', bumps on all
 ```
 
-`--deep` "funciona" por accidente de cwd; `--help` confirma que es alias literal de `--packageFile '**/package.json'` y no respeta `package.json#workspaces` ni `deno.json#workspace`.
+`--deep` "works" by accident of cwd; `--help` confirms it is a literal alias of `--packageFile '**/package.json'` and does not respect `package.json#workspaces` nor `deno.json#workspace`.
 
 ## Goals / Non-Goals
 
 **Goals:**
-- Restaurar correctness en repos donde coexisten `deno.json` y `package.json`.
-- Anclar el contrato del skill en `openspec/specs/npm-update-scanning/` para que futuros cambios puedan diffear limpio.
-- Cambio mínimo y reviewable en aislamiento de cualquier optimización posterior.
+- Restore correctness in repos where `deno.json` and `package.json` coexist.
+- Anchor the skill contract in `openspec/specs/npm-update-scanning/` so future changes can diff cleanly.
+- Minimal, reviewable change in isolation from any later optimization.
 
 **Non-Goals:**
-- Adoptar `--deep` o reducir spawn count (diferido: overscan por no respetar workspace declarations).
-- Reescribir catalog post-processing, cambiar output shape, o tocar consumers (`/experiments:npm-update-patch` et al.).
-- Añadir unit tests del skill (no existen; fuera de scope para este seed).
+- Adopting `--deep` or reducing spawn count (deferred: overscan from not respecting workspace declarations).
+- Rewriting catalog post-processing, changing output shape, or touching consumers (`/experiments:npm-update-patch` et al.).
+- Adding unit tests for the skill (none exist; out of scope for this seed).
 
 ## Decisions
 
-### Decision 1: `-p <resolvedPM>` explícito en cada invocación ncu
+### Decision 1: explicit `-p <resolvedPM>` in every ncu invocation
 
-**Chosen**: propagar el PM resuelto en la precondición 2 de `SKILL.md` al CLI de ncu en cada invocación.
+**Chosen**: propagate the PM resolved in precondition 2 of `SKILL.md` to the ncu CLI on every invocation.
 
-**Rationale**: el spike aisló el bug en el paso de auto-detección de ncu, que es sensible al directorio y prefiere Deno cuando hay `deno.json` hermano. Pasar `-p <pm>` salta la auto-detección por completo. Verificado en vivo devolviendo el bump esperado.
-
-**Alternatives considered**:
-- *`ncu --deep`*: rechazado para este change. Alias de `--packageFile '**/package.json'` según `--help`; no respeta `package.json#workspaces`/`deno.json#workspace` → overscan. Además es un cambio mayor (parser nuevo, enumeración nueva, fallo all-or-nothing). Queda como posible optimización futura con su propio costo/beneficio.
-- *Pre-validar detección corriendo `ncu --loglevel silly` e inspeccionando Options*: frágil y ruidoso; `-p` es el fix directo.
-- *Quitar `deno.json` de los sub-packages*: no opción, son requisito de JSR publish.
-
-### Decision 2: Seed del spec completo, no delta estrecho
-
-**Chosen**: emitir todos los requirements del skill bajo `## ADDED Requirements` en `specs/npm-update-scanning/spec.md`.
-
-**Rationale**: el skill no tenía spec previo; no hay contra qué delta. Seedear el contrato completo ahora mantiene el spec verídico y desbloquea cambios futuros para diffear limpio contra algo real. Además espeja la estructura de `SKILL.md`, lo que facilita la reconciliación en archival.
+**Rationale**: the spike isolated the bug to ncu's auto-detection step, which is directory-sensitive and prefers Deno when there is a sibling `deno.json`. Passing `-p <pm>` skips auto-detection entirely. Verified live returning the expected bump.
 
 **Alternatives considered**:
-- *Spec sólo del fix (1 requirement de "ncu invocation with -p")*: deja la capability permanentemente infradocumentada; cambios futuros tendrían que retro-seedear.
-- *Sin spec, sólo editar `SKILL.md`*: viola el principio contract-before-code de OpenSpec y deja al skill sin especificación.
+- *`ncu --deep`*: rejected for this change. Alias of `--packageFile '**/package.json'` per `--help`; does not respect `package.json#workspaces`/`deno.json#workspace` → overscan. It is also a major change (new parser, new enumeration, all-or-nothing failure). Left as a possible future optimization with its own cost/benefit.
+- *Pre-validating detection by running `ncu --loglevel silly` and inspecting Options*: fragile and noisy; `-p` is the direct fix.
+- *Removing `deno.json` from the sub-packages*: not an option, they are a requirement of JSR publish.
 
-### Decision 3: Enumeración per-manifest intacta
+### Decision 2: Seed the complete spec, not a narrow delta
 
-**Chosen**: no modificar la lógica de enumeración en este change.
+**Chosen**: emit all of the skill's requirements under `## ADDED Requirements` in `specs/npm-update-scanning/spec.md`.
 
-**Rationale**: la enumeración funciona correctamente en repos sin `deno.json` co-localizado; el miss era PM-detection, no enumeración. Cambiarla ahora conflaciona dos concerns e infla la superficie de review.
+**Rationale**: the skill had no prior spec; there is nothing to delta against. Seeding the complete contract now keeps the spec truthful and unblocks future changes to diff cleanly against something real. It also mirrors the structure of `SKILL.md`, which eases reconciliation at archival.
+
+**Alternatives considered**:
+- *Spec of the fix only (1 requirement for "ncu invocation with -p")*: leaves the capability permanently underdocumented; future changes would have to retro-seed.
+- *No spec, just edit `SKILL.md`*: violates OpenSpec's contract-before-code principle and leaves the skill without a specification.
+
+### Decision 3: Per-manifest enumeration intact
+
+**Chosen**: do not modify the enumeration logic in this change.
+
+**Rationale**: enumeration works correctly in repos without a co-located `deno.json`; the miss was PM-detection, not enumeration. Changing it now conflates two concerns and inflates the review surface.
 
 ## Risks / Trade-offs
 
-- **[Risk] `-p` podría sobreescribir silenciosamente una futura heurística mejor de ncu**
-  → Mitigation: la precondición 2 del skill ya resuelve el PM desde lockfiles, que son fuente autoritativa del proyecto; la auto-detección de ncu no lo es. Si ncu mejora su heurística, el spec puede revisitarse.
+- **[Risk] `-p` could silently override a future, better ncu heuristic**
+  → Mitigation: the skill's precondition 2 already resolves the PM from lockfiles, which are the project's authoritative source; ncu's auto-detection is not. If ncu improves its heuristic, the spec can be revisited.
 
-- **[Risk] Seed grande del spec (~11 requirements) puede divergir de `SKILL.md`**
-  → Mitigation: en archival el spec y `SKILL.md` se pairean por convención OpenSpec. Ediciones futuras del skill pasan por specs. `SKILL.md` queda como guía prescriptiva de implementación referenciando el spec.
+- **[Risk] Large spec seed (~11 requirements) may diverge from `SKILL.md`**
+  → Mitigation: at archival the spec and `SKILL.md` are paired by OpenSpec convention. Future skill edits go through specs. `SKILL.md` remains as a prescriptive implementation guide referencing the spec.
 
-- **[Risk] Verificación sólo manual (sin unit tests)**
-  → Mitigation: reproducción en vivo capturada en proposal y en `followup-scan-deep-finding.md`. El check de aceptación en `tasks.md` exige reproducir el fix y confirmar que `ncu --loglevel silly` muestra `packageManager: '<pm>'`, no `'deno'`.
+- **[Risk] Manual-only verification (no unit tests)**
+  → Mitigation: live reproduction captured in the proposal and in `followup-scan-deep-finding.md`. The acceptance check in `tasks.md` requires reproducing the fix and confirming that `ncu --loglevel silly` shows `packageManager: '<pm>'`, not `'deno'`.
 
-- **[Trade-off] Spawn count sin cambiar (22 en monolab)**
-  → Aceptado. Correctness primero; optimización después con wall-clock real y estrategia para overscan.
+- **[Trade-off] Spawn count unchanged (22 in monolab)**
+  → Accepted. Correctness first; optimization later with real wall-clock and a strategy for overscan.
 
 ## Migration Plan
 
-1. Merge del edit a `SKILL.md` (prepender `-p <pm>` al comando ncu en "Tool invocation" + nota breve del por qué).
-2. Sin migración de consumers — output contract sin cambios.
-3. Re-correr `/experiments:npm-update-patch` en monolab; confirmar que `@types/react 18.3.27 → 18.3.28` y `tsdown 0.15.9 → 0.15.12` aparecen en la tabla del scan para `packages/react-clean` y `packages/react-hooks`.
-4. Archivar el change cuando la re-corrida confirme correctness.
+1. Merge the edit to `SKILL.md` (prepend `-p <pm>` to the ncu command in "Tool invocation" + a brief note on why).
+2. No consumer migration — output contract unchanged.
+3. Re-run `/experiments:npm-update-patch` in monolab; confirm that `@types/react 18.3.27 → 18.3.28` and `tsdown 0.15.9 → 0.15.12` appear in the scan table for `packages/react-clean` and `packages/react-hooks`.
+4. Archive the change once the re-run confirms correctness.
 
-Rollback: revertir la edición de `SKILL.md`. Sin estado que desarmar.
+Rollback: revert the `SKILL.md` edit. No state to unwind.
 
 ## Open Questions
 
-- ¿`SKILL.md` debe linkear a `openspec/specs/npm-update-scanning/spec.md` una vez seedado? Lean sí, pero ancillary — puede añadirse en el commit de archival.
-- ¿Vale una regresión fixture-backed (repo mínimo con `deno.json` + `package.json` + bump conocido)? No en este change; candidato para `research/` de un change futuro si aterriza un harness de tests del skill.
+- Should `SKILL.md` link to `openspec/specs/npm-update-scanning/spec.md` once seeded? Leaning yes, but ancillary — can be added in the archival commit.
+- Is a fixture-backed regression worthwhile (minimal repo with `deno.json` + `package.json` + a known bump)? Not in this change; a candidate for the `research/` of a future change if a skill test harness lands.

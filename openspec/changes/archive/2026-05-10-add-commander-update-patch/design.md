@@ -50,7 +50,7 @@ Extract the cross-project pipeline into a dedicated skill (`commander-update-orc
 - **Eight known consumers, not one.** The orchestrator will be invoked by `commander-update-{patch,minor,major,engines}` (MON-153a/b/c/d, four commands) and by the deep variants (MON-154, four more commands). The "DRY-on-3" rule already applies on day one.
 - The orchestration spec is ~200 lines of behavior. Inlining it into four (or eight) command files multiplies that cost without changing the underlying logic.
 - Bug-fix concentration: a fix in the version-alignment policy or the parallel-scan dispatch lives in one place.
-- Closes MON-152 in the same PR. MON-152 ("Capa de orquestación cross-project") would otherwise sit as a follow-up ticket with no clear deliverable.
+- Closes MON-152 in the same PR. MON-152 ("Cross-project orchestration layer") would otherwise sit as a follow-up ticket with no clear deliverable.
 
 **Alternatives considered:**
 

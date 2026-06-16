@@ -18,7 +18,7 @@ The npm/commander dependency-update command matrix ships only the `patch` row. T
 - **NEW** `/experiments:commander-update-minor` (MON-195) — shallow cross-project; `orchestrator(level=minor, mode=shallow)`.
 - **NEW** `/experiments:commander-update-deep-minor` (MON-200) — deep cross-project; `orchestrator(level=minor, mode=deep)`.
 
-**Out of scope:** the `major`/`engines` rows (MON-201/MON-202) — non-`homónima` semantics (breaking changes, peer/engines handling), separate tickets — though they become trivial wrappers once this lands. No tests/lint/build, no commits/branches/PRs, no registry mutation. Manual verification only (mirrors the rest of the experiments plugin).
+**Out of scope:** the `major`/`engines` rows (MON-201/MON-202) — non-`homonymous` semantics (breaking changes, peer/engines handling), separate tickets — though they become trivial wrappers once this lands. No tests/lint/build, no commits/branches/PRs, no registry mutation. Manual verification only (mirrors the rest of the experiments plugin).
 
 ## Capabilities
 
