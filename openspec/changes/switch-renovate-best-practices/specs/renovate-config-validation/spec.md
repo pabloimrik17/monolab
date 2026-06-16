@@ -45,13 +45,13 @@ The repository's lint-staged configuration (`lint-staged.config.ts`) SHALL run `
 
 ### Requirement: Pinned validator version SHALL be auto-maintained by Renovate
 
-`renovate.json` SHALL include a custom (regex) manager that matches the `pnpm dlx -p <pkg>@<ver> <cmd>` invocation form so Renovate bumps the pinned `renovate` version used by the validator. The manager `fileMatch` SHALL cover the validator workflow file(s) under `.github/workflows/` and `lint-staged.config.ts`. The existing custom manager that matches `pnpm dlx|bunx|npx <pkg>@<ver>` SHALL be retained (the new manager complements, not replaces, it).
+`renovate.json` SHALL include a custom (regex) manager that matches the `pnpm dlx --package <pkg>@<ver> <cmd>` invocation form so Renovate bumps the pinned `renovate` version used by the validator. The manager `managerFilePatterns` SHALL cover the validator workflow file(s) under `.github/workflows/` and `lint-staged.config.ts`. The existing custom manager that matches `pnpm dlx|bunx|npx <pkg>@<ver>` SHALL be retained (the new manager complements, not replaces, it).
 
-#### Scenario: Custom manager matches the -p form
+#### Scenario: Custom manager matches the --package form
 
 - **WHEN** `renovate.json` is inspected
-- **THEN** a custom manager exists whose `matchStrings` capture `depName` and `currentValue` from `pnpm dlx -p <pkg>@<ver>`
-- **AND** its `fileMatch` includes the validator workflow path and `lint-staged.config.ts`
+- **THEN** a custom manager exists whose `matchStrings` capture `depName` and `currentValue` from `pnpm dlx --package <pkg>@<ver>`
+- **AND** its `managerFilePatterns` includes the validator workflow path and `lint-staged.config.ts`
 
 #### Scenario: Renovate proposes a validator bump
 
