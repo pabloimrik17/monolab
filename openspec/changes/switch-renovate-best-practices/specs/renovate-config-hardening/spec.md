@@ -41,12 +41,18 @@ The `extends` array SHALL NOT list presets already bundled by `config:best-pract
 
 ### Requirement: Existing vulnerability-alert and repo presets SHALL be preserved
 
-`renovate.json` `extends` SHALL retain `:enableVulnerabilityAlertsWithLabel(security)`, `:dependencyDashboard` (or its transitive equivalent), and `:semanticCommits`, and SHALL retain repo-specific top-level settings `rangeStrategy: "pin"`, `baseBranchPatterns`, `reviewers`, `labels`, `timezone`, and the existing `packageRules` and `customManagers`.
+`renovate.json` `extends` SHALL retain `:enableVulnerabilityAlertsWithLabel(security)` and `:semanticCommits`. The dependency dashboard SHALL remain enabled transitively via `config:best-practices` — the explicit `:dependencyDashboard` preset is dropped as redundant — and `dependencyDashboardTitle` SHALL be retained. `renovate.json` SHALL retain repo-specific top-level settings `rangeStrategy: "pin"`, `baseBranchPatterns`, `reviewers`, `labels`, `timezone`, and the existing `packageRules` and `customManagers`.
 
 #### Scenario: Vulnerability alerts remain enabled
 
 - **WHEN** `renovate.json` is inspected
 - **THEN** `extends` contains `":enableVulnerabilityAlertsWithLabel(security)"`
+
+#### Scenario: Dependency dashboard enabled without an explicit preset
+
+- **WHEN** `renovate.json` is inspected
+- **THEN** `extends` does NOT contain `":dependencyDashboard"` (provided transitively by `config:best-practices`)
+- **AND** `dependencyDashboardTitle` is retained
 
 #### Scenario: Repo-specific settings untouched
 

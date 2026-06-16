@@ -38,5 +38,5 @@
 - [x] 7.1 Ran `pnpm dlx --package renovate@43.220.0 renovate-config-validator --strict renovate.json` locally → "Config validated successfully" (exit 0); migrated `fileMatch` → `managerFilePatterns` to clear the `--strict` migration error
 - [x] 7.2 Verified the lint-staged validator entry is scoped to `renovate.json` (literal glob); end-to-end firing confirmed by the pre-commit hook at commit time
 - [x] 7.3 `eslint lint-staged.config.ts --max-warnings=40` → clean (exit 0)
-- [ ] 7.4 Open the PR against `develop` and confirm the new validator workflow runs green
+- [x] 7.4 Opened PR #242 against `develop`; the `validate` (renovate-config-validator) workflow ran green
 - [x] 7.5 Walked the issue #204 acceptance-criteria checklist (see apply summary; prek→Husky and `:enablePreCommit` omission are approved deviations; "Renovate cycle succeeds" + PR-green are runtime/PR-time checks)
