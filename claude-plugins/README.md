@@ -40,3 +40,5 @@ claude --plugin-dir ./claude-plugins/<plugin-name>
 # Install a plugin
 /plugin install <plugin-name>@monolab
 ```
+
+<!-- ci-validation: codecov empty-matrix scenario (throwaway, do not merge) -->
