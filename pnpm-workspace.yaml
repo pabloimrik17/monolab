@@ -13,10 +13,10 @@ allowBuilds:
 blockExoticSubdeps: true
 
 catalog:
-    "@vitest/coverage-v8": 4.0.18
-    "@vitest/ui": 4.0.18
+    "@vitest/coverage-v8": 4.1.9
+    "@vitest/ui": 4.1.9
     vite-tsconfig-paths: 5.1.4
-    vitest: 4.0.18
+    vitest: 4.1.9
 
 minimumReleaseAge: 1440
 
