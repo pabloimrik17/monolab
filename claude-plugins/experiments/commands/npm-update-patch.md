@@ -192,7 +192,7 @@ On a structured `failure`, print the canonical abort copy for the failing `step`
 - `step: "catalog"` →
 
     ```text
-    Failed to bump {name} in pnpm-workspace.yaml: {reason}.
+    Failed to bump {name} in {catalogSource.sourceFile}: {reason}.
     Applied so far: {names already written on disk}.
     Re-run /experiments:npm-update-patch to retry the rest.
     ```

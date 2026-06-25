@@ -142,7 +142,7 @@ On a structured `failure`, print the command-owned abort copy for the failing `s
 - `step: "catalog"` →
 
     ```text
-    Failed to bump {name} in pnpm-workspace.yaml: {reason}.
+    Failed to bump {name} in {catalogSource.sourceFile}: {reason}.
     Applied so far: {names already written on disk}.
     Re-run /experiments:npm-update-deep-major to retry the rest.
     ```

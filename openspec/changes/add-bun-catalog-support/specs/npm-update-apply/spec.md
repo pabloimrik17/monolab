@@ -11,7 +11,7 @@ The skill SHALL accept a fully-resolved, single-project apply spec with exactly 
 
 - `packageManager` (required) — one of `pnpm`, `npm`, `yarn`, `bun`, `deno`.
 - `cwd` (required) — absolute path of the project whose manifests are bumped. Every `Bash` invocation SHALL run with this working directory (or use absolute `--packageFile` paths); the skill SHALL NOT mutate the caller's shell state across invocations.
-- `target` (required) — one of `patch`, `minor`, `major`, `engines`. Passed verbatim to `ncu --target`.
+- `target` (required) — one of `patch`, `minor`, `major`. Mapped to an internal `ncuTarget` before reaching `ncu --target` (`patch`→`patch`, `minor`→`minor`, `major`→`latest`); see "Generic package.json bumps via npm-check-updates" below. Rejected if unknown. (`engines` is not an apply target — `apply-engine-bumps` handles the toolchain bump with no `ncu`.)
 - `cooldown` (optional) — release-age period to pass as `ncu --cooldown`; omitted for `pnpm` (ncu reads `pnpm-workspace.yaml` natively).
 - `manifestBumps` (optional) — array of `{ sourceFile, names: string[], includeFilter: boolean }`; one `package.json` manifest per element.
 - `catalogEdits` (optional) — array of `{ name, targetVersion, catalogSource? }`. `catalogSource` identifies the exact source to edit: `{ sourceFile, manager: "pnpm"|"bun", field: { kind: "default" } | { kind: "named"; name: string }, underWorkspaces?: boolean }`. When `catalogSource` is omitted the skill SHALL assume the legacy pnpm default — `{ sourceFile: "pnpm-workspace.yaml", manager: "pnpm", field: { kind: "default" } }` — preserving byte-identical behavior for existing pnpm callers.

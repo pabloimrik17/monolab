@@ -659,7 +659,7 @@ If `apply-npm-updates` returns a non-null `failure`, **stop the entire run** (St
 - `step: "catalog"` →
 
     ```text
-    Failed to bump {name} in pnpm-workspace.yaml ({projectName}): {reason}.
+    Failed to bump {name} in {catalogSource.sourceFile} ({projectName}): {reason}.
     Stopping the run. Subsequent projects not attempted.
     ```
 
@@ -956,7 +956,7 @@ After the run completes (success, partial, cancel), the user-scoped registry `<H
 - `All updates excluded; nothing to apply.` — Step 9.2.S empty post-exclusion (shallow).
 - `Cancelled. No files modified.` — Step 9.3 user cancel (both modes); also Step 9.2.D empty selection treated as cancel.
 - `ncu --upgrade failed on {sourceFile} ({projectName}, exit {code}). Stopping the run. Subsequent projects not attempted.` — Step 10.4 `apply-npm-updates` `ncu` failure.
-- `Failed to bump {name} in pnpm-workspace.yaml ({projectName}): {reason}. Stopping the run. Subsequent projects not attempted.` — Step 10.4 `apply-npm-updates` `catalog` failure.
+- `Failed to bump {name} in {catalogSource.sourceFile} ({projectName}): {reason}. Stopping the run. Subsequent projects not attempted.` — Step 10.4 `apply-npm-updates` `catalog` failure.
 - `Override command failed ({entry.id}, {projectName}, exit {code}): {interpolated command}. Stopping the run. Subsequent projects not attempted.` — Step 10.4 `apply-npm-updates` `override` failure.
 - `Install failed ({pm}, {projectName}, exit {code}). Manifests already bumped; review changes before retrying. Stopping the run. Subsequent projects not attempted.` — Step 10.4 `apply-npm-updates` `install` failure.
 - `Improvements rejected at plan-mode review. No improvement edits applied; bumps are preserved.` — Step 10b.3 plan-mode rejection (deep mode).

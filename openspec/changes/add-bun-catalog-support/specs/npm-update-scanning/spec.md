@@ -31,12 +31,12 @@ Every Bun record SHALL carry `sourceFile` = the repo-root-relative path of the r
 #### Scenario: Bun default catalog bumped
 
 - **WHEN** the PM is `bun`, `package.json#catalog.vitest` is `4.0.18`, `npm view vitest` returns an eligible `4.0.24`, and `level` is `patch`
-- **THEN** the output contains `{ name: "vitest", currentVersion: "4.0.18", targetVersion: "4.0.24", location: "catalog:default", sourceFile: "package.json", catalogSource: { manager: "bun", field: { kind: "default" }, underWorkspaces: false } }`
+- **THEN** the output contains `{ name: "vitest", currentVersion: "4.0.18", targetVersion: "4.0.24", location: "catalog:default", sourceFile: "package.json", catalogSource: { sourceFile: "package.json", manager: "bun", field: { kind: "default" }, underWorkspaces: false } }`
 
 #### Scenario: Bun named catalog bumped (no warning)
 
 - **WHEN** the PM is `bun` and `package.json#catalogs.testing.jest` is `30.0.0` with an available, eligible `30.0.1`
-- **THEN** the output contains `{ name: "jest", targetVersion: "30.0.1", location: "catalog:testing", sourceFile: "package.json", catalogSource: { manager: "bun", field: { kind: "named", name: "testing" } } }`
+- **THEN** the output contains `{ name: "jest", targetVersion: "30.0.1", location: "catalog:testing", sourceFile: "package.json", catalogSource: { sourceFile: "package.json", manager: "bun", field: { kind: "named", name: "testing" }, underWorkspaces: false } }`
 - **AND** NO `named catalog ... not yet supported` warning is emitted
 
 #### Scenario: Bun catalog under workspaces
@@ -93,7 +93,7 @@ The skill SHALL emit a single JSON object conforming to `ScanResult`:
       sourceFile: string;
       manager: "pnpm" | "bun";
       field: { kind: "default" } | { kind: "named"; name: string };
-      underWorkspaces?: boolean; // Bun only
+      underWorkspaces?: boolean; // Bun only — present (required) on every Bun record, absent on pnpm
     };
   }>;
   warnings: string[];
