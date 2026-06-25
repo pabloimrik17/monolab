@@ -10,7 +10,7 @@ The single source of truth for the **single-project npm apply mechanism**. The c
 Two things live here:
 
 - **(a) A mechanical apply contract** — Steps A1–A6 below. Caller passes a fully-resolved per-project apply spec; the skill writes manifests, runs overrides, runs one install, and streams `ncu`/install/override stdout/stderr verbatim.
-- **(b) A reusable override-resolution procedure** — the "Override-resolution procedure" section below. Callers that opt into overrides invoke it to turn a candidate package set into matched entries + interpolated commands + a GENERIC/OVERRIDE_RUN/OVERRIDE_SKIP partition. The interactive prompt and the resolution _scope_ stay caller-owned.
+- **(b) A reusable override-resolution procedure** — the "Override-resolution procedure" section below. Callers that opt into overrides invoke it to turn a candidate package set into matched entries + interpolated commands + a `GENERIC`/`OVERRIDE_RUN`/`OVERRIDE_SKIP` partition. The interactive prompt and the resolution _scope_ stay caller-owned.
 
 ## When to use
 
