@@ -64,16 +64,15 @@
     "devDependencies": {
         "@arethetypeswrong/cli": "0.18.3",
         "@m0n0lab/ts-types": "workspace:*",
-        "@testing-library/react": "catalog:",
         "@types/react": "18.3.31",
         "inversify": "7.11.0",
-        "jsdom": "catalog:",
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "rxjs": "7.8.2",
         "tsdown": "0.22.2",
         "typescript": "5.9.3",
-        "vitest": "catalog:"
+        "vitest": "catalog:",
+        "vitest-browser-react": "2.2.0"
     },
     "peerDependencies": {
         "inversify": "7.11.0",

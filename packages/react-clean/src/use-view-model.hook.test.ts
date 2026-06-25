@@ -1,5 +1,5 @@
-import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { renderHook } from "vitest-browser-react";
 import { BaseViewModel } from "./base.viewmodel.ts";
 import { useViewModel } from "./use-view-model.hook.ts";
 
@@ -9,23 +9,23 @@ class TestViewModel extends BaseViewModel {
 }
 
 describe("useViewModel", () => {
-    it("should create viewmodel instance on first render", () => {
+    it("should create viewmodel instance on first render", async () => {
         const factory = vi.fn(() => new TestViewModel());
 
-        const { result } = renderHook(() => useViewModel(factory));
+        const { result } = await renderHook(() => useViewModel(factory));
 
         expect(factory).toHaveBeenCalledTimes(1);
         expect(result.current).toBeInstanceOf(TestViewModel);
     });
 
-    it("should reuse same instance on re-render", () => {
+    it("should reuse same instance on re-render", async () => {
         const factory = vi.fn(() => new TestViewModel());
 
-        const { result, rerender } = renderHook(() => useViewModel(factory));
+        const { result, rerender } = await renderHook(() => useViewModel(factory));
 
         const firstInstance = result.current;
 
-        rerender();
+        await rerender();
 
         expect(factory).toHaveBeenCalledTimes(1);
         expect(result.current).toBe(firstInstance);
@@ -35,7 +35,7 @@ describe("useViewModel", () => {
         const viewModel = new TestViewModel();
         const factory = () => viewModel;
 
-        renderHook(() => useViewModel(factory));
+        await renderHook(() => useViewModel(factory));
 
         await vi.waitFor(() => {
             expect(viewModel.didMount).toHaveBeenCalledTimes(1);
@@ -46,13 +46,13 @@ describe("useViewModel", () => {
         const viewModel = new TestViewModel();
         const factory = () => viewModel;
 
-        const { unmount } = renderHook(() => useViewModel(factory));
+        const { unmount } = await renderHook(() => useViewModel(factory));
 
         await vi.waitFor(() => {
             expect(viewModel.didMount).toHaveBeenCalledTimes(1);
         });
 
-        unmount();
+        await unmount();
 
         expect(viewModel.willUnmount).toHaveBeenCalledTimes(1);
     });
@@ -61,13 +61,13 @@ describe("useViewModel", () => {
         const viewModel = new TestViewModel();
         const factory = () => viewModel;
 
-        const { rerender } = renderHook(() => useViewModel(factory));
+        const { rerender } = await renderHook(() => useViewModel(factory));
 
         await vi.waitFor(() => {
             expect(viewModel.didMount).toHaveBeenCalledTimes(1);
         });
 
-        rerender();
+        await rerender();
 
         // Should still be called only once
         expect(viewModel.didMount).toHaveBeenCalledTimes(1);

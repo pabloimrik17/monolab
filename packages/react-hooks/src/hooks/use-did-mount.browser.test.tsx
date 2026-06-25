@@ -1,6 +1,6 @@
-import { render, waitFor } from "@testing-library/react";
 import { useState } from "react";
-import { beforeAll, expect, test } from "vitest";
+import { beforeAll, expect, test, vi } from "vitest";
+import { render } from "vitest-browser-react";
 import { useDidMount } from "./use-did-mount.hook.ts";
 
 // Verify browser environment is properly configured
@@ -21,17 +21,16 @@ function TestComponent({ onMount }: { onMount: () => void }) {
     return <div data-testid="status">{mounted ? "mounted" : "not-mounted"}</div>;
 }
 
-test("useDidMount executes callback once after mount in real browser", () => {
+test("useDidMount executes callback once after mount in real browser", async () => {
     let callCount = 0;
     const onMount = () => {
         callCount++;
     };
 
-    const { getByTestId } = render(<TestComponent onMount={onMount} />);
+    const screen = await render(<TestComponent onMount={onMount} />);
 
-    // In real browser environment, we can access actual DOM
-    const element = getByTestId("status");
-    expect(element.textContent).toBe("mounted");
+    // In a real browser environment we assert against the live DOM via locators
+    await expect.element(screen.getByTestId("status")).toHaveTextContent("mounted");
     expect(callCount).toBe(1);
 });
 
@@ -42,16 +41,16 @@ test("useDidMount with async callback in browser", async () => {
         resolved = true;
     };
 
-    const { getByTestId } = render(<TestComponent onMount={asyncOnMount} />);
+    const screen = await render(<TestComponent onMount={asyncOnMount} />);
 
-    // Wait for async callback to complete
-    await waitFor(
+    // Wait for the async callback to complete
+    await vi.waitFor(
         () => {
             expect(resolved).toBe(true);
         },
         { timeout: 100 },
     );
 
-    // Verify component mounted
-    expect(getByTestId("status").textContent).toBe("mounted");
+    // Verify the component mounted
+    await expect.element(screen.getByTestId("status")).toHaveTextContent("mounted");
 });

@@ -62,14 +62,13 @@
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "0.18.3",
-        "@testing-library/react": "catalog:",
         "@types/react": "18.3.31",
-        "jsdom": "catalog:",
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "tsdown": "0.22.2",
         "typescript": "5.9.3",
-        "vitest": "catalog:"
+        "vitest": "catalog:",
+        "vitest-browser-react": "2.2.0"
     },
     "peerDependencies": {
         "react": "19.2.1"
