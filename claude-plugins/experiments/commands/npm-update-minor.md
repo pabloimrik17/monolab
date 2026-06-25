@@ -4,7 +4,7 @@ description: Scan and interactively apply npm minor-level updates across a works
 
 # npm-update-minor
 
-Scan the current project for **minor-level** dependency updates, present them to the user, and apply the accepted subset. The shallow single-project sibling of `/experiments:npm-update-patch` — identical flow, only the level differs. Project-agnostic: works on pnpm/npm/yarn/bun/deno, single-repo or workspace, and treats pnpm `catalog:` entries as first-class.
+Scan the current project for **minor-level** dependency updates, present them to the user, and apply the accepted subset. The shallow single-project sibling of `/experiments:npm-update-patch` — identical flow, only the level differs. Project-agnostic: works on pnpm/npm/yarn/bun/deno, single-repo or workspace, and treats pnpm and Bun `catalog:` entries as first-class.
 
 The command **only bumps manifests and runs a single install** (via the `apply-npm-updates` skill). It does NOT run tests, lint, build, or create commits — that is explicitly out of scope. The final summary suggests those as next steps; the caller decides.
 
@@ -173,7 +173,7 @@ From the partition computed in Step 5.5:
 - `packageManager` = the scan's `packageManager`. `cwd` = `APPLY_CWD` (Step 5.6 — the project root for `none`, else the isolation workdir). `target` = `"minor"`.
 - `cooldown` = the release-age period the scan resolved (omit for `pnpm`).
 - `manifestBumps` — one element per distinct `GENERIC` `package.json` `sourceFile`: `{ sourceFile, names: <GENERIC names for this file>, includeFilter }`. Set `includeFilter: true` when the GENERIC set for the file is a strict subset of ncu's detectable candidates — i.e. the primary prompt was `pick-subset` with at least one exclusion, OR any update for this file was removed by `OVERRIDE_RUN`/`OVERRIDE_SKIP`. Otherwise `includeFilter: false`.
-- `catalogEdits` — one element per `GENERIC` update with `sourceFile === "pnpm-workspace.yaml"`: `{ name, targetVersion }`.
+- `catalogEdits` — one element per `GENERIC` update whose `location` is `catalog:default` / `catalog:<name>` (pnpm `pnpm-workspace.yaml` or Bun root `package.json`): `{ name, targetVersion, catalogSource: <the scan record's catalogSource> }`.
 - `overrideCommands` — the `OVERRIDE_RUN` entries as `{ id, command: <interpolated command> }`, in declaration order.
 - `skipInstall` — `true` when `OVERRIDE_RUN` is non-empty and every accepted update was handled by `run-override` with nothing written outside the override commands; otherwise `false`.
 
@@ -264,7 +264,7 @@ Compose the summary from the `apply-npm-updates` result fragment (Step 6) — `{
 - Never run tests, lint, or build.
 - Never create commits or PRs (or push). Branch/worktree isolation via `update-isolation` is allowed (Step 5.6, opt-in, default `none`).
 - Never modify files on `cancel` or when every accepted update is skipped by override policy.
-- Never mutate a consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
+- Never mutate a consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).
 - Never auto-execute an override command without the user selecting `run-override` explicitly for that entry.
 - Never run `ncu --upgrade` as a fallback after an override command fails.
 - Always pass `level=minor` to `scan-npm-updates`; ignore any user-supplied level argument.
