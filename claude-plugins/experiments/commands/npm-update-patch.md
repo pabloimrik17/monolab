@@ -4,7 +4,7 @@ description: Scan and interactively apply npm patch-level updates across a works
 
 # npm-update-patch
 
-Scan the current project for **patch-level** dependency updates, present them to the user, and apply the accepted subset. Project-agnostic: works on pnpm/npm/yarn/bun/deno, single-repo or workspace, and treats pnpm `catalog:` entries as first-class.
+Scan the current project for **patch-level** dependency updates, present them to the user, and apply the accepted subset. Project-agnostic: works on pnpm/npm/yarn/bun/deno, single-repo or workspace, and treats pnpm and Bun `catalog:` entries as first-class.
 
 The command **only bumps manifests and runs a single install**. It does NOT run tests, lint, build, or create commits — that is explicitly out of scope. The final summary suggests those as next steps; the caller decides.
 
@@ -147,6 +147,19 @@ Apply the procedure's R4 partition over `ACCEPTED` using the chosen actions:
 
 If every update in `ACCEPTED` falls under `OVERRIDE_SKIP` and `OVERRIDE_RUN` is also empty, print `All accepted updates were skipped by override policy. Nothing to apply.` and exit without touching files.
 
+## Step 5.6 — Optional isolation gate (default `none`)
+
+Before applying, offer to isolate the update in a branch/worktree (your current checkout stays untouched). Use **AskUserQuestion**:
+
+- **Question**: `Isolate this patch update before applying?`
+- **Multi-select**: `false`
+- **Options** (in this exact order):
+    - `none` — "Apply in the current working tree (default; no VCS action)."
+    - `worktree` — "Create a branch + worktree via `update-isolation` (worktrunk-preferred); apply there. Current checkout untouched."
+    - `branch` — "Create a branch in place via `update-isolation` and apply on it."
+
+On `none`, set `APPLY_CWD = <project root>`. Otherwise invoke the `update-isolation` skill once with `{ projectPath: <project root>, branchName: "deps/patch-<YYYY-MM-DD>", strategy: <worktree → "auto"; branch → "branch"> }`, set `APPLY_CWD = <returned workdir>`, and set `skipInstall: true` if it reports `installAlreadyRan`. `update-isolation` creates the branch/worktree only — never commits, pushes, or opens a PR.
+
 ## Step 6 — Build the apply spec and invoke `apply-npm-updates`
 
 The `apply-npm-updates` skill is the single source of truth for the mechanical apply (generic `ncu` bumps, catalog edits, override commands, single install). The command builds the resolved spec and invokes it **once** with `target: patch`; it does NOT restate the `ncu` / catalog / install recipe inline.
@@ -155,12 +168,12 @@ The `apply-npm-updates` skill is the single source of truth for the mechanical a
 
 From the partition computed in Step 5.5:
 
-- `packageManager` = the scan's `packageManager`. `cwd` = the project root. `target` = `"patch"`.
+- `packageManager` = the scan's `packageManager`. `cwd` = `APPLY_CWD` (Step 5.6 — the project root for `none`, else the isolation workdir). `target` = `"patch"`.
 - `cooldown` = the release-age period the scan resolved (omit for `pnpm`).
 - `manifestBumps` — one element per distinct `GENERIC` `package.json` `sourceFile`: `{ sourceFile, names: <GENERIC names for this file>, includeFilter }`. Set `includeFilter: true` when the GENERIC set for the file is a strict subset of ncu's detectable candidates — i.e. the primary prompt was `pick-subset` with at least one exclusion, OR any update for this file was removed by `OVERRIDE_RUN`/`OVERRIDE_SKIP`. Otherwise `includeFilter: false` (full-set apply; ncu's own set equals the target set).
-- `catalogEdits` — one element per `GENERIC` update with `sourceFile === "pnpm-workspace.yaml"`: `{ name, targetVersion }`.
+- `catalogEdits` — one element per `GENERIC` update whose `location` is `catalog:default` / `catalog:<name>` (pnpm `pnpm-workspace.yaml` or Bun root `package.json`): `{ name, targetVersion, catalogSource: <the scan record's catalogSource> }`.
 - `overrideCommands` — the `OVERRIDE_RUN` entries as `{ id, command: <interpolated command> }`, in declaration order.
-- `skipInstall` — `true` when `OVERRIDE_RUN` is non-empty, `OVERRIDE_SKIP`/`GENERIC` produce no write (every accepted update handled by `run-override` and nothing written outside the override commands); otherwise `false`.
+- `skipInstall` — `true` when `OVERRIDE_RUN` is non-empty, `OVERRIDE_SKIP`/`GENERIC` produce no write (every accepted update handled by `run-override` and nothing written outside the override commands); **also `true` when Step 5.6's `update-isolation` reported `installAlreadyRan`** (a worktrunk `post-start` hook already installed); otherwise `false`.
 
 ### Invoke and handle the result
 
@@ -179,7 +192,7 @@ On a structured `failure`, print the canonical abort copy for the failing `step`
 - `step: "catalog"` →
 
     ```text
-    Failed to bump {name} in pnpm-workspace.yaml: {reason}.
+    Failed to bump {name} in {catalogSource.sourceFile}: {reason}.
     Applied so far: {names already written on disk}.
     Re-run /experiments:npm-update-patch to retry the rest.
     ```
@@ -228,7 +241,9 @@ Compose the summary from the `apply-npm-updates` result fragment (Step 6) — `{
 - {name} (excluded by user)
 - ...
 
-**Install:** {"<pm> install executed" | "skipped (overrides handled install)"}
+**Isolation:** {"none (applied in current tree)" | "<mode> — <workdir>"}
+
+**Install:** {"<pm> install executed" | "skipped (overrides handled install)" | "skipped (isolation already ran install)"}
 
 **Suggested next steps (not executed):**
 
@@ -237,7 +252,7 @@ Compose the summary from the `apply-npm-updates` result fragment (Step 6) — `{
 - Review changes (`git diff`) and commit.
 ```
 
-- Omit any block whose count is zero (except `Suggested next steps`, which is always present).
+- Omit any block whose count is zero (except `Suggested next steps`, which is always present). The `Isolation:` line is always present.
 - When `{Ng}` is non-zero, list each update with its original `location`.
 - When `{No}` is non-zero, list each override entry with the command that ran and the matched names (surface enough information that the user can re-invoke the override manually if needed).
 - Do not run any of the suggested steps. This is a hard rule.
@@ -245,8 +260,8 @@ Compose the summary from the `apply-npm-updates` result fragment (Step 6) — `{
 ## Hard rules
 
 - Never run tests, lint, or build.
-- Never create commits or PRs.
+- Never create commits or PRs (or push). Branch/worktree isolation via `update-isolation` is allowed (Step 5.6, opt-in, default `none`).
 - Never modify files on `cancel` or when every accepted update is skipped by override policy.
-- Never mutate a consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
+- Never mutate a consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).
 - Never auto-execute an override command without the user selecting `run-override` explicitly for that entry.
 - Never run `ncu --upgrade` as a fallback after an override command fails.

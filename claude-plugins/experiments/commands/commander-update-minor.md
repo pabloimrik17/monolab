@@ -47,12 +47,13 @@ The command MUST NOT:
 
 Every line the skill emits — including:
 
-- the empty-registry message (`No projects registered. Use /experiments:commander-add to register one.`),
+- the empty-registry message (`No projects registered. Use /commander:add to register one.`),
 - the project picker (`AskUserQuestion` multi-select),
 - the plan table,
 - the conflict-policy prompt (when applicable),
 - the override prompts (one per matched entry),
 - the apply-all / pick-subset / cancel prompt,
+- the optional isolation gate (`none` / `worktree` / `branch`, default `none`),
 - the per-project `ncu` and `<pm> install` stdout/stderr,
 - the cross-project summary,
 - every error or abort message,
@@ -64,10 +65,10 @@ Every line the skill emits — including:
 Inherited from `/experiments:npm-update-minor` and the orchestrator. The command preserves every one of them:
 
 - Never run tests, lint, or build.
-- Never create commits, branches, or pull requests.
+- Never create commits or PRs (or push). Branch/worktree isolation via `update-isolation` (the orchestrator's opt-in Step 9.5 gate, default `none`) is allowed.
 - Never modify any file when the user selects `cancel` at the orchestrator's confirmation gate.
 - Never mutate `<HOME>/.claude/commander/projects.json` — the registry is read-only on this path. The on-disk file SHALL be byte-identical before and after every run (verifiable via `shasum`).
-- Never mutate a consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
+- Never mutate a consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).
 - Never auto-execute an override command without the user selecting `run-override` explicitly for that entry.
 - Never run `ncu --upgrade` as a fallback after an override command fails.
 

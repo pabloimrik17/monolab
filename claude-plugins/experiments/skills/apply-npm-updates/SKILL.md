@@ -1,11 +1,11 @@
 ---
 name: apply-npm-updates
-description: Use when a single-project npm update command (`/experiments:npm-update-patch`, `/experiments:npm-update-minor`, their deep variants) or the `commander-update-orchestrator` (once per project) needs to perform the mechanical apply of a fully-resolved update set — generic `package.json` bumps via `npm-check-updates`, `pnpm-workspace.yaml` catalog edits, override commands, and one install. Level-agnostic (parameterized by `target`). Also documents the caller-invoked override-resolution procedure (registry load → first-win glob match → `{version}` resolution → GENERIC/OVERRIDE_RUN/OVERRIDE_SKIP partition). Performs writes only; streams ncu/install verbatim; returns a structured result fragment and NEVER prints a consumer summary or abort message. No tests, lint, build, or commits.
+description: Use when a single-project npm update command (`/experiments:npm-update-patch`, `/experiments:npm-update-minor`, `/experiments:npm-update-major`, and their deep variants) or the `commander-update-orchestrator` (once per project) needs to perform the mechanical apply of a fully-resolved update set — generic `package.json` bumps via `npm-check-updates`, catalog source edits (`pnpm-workspace.yaml` for pnpm, root `package.json` for Bun), override commands, and one install. Level-agnostic (parameterized by `target`). Also documents the caller-invoked override-resolution procedure (registry load → first-win glob match → `{version}` resolution → GENERIC/OVERRIDE_RUN/OVERRIDE_SKIP partition). Performs writes only; streams ncu/install verbatim; returns a structured result fragment and NEVER prints a consumer summary or abort message. No tests, lint, build, or commits.
 ---
 
 # apply-npm-updates
 
-The single source of truth for the **single-project npm apply mechanism**. The caller resolves conflict policy, override decisions, and `--filter` membership; this skill performs the writes and returns a structured fragment. It is parameterized solely by `target` (= the update level) — the same skill serves `patch`, `minor`, `major`, and `engines` callers identically.
+The single source of truth for the **single-project npm apply mechanism**. The caller resolves conflict policy, override decisions, and `--filter` membership; this skill performs the writes and returns a structured fragment. It is parameterized solely by `target` (= the update level) — the same skill serves `patch`, `minor`, and `major` callers identically. (`engines` is NOT an apply target here — the runtime/toolchain bump is applied by `apply-engine-bumps`, which performs no `ncu`.)
 
 Two things live here:
 
@@ -30,23 +30,23 @@ This skill is implemented entirely with Claude Code built-in tools (`Read`, `Bas
 
 The caller passes a fully-resolved, single-project apply spec with exactly these fields:
 
-| Field              | Type                                                          | Required | Notes                                                                                                                                                                        |
-| ------------------ | ------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packageManager`   | `"pnpm" \| "npm" \| "yarn" \| "bun" \| "deno"`                | yes      | Selects the runner prefix and the install command. Rejected if unknown.                                                                                                      |
-| `cwd`              | `string` (absolute)                                           | yes      | Project root whose manifests are bumped. Every `Bash` call runs with this working directory (`cd "<cwd>" && …`) or uses absolute `--packageFile` paths. No shell-state leak. |
-| `target`           | `"patch" \| "minor" \| "major" \| "engines"`                  | yes      | Passed verbatim to `ncu --target`. Rejected if unknown.                                                                                                                      |
-| `cooldown`         | `string`                                                      | no       | Release-age period for `ncu --cooldown`. Omitted for `pnpm` (ncu reads `pnpm-workspace.yaml` natively).                                                                      |
-| `manifestBumps`    | `Array<{ sourceFile, names: string[], includeFilter: bool }>` | no       | One `package.json` manifest per element. One `ncu` call per element.                                                                                                         |
-| `catalogEdits`     | `Array<{ name, targetVersion }>`                              | no       | `pnpm-workspace.yaml` `catalog:` key edits, in-place.                                                                                                                        |
-| `overrideCommands` | `Array<{ id, command }>`                                      | no       | Already-interpolated override commands, in declaration order.                                                                                                                |
-| `skipInstall`      | `boolean` (default `false`)                                   | no       | When `true`, skip the final install (every accepted package was handled by an override that runs its own install).                                                           |
+| Field              | Type                                                          | Required | Notes                                                                                                                                                                                                                                                                                                                                                 |
+| ------------------ | ------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packageManager`   | `"pnpm" \| "npm" \| "yarn" \| "bun" \| "deno"`                | yes      | Selects the runner prefix and the install command. Rejected if unknown.                                                                                                                                                                                                                                                                               |
+| `cwd`              | `string` (absolute)                                           | yes      | Project root whose manifests are bumped. Every `Bash` call runs with this working directory (`cd "<cwd>" && …`) or uses absolute `--packageFile` paths. No shell-state leak.                                                                                                                                                                          |
+| `target`           | `"patch" \| "minor" \| "major"`                               | yes      | Mapped to an internal `ncuTarget` before reaching `ncu --target` (see Step A1). Rejected if unknown.                                                                                                                                                                                                                                                  |
+| `cooldown`         | `string`                                                      | no       | Release-age period for `ncu --cooldown`. Omitted for `pnpm` (ncu reads `pnpm-workspace.yaml` natively).                                                                                                                                                                                                                                               |
+| `manifestBumps`    | `Array<{ sourceFile, names: string[], includeFilter: bool }>` | no       | One `package.json` manifest per element. One `ncu` call per element.                                                                                                                                                                                                                                                                                  |
+| `catalogEdits`     | `Array<{ name, targetVersion, catalogSource? }>`              | no       | In-place catalog source edits. `catalogSource = { sourceFile, manager: "pnpm" \| "bun", field: { kind: "default" } \| { kind: "named", name }, underWorkspaces? }`. When omitted, defaults to the legacy pnpm target `{ sourceFile: "pnpm-workspace.yaml", manager: "pnpm", field: { kind: "default" } }` — byte-identical for existing pnpm callers. |
+| `overrideCommands` | `Array<{ id, command }>`                                      | no       | Already-interpolated override commands, in declaration order.                                                                                                                                                                                                                                                                                         |
+| `skipInstall`      | `boolean` (default `false`)                                   | no       | When `true`, skip the final install (every accepted package was handled by an override that runs its own install).                                                                                                                                                                                                                                    |
 
 The spec is consumed **as-is**: the skill performs no override matching, no conflict resolution, and no `pick-subset` parsing of its own. The caller already partitioned `manifestBumps` / `catalogEdits` / `overrideCommands`.
 
 ### Step A0 — Validate before any side effect
 
 - If `packageManager` is not one of `pnpm` / `npm` / `yarn` / `bun` / `deno`: abort with `Error: invalid packageManager "<value>". Expected pnpm|npm|yarn|bun|deno.` and perform NO `ncu`, catalog edit, override command, or install.
-- If `target` is not one of `patch` / `minor` / `major` / `engines`: abort with `Error: invalid target "<value>". Expected patch|minor|major|engines.` and perform NO side effect.
+- If `target` is not one of `patch` / `minor` / `major`: abort with `Error: invalid target "<value>". Expected patch|minor|major.` and perform NO side effect.
 
 Resolve the runner prefix from `packageManager`:
 
@@ -67,19 +67,40 @@ For each `manifestBumps` element (each a distinct `package.json` `sourceFile`), 
 ```bash
 <runner-prefix> npm-check-updates@21.0.2 \
   -p <packageManager> \
-  --target <target> \
+  --target <ncuTarget> \
   --upgrade \
+  --removeRange \
   --packageFile <sourceFile> \
   [--cooldown <cooldown>]      # include only when `cooldown` is set AND packageManager !== "pnpm"
-  [--filter "<names>"]         # include only when the element's `includeFilter` is true
+  [--filter "<names>"]         # see the filter rule below (ALWAYS on when ncuTarget === latest)
 ```
+
+#### Resolve `<ncuTarget>` from `target` (same table `scan-npm-updates` uses)
+
+The skill SHALL NOT pass `target` verbatim. Resolve `<ncuTarget>` first:
+
+| `target` (= level) | `<ncuTarget>` | extra flag |
+| ------------------ | ------------- | ---------- |
+| `patch`            | `patch`       | —          |
+| `minor`            | `minor`       | —          |
+| `major`            | `latest`      | —          |
+
+The mapping is an identity for `patch`/`minor` (their `--target` is unchanged). `major` resolves to `--target latest`. The `target` validation list (Step A0) is `patch|minor|major`. (`engines` is not an apply target — the toolchain bump is applied by `apply-engine-bumps`, which runs no `ncu`.)
 
 Rules:
 
 - `-p <packageManager>` is **always** passed — mirror scan semantics and prevent ncu auto-detect drift (e.g. ncu otherwise auto-detects `deno` when a sibling `deno.json` exists, collapsing `--dep` to `['imports']` and dropping `dependencies`/`devDependencies` updates).
+- `--removeRange` is **always** passed, at every level and every bump type — see "Exact version pinning" below.
 - `--cooldown <cooldown>` is included when `cooldown` is set and `packageManager !== "pnpm"`; omitted otherwise.
-- `--filter "<names>"` is included **only** when the element's `includeFilter === true`. `<names>` = the element's `names`, joined by single spaces, double-quoted. It is a literal list — ncu treats it as exact names (see `scan-npm-updates/research/ncu-filter-spike.md`). When `includeFilter === false`, `--filter` is omitted (ncu's own detected set equals the target set for this file).
+- `--filter "<names>"` membership: `<names>` = the element's `names`, joined by single spaces, double-quoted. It is a literal list — ncu treats it as exact names (see `scan-npm-updates/research/ncu-filter-spike.md`).
+    - When `<ncuTarget> === latest` (i.e. `target` is `major`), `--filter "<names>"` is **ALWAYS** included regardless of the element's `includeFilter` value — the caller's `names` list is authoritative. Required because `scan-npm-updates` builds the `latest`-level candidate set by running `ncu --target latest` and then post-filtering (e.g. major-only); re-running `ncu --target latest` without `--filter` would bump every dependency with any newer version, exceeding the accepted set.
+    - Otherwise (`patch`/`minor`), `--filter` is included **only** when the element's `includeFilter === true`; when `false` it is omitted (ncu's own detected set equals the target set for this file).
+- **Catalog-reference guard (package-manager-agnostic, defense-in-depth).** Never add to `--filter` any package whose declared value in `<sourceFile>` matches `/^catalog:/`, and never write a pinned version over any consumer value matching `/^catalog:/`. A `catalog:*` specifier is a reference, not a version — its source is bumped via `catalogEdits` (Step A2), never here. At the pinned `ncu@21.0.2` this is a no-op (ncu already skips `catalog:*` for both pnpm and bun — see `scan-npm-updates`/the issue spike); the guard prevents a silent regression should a future ncu stop skipping them.
 - Stream `ncu` stdout/stderr to the user verbatim so diffs are observable.
+
+#### Exact version pinning (`--removeRange`, family-wide)
+
+`--removeRange` is passed on **every** `ncu` bump, at **all** levels (`patch`/`minor`/`major`) and both shallow/deep. Each bumped dependency is therefore written as an **exact version** — `"react": "19.0.2"`, never `"^19.0.2"`/`"~19.0.2"`. This is a deliberate, family-wide behavior change: the whole update cascade pins exact, so it is **NOT** byte-equivalent to the pre-change `patch`/`minor` output (which preserved the existing range operator). Override-managed families (run via `overrideCommands`) pin according to their own upgrade tool and are out of scope of this rule.
 
 On success, append each bumped package to `appliedGeneric` (with its `location` from the caller's spec context) and push `<sourceFile>` to `appliedSoFar`.
 
@@ -91,17 +112,23 @@ If `ncu` exits non-zero on a manifest, **stop immediately** and return the struc
 
 Do NOT run any catalog edit, override command, or install after this point. Do NOT print a consumer-specific abort message (`Re-run …` / `Stopping the run …`) — the caller owns that copy.
 
-### Step A2 — `pnpm-workspace.yaml` catalog edits
+### Step A2 — Catalog source edits
 
-For each `catalogEdits` element (`name`, `targetVersion`):
+For each `catalogEdits` element (`name`, `targetVersion`, optional `catalogSource`), bump the entry **in its catalog source**, resolving the source from `catalogSource`. When `catalogSource` is omitted, default to the legacy pnpm target `{ sourceFile: "pnpm-workspace.yaml", manager: "pnpm", field: { kind: "default" } }` (byte-identical for existing pnpm callers). In every case:
 
-- Under the top-level `catalog:` block of `<cwd>/pnpm-workspace.yaml`, locate the key matching `name`.
-- Replace its value with `targetVersion`. Preserve surrounding whitespace, comments, and the order of other keys. (ncu 21.0.2 does not rewrite catalog entries — see `scan-npm-updates/research/ncu-catalog-spike.md`; this is an in-place `Edit`, NOT an `ncu` invocation.)
-- Do NOT touch any consumer `package.json` entry that references `catalog:` — only `pnpm-workspace.yaml`.
+- Replace the value with the **exact** version — `targetVersion` with any leading range operator (`^`/`~`/`=`) stripped (e.g. `^3.24.1` → `3.24.1`) — keeping catalog entries consistent with the family-wide exact-pin rule applied to `package.json` bumps via `--removeRange`. Preserve surrounding whitespace, comments, and the order of other keys.
+- This is always an in-place `Edit`, **never** an `ncu` invocation (ncu 21.0.2 does not rewrite catalog sources for pnpm or bun — see `scan-npm-updates/research/ncu-catalog-spike.md` and `research/ncu-bun-catalog-spike.md`).
+- Do NOT touch any consumer `package.json` entry that references `catalog:` — only the catalog source file is edited.
 
-On success, append the package to `appliedGeneric` (location `catalog:<key>` / the caller-supplied location) and push `pnpm-workspace.yaml` to `appliedSoFar`.
+Route by `catalogSource.manager`:
 
-If a catalog key is unexpectedly missing, **stop immediately** and return:
+- **pnpm** (`manager === "pnpm"`, or `catalogSource` omitted): under the top-level `catalog:` block of `<cwd>/<catalogSource.sourceFile>` (`pnpm-workspace.yaml`), locate the key matching `name` and replace its value.
+- **bun** (`manager === "bun"`): in the root `package.json` at `<cwd>/<catalogSource.sourceFile>`, locate the catalog block from `catalogSource.field` — `{ kind: "default" }` → the `catalog` map; `{ kind: "named", name }` → the `catalogs.<name>` map — nested under `workspaces` when `underWorkspaces` is `true`. Replace the matched `"name": "<version>"` token via a targeted `Edit`. Do **NOT** round-trip the file through `JSON.parse`→`JSON.stringify` (it would reformat indentation / key order / trailing newline, breaking the minimal-diff contract the pnpm YAML path honors) and do **NOT** use `bun pm pkg set` (its dot-delimited key path silently mangles a package name containing a dot — `socket.io` → `"socket": { "io": … }` — with no documented escape; see `research/bun-cli-spike.md`).
+    - **Scope the match (non-unique token).** If the `"name": "<version>"` token is not unique within the file (the same dep appears in two catalog blocks, e.g. `catalog.react` and `catalogs.testing.react`, or in both `catalog` and `catalogs.default`), include enough surrounding context in the `Edit` `old_string` (neighboring keys or the enclosing block's opening line) to scope the replacement to the block resolved from `catalogSource.field` + `underWorkspaces`.
+
+On success, append the package to `appliedGeneric` (location `catalog:<key>` / the caller-supplied location) and push the resolved `catalogSource.sourceFile` to `appliedSoFar`.
+
+If a catalog key (or its resolved block) is unexpectedly missing, **stop immediately** and return:
 
 ```ts
 { step: "catalog", name: "<name>", exitCode: null, appliedSoFar: [...] }
@@ -194,7 +221,7 @@ The caller raises its own `AskUserQuestion` per matched entry and records an act
 - `OVERRIDE_SKIP` = candidates bound to a `skip-matched` entry — excluded from everything.
 - `GENERIC` = candidates bound to no entry, PLUS candidates bound to a `force-generic` entry, PLUS candidates whose entry was dropped in R3.
 
-The caller then builds the apply spec: GENERIC `package.json` candidates → `manifestBumps` (set `includeFilter` when the GENERIC set for a file is a strict subset of ncu's detectable candidates — i.e. `pick-subset` partial inclusion OR any `OVERRIDE_RUN`/`OVERRIDE_SKIP` touching the file); GENERIC `pnpm-workspace.yaml` candidates → `catalogEdits`; `run-override` interpolated commands → `overrideCommands`; `skipInstall` when every accepted package was handled by `run-override` and nothing is written outside the override commands.
+The caller then builds the apply spec: GENERIC `package.json` candidates → `manifestBumps` (set `includeFilter` when the GENERIC set for a file is a strict subset of ncu's detectable candidates — i.e. `pick-subset` partial inclusion OR any `OVERRIDE_RUN`/`OVERRIDE_SKIP` touching the file); GENERIC catalog candidates (`location` `catalog:default` / `catalog:<name>`) → `catalogEdits`, each carrying the scan record's `catalogSource` so the writer targets the exact source (pnpm → `pnpm-workspace.yaml`; bun → the root `package.json` block); `run-override` interpolated commands → `overrideCommands`; `skipInstall` when every accepted package was handled by `run-override` and nothing is written outside the override commands.
 
 ### Procedure scenarios
 
@@ -207,13 +234,13 @@ The caller then builds the apply spec: GENERIC `package.json` candidates → `ma
 
 ## Level-agnostic operation
 
-The skill contains **no** level-specific logic. Behavior is parameterized solely by `target` (passed to `ncu --target`); a `target: "minor"` invocation differs from `target: "patch"` only in the `--target` value threaded through every `ncu` call — nothing else changes.
+The skill contains **no** level-specific branching logic. Behavior is parameterized solely by `target`, which is mapped to an `ncuTarget` (`patch→patch`, `minor→minor`, `major→latest`) threaded through every `ncu --target` call. `--removeRange` is applied uniformly at all levels. The validation list for `target` is `patch|minor|major`. A `target: "minor"` invocation differs from `target: "patch"` only in the mapped `--target` value; a `target: "major"` invocation differs from `minor` only in the mapped target (`latest`) and the forced `--filter` — nothing else changes. (`engines` is out of scope — `apply-engine-bumps` handles the toolchain bump with no `ncu`.)
 
 ## Hard rules
 
 - SHALL NOT run tests, lint, or build (`vitest`, `nx test`, lint, build are never invoked).
 - SHALL NOT create git commits, branches, or pull requests.
-- SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
+- SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` `catalog`/`catalogs.<name>` map for Bun).
 - SHALL NOT run `ncu --upgrade` as a fallback after an override command fails.
 - SHALL NOT read or write the override registry data file except via the read-only resolution procedure (R1).
 - SHALL NOT print a consumer-facing summary heading or a consumer-specific abort message — those are caller-owned.

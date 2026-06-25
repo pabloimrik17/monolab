@@ -522,3 +522,45 @@ The `experiments` plugin version SHALL be bumped on the next release-please PR t
 - **THEN** `claude-plugins/experiments/.claude-plugin/plugin.json`, `claude-plugins/experiments/package.json`, and `.claude-plugin/marketplace.json` SHALL NOT have manual version edits in any of the change's commits
 - **AND** the version bump is deferred to release-please's next PR
 
+### Requirement: Engines update cascade registration
+
+The `experiments` plugin SHALL provide the four engines-level commands and the two engines skills, auto-discovered from the plugin's `commands/` and `skills/` directories (no manifest hand-edit; the plugin version is release-please-driven). The commands are `/experiments:npm-update-engines`, `/experiments:npm-update-deep-engines`, `/experiments:commander-update-engines`, and `/experiments:commander-update-deep-engines`; the skills are `detect-toolchain-surfaces` and `apply-engine-bumps`. The plugin `README.md` SHALL list the four new commands alongside the existing patch/minor/major rows.
+
+#### Scenario: Engines commands present and discoverable
+
+- **WHEN** examining `claude-plugins/experiments/commands/`
+- **THEN** `npm-update-engines.md`, `npm-update-deep-engines.md`, `commander-update-engines.md`, and `commander-update-deep-engines.md` SHALL exist, each with non-empty `description` frontmatter
+
+#### Scenario: Engines skills present
+
+- **WHEN** examining `claude-plugins/experiments/skills/`
+- **THEN** `detect-toolchain-surfaces/SKILL.md` and `apply-engine-bumps/SKILL.md` SHALL exist with non-empty `description` frontmatter
+
+#### Scenario: README documents the engines row
+
+- **WHEN** reading `claude-plugins/experiments/README.md`
+- **THEN** it SHALL list the four engines commands
+
+### Requirement: `commander-config-add.md` command file present and listed in README
+
+The `experiments` plugin SHALL include a slash command file at `claude-plugins/experiments/commands/commander-config-add.md` and SHALL list it in `claude-plugins/experiments/README.md` under the commands section. Existing entries SHALL be preserved.
+
+The command file SHALL carry YAML frontmatter with a non-empty `description` field. The command SHALL be invocable as `/experiments:commander-config-add`. This is the staging home for the `commander:config-*` family (the same plugin as the `commander-update-*` commands); it graduates to the `commander` plugin later, exactly as the CRUD commands did.
+
+#### Scenario: Command file present
+
+- **WHEN** examining `claude-plugins/experiments/commands/`
+- **THEN** `commander-config-add.md` SHALL exist
+- **AND** SHALL contain YAML frontmatter with a non-empty `description` field
+
+#### Scenario: Command invocable
+
+- **WHEN** the user types `/experiments:commander-config-add`
+- **THEN** Claude SHALL execute the command instructions
+
+#### Scenario: README lists the new command
+
+- **WHEN** examining `claude-plugins/experiments/README.md`
+- **THEN** the commands section SHALL list `/experiments:commander-config-add` with a short blurb
+- **AND** existing entries SHALL be preserved
+

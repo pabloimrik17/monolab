@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.0](https://github.com/pabloimrik17/monolab/compare/experiments--v1.2.0...experiments--v1.3.0) (2026-06-14)
+
+
+### Features
+
+* **experiments:** add /experiments:commander-config-add command ([#235](https://github.com/pabloimrik17/monolab/issues/235)) ([2afee99](https://github.com/pabloimrik17/monolab/commit/2afee9935274b764d7d2b37b04a724ec025bcbc8))
+* **experiments:** engines update cascade — npm/commander update-engines ×4 (MON-201) ([#234](https://github.com/pabloimrik17/monolab/issues/234)) ([95de57d](https://github.com/pabloimrik17/monolab/commit/95de57de62c6393a2a1a67af1df7688cda8873b1))
+* **experiments:** major update cascade — npm/commander update-major ×4 (MON-202) ([#230](https://github.com/pabloimrik17/monolab/issues/230)) ([23bc105](https://github.com/pabloimrik17/monolab/commit/23bc10513f55acf70f21d887785cd91a6c36dffa))
+
 ## [1.2.0](https://github.com/pabloimrik17/monolab/compare/experiments--v1.1.0...experiments--v1.2.0) (2026-06-07)
 
 

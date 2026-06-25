@@ -1,11 +1,14 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "extends": [
-        "config:recommended",
-        ":dependencyDashboard",
+        "config:best-practices",
         ":semanticCommits",
         ":enableVulnerabilityAlertsWithLabel(security)",
-        "helpers:pinGitHubActionDigestsToSemver"
+        ":maintainLockFilesWeekly",
+        "security:openssf-scorecard",
+        "docker:enableMajor",
+        "customManagers:githubActionsVersions",
+        "customManagers:dockerfileVersions"
     ],
     "timezone": "Europe/Madrid",
     "reviewers": ["pabloimrik17"],
@@ -14,9 +17,12 @@
     "dependencyDashboardTitle": "📦 Dependency Dashboard",
     "prConcurrentLimit": 10,
     "prHourlyLimit": 2,
-    "configMigration": true,
     "minimumReleaseAge": "14 days",
     "rangeStrategy": "pin",
+    "vulnerabilityAlerts": {
+        "prHourlyLimit": 0,
+        "prConcurrentLimit": 0
+    },
     "packageRules": [
         {
             "matchUpdateTypes": ["patch"],
@@ -40,29 +46,51 @@
             "matchFileNames": ["packages/**"],
             "matchDepNames": ["node"],
             "rangeStrategy": "replace"
+        },
+        {
+            "description": "Re-assert 14-day minimum release age for npm; config:best-practices brings security:minimumReleaseAgeNpm with a shorter window",
+            "matchDatasources": ["npm"],
+            "minimumReleaseAge": "14 days"
+        },
+        {
+            "description": "Cap renovate-config-validator to pnpm-10-compatible releases; renovate >= 43.221.0 requires pnpm 11 and this repo uses pnpm 10",
+            "matchDepNames": ["renovate"],
+            "allowedVersions": "<43.221.0"
         }
     ],
     "customManagers": [
         {
             "customType": "regex",
             "description": "Update pinned MCP server versions in opencode.json",
-            "fileMatch": ["^opencode\\.json$"],
+            "managerFilePatterns": ["/^opencode\\.json$/"],
             "matchStrings": ["\"(?<depName>@?[^\"@]+)@(?<currentValue>[^\"]+)\""],
             "datasourceTemplate": "npm"
         },
         {
             "customType": "regex",
             "description": "Update pinned MCP server versions in .mcp.json",
-            "fileMatch": ["^\\.mcp\\.json$"],
+            "managerFilePatterns": ["/^\\.mcp\\.json$/"],
             "matchStrings": ["\"(?<depName>@?[^\"@]+)@(?<currentValue>[^\"]+)\""],
             "datasourceTemplate": "npm"
         },
         {
             "customType": "regex",
             "description": "Update pinned CLI tool versions in CI workflows (pnpm dlx/bunx/npx)",
-            "fileMatch": ["^\\.github/workflows/.+\\.ya?ml$"],
+            "managerFilePatterns": ["/^\\.github/workflows/.+\\.ya?ml$/"],
             "matchStrings": [
                 "(?:pnpm dlx|bunx|npx) (?<depName>(?:@[^/\\s]+/)?[^@\\s]+)@(?<currentValue>[^\\s]+)"
+            ],
+            "datasourceTemplate": "npm"
+        },
+        {
+            "customType": "regex",
+            "description": "Update pinned 'pnpm dlx --package <pkg>@<ver>' versions (renovate-config-validator and similar)",
+            "managerFilePatterns": [
+                "/^\\.github/workflows/.+\\.ya?ml$/",
+                "/^lint-staged\\.config\\.ts$/"
+            ],
+            "matchStrings": [
+                "pnpm dlx --package (?<depName>(?:@[^/\\s]+/)?[^@\\s]+)@(?<currentValue>[^\\s]+)"
             ],
             "datasourceTemplate": "npm"
         }
