@@ -154,9 +154,9 @@ If at least one entry is stale, prompt the user once via `AskUserQuestion`:
 - **Question**: `Found <N> stale plan dir(s) under ~/.claude/experiments/plans/. What do you want to do?`
 - **Multi-select**: `false`
 - **Options**:
-  - `delete-stale` — recursively remove every stale entry, then continue.
-  - `keep-stale` — leave them alone for this invocation; continue.
-  - `cancel` — abort the deep-\* run; print `Cancelled. No files modified.`; do not create a new plan dir; exit.
+    - `delete-stale` — recursively remove every stale entry, then continue.
+    - `keep-stale` — leave them alone for this invocation; continue.
+    - `cancel` — abort the deep-\* run; print `Cancelled. No files modified.`; do not create a new plan dir; exit.
 
 If no stale entries exist, do not prompt — proceed silently. The skill SHALL NOT delete any directory without explicit `delete-stale` selection. The 10-day threshold is fixed in v1.
 
@@ -242,9 +242,9 @@ If a batch hard-walls (all subagents stalled at `pending/pending`), prompt the u
 - **Question**: `Subagent dispatch was denied or rate-limited for batch <n>/<total> (<groupIds>). How do you want to proceed?`
 - **Multi-select**: `false`
 - **Options**:
-  - `retry-current-batch` — re-dispatch this batch only (no backoff sleep — the user has already paused the flow). Repeats the same batch with the same `maxConcurrent`.
-  - `degrade-to-main-agent` — abandon subagent dispatch for the remaining groups; the main agent synthesizes `plan.md` directly using already-cached changelogs under `~/.claude/changelogs/`. The main agent SHALL prepend a one-line banner to `plan.md`: `> Research consolidated in main agent due to subagent dispatch limits. Per-group research.md files were not produced for: <comma-separated groupIds of un-dispatched batches>.`
-  - `abort` — exit cleanly. Plan dir is preserved on disk.
+    - `retry-current-batch` — re-dispatch this batch only (no backoff sleep — the user has already paused the flow). Repeats the same batch with the same `maxConcurrent`.
+    - `degrade-to-main-agent` — abandon subagent dispatch for the remaining groups; the main agent synthesizes `plan.md` directly using already-cached changelogs under `~/.claude/changelogs/`. The main agent SHALL prepend a one-line banner to `plan.md`: `> Research consolidated in main agent due to subagent dispatch limits. Per-group research.md files were not produced for: <comma-separated groupIds of un-dispatched batches>.`
+    - `abort` — exit cleanly. Plan dir is preserved on disk.
 
 If the user picks `retry-current-batch` and the same batch hard-walls again, the prompt re-fires with the question text prefixed `Retried and still hard-walled.` — same three options, no automatic escalation. If the user picks `degrade-to-main-agent`, the workflow skips directly to a modified phase 3 (see "Degraded phase 3" below) and then phase 4 with the banner.
 
@@ -465,9 +465,9 @@ If at least one group is `failed` or `missing` (excluding `expected-missing` in 
 - **Question**: `Research integrity check: <healthy>/<total> groups healthy. Non-healthy: <comma-separated groupIds>. How do you want to proceed?`
 - **Multi-select**: `false`
 - **Options**:
-  - `retry-failed` — re-dispatch phase 1 + phase 2 from scratch only for the non-healthy groups. Healthy groups are NOT touched and their `research.md` files are preserved.
-  - `continue-without` — proceed to phase 4 using only the healthy groups. Non-healthy groups will be documented in `plan.md`'s `## Skipped or unavailable` section with their `errorReason`.
-  - `abort` — exit cleanly. The plan dir is preserved on disk for manual inspection.
+    - `retry-failed` — re-dispatch phase 1 + phase 2 from scratch only for the non-healthy groups. Healthy groups are NOT touched and their `research.md` files are preserved.
+    - `continue-without` — proceed to phase 4 using only the healthy groups. Non-healthy groups will be documented in `plan.md`'s `## Skipped or unavailable` section with their `errorReason`.
+    - `abort` — exit cleanly. The plan dir is preserved on disk for manual inspection.
 
 The skill SHALL NOT auto-retry. There is no default option — the user must explicitly pick.
 
@@ -580,10 +580,10 @@ Rules:
 - A single descriptive line `Projects covered: <comma-separated project names from scan-by-project.json keys, alphabetical>` SHALL appear directly under the H1.
 - The five H2 sections SHALL appear in this exact order: `Improvements (universal — applicability checked per project at apply time)`, `Workarounds resolved`, `Skipped or unavailable`, `Cross-project bump set`, `Changelogs`.
 - Sections with zero items still render with a single sentinel line:
-  - `_no improvements identified_` under the Improvements heading.
-  - `_no workarounds resolved_` under the Workarounds heading.
-  - `_no skipped groups_` under the Skipped or unavailable heading.
-  - The `Changelogs` section uses the per-package `_no changelog available_` sentinel defined in 4.C.
+    - `_no improvements identified_` under the Improvements heading.
+    - `_no workarounds resolved_` under the Workarounds heading.
+    - `_no skipped groups_` under the Skipped or unavailable heading.
+    - The `Changelogs` section uses the per-package `_no changelog available_` sentinel defined in 4.C.
 - Each improvement / workaround bullet SHALL end with the parenthetical `(group: <groupId>; affects projects: <comma-separated project names>)`. The `affects projects:` list is derived from the cross-project scan artifacts: for each package in the bullet, list every project whose `ScanResult.updates[]` includes the package (sourced from `<plan-dir>/scan-by-project.json` and `<plan-dir>/cross-project-plan.json`, which the orchestrator caller wrote before / during Step 6.5.5). Names are alphabetical within the parenthetical, comma-separated.
 - The `<reason>` cell in `Skipped or unavailable` rows follows the same rule as single-project: for `failed`/`missing` groups, copy `groups/<id>/_meta.json.errorReason` verbatim; for `expected-missing` groups (degraded path), use the constant string `research consolidated in main agent (subagent dispatch limited)`.
 - The `Cross-project bump set` table columns are exactly `package`, `proposed target`, `projects (locations)`.
@@ -646,8 +646,8 @@ When the consumer re-invokes the workflow for cleanup, the workflow SHALL prompt
 - **Question**: `Plan dir at <plan-dir>. Keep for inspection or delete?`
 - **Multi-select**: `false`
 - **Options**:
-  - `delete-plan` — recursively `rm -rf <plan-dir>`.
-  - `keep-plan` — leave it on disk; the next invocation's stale-cleanup (phase 0) will catch it after 10 days.
+    - `delete-plan` — recursively `rm -rf <plan-dir>`.
+    - `keep-plan` — leave it on disk; the next invocation's stale-cleanup (phase 0) will catch it after 10 days.
 
 Cleanup re-entry is consumer-driven and optional: when phase 1 or phase 3 returns `abort`, the workflow itself exits cleanly with the plan dir preserved (per lines covering each abort option) and does NOT prompt for cleanup on its own. The consumer decides whether to re-invoke the workflow for cleanup; if it does, the workflow MUST present the `delete-plan` / `keep-plan` prompt above. If the consumer skips re-invocation, the plan dir stays on disk until the next stale-cleanup pass (phase 0).
 

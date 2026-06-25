@@ -50,9 +50,9 @@ If `updates.length > 0`, render a markdown table to the user:
 
 - Sort rows by `location`, then `name` (stable).
 - For each row:
-  - `name` → the package name.
-  - `current → target` → `"{currentVersion} → {targetVersion}"`; append `(release-age fallback)` when `skippedByReleaseAge === true`.
-  - `location` → the raw `location` string (`root`, `workspace:@scope/foo`, `catalog:default`, ...).
+    - `name` → the package name.
+    - `current → target` → `"{currentVersion} → {targetVersion}"`; append `(release-age fallback)` when `skippedByReleaseAge === true`.
+    - `location` → the raw `location` string (`root`, `workspace:@scope/foo`, `catalog:default`, ...).
 - Immediately after the table, print each warning in `warnings` as a `-` bullet under a `Warnings:` heading.
 
 ## Step 4 — Primary prompt
@@ -62,9 +62,9 @@ Use **AskUserQuestion** with one question:
 - **Question**: `Apply patch updates?`
 - **Multi-select**: `false`
 - **Options**:
-  - `apply-all` — "Bump every listed update and run a single install."
-  - `pick-subset` — "Bump all updates except a set you exclude by name."
-  - `cancel` — "Exit without modifying any file."
+    - `apply-all` — "Bump every listed update and run a single install."
+    - `pick-subset` — "Bump all updates except a set you exclude by name."
+    - `cancel` — "Exit without modifying any file."
 
 Branch on the selected option.
 
@@ -131,9 +131,9 @@ For each remaining entry in `MATCHED_BY_ENTRY` (preserve declaration order):
 
 - **Multi-select**: `false`
 - **Options**:
-  - `run-override` — "Execute the suggested command once; skip generic ncu bump for these packages."
-  - `skip-matched` — "Leave these packages untouched; do not run the override and do not bump them generically."
-  - `force-generic` — "Ignore the override and bump these packages with the generic ncu flow."
+    - `run-override` — "Execute the suggested command once; skip generic ncu bump for these packages."
+    - `skip-matched` — "Leave these packages untouched; do not run the override and do not bump them generically."
+    - `force-generic` — "Ignore the override and bump these packages with the generic ncu flow."
 
 Record the chosen action per entry into a `OVERRIDE_ACTIONS: Map<entry.id, "run-override"|"skip-matched"|"force-generic">` structure along with the interpolated command.
 

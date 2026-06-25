@@ -78,10 +78,10 @@ When the workflow returns successfully (i.e. `plan.md` exists at the plan-dir ro
 - **Question**: `Plan synthesized. <plan-dir>/plan.md is ready for review. How do you want to proceed?`
 - **Multi-select**: `false`
 - **Options** (in this exact order):
-  - `apply-all` — execute every item in the plan: bump every package in the `Minor bump set` table AND apply every bullet in the `Improvements (applicable to this codebase)` section.
-  - `apply-bumps-only` — bump every package in the `Minor bump set` table; skip improvements entirely. Equivalent in net effect to running the shallow `/experiments:npm-update-minor` against the same set, with no override-registry logic (see hard rules).
-  - `pick-subset` — accept a free-form list of plan items (specific improvements + specific bumps) to apply.
-  - `cancel` — exit without modifying any file. Plan dir is preserved on disk pending the cleanup prompt.
+    - `apply-all` — execute every item in the plan: bump every package in the `Minor bump set` table AND apply every bullet in the `Improvements (applicable to this codebase)` section.
+    - `apply-bumps-only` — bump every package in the `Minor bump set` table; skip improvements entirely. Equivalent in net effect to running the shallow `/experiments:npm-update-minor` against the same set, with no override-registry logic (see hard rules).
+    - `pick-subset` — accept a free-form list of plan items (specific improvements + specific bumps) to apply.
+    - `cancel` — exit without modifying any file. Plan dir is preserved on disk pending the cleanup prompt.
 
 The command SHALL show this prompt exactly once per invocation. The command SHALL NOT auto-apply any plan item without an explicit option selection.
 
@@ -207,12 +207,12 @@ Then emit, **conditionally**, these sections (omit any whose count is zero, exce
 - `Skipped improvements ({N}):` — one line per improvement bullet declined under `pick-subset`: `- {bullet title} ({groupId})`.
 - `Skipped or unavailable groups ({N}):` — copied from `plan.md`'s `## Skipped or unavailable` section verbatim.
 - `Install:` — exactly one of:
-  - `<pm> install executed` — when at least one bump was applied.
-  - `skipped (no bumps applied)` — when the apply path produced zero bumps (e.g., `cancel`, or `pick-subset` with only improvements selected).
+    - `<pm> install executed` — when at least one bump was applied.
+    - `skipped (no bumps applied)` — when the apply path produced zero bumps (e.g., `cancel`, or `pick-subset` with only improvements selected).
 - `Suggested next steps (not executed):` — always present, with three bullets:
-  - `Run your test suite.`
-  - `Run lint / typecheck.`
-  - `Review changes (\`git diff\`) and commit.`
+    - `Run your test suite.`
+    - `Run lint / typecheck.`
+    - `Review changes (\`git diff\`) and commit.`
 
 For the `cancel` path specifically, the summary contains:
 

@@ -7,7 +7,12 @@ export default defineConfig({
     outDir: "dist",
     // Prevent bundling peer deps; rely on consumer to provide them.
     deps: {
-        neverBundle: [/^react($|\/)/, /^inversify($|\/)/, /^rxjs($|\/)/, /^@m0n0lab\/react-hooks($|\/)/],
+        neverBundle: [
+            /^react($|\/)/,
+            /^inversify($|\/)/,
+            /^rxjs($|\/)/,
+            /^@m0n0lab\/react-hooks($|\/)/,
+        ],
     },
     dts: {
         compilerOptions: {

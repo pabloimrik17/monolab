@@ -250,9 +250,9 @@ If `any package.conflict === true`, raise exactly **one** `AskUserQuestion` (reg
 
 - `multiSelect: false`
 - **Options**:
-  - `use-max-where-possible` — Apply `proposedTarget` only to occurrences whose range admits it; non-admitting occurrences keep their per-project `targetVersion`.
-  - `per-project` — Every occurrence retains its per-project `targetVersion`; no max-alignment for the conflicting packages.
-  - `skip-package` — Drop every conflicting package from the run entirely (their occurrences are removed from the plan).
+    - `use-max-where-possible` — Apply `proposedTarget` only to occurrences whose range admits it; non-admitting occurrences keep their per-project `targetVersion`.
+    - `per-project` — Every occurrence retains its per-project `targetVersion`; no max-alignment for the conflicting packages.
+    - `skip-package` — Drop every conflicting package from the run entirely (their occurrences are removed from the plan).
 
 The chosen policy applies to **every** conflicting package in the run. Do NOT prompt per-package.
 
@@ -453,9 +453,9 @@ For each remaining entry, raise exactly **one** `AskUserQuestion`:
 
 - `multiSelect: false`
 - **Options**:
-  - `run-override` — Execute the command once per affected project; skip generic ncu bump for these packages.
-  - `skip-matched` — Leave these packages untouched in every project; do not run the override and do not bump generically.
-  - `force-generic` — Ignore the override and bump these packages with the generic ncu flow in every affected project.
+    - `run-override` — Execute the command once per affected project; skip generic ncu bump for these packages.
+    - `skip-matched` — Leave these packages untouched in every project; do not run the override and do not bump generically.
+    - `force-generic` — Ignore the override and bump these packages with the generic ncu flow in every affected project.
 
 Record the chosen action per entry into `OVERRIDE_ACTIONS: Map<entry.id, "run-override"|"skip-matched"|"force-generic">` along with the interpolated command.
 
@@ -478,19 +478,19 @@ Raise exactly **one** `AskUserQuestion`. The option set depends on `mode`.
 - **Question copy**: `Apply <level> updates across <N> project(s)?`
 - `multiSelect: false`
 - **Options** (in this exact order):
-  - `apply-all` — Proceed with the entire (post-policy, post-override) plan.
-  - `pick-subset` — Accept a free-form package-name list to exclude before apply.
-  - `cancel` — Exit without modifying any file.
+    - `apply-all` — Proceed with the entire (post-policy, post-override) plan.
+    - `pick-subset` — Accept a free-form package-name list to exclude before apply.
+    - `cancel` — Exit without modifying any file.
 
 ### 9.D — Deep-mode options (four)
 
 - **Question copy**: `Apply <level> updates across <N> project(s)?` (same as shallow)
 - `multiSelect: false`
 - **Options** (in this exact order):
-  - `apply-all` — Proceed with the entire (post-policy, post-override) plan, INCLUDING the post-bumps plan-mode improvements round (Step 10b).
-  - `apply-bumps-only` — Apply bumps + overrides + installs sequentially per project (Step 10a), but SKIP the plan-mode improvements round (Step 10b) entirely. The Step 11 summary's `Applied improvements` section is omitted (zero items). All `run-override` decisions resolved in Step 8 still execute on this path because they were resolved before the gate.
-  - `pick-subset` — Accept a free-form selection combining improvement-bullet titles AND package names. Substring match (case-insensitive) for improvements; exact match for bumps. Excluded improvements skip Step 10b for those bullets; excluded packages skip Step 10a for those names.
-  - `cancel` — Exit without modifying any file. In deep mode the plan-dir IS preserved on disk and the orchestrator invokes Step 10c (end-of-flow cleanup) before exiting; in shallow mode there is no plan-dir.
+    - `apply-all` — Proceed with the entire (post-policy, post-override) plan, INCLUDING the post-bumps plan-mode improvements round (Step 10b).
+    - `apply-bumps-only` — Apply bumps + overrides + installs sequentially per project (Step 10a), but SKIP the plan-mode improvements round (Step 10b) entirely. The Step 11 summary's `Applied improvements` section is omitted (zero items). All `run-override` decisions resolved in Step 8 still execute on this path because they were resolved before the gate.
+    - `pick-subset` — Accept a free-form selection combining improvement-bullet titles AND package names. Substring match (case-insensitive) for improvements; exact match for bumps. Excluded improvements skip Step 10b for those bullets; excluded packages skip Step 10a for those names.
+    - `cancel` — Exit without modifying any file. In deep mode the plan-dir IS preserved on disk and the orchestrator invokes Step 10c (end-of-flow cleanup) before exiting; in shallow mode there is no plan-dir.
 
 ### 9.1 `apply-all`
 
@@ -741,8 +741,8 @@ The workflow prompts the user via `AskUserQuestion`:
 - **Question**: `Plan dir at <plan-dir>. Keep for inspection or delete?`
 - `multiSelect: false`
 - **Options**:
-  - `delete-plan` — recursively `rm -rf <plan-dir>`.
-  - `keep-plan` — leave it on disk; the next deep invocation's phase 0 stale-cleanup catches it after 10 days.
+    - `delete-plan` — recursively `rm -rf <plan-dir>`.
+    - `keep-plan` — leave it on disk; the next deep invocation's phase 0 stale-cleanup catches it after 10 days.
 
 Capture the user's choice into `cleanupOutcome ∈ { "delete-plan", "keep-plan" }`. The Step 11 summary's `Suggested next steps` uses `cleanupOutcome` to decide whether to include the `Review <plan-dir>/plan.md before re-running.` bullet.
 
@@ -864,8 +864,8 @@ Print a markdown summary. The H1 varies by mode. Render sections conditionally; 
 
 - **Applied improvements**: one line per applied (bullet, project) pair. Format `- {bullet title} → {projectName} ({sourceFile or general path hint})`. The `sourceFile or hint` cell is the absolute path of the primary file edited under that pair when a single file is dominant; otherwise a generic hint like `multiple files under apps/<workspace>/src/`.
 - **Skipped improvements**: distinguish the two skip reasons with the parenthetical:
-  - `(excluded via pick-subset)` — when the user excluded the bullet at the gate (9.2.D).
-  - `(rejected at plan-mode review)` — when the user rejected the whole plan-mode round at 10b.3.
+    - `(excluded via pick-subset)` — when the user excluded the bullet at the gate (9.2.D).
+    - `(rejected at plan-mode review)` — when the user rejected the whole plan-mode round at 10b.3.
 - **Inapplicable improvements**: one line per (bullet, project) pair marked inapplicable during 10b.1. Format `- {bullet title} → {projectName} ({one-sentence reason captured during reconnaissance})`.
 - **Skipped or unavailable groups**: copied verbatim from `<plan-dir>/plan.md`'s `## Skipped or unavailable` section (workflow-owned). Heading count `<N>` is the bullet count under that section in `plan.md`.
 

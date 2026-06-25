@@ -75,7 +75,18 @@
             "inputs": [
                 {
                     "json": "{projectRoot}/package.json",
-                    "fields": ["name", "version", "main", "module", "types", "exports", "typesVersions", "files", "type", "bin"]
+                    "fields": [
+                        "name",
+                        "version",
+                        "main",
+                        "module",
+                        "types",
+                        "exports",
+                        "typesVersions",
+                        "files",
+                        "type",
+                        "bin"
+                    ]
                 },
                 "{projectRoot}/dist"
             ]

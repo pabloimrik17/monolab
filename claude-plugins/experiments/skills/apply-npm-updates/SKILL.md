@@ -10,7 +10,7 @@ The single source of truth for the **single-project npm apply mechanism**. The c
 Two things live here:
 
 - **(a) A mechanical apply contract** — Steps A1–A6 below. Caller passes a fully-resolved per-project apply spec; the skill writes manifests, runs overrides, runs one install, and streams `ncu`/install/override stdout/stderr verbatim.
-- **(b) A reusable override-resolution procedure** — the "Override-resolution procedure" section below. Callers that opt into overrides invoke it to turn a candidate package set into matched entries + interpolated commands + a GENERIC/OVERRIDE_RUN/OVERRIDE_SKIP partition. The interactive prompt and the resolution *scope* stay caller-owned.
+- **(b) A reusable override-resolution procedure** — the "Override-resolution procedure" section below. Callers that opt into overrides invoke it to turn a candidate package set into matched entries + interpolated commands + a GENERIC/OVERRIDE_RUN/OVERRIDE_SKIP partition. The interactive prompt and the resolution _scope_ stay caller-owned.
 
 ## When to use
 
@@ -30,16 +30,16 @@ This skill is implemented entirely with Claude Code built-in tools (`Read`, `Bas
 
 The caller passes a fully-resolved, single-project apply spec with exactly these fields:
 
-| Field              | Type                                                          | Required | Notes                                                                                                                                                                       |
-| ------------------ | ------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packageManager`   | `"pnpm" \| "npm" \| "yarn" \| "bun" \| "deno"`                | yes      | Selects the runner prefix and the install command. Rejected if unknown.                                                                                                     |
+| Field              | Type                                                          | Required | Notes                                                                                                                                                                        |
+| ------------------ | ------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packageManager`   | `"pnpm" \| "npm" \| "yarn" \| "bun" \| "deno"`                | yes      | Selects the runner prefix and the install command. Rejected if unknown.                                                                                                      |
 | `cwd`              | `string` (absolute)                                           | yes      | Project root whose manifests are bumped. Every `Bash` call runs with this working directory (`cd "<cwd>" && …`) or uses absolute `--packageFile` paths. No shell-state leak. |
-| `target`           | `"patch" \| "minor" \| "major" \| "engines"`                  | yes      | Passed verbatim to `ncu --target`. Rejected if unknown.                                                                                                                     |
+| `target`           | `"patch" \| "minor" \| "major" \| "engines"`                  | yes      | Passed verbatim to `ncu --target`. Rejected if unknown.                                                                                                                      |
 | `cooldown`         | `string`                                                      | no       | Release-age period for `ncu --cooldown`. Omitted for `pnpm` (ncu reads `pnpm-workspace.yaml` natively).                                                                      |
 | `manifestBumps`    | `Array<{ sourceFile, names: string[], includeFilter: bool }>` | no       | One `package.json` manifest per element. One `ncu` call per element.                                                                                                         |
 | `catalogEdits`     | `Array<{ name, targetVersion }>`                              | no       | `pnpm-workspace.yaml` `catalog:` key edits, in-place.                                                                                                                        |
-| `overrideCommands` | `Array<{ id, command }>`                                      | no       | Already-interpolated override commands, in declaration order.                                                                                                               |
-| `skipInstall`      | `boolean` (default `false`)                                   | no       | When `true`, skip the final install (every accepted package was handled by an override that runs its own install).                                                          |
+| `overrideCommands` | `Array<{ id, command }>`                                      | no       | Already-interpolated override commands, in declaration order.                                                                                                                |
+| `skipInstall`      | `boolean` (default `false`)                                   | no       | When `true`, skip the final install (every accepted package was handled by an override that runs its own install).                                                           |
 
 The spec is consumed **as-is**: the skill performs no override matching, no conflict resolution, and no `pick-subset` parsing of its own. The caller already partitioned `manifestBumps` / `catalogEdits` / `overrideCommands`.
 
@@ -159,7 +159,7 @@ The skill streams `ncu` / install / override stdout/stderr verbatim (observabili
 
 ## Override-resolution procedure (b) — caller-invoked
 
-Callers that opt into overrides invoke this procedure to turn a candidate package set into the inputs for the apply contract. The procedure is the **matching / version-resolution / partition algorithm only** — the interactive `run-override` / `skip-matched` / `force-generic` prompt and the *scope* of resolution (which packages, single-project vs cross-project) remain caller-owned.
+Callers that opt into overrides invoke this procedure to turn a candidate package set into the inputs for the apply contract. The procedure is the **matching / version-resolution / partition algorithm only** — the interactive `run-override` / `skip-matched` / `force-generic` prompt and the _scope_ of resolution (which packages, single-project vs cross-project) remain caller-owned.
 
 ### R1 — Load the registry
 
