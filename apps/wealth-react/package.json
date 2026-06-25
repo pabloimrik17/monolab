@@ -6,7 +6,7 @@
     "scripts": {
         "build": "react-router build",
         "dev": "react-router dev",
-        "lint:eslint": "eslint --cache --max-warnings 60 .",
+        "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 60 .",
         "lint:knip": "knip --max-issues 100",
         "lint:prettier": "prettier . --check",
         "start": "react-router-serve ./build/server/index.js",

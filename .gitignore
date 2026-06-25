@@ -353,6 +353,7 @@ sketch
 .stryker-tmp/
 
 .nx/polygraph
+.nx/self-healing
 .claude/worktrees
 .output
 .vinxi

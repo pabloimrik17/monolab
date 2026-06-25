@@ -67,12 +67,18 @@
         "lint:oxfmt": {
             "cache": true,
             "dependsOn": ["^lint:oxfmt"],
-            "inputs": ["default", "{workspaceRoot}/.oxfmtrc.json"]
+            "inputs": ["default", "{workspaceRoot}/oxfmt.config.ts"]
         },
         "lint:publint": {
             "cache": true,
             "dependsOn": ["^build", "build", "^lint:publint"],
-            "inputs": ["{projectRoot}/package.json", "{projectRoot}/dist"]
+            "inputs": [
+                {
+                    "json": "{projectRoot}/package.json",
+                    "fields": ["name", "version", "main", "module", "types", "exports", "typesVersions", "files", "type", "bin"]
+                },
+                "{projectRoot}/dist"
+            ]
         },
         "lint:stylelint": {
             "cache": true,
