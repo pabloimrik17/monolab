@@ -1,27 +1,9 @@
-# npm-update-apply Specification
+## RENAMED Requirements
 
-## Purpose
+- FROM: `### Requirement: pnpm-workspace.yaml catalog edits`
+- TO: `### Requirement: Catalog source edits`
 
-The `npm-update-apply` skill is the single source of truth for the single-project npm apply mechanism. It accepts a fully-resolved, single-project apply spec and performs the mechanical apply (generic `ncu` bumps, `pnpm-workspace.yaml` catalog edits, override commands, and a single install), returning a structured, composable result. It is level-agnostic — behavior is parameterized solely by `target` — and leaves all consumer-facing messaging and conflict/override resolution to the caller.
-## Requirements
-### Requirement: Skill location and structure
-
-The `experiments` plugin SHALL include a skill at `claude-plugins/experiments/skills/apply-npm-updates/SKILL.md` with YAML frontmatter declaring a non-empty `description` field. The skill SHALL be invocable via the `Skill` tool by the single-project update commands (`/experiments:npm-update-patch`, `/experiments:npm-update-minor`, and their deep variants) and, once per project, by the `commander-update-orchestrator` skill.
-
-The skill SHALL be implemented entirely with Claude Code built-in tools (`Read`, `Bash`, `Edit`, `Write`) and SHALL NOT introduce a new runtime dependency, library, or sidecar package. The skill is the single source of truth for the single-project npm apply mechanism; consumers SHALL NOT restate the `ncu` / catalog-edit / install recipe inline.
-
-#### Scenario: Skill file exists
-
-- **WHEN** examining `claude-plugins/experiments/skills/`
-- **THEN** the directory `apply-npm-updates/` SHALL exist
-- **AND** SHALL contain a `SKILL.md` file with non-empty `description` frontmatter
-
-#### Scenario: Skill is invocable by consumers
-
-- **WHEN** a consumer command or the orchestrator invokes the skill via the `Skill` tool with a resolved apply spec
-- **THEN** the skill performs the mechanical apply for that one project and returns its structured result
-
----
+## MODIFIED Requirements
 
 ### Requirement: Mechanical apply input contract
 
@@ -52,8 +34,6 @@ The skill SHALL reject an unknown `packageManager` or `target` before any side e
 
 - **WHEN** a `catalogEdits` element omits `catalogSource`
 - **THEN** the skill targets `pnpm-workspace.yaml` under the top-level `catalog:` block (legacy behavior, byte-identical)
-
----
 
 ### Requirement: Generic package.json bumps via npm-check-updates
 
@@ -118,8 +98,6 @@ If `ncu` exits non-zero for a manifest, the skill SHALL stop immediately and ret
 - **THEN** the skill does NOT add that name to `--filter` and does NOT write a pinned version over the `catalog:*` value
 - **AND** the consumer `package.json` reference is left untouched
 
----
-
 ### Requirement: Catalog source edits
 
 For each `catalogEdits` element, the skill SHALL bump the entry **in its catalog source** (resolved from `catalogSource`, defaulting to `pnpm-workspace.yaml` when absent) by replacing its value with the **exact** version — `targetVersion` with any leading range operator (`^`/`~`/`=`) stripped — preserving surrounding whitespace, comments, and the order of other keys. This is an in-place `Edit`, never an `npm-check-updates` invocation (ncu does not rewrite catalog sources for pnpm or bun). The skill SHALL NOT touch any consumer `package.json` entry that is a `catalog:` reference.
@@ -151,109 +129,13 @@ If a catalog key (or its resolved block) is unexpectedly missing, the skill SHAL
 - **WHEN** a consumer `package.json` declares `"zod": "catalog:"` (pnpm) or `"eslint-plugin-storybook": "catalog:default"` (Bun)
 - **THEN** the skill does NOT modify that consumer `package.json`
 
----
-
-### Requirement: Override command execution
-
-After every generic manifest write and catalog edit for the project has succeeded, the skill SHALL execute each `overrideCommands` element's `command` exactly once, in declaration order, streaming stdout/stderr. If any override exits non-zero, the skill SHALL stop and return `{ step: "override", entryId, exitCode, appliedSoFar }`. The skill SHALL NOT run `ncu --upgrade` as a fallback after an override fails, and SHALL NOT run the final install on this path.
-
-#### Scenario: Overrides run after generic writes in declaration order
-
-- **WHEN** the spec has generic manifest bumps and two override commands
-- **THEN** the skill writes all manifests first, then runs the two override commands in declaration order
-
-#### Scenario: Override failure stops with no fallback
-
-- **WHEN** an override command exits non-zero
-- **THEN** the skill returns `{ step: "override", entryId, exitCode, appliedSoFar }`
-- **AND** does NOT run `ncu --upgrade` for the matched packages and does NOT run the install
-
----
-
-### Requirement: Single install with skip rule
-
-After all generic bumps, catalog edits, and override commands for the project land successfully, the skill SHALL run exactly one install command for the project's package manager (`pnpm install` / `npm install` / `yarn install` / `bun install` / `deno install`), unless `skipInstall` is `true`. The skill SHALL skip the install when `skipInstall` is `true` (every accepted package was handled by an override that ran its own install). If the install exits non-zero, the skill SHALL return `{ step: "install", exitCode, appliedSoFar }`.
-
-#### Scenario: One install per invocation
-
-- **WHEN** the spec applies bumps across three manifests with `skipInstall: false` and `packageManager: "pnpm"`
-- **THEN** the skill runs `pnpm install` exactly once after all manifests are written
-
-#### Scenario: Install skipped when overrides handled everything
-
-- **WHEN** `skipInstall: true` and no generic manifest write or catalog edit occurred
-- **THEN** the skill runs no install command
-- **AND** the result records that the install was delegated to the override command(s)
-
----
-
-### Requirement: Structured result and caller-owned messaging
-
-On success the skill SHALL return a structured result `{ appliedGeneric: [{ name, location }], appliedOverrides: [{ id, command, matchedNames }], installRan: boolean, failure: null }`. On failure the skill SHALL return the same shape with `failure` populated per the failing-step requirements above. The skill SHALL stream `ncu` / install / override stdout/stderr verbatim (observability), but SHALL NOT print the consumer-facing summary block or the consumer-specific abort copy — the caller composes those so that single-project and cross-project consumers each preserve their own wording and exit semantics.
-
-#### Scenario: Success returns a composable fragment
-
-- **WHEN** the apply completes successfully
-- **THEN** the result lists every generically-bumped package (with `location`) and every override that ran (with command and matched names) and `installRan`
-- **AND** the skill prints no `## ...-<level> summary` heading of its own
-
-#### Scenario: Failure leaves messaging to the caller
-
-- **WHEN** any step fails
-- **THEN** the structured `failure` carries the step, identifiers, exit code, and `appliedSoFar`
-- **AND** the skill does NOT print a consumer-specific abort message; the caller formats and prints it
-
----
-
-### Requirement: Override-resolution procedure (caller-invoked)
-
-The skill SHALL document a reusable override-resolution procedure that callers invoke when they opt into overrides: load the override registry from the caller-supplied path (default `claude-plugins/experiments/skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml`); match each candidate package against `overrides[].matches` with first-win glob semantics (`*` matches any run of characters within a name; no other metacharacters); resolve `{version}` via `target-of:<name>`, `max-target-of:<glob>`, or `latest`, falling back to `fallbackVersionSource` when the primary is unresolved; interpolate `{version}` into `command`; and partition candidates into `GENERIC` / `OVERRIDE_RUN` / `OVERRIDE_SKIP`. If the registry is missing or unparseable, the procedure SHALL degrade gracefully (treat as empty, emit a one-line warning) and SHALL NOT abort.
-
-The interactive `run-override` / `skip-matched` / `force-generic` prompt and the *scope* of resolution (which packages, single-project vs. cross-project) remain caller-owned — the single-project commands and the orchestrator prompt with their own copy and scope. The procedure is the matching/resolution algorithm only.
-
-#### Scenario: First-win glob match
-
-- **WHEN** a candidate set includes `@storybook/react` and the registry's first matching entry is `storybook` (patterns include `@storybook/*`)
-- **THEN** the package binds to the `storybook` entry and to no later entry
-
-#### Scenario: Version resolution with fallback
-
-- **WHEN** an entry has `versionSource: target-of:storybook` and `fallbackVersionSource: max-target-of:@storybook/*`, and no `storybook` package is present but `@storybook/react` resolves to `8.1.2`
-- **THEN** the procedure interpolates `8.1.2` into the command
-
-#### Scenario: Missing registry degrades gracefully
-
-- **WHEN** the override registry file does not exist
-- **THEN** the procedure treats the registry as empty, emits `Override registry unavailable: <reason>. Proceeding without overrides.`, and does NOT abort
-
-#### Scenario: Prompt and scope are not part of the procedure
-
-- **WHEN** a caller uses the procedure
-- **THEN** the procedure returns matches/partitions only and does NOT raise the override `AskUserQuestion` itself
-
----
-
-### Requirement: Level-agnostic operation
-
-The skill SHALL contain no level-specific branching logic; behavior is parameterized solely by `target`. The `target` input SHALL be mapped to an `ncuTarget` (`patch→patch`, `minor→minor`, `major→latest`) threaded through every `ncu --target` call, `--removeRange` is applied uniformly, and the same skill SHALL serve `patch`, `minor`, and `major` callers via that single mapping. The validation list for `target` is `patch|minor|major`. (`engines` is out of scope — `apply-engine-bumps` handles the toolchain bump with no `ncu`.)
-
-#### Scenario: Minor target threads through unchanged behaviorally
-
-- **WHEN** the skill is invoked with `target: "minor"`
-- **THEN** every `ncu` invocation uses `--target minor --removeRange` and no behavior differs from a `patch` invocation beyond the mapped target
-
-#### Scenario: Major target resolves through the mapping
-
-- **WHEN** the skill is invoked with `target: "major"`
-- **THEN** every `ncu` invocation uses `--target latest --removeRange` with `--filter` always applied, and no other behavior differs from a `minor` invocation beyond the mapped target and forced filter
-
 ### Requirement: Hard rules
 
 The skill SHALL preserve the family hard rules:
 
 - SHALL NOT run tests, lint, or build.
 - SHALL NOT create git commits, branches, or pull requests.
-- SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file: `pnpm-workspace.yaml` for pnpm, the root `package.json` `catalog`/`catalogs.<name>` map for Bun.
+- SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog **source** file is edited (`pnpm-workspace.yaml` for pnpm, the root `package.json` `catalog`/`catalogs.<name>` map for Bun).
 - SHALL NOT run `ncu --upgrade` as a fallback after an override command fails.
 - SHALL NOT read or write the override registry data file except via the read-only resolution procedure.
 
@@ -271,4 +153,3 @@ The skill SHALL preserve the family hard rules:
 
 - **WHEN** the skill applies a catalog bump for a pnpm or bun catalog
 - **THEN** only the catalog source file is edited and every consumer `catalog:*` reference is left untouched
-

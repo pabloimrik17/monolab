@@ -110,7 +110,7 @@ Build the resolved apply spec from the accepted set (all updates for `apply-all`
 
 - `packageManager` = the scan's `packageManager`. `cwd` = `APPLY_CWD` (Step 5.5 — the project root for `none`, else the isolation workdir). `target` = `"patch"`. `cooldown` = the value the scan resolved (omit for `pnpm`).
 - `manifestBumps` — one element per distinct `package.json` `sourceFile`: `{ sourceFile, names, includeFilter }`. Set `includeFilter: true` only when this invocation's bumps for the file are a strict subset of ncu's own detected set (i.e. `pick-subset` partial inclusion); otherwise `false`.
-- `catalogEdits` — one element per accepted update with `sourceFile === "pnpm-workspace.yaml"`: `{ name, targetVersion }`.
+- `catalogEdits` — one element per accepted update whose `location` is `catalog:default` / `catalog:<name>` (pnpm `pnpm-workspace.yaml` or Bun root `package.json`): `{ name, targetVersion, catalogSource: <the scan record's catalogSource> }`.
 - `overrideCommands` — **empty** (`[]`). The deep path consults NO override registry: the override flow stays the shallow `/experiments:npm-update-patch` path's responsibility (see hard rules).
 - `skipInstall` — `false` (the deep path always runs the single install after writing manifests), except `true` when Step 5.5's `update-isolation` reported `installAlreadyRan` for the worktree (a worktrunk hook already installed).
 
@@ -129,7 +129,7 @@ On a structured `failure`, print the command-owned abort copy for the failing `s
 - `step: "catalog"` →
 
     ```text
-    Failed to bump {name} in pnpm-workspace.yaml: {reason}.
+    Failed to bump {name} in {catalogSource.sourceFile}: {reason}.
     Applied so far: {names already written on disk}.
     Re-run /experiments:npm-update-deep-patch to retry the rest.
     ```
@@ -256,6 +256,6 @@ The command invokes the workflow's cleanup exactly once at this step. The workfl
 - The command SHALL NOT run tests, lint, or build at any point.
 - The command SHALL NOT create git commits or open pull requests (or push). Branch/worktree isolation via `update-isolation` is permitted (Step 5.5, opt-in, default `none`).
 - The command SHALL NOT modify any file when the user selects `cancel`. The plan dir under `~/.claude/experiments/plans/` is preserved (it is not part of the workspace) until the user selects `delete-plan` at cleanup.
-- The command SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
+- The command SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).
 - The command SHALL NOT consult the package upgrade override registry. Override flows (Storybook, etc.) belong to `/experiments:npm-update-patch`'s shallow path; the deep path goes straight through ncu + catalog edits. (The plan can mention overridable family upgrades as improvements; the user then picks whether to apply them via the standard mechanism.)
 - The command SHALL ignore any user-supplied `level` argument and always pass `level=patch` to `scan-npm-updates`.

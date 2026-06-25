@@ -1,31 +1,31 @@
 ## Why
 
-Actualizar dependencias npm a mano es fricción recurrente: abrir cada `package.json`, comparar versiones, aplicar bumps, validar catalogs. Los patches son el caso más seguro y frecuente, así que empezar por ellos habilita un flujo incremental (`patch` hoy, `minor`/`major`/`engines` después) compartiendo una skill de escaneo. Cubre MON-134 (spike), MON-135 (skill compartida) y MON-136 (comando patch).
+Updating npm dependencies by hand is recurring friction: opening every `package.json`, comparing versions, applying bumps, validating catalogs. Patches are the safest and most frequent case, so starting with them enables an incremental flow (`patch` today, `minor`/`major`/`engines` later) sharing one scanning skill. Covers MON-134 (spike), MON-135 (shared skill) and MON-136 (patch command).
 
 ## What Changes
 
-- Añadir comando `/experiments:npm-update-patch` al plugin `experiments` que escanea, presenta y aplica patches confirmados (bump + install).
-- Añadir skill compartida `scan-npm-updates` en el plugin `experiments`: detecta package manager y repo type, invoca la herramienta de escaneo, filtra por tipo de update (`patch|minor|major|engines`), respeta `minimumReleaseAge` y entrega resultados estructurados. API diseñada para los 4 niveles aunque solo exponga patch en este change.
-- Decisión de herramienta (resultado del spike): `taze` como default, con `ncu` como fallback documentado. Rationale completo y hallazgos de investigación en `design.md`.
-- Comportamiento project-agnostic: el comando gestiona bump + install; no commits, no tests, no lint. Delega verificación al dev/agente invocante.
-- UI: prompt único "apply all / pick subset / cancel"; en "pick subset" se piden exclusiones por nombre. Patches-friendly default = todo.
-- Catalogs: tratados como first-class. Si un paquete está en `catalog:`, la skill actualiza la entrada correspondiente.
-- Bump plugin version de `experiments` tras añadir skill + comando.
+- Add the `/experiments:npm-update-patch` command to the `experiments` plugin, which scans, presents, and applies confirmed patches (bump + install).
+- Add a shared `scan-npm-updates` skill to the `experiments` plugin: it detects the package manager and repo type, invokes the scanning tool, filters by update type (`patch|minor|major|engines`), respects `minimumReleaseAge`, and returns structured results. The API is designed for all 4 levels even though this change only exposes patch.
+- Tool decision (spike outcome): `taze` as the default, with `ncu` as a documented fallback. Full rationale and research findings in `design.md`.
+- Project-agnostic behavior: the command manages bump + install; no commits, no tests, no lint. Verification is delegated to the invoking dev/agent.
+- UI: a single "apply all / pick subset / cancel" prompt; in "pick subset" exclusions are requested by name. Patches-friendly default = everything.
+- Catalogs: treated as first-class. If a package is in `catalog:`, the skill updates the corresponding entry.
+- Bump the `experiments` plugin version after adding the skill + command.
 
 ## Capabilities
 
 ### New Capabilities
 
-- ninguna
+- none
 
 ### Modified Capabilities
 
-- `experiments-plugin`: añade Requirements para la skill `scan-npm-updates` y el comando `npm-update-patch`. El bump de versión del plugin se aplica mecánicamente vía la skill `plugin-version-bump` y no se codifica como Requirement.
+- `experiments-plugin`: adds Requirements for the `scan-npm-updates` skill and the `npm-update-patch` command. The plugin version bump is applied mechanically via the `plugin-version-bump` skill and is not encoded as a Requirement.
 
 ## Impact
 
-- Código: nuevos archivos en `claude-plugins/experiments/skills/scan-npm-updates/SKILL.md` y `claude-plugins/experiments/commands/npm-update-patch.md`. Bump en `plugin.json`, `package.json` y `marketplace.json`.
-- Deps: ninguna dep npm nueva en el workspace; la herramienta (`taze`/`ncu`) se invoca vía `npx`/`pnpm dlx` on-demand dentro de la skill.
-- Superficie externa: dos nuevos puntos de entrada para usuarios del plugin (`/experiments:npm-update-patch` y la skill `scan-npm-updates`). No afecta runtime de apps.
-- Desbloquea: MON-137/138/139 (minor/major/engines) y MON-153 (commander cross-project) reutilizarán la misma skill.
-- Sin breaking changes.
+- Code: new files at `claude-plugins/experiments/skills/scan-npm-updates/SKILL.md` and `claude-plugins/experiments/commands/npm-update-patch.md`. Bump in `plugin.json`, `package.json` and `marketplace.json`.
+- Deps: no new npm dep in the workspace; the tool (`taze`/`ncu`) is invoked via `npx`/`pnpm dlx` on-demand inside the skill.
+- External surface: two new entry points for plugin users (`/experiments:npm-update-patch` and the `scan-npm-updates` skill). Does not affect app runtime.
+- Unblocks: MON-137/138/139 (minor/major/engines) and MON-153 (commander cross-project) will reuse the same skill.
+- No breaking changes.

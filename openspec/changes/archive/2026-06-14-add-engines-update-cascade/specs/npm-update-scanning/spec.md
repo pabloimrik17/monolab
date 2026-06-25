@@ -2,61 +2,61 @@
 
 ### Requirement: Level input validation
 
-El skill SHALL aceptar exactamente uno de `patch`, `minor`, `major` como input `level`. `engines` **ya NO** es un nivel válido para este skill: el bump de toolchain (runtime / package manager) se resuelve mediante `detect-toolchain-surfaces` (capability `engine-surface-scanning`), no mediante el escaneo de dependencias. Cualquier otro valor —incluido `engines`— SHALL abortar con un mensaje de la forma `Error: invalid level "<value>". Expected patch|minor|major.`
+The skill SHALL accept exactly one of `patch`, `minor`, `major` as the `level` input. `engines` is **no longer** a valid level for this skill: the toolchain bump (runtime / package manager) is resolved via `detect-toolchain-surfaces` (capability `engine-surface-scanning`), not via dependency scanning. Any other value —including `engines`— SHALL abort with a message of the form `Error: invalid level "<value>". Expected patch|minor|major.`
 
 #### Scenario: Valid level accepted
 
-- **WHEN** el caller pasa `level=patch`
-- **THEN** el skill procede más allá de esta precondición sin error
+- **WHEN** the caller passes `level=patch`
+- **THEN** the skill proceeds past this precondition without error
 
 #### Scenario: Invalid level aborts
 
-- **WHEN** el caller pasa `level=beta`
-- **THEN** el skill aborta con el error invalid-level (`Expected patch|minor|major.`) y no invoca ncu
+- **WHEN** the caller passes `level=beta`
+- **THEN** the skill aborts with the invalid-level error (`Expected patch|minor|major.`) and does not invoke ncu
 
 #### Scenario: Engines is no longer a dependency-scan level
 
-- **WHEN** el caller pasa `level=engines`
-- **THEN** el skill aborta con `Error: invalid level "engines". Expected patch|minor|major.` y no invoca ncu (el toolchain bump se maneja por `detect-toolchain-surfaces`)
+- **WHEN** the caller passes `level=engines`
+- **THEN** the skill aborts with `Error: invalid level "engines". Expected patch|minor|major.` and does not invoke ncu (the toolchain bump is handled by `detect-toolchain-surfaces`)
 
 ### Requirement: ncu invocation
 
-El skill SHALL invocar `npm-check-updates@21.0.2` (pinned) a través del runner resuelto con los siguientes flags:
+The skill SHALL invoke `npm-check-updates@21.0.2` (pinned) through the resolved runner with the following flags:
 
-- `-p <resolvedPackageManager>` — OBLIGATORIO. Usa el PM resuelto en la precondición 2 en lugar de confiar en la auto-detección de ncu. Esto es necesario porque ncu 21.0.2 con `--packageFile <sub>/package.json` auto-detecta `packageManager: 'deno'` cuando hay un `deno.json` hermano, lo que colapsa `--dep` a `['imports']` e ignora `dependencies`/`devDependencies`.
-- `--target <mapped-target>` (ver "level → target mapping").
+- `-p <resolvedPackageManager>` — REQUIRED. Uses the PM resolved in precondition 2 instead of relying on ncu's auto-detection. This is necessary because ncu 21.0.2 with `--packageFile <sub>/package.json` auto-detects `packageManager: 'deno'` when there is a sibling `deno.json`, which collapses `--dep` to `['imports']` and ignores `dependencies`/`devDependencies`.
+- `--target <mapped-target>` (see "level → target mapping").
 - `--jsonUpgraded`.
-- `--cooldown <value>` sólo cuando corresponda según el lookup de `minimumReleaseAge`.
-- `--packageFile <manifest-path>` para cada manifest enumerado.
+- `--cooldown <value>` only when applicable according to the `minimumReleaseAge` lookup.
+- `--packageFile <manifest-path>` for each enumerated manifest.
 
-El skill SHALL NOT depender de la auto-detección de package manager por parte de ncu. El skill SHALL NOT pasar `--enginesNode` (el bump de runtime/toolchain es responsabilidad de `apply-engine-bumps`, no de este escaneo de dependencias).
+The skill SHALL NOT rely on ncu's package manager auto-detection. The skill SHALL NOT pass `--enginesNode` (the runtime/toolchain bump is the responsibility of `apply-engine-bumps`, not of this dependency scan).
 
 #### Scenario: -p always present
 
-- **WHEN** ncu es invocado para cualquier manifest
-- **THEN** el command line incluye `-p <resolvedPM>` con el valor de la precondición
+- **WHEN** ncu is invoked for any manifest
+- **THEN** the command line includes `-p <resolvedPM>` with the value from the precondition
 
 #### Scenario: PM mis-detection avoided
 
-- **WHEN** un directorio sub-package contiene `package.json` (con deps declaradas) y `deno.json` hermano, y el PM de la precondición se resolvió a `pnpm`
-- **THEN** ncu es invocado con `-p pnpm` y reporta updates de `dependencies`/`devDependencies` en lugar de tratar el manifest como un import map de Deno
+- **WHEN** a sub-package directory contains `package.json` (with declared deps) and a sibling `deno.json`, and the precondition's PM resolved to `pnpm`
+- **THEN** ncu is invoked with `-p pnpm` and reports updates from `dependencies`/`devDependencies` instead of treating the manifest as a Deno import map
 
 ### Requirement: Level to target mapping
 
-El skill SHALL traducir `level` a `--target` de ncu:
+The skill SHALL translate `level` to ncu's `--target`:
 
-- `patch` → `--target patch` (cap dentro del minor actual).
-- `minor` → `--target minor` (cap dentro del major actual).
-- `major` → `--target latest`, luego post-filtrar descartando entries cuyo target-major no sea estrictamente mayor que el current-major.
+- `patch` → `--target patch` (cap within the current minor).
+- `minor` → `--target minor` (cap within the current major).
+- `major` → `--target latest`, then post-filter discarding entries whose target-major is not strictly greater than the current-major.
 
-El skill SHALL NOT mapear `engines` a ningún `--target` (no es un nivel válido — ver "Level input validation").
+The skill SHALL NOT map `engines` to any `--target` (it is not a valid level — see "Level input validation").
 
 #### Scenario: Patch cap
 
-- **WHEN** `level` es `patch`
-- **THEN** ncu es invocado con `--target patch`
+- **WHEN** `level` is `patch`
+- **THEN** ncu is invoked with `--target patch`
 
 #### Scenario: Major post-filter
 
-- **WHEN** `level` es `major` y ncu devuelve un target cuyo major es igual al current-major
-- **THEN** el skill descarta esa entry del output
+- **WHEN** `level` is `major` and ncu returns a target whose major equals the current-major
+- **THEN** the skill discards that entry from the output

@@ -123,7 +123,7 @@ Build the resolved apply spec from the accepted set for this bucket-or-set (all 
 
 - `packageManager` = the scan's `packageManager`. `cwd` = the resolved workdir (root or the bucket's worktree). `target` = `"major"`. `cooldown` = the value the scan resolved (omit for `pnpm`).
 - `manifestBumps` — one element per distinct `package.json` `sourceFile`: `{ sourceFile, names, includeFilter }`. `apply-npm-updates` forces `--filter` on at `target: "major"` regardless of `includeFilter` (the `names` list is authoritative — no over-bump of minor/patch-only deps).
-- `catalogEdits` — one element per accepted update with `sourceFile === "pnpm-workspace.yaml"`: `{ name, targetVersion }`.
+- `catalogEdits` — one element per accepted update whose `location` is `catalog:default` / `catalog:<name>` (pnpm `pnpm-workspace.yaml` or Bun root `package.json`): `{ name, targetVersion, catalogSource: <the scan record's catalogSource> }`.
 - `overrideCommands` — **empty** (`[]`). The deep path consults NO override registry: the override flow stays the shallow `/experiments:npm-update-major` path's responsibility (see hard rules).
 - `skipInstall` — `false` normally; `true` only when Step 5.5/`update-isolation` reported a worktrunk hook already installed in this bucket's worktree.
 
@@ -142,7 +142,7 @@ On a structured `failure`, print the command-owned abort copy for the failing `s
 - `step: "catalog"` →
 
     ```text
-    Failed to bump {name} in pnpm-workspace.yaml: {reason}.
+    Failed to bump {name} in {catalogSource.sourceFile}: {reason}.
     Applied so far: {names already written on disk}.
     Re-run /experiments:npm-update-deep-major to retry the rest.
     ```
@@ -268,7 +268,7 @@ The command invokes the workflow's cleanup exactly once at this step. This appli
 - The command SHALL NOT run tests, lint, or build at any point.
 - The command SHALL NOT create git commits or open pull requests (or push). Branch/worktree isolation via `update-isolation` is permitted (Step 5.5, opt-in, default `none`).
 - The command SHALL NOT modify any file when the user selects `cancel`. The plan dir under `~/.claude/experiments/plans/` is preserved until the user selects `delete-plan` at cleanup.
-- The command SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
+- The command SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).
 - The command SHALL NOT consult the package upgrade override registry. Override flows belong to `/experiments:npm-update-major`'s shallow path; the deep path goes straight through ncu + catalog edits (`apply-npm-updates` with empty `overrideCommands`).
 - The command SHALL NOT expand the plan-mode round beyond bullets present in `plan.md` (improvements + breaking-change/migration items).
 - The command SHALL ignore any user-supplied `level` argument and always pass `level=major` to `scan-npm-updates` and `parallel-research-workflow`.
