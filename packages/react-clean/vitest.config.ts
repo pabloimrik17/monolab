@@ -24,7 +24,6 @@ export default defineConfig({
             reporter: ["lcov", "text", "json", "html"],
             reportsDirectory: "./coverage",
         },
-        // All tests run in a real browser (Playwright/chromium); no jsdom.
         browser: {
             enabled: true,
             provider: playwright({
