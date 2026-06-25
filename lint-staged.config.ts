@@ -27,4 +27,5 @@ export default {
     "*.md": "markdownlint --fix",
     "*.css": "stylelint --fix",
     "*.scss": "stylelint --fix",
+    "renovate.json": "pnpm dlx --package renovate@43.220.0 renovate-config-validator --strict",
 } satisfies Configuration;
