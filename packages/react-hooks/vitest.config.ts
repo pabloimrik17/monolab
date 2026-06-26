@@ -11,7 +11,6 @@ export default defineConfig({
     },
     test: {
         include: ["**/*.{test,spec}.{ts,tsx}"],
-        globalSetup: ["../../playwright.setup.ts"],
         reporters: ["default", "junit"],
         outputFile: {
             junit: "./test-results.junit.xml",

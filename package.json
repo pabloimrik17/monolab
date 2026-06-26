@@ -31,6 +31,7 @@
         "react-clean:release:dry": "nx release --skip-publish --dry-run --projects @m0n0lab/react-clean",
         "react-hooks:release": "nx release --skip-publish --projects @m0n0lab/react-hooks && pnpm run jsr:sync-version",
         "react-hooks:release:dry": "nx release --skip-publish --dry-run --projects @m0n0lab/react-hooks",
+        "setup:browsers": "playwright install chromium",
         "test:browser": "nx run-many --target=test:browser",
         "test:browser:affected": "nx affected --target=test:browser",
         "test:integration": "nx run-many --target=test:integration",

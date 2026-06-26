@@ -1,0 +1,35 @@
+# Custom Nx Cloud launch template = the built-in `linux-medium-js`
+# (nrwl/nx-cloud-workflows, launch-templates/linux.yaml — v6 steps, verified)
+# plus one step that installs Playwright Chromium for the vitest browser-mode
+# tests (packages/react-hooks, packages/react-clean).
+#
+# Why the explicit step: the built-in "Install Browsers" step only runs when
+# `@playwright/test` is a (dev)dependency. This repo uses bare `playwright` +
+# `@vitest/browser-playwright`, so that built-in step is a no-op here and is
+# omitted. The built-in Cypress browser-cache step is dropped too (no Cypress).
+#
+# Chromium is provisioned once per agent, before any distributed task runs —
+# this replaces the per-invocation `playwright.setup.ts` globalSetup install.
+#
+# VERIFY before merge: Nx Cloud UI -> Launch Templates -> `linux-medium-js` ->
+# "View defaults", and confirm `image` + `resource-class` still match below.
+# (Nx occasionally bumps the image tag; the v6 step `uses:` paths are stable.)
+launch-templates:
+    linux-medium-js-playwright:
+        resource-class: 'docker_linux_amd64/medium'
+        image: 'ubuntu22.04-node20.19-v2'
+        init-steps:
+            - name: Checkout
+              uses: 'nrwl/nx-cloud-workflows/v6/workflow-steps/checkout/main.yaml'
+            - name: Restore Node Modules Cache
+              uses: 'nrwl/nx-cloud-workflows/v6/workflow-steps/cache/main.yaml'
+              inputs:
+                  key: 'package-lock.json|yarn.lock|pnpm-lock.yaml|patches/**|.yarn/patches/**'
+                  paths: 'node_modules'
+                  base-branch: 'main'
+            - name: Install Node
+              uses: 'nrwl/nx-cloud-workflows/v6/workflow-steps/install-node/main.yaml'
+            - name: Install Node Modules
+              uses: 'nrwl/nx-cloud-workflows/v6/workflow-steps/install-node-modules/main.yaml'
+            - name: Install Playwright Chromium
+              script: pnpm exec playwright install --with-deps chromium

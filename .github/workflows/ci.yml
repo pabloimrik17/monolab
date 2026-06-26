@@ -67,7 +67,7 @@ jobs:
                   else
                     STOP_AFTER="build"
                   fi
-                  pnpm dlx nx-cloud start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="$STOP_AFTER"
+                  pnpm dlx nx-cloud start-ci-run --distribute-on="3 linux-medium-js-playwright" --stop-agents-after="$STOP_AFTER"
 
             - name: Restore cached npm dependencies
               id: cache-dependencies-restore
