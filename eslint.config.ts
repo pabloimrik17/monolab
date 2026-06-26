@@ -29,7 +29,12 @@ export default tseslint.config(
     // Type-aware linting (project service; excludes out-of-project config files).
     {
         files: ["**/*.{ts,tsx,mts,cts}"],
-        ignores: ["**/*.config.{ts,mts,cts}", "eslint.config.ts", "**/*.test-d.ts"],
+        ignores: [
+            "**/*.config.{ts,mts,cts}",
+            "eslint.config.ts",
+            "**/*.test-d.ts",
+            "**/*.setup.{ts,mts,cts}",
+        ],
         languageOptions: {
             parserOptions: {
                 projectService: true,

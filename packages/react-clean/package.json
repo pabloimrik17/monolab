@@ -44,7 +44,7 @@
         "lint:knip:fix": "knip --fix",
         "lint:oxfmt": "oxfmt --check .",
         "lint:oxfmt:fix": "oxfmt .",
-        "test:browser": "pnpm exec playwright install chromium && vitest run --browser.enabled=true src/*.browser.test.tsx",
+        "test:browser": "vitest run --browser.enabled=true src/*.browser.test.tsx",
         "test:browser:watch": "vitest --browser.enabled=true src/*.browser.test.tsx",
         "test:integration": "vitest run **/*.integration.ts",
         "test:integration:watch": "vitest **/*.integration.ts",
@@ -53,8 +53,8 @@
         "test:types": "vitest --typecheck.enabled --run",
         "test:types:watch": "vitest --typecheck.enabled",
         "test:ui": "vitest --ui",
-        "test:unit": "pnpm exec playwright install chromium && vitest run",
-        "test:unit:coverage": "pnpm exec playwright install chromium && vitest run --coverage",
+        "test:unit": "vitest run",
+        "test:unit:coverage": "vitest run --coverage",
         "test:unit:watch": "vitest"
     },
     "dependencies": {
