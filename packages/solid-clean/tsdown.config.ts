@@ -4,8 +4,9 @@ export default defineConfig({
     name: "@m0n0lab/solid-clean",
     entry: ["src/index.ts"],
     format: ["esm"],
+    fixedExtension: false,
     outDir: "dist",
-    external: [/^solid-js($|\/)/],
+    deps: { neverBundle: [/^solid-js($|\/)/] },
     dts: {
         compilerOptions: {
             composite: false,

@@ -44,13 +44,12 @@
         "test:mutation:report": "open reports/mutation/index.html"
     },
     "devDependencies": {
-        "@arethetypeswrong/cli": "0.18.2",
-        "@stryker-mutator/core": "9.3.0",
-        "@stryker-mutator/typescript-checker": "9.3.0",
-        "@stryker-mutator/vitest-runner": "9.3.0",
-        "jsdom": "catalog:",
+        "@arethetypeswrong/cli": "0.18.3",
+        "@stryker-mutator/core": "9.6.1",
+        "@stryker-mutator/typescript-checker": "9.6.1",
+        "@stryker-mutator/vitest-runner": "9.6.1",
         "solid-js": "1.9.13",
-        "tsdown": "0.15.12",
+        "tsdown": "0.22.2",
         "typescript": "5.9.3",
         "vite-plugin-solid": "2.11.12",
         "vitest": "catalog:"

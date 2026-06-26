@@ -4,17 +4,13 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
     plugins: [react()],
+    // Dedupe React so vitest-browser-react and the package share one copy
+    // (avoids "Invalid hook call" from a duplicate/mismatched React in browser mode).
+    resolve: {
+        dedupe: ["react", "react-dom"],
+    },
     test: {
         include: ["**/*.{test,spec}.{ts,tsx}"],
-        exclude: [
-            "**/*.browser.test.{ts,tsx}",
-            "**/*.integration.ts",
-            "**/node_modules/**",
-            "**/dist/**",
-            "**/.idea/**",
-            "**/.git/**",
-            "**/.cache/**",
-        ],
         reporters: ["default", "junit"],
         outputFile: {
             junit: "./test-results.junit.xml",
@@ -24,11 +20,8 @@ export default defineConfig({
             reporter: ["lcov", "text", "json", "html"],
             reportsDirectory: "./coverage",
         },
-        environment: "jsdom",
-        setupFiles: ["./vitest.setup.ts"],
-        // Browser tests configuration (enabled via CLI flag)
         browser: {
-            enabled: false, // Disabled by default
+            enabled: true,
             provider: playwright({
                 launch: {
                     headless: true,

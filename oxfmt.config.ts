@@ -1,0 +1,42 @@
+import { type OxfmtConfig } from "oxfmt";
+
+export default {
+    tabWidth: 4,
+    singleAttributePerLine: true,
+    ignorePatterns: [
+        "dist",
+        "coverage",
+        ".nx",
+        "openspec",
+        ".agent",
+        ".agents",
+        ".claude",
+        ".codex",
+        ".junie",
+        ".opencode",
+        "CHANGELOG.md",
+        "reports",
+        "tsconfig.json",
+    ],
+    sortImports: {
+        internalPattern: ["@m0n0lab/"],
+        newlinesBetween: false,
+        groups: [
+            "value-builtin",
+            "value-external",
+            ["value-internal", "value-subpath"],
+            ["value-parent", "value-sibling", "value-index"],
+            "type-import",
+            "unknown",
+        ],
+    },
+    sortPackageJson: {},
+    overrides: [
+        {
+            files: [".nvmrc"],
+            options: {
+                printWidth: 1,
+            },
+        },
+    ],
+} satisfies OxfmtConfig;
