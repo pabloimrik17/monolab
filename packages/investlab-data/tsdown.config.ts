@@ -4,6 +4,7 @@ export default defineConfig({
     name: "@m0n0lab/investlab-data",
     entry: ["src/index.ts"],
     format: ["esm"],
+    fixedExtension: false,
     outDir: "dist",
     deps: {
         neverBundle: [

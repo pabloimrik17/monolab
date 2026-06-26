@@ -4,6 +4,7 @@ export default defineConfig({
     name: "@m0n0lab/react-clean",
     entry: ["src/index.ts"],
     format: ["esm"],
+    fixedExtension: false,
     outDir: "dist",
     // Prevent bundling peer deps; rely on consumer to provide them.
     deps: {

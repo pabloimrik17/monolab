@@ -4,6 +4,7 @@ export default defineConfig({
     name: "@m0n0lab/react-hooks",
     entry: ["src/index.ts"],
     format: ["esm"],
+    fixedExtension: false,
     outDir: "dist",
     dts: {
         compilerOptions: {
