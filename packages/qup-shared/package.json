@@ -45,7 +45,7 @@
         "@arethetypeswrong/cli": "0.18.2",
         "@vitest/coverage-v8": "catalog:",
         "tsdown": "0.15.12",
-        "typescript": "5.9.3",
+        "typescript": "6.0.3",
         "vitest": "catalog:"
     },
     "engines": {

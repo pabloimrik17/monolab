@@ -1,6 +1,7 @@
 // @ts-check
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
+import regexpPlugin from "eslint-plugin-regexp";
 
 export default tseslint.config(
     {
@@ -26,6 +27,7 @@ export default tseslint.config(
     },
     eslint.configs.recommended,
     tseslint.configs.recommended,
+    regexpPlugin.configs.recommended,
     {
         rules: {
             "@typescript-eslint/no-unused-vars": [

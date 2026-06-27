@@ -356,3 +356,6 @@ sketch
 .claude/worktrees
 .output
 .vinxi
+
+.nx/self-healing
+.nx/migrate-runs

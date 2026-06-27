@@ -1,3 +1,9 @@
 {
-    "extends": "stylelint-config-standard"
+    "extends": "stylelint-config-standard",
+    "rules": {
+        "selector-no-invalid": true,
+        "selector-no-deprecated": true,
+        "display-notation": "short",
+        "relative-selector-nesting-notation": "explicit"
+    }
 }
