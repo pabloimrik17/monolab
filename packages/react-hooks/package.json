@@ -37,9 +37,9 @@
         "build:check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
         "build:lib": "tsdown",
         "build:typecheck": "tsc --noEmit",
-        "lint:eslint": "eslint --cache --max-warnings 40 .",
+        "lint:eslint": "eslint --concurrency=auto --cache --max-warnings 40 .",
         "lint:eslint:config-check": "eslint-config-prettier src/index.ts",
-        "lint:eslint:fix": "eslint --cache --max-warnings 40 --fix .",
+        "lint:eslint:fix": "eslint --concurrency=auto --cache --max-warnings 40 --fix .",
         "lint:knip": "knip --max-issues 40",
         "lint:knip:fix": "knip --fix",
         "lint:oxfmt": "oxfmt --check .",
@@ -63,12 +63,12 @@
     "devDependencies": {
         "@arethetypeswrong/cli": "0.18.2",
         "@testing-library/react": "catalog:",
-        "@types/react": "18.3.29",
+        "@types/react": "19.2.17",
         "jsdom": "catalog:",
-        "react": "18.3.1",
-        "react-dom": "18.3.1",
+        "react": "19.2.7",
+        "react-dom": "19.2.7",
         "tsdown": "0.15.12",
-        "typescript": "5.9.3",
+        "typescript": "6.0.3",
         "vitest": "catalog:"
     },
     "peerDependencies": {

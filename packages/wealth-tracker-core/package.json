@@ -37,9 +37,9 @@
         "build:check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
         "build:lib": "tsdown",
         "build:typecheck": "tsc --noEmit",
-        "lint:eslint": "eslint --cache --max-warnings 40 .",
+        "lint:eslint": "eslint --concurrency=auto --cache --max-warnings 40 .",
         "lint:eslint:config-check": "eslint-config-prettier src/index.ts",
-        "lint:eslint:fix": "eslint --cache --max-warnings 40 --fix .",
+        "lint:eslint:fix": "eslint --concurrency=auto --cache --max-warnings 40 --fix .",
         "lint:knip": "knip --max-issues 70",
         "lint:knip:fix": "knip --fix",
         "test:unit": "vitest run",
@@ -59,7 +59,7 @@
         "@stryker-mutator/typescript-checker": "9.3.0",
         "@stryker-mutator/vitest-runner": "9.3.0",
         "tsdown": "0.15.12",
-        "typescript": "5.9.3",
+        "typescript": "6.0.3",
         "vitest": "catalog:"
     },
     "engines": {
