@@ -75,7 +75,10 @@ describe("QuoteCacheImpl", () => {
 
         it("returns cached value on cache hit without calling Finnhub", async () => {
             const quote = makeQuote("AAPL");
-            (redis as any)._store.set("investlab:quote:AAPL", JSON.stringify(quote));
+            (redis as unknown as { _store: Map<string, string> })._store.set(
+                "investlab:quote:AAPL",
+                JSON.stringify(quote),
+            );
 
             const result = await cache.getQuote("AAPL");
             expect(result.isOk()).toBe(true);
@@ -123,8 +126,14 @@ describe("QuoteCacheImpl", () => {
         it("returns all from cache when all cached", async () => {
             const aapl = makeQuote("AAPL");
             const googl = makeQuote("GOOGL", 180);
-            (redis as any)._store.set("investlab:quote:AAPL", JSON.stringify(aapl));
-            (redis as any)._store.set("investlab:quote:GOOGL", JSON.stringify(googl));
+            (redis as unknown as { _store: Map<string, string> })._store.set(
+                "investlab:quote:AAPL",
+                JSON.stringify(aapl),
+            );
+            (redis as unknown as { _store: Map<string, string> })._store.set(
+                "investlab:quote:GOOGL",
+                JSON.stringify(googl),
+            );
 
             const result = await cache.getQuotes(["AAPL", "GOOGL"]);
             expect(result.isOk()).toBe(true);
@@ -138,7 +147,10 @@ describe("QuoteCacheImpl", () => {
 
         it("fetches only uncached symbols from Finnhub (partial cache hit)", async () => {
             const aapl = makeQuote("AAPL");
-            (redis as any)._store.set("investlab:quote:AAPL", JSON.stringify(aapl));
+            (redis as unknown as { _store: Map<string, string> })._store.set(
+                "investlab:quote:AAPL",
+                JSON.stringify(aapl),
+            );
 
             const result = await cache.getQuotes(["AAPL", "GOOGL"]);
             expect(result.isOk()).toBe(true);
