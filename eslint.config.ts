@@ -1,5 +1,7 @@
 // @ts-check
 import eslint from "@eslint/js";
+import regexpPlugin from "eslint-plugin-regexp";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
@@ -22,15 +24,35 @@ export default tseslint.config(
             "**/AGENTS.md",
             "**/build/**",
             "**/.react-router/**",
+            "**/.vinxi/**",
+            "**/.output/**",
+            "**/.nx/**",
+            "**/.svelte-kit/**",
+            "**/.vercel/**",
+            "**/.expect/**",
         ],
     },
     eslint.configs.recommended,
     tseslint.configs.recommended,
+    regexpPlugin.configs.recommended,
+    {
+        files: ["**/*.cjs", "**/*.mjs", "**/*.config.{js,ts,cjs,mjs}"],
+        languageOptions: {
+            globals: {
+                ...globals.node,
+            },
+        },
+    },
     {
         rules: {
             "@typescript-eslint/no-unused-vars": [
                 "error",
-                { enableAutofixRemoval: { imports: true } },
+                {
+                    enableAutofixRemoval: { imports: true },
+                    argsIgnorePattern: "^_",
+                    varsIgnorePattern: "^_",
+                    caughtErrorsIgnorePattern: "^_",
+                },
             ],
         },
     },
