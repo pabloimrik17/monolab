@@ -91,20 +91,20 @@
         "runtime": [
             {
                 "name": "deno",
-                "version": "2.6.4",
+                "version": "2.9.0",
                 "onFail": "download"
             },
             {
                 "name": "node",
-                "version": "24.12.0",
+                "version": "24.18.0",
                 "onFail": "download"
             }
         ]
     },
     "engines": {
-        "deno": "2.6.4",
-        "node": "24.12.0",
-        "pnpm": "10.27.0"
+        "deno": "2.9.0",
+        "node": "24.18.0",
+        "pnpm": "11.9.0"
     },
-    "packageManager": "pnpm@10.27.0"
+    "packageManager": "pnpm@11.9.0"
 }
