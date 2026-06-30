@@ -24,7 +24,7 @@
         "pg": "8.21.0"
     },
     "devDependencies": {
-        "@types/node": "26.0.1",
+        "@types/node": "24.13.2",
         "tsdown": "0.22.2",
         "tsx": "4.22.4",
         "typescript": "6.0.3",

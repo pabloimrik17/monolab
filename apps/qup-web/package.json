@@ -23,7 +23,7 @@
     },
     "devDependencies": {
         "@tailwindcss/postcss": "4.3.1",
-        "@types/node": "26.0.1",
+        "@types/node": "24.13.2",
         "@vitest/coverage-v8": "catalog:",
         "postcss": "8.5.15",
         "tailwindcss": "4.3.1",
