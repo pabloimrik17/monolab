@@ -1,23 +1,23 @@
 ## 1. Edit SKILL.md
 
-- [x] 1.1 Abrir `claude-plugins/experiments/skills/scan-npm-updates/SKILL.md`, sección "Tool invocation", y prepender `-p <pm>` al comando ncu documentado (antes de `--target`). El token `<pm>` corresponde al PM resuelto en la precondición 2.
-- [x] 1.2 Añadir una nota breve (≤3 líneas) justo debajo del comando explicando por qué `-p` es obligatorio: ncu 21.0.2 auto-detecta `packageManager: 'deno'` cuando hay `deno.json` hermano de `package.json`, lo que colapsa `--dep` a `['imports']` y pierde bumps. Referenciar el change `fix-scan-npm-updates-pm-detection`.
-- [x] 1.3 Revisar el resto de `SKILL.md` para eliminar cualquier redacción que sugiera "ncu detecta el PM automáticamente"; dejar claro que el skill resuelve el PM y lo pasa explícito. — _No-op: el doc ya atribuye la detección al skill; grep sin hits._
+- [x] 1.1 Open `claude-plugins/experiments/skills/scan-npm-updates/SKILL.md`, "Tool invocation" section, and prepend `-p <pm>` to the documented ncu command (before `--target`). The `<pm>` token corresponds to the PM resolved in precondition 2.
+- [x] 1.2 Add a brief note (≤3 lines) right below the command explaining why `-p` is mandatory: ncu 21.0.2 auto-detects `packageManager: 'deno'` when there is a `deno.json` sibling to `package.json`, which collapses `--dep` to `['imports']` and misses bumps. Reference the change `fix-scan-npm-updates-pm-detection`.
+- [x] 1.3 Review the rest of `SKILL.md` to remove any wording suggesting "ncu detects the PM automatically"; make clear that the skill resolves the PM and passes it explicitly. — _No-op: the doc already attributes detection to the skill; grep with no hits._
 
 ## 2. Verify live
 
-- [x] 2.1 Desde la raíz del repo, correr: `pnpm dlx npm-check-updates@21.0.2 -p pnpm --packageFile packages/react-clean/package.json --target patch --jsonUpgraded`. Confirmar output `{"@types/react":"18.3.28","tsdown":"0.15.12"}` (o los bumps vigentes en esa fecha, respetando `minimumReleaseAge`).
-- [x] 2.2 Correr el mismo comando con `--loglevel silly` y confirmar que `Options` muestra `packageManager: 'pnpm'` (no `'deno'`) y `dep: ['prod','dev','optional','packageManager']`.
-- [x] 2.3 Re-correr `/experiments:npm-update-patch` end-to-end en monolab; confirmar que la tabla del scan incluye `@types/react` y `tsdown` para `packages/react-clean` y `packages/react-hooks`.
+- [x] 2.1 From the repo root, run: `pnpm dlx npm-check-updates@21.0.2 -p pnpm --packageFile packages/react-clean/package.json --target patch --jsonUpgraded`. Confirm output `{"@types/react":"18.3.28","tsdown":"0.15.12"}` (or the bumps in effect on that date, respecting `minimumReleaseAge`).
+- [x] 2.2 Run the same command with `--loglevel silly` and confirm that `Options` shows `packageManager: 'pnpm'` (not `'deno'`) and `dep: ['prod','dev','optional','packageManager']`.
+- [x] 2.3 Re-run `/experiments:npm-update-patch` end-to-end in monolab; confirm that the scan table includes `@types/react` and `tsdown` for `packages/react-clean` and `packages/react-hooks`.
 
 ## 3. Cross-check scope
 
-- [x] 3.1 Releer proposal y design: confirmar que ningún edit toca catalog post-processing, enumeración de manifests, parsing, output shape, ni consumers. El diff de `SKILL.md` debería ser una línea efectiva + la nota.
-- [x] 3.2 Confirmar que `openspec/changes/refine-npm-update-patch-apply/research/followup-scan-deep-finding.md` ya contiene la sección "Spike follow-up (2026-04-24)" apuntando a este change (si no, añadirla).
+- [x] 3.1 Re-read proposal and design: confirm that no edit touches catalog post-processing, manifest enumeration, parsing, output shape, or consumers. The `SKILL.md` diff should be one effective line + the note.
+- [x] 3.2 Confirm that `openspec/changes/refine-npm-update-patch-apply/research/followup-scan-deep-finding.md` already contains the "Spike follow-up (2026-04-24)" section pointing to this change (if not, add it).
 
 ## 4. OpenSpec validation & archive
 
-- [x] 4.1 Correr `openspec validate fix-scan-npm-updates-pm-detection` y resolver cualquier error (deltas, scenarios, capability paths).
-- [x] 4.2 Commit conventional: `docs(openspec): propose fix-scan-npm-updates-pm-detection (seed npm-update-scanning spec)`.
-- [x] 4.3 Commit del edit de skill cuando se implemente: `fix(skills): pass -p <pm> explicit to ncu in scan-npm-updates (avoid deno auto-detect)`.
-- [x] 4.4 Tras merge, correr `/opsx:archive fix-scan-npm-updates-pm-detection` (o equivalente) para mover el delta a `openspec/specs/npm-update-scanning/spec.md`.
+- [x] 4.1 Run `openspec validate fix-scan-npm-updates-pm-detection` and resolve any errors (deltas, scenarios, capability paths).
+- [x] 4.2 Conventional commit: `docs(openspec): propose fix-scan-npm-updates-pm-detection (seed npm-update-scanning spec)`.
+- [x] 4.3 Commit the skill edit when implemented: `fix(skills): pass -p <pm> explicit to ncu in scan-npm-updates (avoid deno auto-detect)`.
+- [x] 4.4 After merge, run `/opsx:archive fix-scan-npm-updates-pm-detection` (or equivalent) to move the delta to `openspec/specs/npm-update-scanning/spec.md`.

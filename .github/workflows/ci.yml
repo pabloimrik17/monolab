@@ -21,9 +21,10 @@ jobs:
             # Set to 'true' to disable Nx Cloud when monthly limit is reached
             NX_NO_CLOUD: ${{ vars.NX_NO_CLOUD }}
         outputs:
-            # JSON map { "<flag>": true|false } consumed by the upload-codecov matrix job
-            # to gate per-package uploads. On push events, all flags are forced to true.
-            affected: ${{ steps.affected-codecov.outputs.json }}
+            # JSON array of { name, path } objects — the upload-codecov matrix is built
+            # from this. PR: only affected packages; push: all packages. Empty ([]) when
+            # no covered package is affected, which skips the upload-codecov job entirely.
+            matrix: ${{ steps.affected-codecov.outputs.matrix }}
         steps:
             - name: Checkout code
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -66,7 +67,7 @@ jobs:
                   else
                     STOP_AFTER="build"
                   fi
-                  pnpm dlx nx-cloud start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="$STOP_AFTER"
+                  pnpm dlx nx-cloud start-ci-run --distribute-on="3 linux-medium-js-playwright" --stop-agents-after="$STOP_AFTER"
 
             - name: Restore cached npm dependencies
               id: cache-dependencies-restore
@@ -154,37 +155,40 @@ jobs:
               run: pnpm exec nx run-many -t test:types
               if: ${{ github.event_name == 'push' }}
 
-            # Build an affected map consumed by the upload-codecov matrix job.
-            # PR: only affected packages upload. Push: force all to true (baseline run).
+            # Build the upload-codecov matrix dynamically.
+            # PR: only affected packages get a matrix entry, so a PR that touches no
+            # covered package (e.g. plugin/skill/docs/openspec/CI-only) yields an empty
+            # matrix and the upload-codecov job is skipped — instead of failing on a
+            # missing coverage artifact. Push: all packages (full baseline run).
             - name: 🔍 Detect affected packages for Codecov
               id: affected-codecov
               run: |
-                  PACKAGES="react-hooks react-clean ts-configs ts-types http-client qup-api qup-data qup-domain solid-clean wealth-tracker-core green-beard qup-web wealth-react qup-shared"
+                  # name:path pairs — single source of truth for the upload-codecov matrix.
+                  PACKAGES="react-hooks:packages/react-hooks react-clean:packages/react-clean ts-configs:packages/ts-configs ts-types:packages/ts-types http-client:packages/http-client qup-api:apps/qup-api qup-data:packages/qup-data qup-domain:packages/qup-domain solid-clean:packages/solid-clean wealth-tracker-core:packages/wealth-tracker-core green-beard:apps/green-beard qup-web:apps/qup-web wealth-react:apps/wealth-react qup-shared:packages/qup-shared"
+
                   if [ "${{ github.event_name }}" = "pull_request" ]; then
                     AFFECTED_PROJECTS=$(pnpm exec nx show projects --affected)
                     echo "Affected projects:"
                     echo "$AFFECTED_PROJECTS"
-                    JSON="{"
-                    for package in $PACKAGES; do
-                      if echo "$AFFECTED_PROJECTS" | grep -Fxq "@m0n0lab/$package"; then
-                        JSON="$JSON\"$package\":true,"
-                        echo "✓ $package is affected"
-                      else
-                        JSON="$JSON\"$package\":false,"
-                        echo "⏭️  $package is not affected"
-                      fi
-                    done
-                    JSON="${JSON%,}}"
-                  else
-                    # On push events upload all flags for full baseline.
-                    JSON="{"
-                    for package in $PACKAGES; do
-                      JSON="$JSON\"$package\":true,"
-                    done
-                    JSON="${JSON%,}}"
                   fi
-                  echo "json=$JSON" >> $GITHUB_OUTPUT
-                  echo "Affected JSON: $JSON"
+
+                  MATRIX="[]"
+                  for entry in $PACKAGES; do
+                    name="${entry%%:*}"
+                    path="${entry#*:}"
+                    if [ "${{ github.event_name }}" = "pull_request" ]; then
+                      if echo "$AFFECTED_PROJECTS" | grep -Fxq "@m0n0lab/$name"; then
+                        echo "✓ $name is affected"
+                      else
+                        echo "⏭️  $name is not affected"
+                        continue
+                      fi
+                    fi
+                    MATRIX=$(echo "$MATRIX" | jq -c --arg n "$name" --arg p "$path" '. + [{name: $n, path: $p}]')
+                  done
+
+                  echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+                  echo "Matrix: $MATRIX"
 
             # Upload lcov + junit artifacts for the downstream matrix job to consume.
             # Single small artifact (<2MB typically); retention 1 day is enough for the
@@ -259,55 +263,31 @@ jobs:
                   key: ${{ steps.cache-nx-restore.outputs.cache-primary-key }}
 
     # Fan-out coverage + test-results uploads to Codecov.
-    # One matrix entry per flag; the gate step skips entries not affected by the PR.
-    # Single source of truth for the package list: this matrix block.
+    # The matrix is built dynamically by the `main` job from the affected packages, so a
+    # PR that touches no covered package produces an empty matrix and this job is skipped
+    # (instead of failing on a missing coverage artifact). Single source of truth for the
+    # package list: the `affected-codecov` step in the `main` job.
     upload-codecov:
         needs: main
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && needs.main.outputs.matrix != '' && needs.main.outputs.matrix != '[]' }}
         runs-on: ubuntu-latest
         strategy:
             fail-fast: false
             matrix:
-                package:
-                    - { name: react-hooks, path: packages/react-hooks }
-                    - { name: react-clean, path: packages/react-clean }
-                    - { name: ts-configs, path: packages/ts-configs }
-                    - { name: ts-types, path: packages/ts-types }
-                    - { name: http-client, path: packages/http-client }
-                    - { name: qup-api, path: apps/qup-api }
-                    - { name: qup-data, path: packages/qup-data }
-                    - { name: qup-domain, path: packages/qup-domain }
-                    - { name: solid-clean, path: packages/solid-clean }
-                    - { name: wealth-tracker-core, path: packages/wealth-tracker-core }
-                    - { name: green-beard, path: apps/green-beard }
-                    - { name: qup-web, path: apps/qup-web }
-                    - { name: wealth-react, path: apps/wealth-react }
-                    - { name: qup-shared, path: packages/qup-shared }
+                package: ${{ fromJson(needs.main.outputs.matrix) }}
         steps:
             - name: Download coverage artifacts
+              # Tolerate a missing artifact: an affected package that produced no coverage
+              # report would otherwise hard-fail the job. The uploads below no-op on a
+              # missing file (fail_ci_if_error: false), keeping the run green.
+              continue-on-error: true
               uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
               with:
                   name: codecov-artifacts
 
-            - name: Gate by affected map
-              id: gate
-              run: |
-                  AFFECTED='${{ needs.main.outputs.affected }}'
-                  if [ -z "$AFFECTED" ] || [ "$AFFECTED" = "null" ]; then
-                    # If the upstream job didn't emit the map (e.g. early failure),
-                    # skip upload rather than crashing the matrix.
-                    echo "should_upload=false" >> $GITHUB_OUTPUT
-                    exit 0
-                  fi
-                  if echo "$AFFECTED" | jq -e '.["${{ matrix.package.name }}"] == true' > /dev/null; then
-                    echo "should_upload=true" >> $GITHUB_OUTPUT
-                  else
-                    echo "should_upload=false" >> $GITHUB_OUTPUT
-                  fi
-
             - name: 📊 Upload coverage to Codecov
               uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5.5.4
-              if: ${{ !cancelled() && steps.gate.outputs.should_upload == 'true' }}
+              if: ${{ !cancelled() }}
               with:
                   files: ./${{ matrix.package.path }}/coverage/lcov.info
                   flags: ${{ matrix.package.name }}
@@ -316,7 +296,7 @@ jobs:
 
             - name: 📊 Upload test results to Codecov
               uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
-              if: ${{ !cancelled() && steps.gate.outputs.should_upload == 'true' }}
+              if: ${{ !cancelled() }}
               with:
                   files: ./${{ matrix.package.path }}/test-results.junit.xml
                   flags: ${{ matrix.package.name }}

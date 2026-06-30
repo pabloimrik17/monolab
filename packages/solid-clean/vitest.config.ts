@@ -14,6 +14,5 @@ export default defineConfig({
             reporter: ["lcov", "text", "json", "html"],
             reportsDirectory: "./coverage",
         },
-        environment: "jsdom",
     },
 });

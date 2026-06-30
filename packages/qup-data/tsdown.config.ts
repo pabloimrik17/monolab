@@ -4,14 +4,17 @@ export default defineConfig({
     name: "@m0n0lab/qup-data",
     entry: ["src/index.ts"],
     format: ["esm"],
+    fixedExtension: false,
     outDir: "dist",
-    external: [
-        /^@m0n0lab\/qup-domain($|\/)/,
-        /^drizzle-orm($|\/)/,
-        /^pg($|\/)/,
-        /^inversify($|\/)/,
-        /^neverthrow($|\/)/,
-    ],
+    deps: {
+        neverBundle: [
+            /^@m0n0lab\/qup-domain($|\/)/,
+            /^drizzle-orm($|\/)/,
+            /^pg($|\/)/,
+            /^inversify($|\/)/,
+            /^neverthrow($|\/)/,
+        ],
+    },
     dts: {
         compilerOptions: {
             composite: false,

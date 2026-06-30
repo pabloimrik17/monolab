@@ -2,11 +2,11 @@
 
 The npm/commander dependency-update matrix now ships the `patch` and `minor` rows. The four `major` commands are pending — MON-138 (`npm:update-major`), MON-147 (`npm:update-deep-major`), MON-196 (`commander:update-major`), MON-202 (`commander:update-deep-major`, this branch). The `add-minor-update-cascade` change already did the one-time platform work: it extracted the shared `npm-update-apply` skill, threaded `<level>` through every command/skill, added the deep-plan `## Changelogs` section, and left the cross-project + single-project flows fully parameterized by `level`/`target`/`mode`. So the four `minor` commands landed as thin wrappers.
 
-`major` is **not** a pure relabel of `minor` — it is the first "non-homónima" level, and exercising it surfaces three gaps the minor cascade deferred:
+`major` is **not** a pure relabel of `minor` — it is the first "non-homonymous" level, and exercising it surfaces three gaps the minor cascade deferred:
 
 1. **`ncu` has no `major` target.** `scan-npm-updates` already maps `major → --target latest` (then post-filters to major-only). But `npm-update-apply` and `commander-update-orchestrator` pass `target` **verbatim** to `ncu --target` — fine for patch/minor (`target===level===` a valid ncu target), but `ncu --target major` is invalid and aborts. The apply layer must map `level → ncuTarget` using the same table scan uses.
 2. **`--target latest` over-bumps without a filter.** scan's major set is a strict subset of `ncu --target latest`'s candidate set (it post-filtered to packages whose major actually advanced). If apply re-runs `ncu --target latest` without `--filter`, it bumps every minor/patch-only dep to latest too. For `latest`-mapped targets the names list must always be authoritative (`--filter` always on).
-3. **Major = breaking changes.** MON-147/MON-202 mandate *"mayor peso en el research: breaking changes, guías de migración, codemods, deprecaciones"*. The `parallel-research-workflow` research contract is level-agnostic today; deep-major needs a level-gated breaking-change/migration research category and a `plan.md` section that surfaces it.
+3. **Major = breaking changes.** MON-147/MON-202 mandate *"greater weight on research: breaking changes, migration guides, codemods, deprecations"*. The `parallel-research-workflow` research contract is level-agnostic today; deep-major needs a level-gated breaking-change/migration research category and a `plan.md` section that surfaces it.
 
 This change closes those three gaps (small, targeted platform deltas — **no** Phase-A-style extraction, that cost was paid by minor) and lands the four `major` commands as thin, `level=major` wrappers on top.
 

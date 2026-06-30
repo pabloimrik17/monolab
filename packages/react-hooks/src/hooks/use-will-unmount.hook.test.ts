@@ -1,32 +1,32 @@
-import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { renderHook } from "vitest-browser-react";
 import { useWillUnmount } from "./use-will-unmount.hook.ts";
 
 describe("useWillUnmount", () => {
-    it("should call callback on unmount", () => {
+    it("should call callback on unmount", async () => {
         const callback = vi.fn();
 
-        const { unmount } = renderHook(() => useWillUnmount(callback));
+        const { unmount } = await renderHook(() => useWillUnmount(callback));
 
         expect(callback).not.toHaveBeenCalled();
 
-        unmount();
+        await unmount();
 
         expect(callback).toHaveBeenCalledTimes(1);
     });
 
-    it("should not call callback on mount or re-render", () => {
+    it("should not call callback on mount or re-render", async () => {
         const callback = vi.fn();
 
-        const { rerender, unmount } = renderHook(() => useWillUnmount(callback));
+        const { rerender, unmount } = await renderHook(() => useWillUnmount(callback));
 
         expect(callback).not.toHaveBeenCalled();
 
-        rerender();
+        await rerender();
 
         expect(callback).not.toHaveBeenCalled();
 
-        unmount();
+        await unmount();
 
         expect(callback).toHaveBeenCalledTimes(1);
     });
@@ -34,9 +34,9 @@ describe("useWillUnmount", () => {
     it("should handle async callback on unmount", async () => {
         const callback = vi.fn().mockResolvedValue(undefined);
 
-        const { unmount } = renderHook(() => useWillUnmount(callback));
+        const { unmount } = await renderHook(() => useWillUnmount(callback));
 
-        unmount();
+        await unmount();
 
         expect(callback).toHaveBeenCalledTimes(1);
     });

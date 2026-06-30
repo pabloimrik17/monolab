@@ -4,8 +4,9 @@ export default defineConfig({
     name: "@m0n0lab/investlab-domain",
     entry: ["src/index.ts"],
     format: ["esm"],
+    fixedExtension: false,
     outDir: "dist",
-    external: [/^inversify($|\/)/, /^neverthrow($|\/)/],
+    deps: { neverBundle: [/^inversify($|\/)/, /^neverthrow($|\/)/] },
     dts: {
         compilerOptions: {
             composite: false,

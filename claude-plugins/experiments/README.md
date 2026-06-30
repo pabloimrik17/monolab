@@ -144,7 +144,7 @@ Engines sibling of `/experiments:npm-update-major` — bumps the **dev/runtime t
 
 ### `/experiments:npm-update-patch`
 
-Scan the current project for patch-level npm updates and interactively apply the subset you accept. Works on pnpm/npm/yarn/bun/deno, single-repo or workspace; treats pnpm `catalog:` entries as first-class. Bumps `package.json` manifests via a single `ncu --upgrade` per file (prefix- and format-preserving), edits `pnpm-workspace.yaml#catalog` in-memory, and runs one final install unless all accepted updates were handled via `run-override`. Never runs tests, lint, or commits.
+Scan the current project for patch-level npm updates and interactively apply the subset you accept. Works on pnpm/npm/yarn/bun/deno, single-repo or workspace; treats pnpm and Bun `catalog:` entries as first-class. Bumps `package.json` manifests via a single `ncu --upgrade` per file (prefix- and format-preserving), edits the catalog source (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun) in-memory, and runs one final install unless all accepted updates were handled via `run-override`. Never runs tests, lint, or commits.
 
 When the accepted set contains packages that ship their own upgrade command (e.g. Storybook), the command consults a **package upgrade override registry** and asks per matched family whether to run the override, skip it, or fall through to the generic flow.
 
@@ -158,7 +158,7 @@ Tip: pair with `/experiments:npm-changelog <pkg> <from>..<to>` before accepting 
 
 ### `/experiments:npm-update-minor`
 
-Minor sibling of `/experiments:npm-update-patch` — same shallow single-project flow (scan → table → `apply-all` / `pick-subset` / `cancel`, override-registry consultation per matched family), only the level differs. Scans at `level=minor` and applies the accepted set via the shared `apply-npm-updates` skill (`target: minor`): one `ncu --upgrade` per `package.json`, in-memory `pnpm-workspace.yaml#catalog` edits, one final install. Never runs tests, lint, build, or commits.
+Minor sibling of `/experiments:npm-update-patch` — same shallow single-project flow (scan → table → `apply-all` / `pick-subset` / `cancel`, override-registry consultation per matched family), only the level differs. Scans at `level=minor` and applies the accepted set via the shared `apply-npm-updates` skill (`target: minor`): one `ncu --upgrade` per `package.json`, in-memory catalog source edits (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun), one final install. Never runs tests, lint, build, or commits.
 
 ```bash
 /experiments:npm-update-minor
@@ -194,11 +194,11 @@ Checks for updates to globally-installed skills.sh skills once per session. Dete
 
 ### `scan-npm-updates`
 
-Shared dependency-scan backend used by `/experiments:npm-update-{patch,minor,major}` and the deep variants. Invokes `npm-check-updates@21.0.2` via the detected package manager's dlx runner, post-processes pnpm `catalog:` entries, and returns a structured `ScanResult` JSON object. Read-only — never edits files. Levels are `patch`/`minor`/`major` only; the **engines** (runtime/toolchain) bump is a separate concern handled by `detect-toolchain-surfaces`, not this skill.
+Shared dependency-scan backend used by `/experiments:npm-update-{patch,minor,major}` and the deep variants. Invokes `npm-check-updates@21.0.2` via the detected package manager's dlx runner, post-processes pnpm and Bun `catalog:` entries, and returns a structured `ScanResult` JSON object. Read-only — never edits files. Levels are `patch`/`minor`/`major` only; the **engines** (runtime/toolchain) bump is a separate concern handled by `detect-toolchain-surfaces`, not this skill.
 
 ### `apply-npm-updates`
 
-Shared single-project apply backend — the single source of truth for the apply mechanism. Given a fully-resolved apply spec (`packageManager`, `cwd`, `target`, `manifestBumps[]`, `catalogEdits[]`, `overrideCommands[]`, `skipInstall`), it runs one `npm-check-updates@21.0.2 --upgrade` per `package.json`, edits `pnpm-workspace.yaml#catalog` in place, runs override commands in declaration order, and runs one install — streaming `ncu`/install/override output verbatim and returning a structured result fragment (it never prints a consumer summary or abort message). Level-agnostic (parameterized solely by `target`). Also documents the caller-invoked override-resolution procedure (registry load → first-win glob match → `{version}` resolution → GENERIC/OVERRIDE_RUN/OVERRIDE_SKIP partition) consumed by the shallow single-project commands and the orchestrator. Consumed by `/experiments:npm-update-{patch,minor}`, `/experiments:npm-update-deep-{patch,minor}`, and `commander-update-orchestrator` (once per project). Never runs tests/lint/build/commits.
+Shared single-project apply backend — the single source of truth for the apply mechanism. Given a fully-resolved apply spec (`packageManager`, `cwd`, `target`, `manifestBumps[]`, `catalogEdits[]`, `overrideCommands[]`, `skipInstall`), it runs one `npm-check-updates@21.0.2 --upgrade` per `package.json`, edits the catalog source (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun) in place, runs override commands in declaration order, and runs one install — streaming `ncu`/install/override output verbatim and returning a structured result fragment (it never prints a consumer summary or abort message). Level-agnostic (parameterized solely by `target`). Also documents the caller-invoked override-resolution procedure (registry load → first-win glob match → `{version}` resolution → GENERIC/OVERRIDE_RUN/OVERRIDE_SKIP partition) consumed by the shallow single-project commands and the orchestrator. Consumed by `/experiments:npm-update-{patch,minor}`, `/experiments:npm-update-deep-{patch,minor}`, and `commander-update-orchestrator` (once per project). Never runs tests/lint/build/commits.
 
 ### `detect-toolchain-surfaces`
 

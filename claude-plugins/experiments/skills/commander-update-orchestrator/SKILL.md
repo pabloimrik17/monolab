@@ -66,7 +66,7 @@ Everything else (the project picker, the gate's `apply-all`/`pick-subset`/`cance
 
 ## Registry contract (read-only excerpt)
 
-This skill reads the user-scoped Commander registry. The full contract is in [`commander-add.md`](../../commands/commander-add.md). Relevant invariants repeated here so this file is self-contained — no shared sidecar yet (extraction deferred until the third commander consumer requires it).
+This skill reads the user-scoped Commander registry. The full contract is in [`commander:add`](../../../commander/commands/add.md). Relevant invariants repeated here so this file is self-contained — no shared sidecar yet (extraction deferred until the third commander consumer requires it).
 
 ### Path
 
@@ -633,13 +633,13 @@ Resolve this project's apply directory from `ISOLATION_BY_PROJECT` (Step 9.5): `
 
 > **`level=engines`:** invoke **`apply-engine-bumps`** (capability `engine-update-apply`) for this project instead of `apply-npm-updates`. Pass `{ cwd: WORKDIR, inventory: <this project's EngineSurfaceInventory from Step 4>, resolvedTargets: <the per-engine targets resolved once in Step 6>, ambiguousResolutions: <any ambiguous loci the user resolved before the gate>, confirmed: true }`. No `ncu`, no `manifestBumps`/`catalogEdits`/`overrideCommands` spec. Fold the returned `{ resolvedTargets, applied, skipped, droppedHashes, failure? }` fragment into this project's summary entry; on a non-null `failure` apply Step 10.4/10.6 stop-on-fail exactly as below (the `failure.step` is `resolve`/`write` rather than `ncu`/`catalog`/`override`/`install` — surface its `detail` in the cross-project abort copy). The rest of 10.1–10.6 (subset, workdir, stop-on-fail) is unchanged. See "Level-conditional routing: `level=engines`".
 
-The `apply-npm-updates` skill is the single source of truth for the per-project mechanical apply (generic `ncu` `package.json` bumps, `pnpm-workspace.yaml` catalog edits, override commands, single install). The orchestrator builds the resolved spec for this project and invokes the skill **once**; it SHALL NOT restate the `ncu` / catalog / install recipe inline.
+The `apply-npm-updates` skill is the single source of truth for the per-project mechanical apply (generic `ncu` `package.json` bumps, catalog source edits — `pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun — override commands, single install). The orchestrator builds the resolved spec for this project and invokes the skill **once**; it SHALL NOT restate the `ncu` / catalog / install recipe inline.
 
 Build the spec from this project's subset (Step 10.1):
 
 - `packageManager` = this project's `ScanResult.packageManager`. `cwd` = `WORKDIR` (Step 10.2 — `<record.path>` under `none`, else the isolation branch/worktree). `target` = the orchestrator's `target` input (passed **unchanged** — the `target → ncuTarget` mapping, `major→latest`, and the exact-pin `--removeRange` write are owned by `apply-npm-updates`, the single source of truth). `cooldown` = the value `scan-npm-updates` resolved for this project (omit for `pnpm`). (This step runs only for `target ∈ {patch, minor, major}`; `target=engines` routes to `apply-engine-bumps` per the note above and never reaches this spec.)
 - `manifestBumps` — one element per distinct `GENERIC` `package.json` `sourceFile`: `{ sourceFile, names: <GENERIC names for this file, space-separated>, includeFilter }`. Set `includeFilter: true` when **any** of: the user picked `pick-subset` and excluded ≥1 package for this project; any update for the file was removed by `OVERRIDE_RUN`/`OVERRIDE_SKIP`; or the conflict policy is `use-max-where-possible` and ncu's full set ≠ this project's effective subset. Otherwise `false` (ncu's own set equals the target set for this file). **Additionally, when `target` is `major`** (it maps to `ncu --target latest`), `includeFilter` SHALL ALWAYS be `true` for every element regardless of the above — the per-project `names` list is authoritative, preventing over-bumping dependencies that `scan-npm-updates` deliberately excluded. (`apply-npm-updates` also forces the filter for `latest`-mapped targets; this explicit set is defense-in-depth and keeps the spec readable. The `patch`/`minor` branch is unchanged.)
-- `catalogEdits` — one element per `GENERIC` occurrence with `sourceFile === "pnpm-workspace.yaml"`: `{ name, targetVersion: <effectiveTarget> }`.
+- `catalogEdits` — one element per `GENERIC` occurrence whose `location` is `catalog:default` / `catalog:<name>` (pnpm `pnpm-workspace.yaml` or Bun root `package.json`): `{ name, targetVersion: <effectiveTarget>, catalogSource: <the scan record's catalogSource> }`. Threading `catalogSource` lets `apply-npm-updates` target the exact source node; omitting it falls back to the legacy pnpm default.
 - `overrideCommands` — the `OVERRIDE_RUN` entries that touch this project, as `{ id, command: <interpolated command> }`, in declaration order (run once per affected project).
 - `skipInstall` — `true` when every accepted package for this project went through `run-override` AND no generic ncu bump ran AND no catalog edit happened for this project (every override handles its own install); also `true` when Step 9.5's `update-isolation` reported `installAlreadyRan` for this project's worktree (a worktrunk hook already installed); otherwise `false`.
 
@@ -659,7 +659,7 @@ If `apply-npm-updates` returns a non-null `failure`, **stop the entire run** (St
 - `step: "catalog"` →
 
     ```text
-    Failed to bump {name} in pnpm-workspace.yaml ({projectName}): {reason}.
+    Failed to bump {name} in {catalogSource.sourceFile} ({projectName}): {reason}.
     Stopping the run. Subsequent projects not attempted.
     ```
 
@@ -931,7 +931,7 @@ After the run completes (success, partial, cancel), the user-scoped registry `<H
 - The skill SHALL NOT run tests, lint, or build at any point in any project.
 - The skill SHALL NOT create git commits or pull requests (or push) in any project. Branch/worktree isolation via the `update-isolation` skill (Step 9.5) is permitted (opt-in; default `none` = apply in place); creating an isolation branch/worktree is allowed, committing/pushing/PR-ing is not.
 - The skill SHALL NOT modify any file outside the per-project manifests it bumps. In particular, `<HOME>/.claude/commander/projects.json` SHALL remain byte-identical before and after every run.
-- The skill SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
+- The skill SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).
 - The skill SHALL NOT auto-execute an override command without the user selecting `run-override` for that entry.
 - The skill SHALL NOT run `ncu --upgrade` as a fallback after an override command fails (mirrors `npm-update-patch`).
 
@@ -956,7 +956,7 @@ After the run completes (success, partial, cancel), the user-scoped registry `<H
 - `All updates excluded; nothing to apply.` — Step 9.2.S empty post-exclusion (shallow).
 - `Cancelled. No files modified.` — Step 9.3 user cancel (both modes); also Step 9.2.D empty selection treated as cancel.
 - `ncu --upgrade failed on {sourceFile} ({projectName}, exit {code}). Stopping the run. Subsequent projects not attempted.` — Step 10.4 `apply-npm-updates` `ncu` failure.
-- `Failed to bump {name} in pnpm-workspace.yaml ({projectName}): {reason}. Stopping the run. Subsequent projects not attempted.` — Step 10.4 `apply-npm-updates` `catalog` failure.
+- `Failed to bump {name} in {catalogSource.sourceFile} ({projectName}): {reason}. Stopping the run. Subsequent projects not attempted.` — Step 10.4 `apply-npm-updates` `catalog` failure.
 - `Override command failed ({entry.id}, {projectName}, exit {code}): {interpolated command}. Stopping the run. Subsequent projects not attempted.` — Step 10.4 `apply-npm-updates` `override` failure.
 - `Install failed ({pm}, {projectName}, exit {code}). Manifests already bumped; review changes before retrying. Stopping the run. Subsequent projects not attempted.` — Step 10.4 `apply-npm-updates` `install` failure.
 - `Improvements rejected at plan-mode review. No improvement edits applied; bumps are preserved.` — Step 10b.3 plan-mode rejection (deep mode).

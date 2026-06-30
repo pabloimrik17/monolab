@@ -1,8 +1,8 @@
-import { render } from "@testing-library/react";
 import { Container, injectable } from "inversify";
 import { useState } from "react";
 import { BehaviorSubject } from "rxjs";
 import { expect, test } from "vitest";
+import { render } from "vitest-browser-react";
 import { useDidMount, useWillUnmount } from "@m0n0lab/react-hooks";
 import { BaseViewModel } from "./base.viewmodel.ts";
 
@@ -49,34 +49,33 @@ function TestComponent({ viewModel }: { viewModel: TestViewModel }) {
     );
 }
 
-test("BaseViewModel lifecycle works in real browser", () => {
+test("BaseViewModel lifecycle works in real browser", async () => {
     const container = new Container();
     container.bind(TestViewModel).toSelf();
     const viewModel = container.get(TestViewModel);
 
-    const { getByTestId } = render(<TestComponent viewModel={viewModel} />);
+    const screen = await render(<TestComponent viewModel={viewModel} />);
 
     // After mount, count should be initialized to 1
-    const countElement = getByTestId("count");
-    expect(countElement.textContent).toBe("1");
+    await expect.element(screen.getByTestId("count")).toHaveTextContent("1");
 
     // Verify we're in real browser environment
     expect(typeof window).toBe("object");
     expect(typeof localStorage).toBe("object");
 });
 
-test("BaseViewModel addSub manages subscriptions in browser", () => {
+test("BaseViewModel addSub manages subscriptions in browser", async () => {
     const container = new Container();
     container.bind(TestViewModel).toSelf();
     const viewModel = container.get(TestViewModel);
 
-    const { unmount } = render(<TestComponent viewModel={viewModel} />);
+    const { unmount } = await render(<TestComponent viewModel={viewModel} />);
 
     // Increment to verify subscription is active
     viewModel.increment();
 
     // Unmount should trigger willUnmount and clean up subscriptions
-    unmount();
+    await unmount();
 
     // After unmount, observable should be completed
     let emitted = false;

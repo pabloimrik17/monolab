@@ -6,12 +6,15 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
     plugins: [react({ tsDecorators: true })],
     resolve: {
+        // Dedupe React so vitest-browser-react and the package share one copy
+        // (avoids "Invalid hook call" from a duplicate/mismatched React in browser mode).
+        dedupe: ["react", "react-dom"],
         alias: {
             "@m0n0lab/react-hooks": resolve(__dirname, "../react-hooks/src/index.ts"),
         },
     },
     test: {
-        include: ["**/*.{test,spec}.{ts,tsx}", "**/*.browser.test.{ts,tsx}", "**/*.integration.ts"],
+        include: ["**/*.{test,spec}.{ts,tsx}"],
         reporters: ["default", "junit"],
         outputFile: {
             junit: "./test-results.junit.xml",
@@ -21,11 +24,8 @@ export default defineConfig({
             reporter: ["lcov", "text", "json", "html"],
             reportsDirectory: "./coverage",
         },
-        environment: "jsdom",
-        setupFiles: ["./vitest.setup.ts"],
-        // Browser tests configuration (enabled via CLI flag)
         browser: {
-            enabled: false, // Disabled by default
+            enabled: true,
             provider: playwright({
                 launch: {
                     headless: true,

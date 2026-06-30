@@ -1,12 +1,12 @@
-import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { renderHook } from "vitest-browser-react";
 import { useDidMount } from "./use-did-mount.hook.ts";
 
 describe("useDidMount", () => {
     it("should call callback on mount", async () => {
         const callback = vi.fn();
 
-        renderHook(() => useDidMount(callback));
+        await renderHook(() => useDidMount(callback));
 
         // Wait for async execution
         await vi.waitFor(
@@ -20,7 +20,7 @@ describe("useDidMount", () => {
     it("should not call callback on re-render", async () => {
         const callback = vi.fn();
 
-        const { rerender } = renderHook(() => useDidMount(callback));
+        const { rerender } = await renderHook(() => useDidMount(callback));
 
         await vi.waitFor(
             () => {
@@ -29,7 +29,7 @@ describe("useDidMount", () => {
             { timeout: 100 },
         );
 
-        rerender();
+        await rerender();
 
         // Wait a bit to ensure no additional calls
         await new Promise((resolve) => setTimeout(resolve, 10));
@@ -40,7 +40,7 @@ describe("useDidMount", () => {
     it("should handle async callback", async () => {
         const callback = vi.fn().mockResolvedValue(undefined);
 
-        renderHook(() => useDidMount(callback));
+        await renderHook(() => useDidMount(callback));
 
         await vi.waitFor(
             () => {
@@ -55,7 +55,7 @@ describe("useDidMount", () => {
         const error = new Error("Test error");
         const callback = vi.fn().mockRejectedValue(error);
 
-        renderHook(() => useDidMount(callback));
+        await renderHook(() => useDidMount(callback));
 
         await vi.waitFor(
             () => {

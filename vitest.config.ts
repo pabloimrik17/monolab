@@ -11,14 +11,15 @@ import { defineConfig } from "vitest/config";
  * Root-level shared configuration (inherited by all packages):
  * - Automatic cleanup: clearMocks, restoreMocks, unstubEnvs, unstubGlobals
  * - Concurrency: maxConcurrency set to 10 for parallel test execution
- * - Browser configuration: Playwright provider (enabled per test via --browser.enabled flag)
+ * - Browser configuration: Playwright provider (chromium)
  *
  * Package-specific configuration (defined in each package's vitest.config.ts):
- * - Test file includes: *.{test,spec}.{ts,tsx}, *.browser.test.{ts,tsx}, *.integration.ts
+ * - Test file includes: *.{test,spec}.{ts,tsx}
  * - JUnit XML reporter for Codecov Test Analytics
  * - Coverage configuration with v8 provider and lcov reporter
- * - Environment: jsdom by default
- * - Browser tests: Enabled via CLI flag (--browser.enabled=true) for *.browser.test.tsx files
+ * - React packages (react-hooks, react-clean) run all tests in a real browser
+ *   (Playwright/chromium) via vitest-browser-react; no jsdom.
+ * - Non-rendering packages run in the default Node environment.
  *
  * @see https://vitest.dev/guide/workspace
  * @see https://vitest.dev/guide/migration.html#workspace-is-replaced-with-projects

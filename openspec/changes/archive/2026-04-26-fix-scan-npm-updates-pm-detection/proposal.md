@@ -1,36 +1,36 @@
 ## Why
 
-El skill `scan-npm-updates` pierde silently bumps reales en workspaces donde coexisten `deno.json` y `package.json` (típico en dual-publish JSR + npm). En monolab, a fecha 2026-04-24, se pierden al menos `@types/react 18.3.27 → 18.3.28` y `tsdown 0.15.9 → 0.15.12` en `packages/react-clean` y `packages/react-hooks`. Parches de seguridad podrían omitirse sin aviso.
+The `scan-npm-updates` skill silently misses real bumps in workspaces where `deno.json` and `package.json` coexist (typical in JSR + npm dual-publish). In monolab, as of 2026-04-24, at least `@types/react 18.3.27 → 18.3.28` and `tsdown 0.15.9 → 0.15.12` are missed in `packages/react-clean` and `packages/react-hooks`. Security patches could be dropped without notice.
 
-Spike (2026-04-24, `--loglevel silly`) estableció la causa raíz: ncu 21.0.2 con `--packageFile <sub>/package.json` auto-detecta `packageManager: 'deno'` por el `deno.json` vecino, lo que colapsa el default de `--dep` a `['imports']` (import map de Deno) e ignora `dependencies`/`devDependencies`. Una hipótesis previa (`--deep` vs per-manifest, registrada en `openspec/changes/refine-npm-update-patch-apply/research/followup-scan-deep-finding.md`) queda descartada: `--deep` funciona sólo por accidente de cwd (gana `pnpm-lock.yaml` al arrancar en la raíz).
+A spike (2026-04-24, `--loglevel silly`) established the root cause: ncu 21.0.2 with `--packageFile <sub>/package.json` auto-detects `packageManager: 'deno'` from the neighboring `deno.json`, which collapses the `--dep` default to `['imports']` (Deno's import map) and ignores `dependencies`/`devDependencies`. A prior hypothesis (`--deep` vs per-manifest, recorded in `openspec/changes/refine-npm-update-patch-apply/research/followup-scan-deep-finding.md`) is ruled out: `--deep` works only by accident of cwd (`pnpm-lock.yaml` wins when starting from the root).
 
 ## What Changes
 
-- Pasar `-p <resolvedPackageManager>` explícito en cada invocación ncu del skill (per-manifest y single-repo). El PM ya está resuelto por la precondición 2 de `SKILL.md`; la skill debe propagarlo al CLI en lugar de confiar en la auto-detección.
-- Documentar en `SKILL.md` por qué `-p` es obligatorio, referenciando el escenario JSR/Deno coexistente como ejemplo.
+- Pass an explicit `-p <resolvedPackageManager>` in every ncu invocation of the skill (per-manifest and single-repo). The PM is already resolved by precondition 2 of `SKILL.md`; the skill must propagate it to the CLI instead of relying on auto-detection.
+- Document in `SKILL.md` why `-p` is mandatory, referencing the coexisting JSR/Deno scenario as an example.
 
-Fuera de scope explícito (cambios posteriores, separables):
+Explicitly out of scope (later, separable changes):
 
-- Migrar la enumeración de manifests a `--deep`. `--deep` es alias literal de `--packageFile '**/package.json'` (confirmado en `ncu --help`); no respeta `package.json#workspaces` de npm/yarn/bun ni `deno.json#workspace`, por lo que introduce overscan de manifests fuera del workspace declarado.
-- Reducción de spawns (22 → 1) y cambios de shape del parser.
-- Benchmark de wall-clock.
+- Migrating manifest enumeration to `--deep`. `--deep` is a literal alias of `--packageFile '**/package.json'` (confirmed in `ncu --help`); it does not respect npm/yarn/bun `package.json#workspaces` nor `deno.json#workspace`, so it introduces overscan of manifests outside the declared workspace.
+- Spawn reduction (22 → 1) and parser shape changes.
+- Wall-clock benchmark.
 
-No cambia: output contract (`ScanResult`), enumeración de manifests, catalog post-process (pnpm), lookup de `minimumReleaseAge`, consumers (`/experiments:npm-update-patch` y comandos hermanos).
+Unchanged: output contract (`ScanResult`), manifest enumeration, catalog post-process (pnpm), `minimumReleaseAge` lookup, consumers (`/experiments:npm-update-patch` and sibling commands).
 
 ## Capabilities
 
 ### New Capabilities
 
-- `npm-update-scanning`: contrato del skill `scan-npm-updates` (detección de package manager y repo type, runner resolution, invocación de ncu con `-p` obligatorio, level→target mapping, enumeración per-manifest, parsing defensivo del stdout de ncu, `minimumReleaseAge` lookup, catalog post-processing pnpm, assembling de `ScanResult`, output JSON, error paths). El skill no estaba versionado en `openspec/specs/`; este change seed-ea el spec completo para anclar la corrección y servir de base a cambios futuros (incluida la posible optimización con `--deep`).
+- `npm-update-scanning`: contract of the `scan-npm-updates` skill (package manager and repo type detection, runner resolution, ncu invocation with mandatory `-p`, level→target mapping, per-manifest enumeration, defensive parsing of ncu stdout, `minimumReleaseAge` lookup, pnpm catalog post-processing, `ScanResult` assembly, JSON output, error paths). The skill was not versioned in `openspec/specs/`; this change seeds the complete spec to anchor the fix and serve as a base for future changes (including the possible `--deep` optimization).
 
 ### Modified Capabilities
 
-Ninguna.
+None.
 
 ## Impact
 
-- **Código**: `claude-plugins/experiments/skills/scan-npm-updates/SKILL.md`, sección "Tool invocation" (prepender `-p <pm>` al comando ncu y añadir nota de por qué).
-- **Consumers**: `/experiments:npm-update-patch` y cualquier comando que invoque el skill — sin cambio de contrato; simplemente dejan de perder bumps en repos con `deno.json` coexistiendo con `package.json`.
-- **Dependencias**: ncu pinned sigue siendo `npm-check-updates@21.0.2`; mismo runner por PM; misma versión del flag `-p`.
-- **Registro histórico**: `openspec/changes/refine-npm-update-patch-apply/research/followup-scan-deep-finding.md` ya se actualizó (2026-04-24) con el hallazgo del spike y el pointer a este change; no es parte del delta de este proposal.
-- **Riesgo**: mínimo. Verificado en vivo: `pnpm dlx npm-check-updates@21.0.2 -p pnpm --packageFile packages/react-clean/package.json --target patch --jsonUpgraded` devuelve `{"@types/react":"18.3.28","tsdown":"0.15.12"}`. `-p <pm>` con el PM ya resuelto por el skill reproduce el comportamiento correcto sin side effects detectables.
+- **Code**: `claude-plugins/experiments/skills/scan-npm-updates/SKILL.md`, "Tool invocation" section (prepend `-p <pm>` to the ncu command and add a note on why).
+- **Consumers**: `/experiments:npm-update-patch` and any command that invokes the skill — no contract change; they simply stop missing bumps in repos where `deno.json` coexists with `package.json`.
+- **Dependencies**: ncu pinned remains `npm-check-updates@21.0.2`; same runner per PM; same version of the `-p` flag.
+- **Historical record**: `openspec/changes/refine-npm-update-patch-apply/research/followup-scan-deep-finding.md` was already updated (2026-04-24) with the spike finding and the pointer to this change; it is not part of this proposal's delta.
+- **Risk**: minimal. Verified live: `pnpm dlx npm-check-updates@21.0.2 -p pnpm --packageFile packages/react-clean/package.json --target patch --jsonUpgraded` returns `{"@types/react":"18.3.28","tsdown":"0.15.12"}`. `-p <pm>` with the PM already resolved by the skill reproduces the correct behavior with no detectable side effects.

@@ -37,7 +37,7 @@ const config = {
         low: 60,
         break: 60,
     },
-    concurrency: 4,
+    concurrency: "50%",
     dashboard: {
         project: "github.com/pabloimrik17/monolab",
         baseUrl: "https://dashboard.stryker-mutator.io/api/reports",
