@@ -59,7 +59,7 @@
         "@stryker-mutator/typescript-checker": "9.6.1",
         "@stryker-mutator/vitest-runner": "9.6.1",
         "tsdown": "0.22.2",
-        "typescript": "5.9.3",
+        "typescript": "6.0.3",
         "vitest": "catalog:"
     },
     "engines": {

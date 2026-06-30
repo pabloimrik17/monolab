@@ -8,7 +8,8 @@
         "declaration": true,
         "composite": true,
         "experimentalDecorators": true,
-        "emitDecoratorMetadata": true
+        "emitDecoratorMetadata": true,
+        "types": ["node"]
     },
     "include": ["src/**/*"],
     "exclude": ["**/*.test.ts", "**/*.spec.ts"],

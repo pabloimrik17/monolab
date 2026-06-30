@@ -6,6 +6,7 @@
             {
                 "ignoreAtRules": ["tailwind", "apply", "layer", "config"]
             }
-        ]
+        ],
+        "import-notation": "string"
     }
 }

@@ -24,7 +24,7 @@
         "test:mutation:report": "open reports/mutation/index.html"
     },
     "dependencies": {
-        "inversify": "7.11.0",
+        "inversify": "8.1.1",
         "neverthrow": "8.2.0"
     },
     "devDependencies": {
@@ -32,7 +32,7 @@
         "@stryker-mutator/typescript-checker": "9.6.1",
         "@stryker-mutator/vitest-runner": "9.6.1",
         "tsdown": "0.22.2",
-        "typescript": "5.9.3",
+        "typescript": "6.0.3",
         "vitest": "catalog:"
     },
     "engines": {
