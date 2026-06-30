@@ -50,7 +50,7 @@
         "@stryker-mutator/vitest-runner": "9.6.1",
         "solid-js": "1.9.13",
         "tsdown": "0.22.2",
-        "typescript": "5.9.3",
+        "typescript": "6.0.3",
         "vite-plugin-solid": "2.11.12",
         "vitest": "catalog:"
     },

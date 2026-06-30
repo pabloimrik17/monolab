@@ -11,7 +11,7 @@ export default function handleRequest(
     responseStatusCode: number,
     responseHeaders: Headers,
     routerContext: EntryContext,
-    _loadContext: AppLoadContext, // eslint-disable-line @typescript-eslint/no-unused-vars
+    _loadContext: AppLoadContext,
 ) {
     return new Promise((resolve, reject) => {
         let shellRendered = false;

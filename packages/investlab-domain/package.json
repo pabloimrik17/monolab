@@ -22,12 +22,12 @@
         "test:unit:coverage": "vitest run --coverage"
     },
     "dependencies": {
-        "inversify": "7.11.0",
+        "inversify": "8.1.1",
         "neverthrow": "8.2.0"
     },
     "devDependencies": {
         "tsdown": "0.22.2",
-        "typescript": "5.9.3",
+        "typescript": "6.0.3",
         "vitest": "catalog:"
     },
     "engines": {
