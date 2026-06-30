@@ -4,13 +4,23 @@ packages:
     - claude-plugins/*
 
 allowBuilds:
+    # builds/links native FS-watcher binary (prebuilt + node-gyp fallback); nx watch/daemon use it. safe + needed -> allow
+    "@parcel/watcher": true
+    # postinstall sets up the native SWC compiler binding; used by @swc-node/register (nx) + fast transpile. safe + needed -> allow
     "@swc/core": true
+    # postinstall installs the native esbuild binary; used by vite/vitest. safe + needed -> allow
     esbuild: true
-    msw: true
+    # postinstall builds nx native bindings (hashing/daemon); core monorepo tool. safe + needed -> allow
     nx: true
-    oxc-resolver: true
+    # postinstall runs `msw init` only when a package sets msw.workerDirectory (none here) -> no-op. not needed -> deny
+    msw: false
+    # ships prebuilt platform binaries, no install hook -> nothing to build. not needed -> deny
+    oxc-resolver: false
 
 blockExoticSubdeps: true
+
+strictPeerDependencies: false
+autoInstallPeers: true
 
 catalog:
     "@vitest/coverage-v8": 4.1.9
