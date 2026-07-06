@@ -19,8 +19,9 @@ jobs:
         permissions:
             actions: read
             contents: read
-            # fallow audit posts a sticky PR comment
+            # fallow audit posts a sticky PR comment + native Check Run
             pull-requests: write
+            checks: write
         env:
             NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
             # Set to 'true' to disable Nx Cloud when monthly limit is reached
