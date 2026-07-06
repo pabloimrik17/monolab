@@ -4,6 +4,7 @@ import { defineConfig } from "@solidjs/start/config";
 const codecovToken = process.env.CODECOV_TOKEN?.trim();
 
 export default defineConfig({
+    middleware: "./src/middleware.ts",
     server: {
         preset: "node-server",
     },
