@@ -46,6 +46,7 @@
 - [x] 6.2 ci.yml PR block: add `fallow-rs/fallow` action step, SHA-pinned `# v3.x`, `command: audit`, `comment: true` (gate new-only default); add `pull-requests: write` to job permissions
 - [x] 6.3 ci.yml push block: add `pnpm run lint:fallow` alongside the run-many lint step
 - [x] 6.4 Verify pinning conforms to `ci-github-actions-pinning` (40-char SHA + `# vX.Y.Z` comment)
+- [x] 6.5 Pre-commit: lint-staged global JS-surface function task running `fallow audit` once per commit (new-only ratchet; docs-only commits skip; lint:fallow stays push-only)
 
 ## 7. Verification
 

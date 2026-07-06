@@ -18,6 +18,7 @@ Full research + adversarial free/paid verification + per-finding triage done in 
 - **CI inside `ci.yml`, not a separate workflow**: sharedGlobal cache bust is one-time per edit, and we edit ci.yml anyway. PR = action step (`command: audit`, `gate: new-only`, `comment: true`, needs `pull-requests: write`), SHA-pinned per `ci-github-actions-pinning`; action's `version` input omitted so it uses the package.json pin. Push = `pnpm run lint:fallow`.
 - **Dedup fixes are 3 named refactors**: `errorJson(c, error)` in `apps/qup-api/src/errors/error-mapping.ts` (kills 13 occurrences / 4 clone groups); `VmStatus` and `OrderCard` components in new `apps/qup-web/src/components/` (kills 3 groups + duplicated `STATUS_COLORS`). Nothing crosses packages → no new workspace package.
 - **`@kobalte/core` kept ignored (mirror knip)** rather than removed: existing deliberate keep decision; removing is a separate product call.
+- **Pre-commit audit via lint-staged (added post-PR, mirrors dotfiles)**: global function task on the JS surface (`*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc}`) returning `fallow audit` — function form ignores the file list so the audit runs ONCE per commit; changed-files vs merge-base with the new-only ratchet, so only findings the commit introduces block it. Docs-only commits skip it (glob never matches). `lint:fallow` (full-repo dead-code) intentionally NOT reused here — it stays the push CI gate.
 
 ## Risks / Trade-offs
 
