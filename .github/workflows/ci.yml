@@ -144,7 +144,7 @@ jobs:
               if: ${{ github.event_name == 'pull_request' }}
 
             - name: 🔍 Execute lint checks for all files (All)
-              run: pnpm exec nx run-many -t lint:publint lint:knip lint:eslint lint:stylelint lint:markdownlint lint:oxfmt && pnpm run lint:fallow
+              run: pnpm exec nx run-many -t lint:publint lint:knip lint:eslint lint:stylelint lint:markdownlint lint:oxfmt lint:fallow
               if: ${{ github.event_name == 'push' }}
 
             - name: 🧪 Execute unit test checks for affected files (Affected)
