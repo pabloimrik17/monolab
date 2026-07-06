@@ -1,20 +1,18 @@
 import react from "@vitejs/plugin-react-swc";
 import { playwright } from "@vitest/browser-playwright";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
     plugins: [react()],
+    // Dedupe React so vitest-browser-react and the package share one copy
+    // (avoids "Invalid hook call" from a duplicate/mismatched React in browser mode).
+    resolve: {
+        dedupe: ["react", "react-dom"],
+    },
     test: {
         include: ["**/*.{test,spec}.{ts,tsx}"],
-        exclude: [
-            "**/*.browser.test.{ts,tsx}",
-            "**/*.integration.ts",
-            "**/node_modules/**",
-            "**/dist/**",
-            "**/.idea/**",
-            "**/.git/**",
-            "**/.cache/**",
-        ],
+        // Stryker inPlace backups contain copies of all tests; never collect them
+        exclude: [...configDefaults.exclude, "**/.stryker-tmp/**"],
         reporters: ["default", "junit"],
         outputFile: {
             junit: "./test-results.junit.xml",
@@ -24,11 +22,8 @@ export default defineConfig({
             reporter: ["lcov", "text", "json", "html"],
             reportsDirectory: "./coverage",
         },
-        environment: "jsdom",
-        setupFiles: ["./vitest.setup.ts"],
-        // Browser tests configuration (enabled via CLI flag)
         browser: {
-            enabled: false, // Disabled by default
+            enabled: true,
             provider: playwright({
                 launch: {
                     headless: true,

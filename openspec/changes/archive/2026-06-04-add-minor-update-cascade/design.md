@@ -13,7 +13,7 @@ This change extracts that shared mechanism, threads `<level>` through the few re
 - The four `minor` commands as thin, level-parameterized wrappers (MON-137/146/195/200).
 
 **Non-Goals:**
-- `major` / `engines` rows (MON-201/202) — breaking-change / peer / engines semantics are not `homónima` to patch; separate tickets. (They do become trivial wrappers after this.)
+- `major` / `engines` rows (MON-201/202) — breaking-change / peer / engines semantics are not `homonymous` to patch; separate tickets. (They do become trivial wrappers after this.)
 - Unifying the override **prompt** copy across single-project and cross-project (the two surfaces legitimately differ — see D2).
 - Changing any observable behavior of the shipped patch commands.
 - Tests/lint/build/commits; registry mutation; auto-rollback.

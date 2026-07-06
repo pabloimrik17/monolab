@@ -5,7 +5,6 @@ import { getSessionByCode, getSessionOrders } from "../server/data.ts";
 import type { OrderDto } from "@m0n0lab/qup-shared";
 
 const SSE_BASE_URL =
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     (import.meta.env?.VITE_API_URL as string | undefined) ?? "http://localhost:3001";
 
 @injectable()

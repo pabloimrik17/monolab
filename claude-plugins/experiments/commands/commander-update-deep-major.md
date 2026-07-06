@@ -51,7 +51,7 @@ The command MUST NOT:
 
 Every line the skill emits — including:
 
-- the empty-registry message (`No projects registered. Use /experiments:commander-add to register one.`),
+- the empty-registry message (`No projects registered. Use /commander:add to register one.`),
 - the project picker (`AskUserQuestion` multi-select),
 - the workflow's phase 0 stale-cleanup prompt (`delete-stale` / `keep-stale` / `cancel`),
 - the per-batch progress messages from phase 1 changelog fetch,
@@ -77,7 +77,7 @@ Inherited from `commander-update-orchestrator` (deep mode) and `/experiments:npm
 - Never create git commits or pull requests (or push). Branch/worktree isolation via `update-isolation` is permitted (opt-in; v1 cross-project caps at **one worktree per project** — per-(project,bucket) is deferred).
 - Never modify any file when the user selects `cancel` at the orchestrator's confirmation gate or rejects the plan-mode round.
 - Never mutate `<HOME>/.claude/commander/projects.json` — the registry is read-only on this path. The on-disk file SHALL be byte-identical before and after every run (verifiable via `shasum`).
-- Never mutate a consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
+- Never mutate a consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).
 - Never auto-execute an override command without the user selecting `run-override` explicitly for that entry.
 - Never run `ncu --upgrade` as a fallback after an override command fails.
 - Never expand the plan-mode round's scope beyond bullets present in `plan.md` (improvements + breaking-change/migration items; adjacent opportunities go to the summary's `Suggested next steps`).

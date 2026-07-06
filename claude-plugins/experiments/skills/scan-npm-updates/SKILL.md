@@ -1,6 +1,6 @@
 ---
 name: scan-npm-updates
-description: Scan a JavaScript/TypeScript project for available npm dependency updates filtered by level (patch/minor/major). Use when a command or the user needs a structured list of upgrade candidates before applying them — for example `/experiments:npm-update-patch`, or any flow that asks "what patches are available?" or "which deps have a new minor?". Handles pnpm/npm/yarn/bun/deno, single-repo and workspace, pnpm `catalog:` entries, and `minimumReleaseAge`. Returns JSON; does NOT edit files or run installs — that's the caller's job. (`engines` is NOT a level here — the runtime/toolchain bump is handled by `detect-toolchain-surfaces`.)
+description: Scan a JavaScript/TypeScript project for available npm dependency updates filtered by level (patch/minor/major). Use when a command or the user needs a structured list of upgrade candidates before applying them — for example `/experiments:npm-update-patch`, or any flow that asks "what patches are available?" or "which deps have a new minor?". Handles pnpm/npm/yarn/bun/deno, single-repo and workspace, pnpm and Bun `catalog:` entries, and `minimumReleaseAge`. Returns JSON; does NOT edit files or run installs — that's the caller's job. (`engines` is NOT a level here — the runtime/toolchain bump is handled by `detect-toolchain-surfaces`.)
 ---
 
 # scan-npm-updates
@@ -28,6 +28,13 @@ interface ScanResult {
         location: "root" | `workspace:${string}` | "catalog:default" | `catalog:${string}`;
         sourceFile: string; // repo-root-relative path of the manifest to edit
         skippedByReleaseAge?: boolean; // true if a newer version was filtered by minimumReleaseAge and this is the fallback
+        catalogSource?: {
+            // present on every catalog:* record (catalog:default / catalog:<name>), absent on root/workspace:* records
+            sourceFile: string; // catalog source to edit: "pnpm-workspace.yaml" (pnpm) or the root "package.json" (bun)
+            manager: "pnpm" | "bun";
+            field: { kind: "default" } | { kind: "named"; name: string };
+            underWorkspaces?: boolean; // bun only: true when the catalog block lives under `workspaces`
+        };
     }>;
     warnings: string[]; // non-fatal: tool stderr, unsupported-catalog notes, parse notes
 }
@@ -138,28 +145,52 @@ This table is authoritative. Any PM not listed here SHALL abort (precondition 3)
 
 ncu's `--cooldown` accepts ISO-8601-ish durations such as `1d`, `12h`, `1440m`. Convert pnpm's minute value (`minimumReleaseAge: 1440`) to `1440m` when passing explicitly.
 
-## Catalog post-processing (pnpm only)
+## Catalog post-processing
 
-After running ncu on every manifest, the raw updates set misses any dep declared as `"<pkg>": "catalog:"` in a consumer `package.json`. ncu skips those entries because they carry no version.
+After running ncu on every manifest, the raw updates set misses any dep declared as a `catalog:` reference in a consumer `package.json` (`"<pkg>": "catalog:"` for pnpm; `"<pkg>": "catalog:"` or `"catalog:<name>"` for bun). ncu skips those entries syntactically because they carry no version (verified for both PMs — see `research/ncu-bun-catalog-spike.md`). The scan therefore reads the catalog **source** directly, branching on the detected package manager. Both branches reuse the same `npm view` + `level` + `minimumReleaseAge` candidate resolution; only the source location and record shape differ.
 
-For pnpm workspaces with a `pnpm-workspace.yaml#catalog` block:
+Each candidate is resolved once via:
 
-1. Read `pnpm-workspace.yaml` and parse the top-level `catalog:` map.
-2. If `catalog:` is absent, skip this section.
-3. For each `(name, version)` pair under `catalog:`, query `npm view <name> versions time --json` once (single spawn per package; cache in-memory for the scan).
-4. Filter candidate versions by:
-    - the current `level` (patch = max version within the current minor band; minor = max within major band; major = max version whose major > current's major).
-    - the resolved `minimumReleaseAge` threshold (a version is acceptable iff `now - publishTime >= threshold`).
-5. Emit an update record with:
+- `npm view <name> versions time --json` (single spawn per package; cache in-memory for the scan).
+- Filter by the current `level` (patch = max version within the current minor band; minor = max within major band; major = max version whose major > current's major) and the resolved `minimumReleaseAge` threshold (a version is acceptable iff `now - publishTime >= threshold`).
+- `skippedByReleaseAge: true` when a higher version was filtered by the age threshold.
+
+### pnpm — `pnpm-workspace.yaml#catalog`
+
+When `packageManager === "pnpm"`:
+
+1. Read `pnpm-workspace.yaml` and parse the top-level `catalog:` map. If absent, skip this branch.
+2. For each `(name, version)` pair under `catalog:`, resolve the candidate as above and emit an update record with:
     - `name`: the catalog key.
     - `currentVersion`: the value from `pnpm-workspace.yaml#catalog`.
     - `targetVersion`: the resolved candidate.
     - `location`: `"catalog:default"`.
     - `sourceFile`: `"pnpm-workspace.yaml"`.
-    - `skippedByReleaseAge`: `true` if a higher version was filtered by the age threshold.
-6. If a consumer `package.json` has `"<pkg>": "catalog:"` AND ncu separately reported `<pkg>` from that manifest (shouldn't happen because catalog: is not a version, but defensive), drop the manifest-level record and keep the catalog record.
+    - `catalogSource`: `{ sourceFile: "pnpm-workspace.yaml", manager: "pnpm", field: { kind: "default" } }`.
+    - `skippedByReleaseAge` as resolved above.
+3. If a consumer `package.json` has `"<pkg>": "catalog:"` AND ncu separately reported `<pkg>` from that manifest (shouldn't happen because `catalog:` is not a version, but defensive), drop the manifest-level record and keep the catalog record.
 
-**Named catalogs (`catalog:test`, etc.):** detect by scanning `pnpm-workspace.yaml` for top-level keys matching `/^catalogs?\./` or a `catalogs:` map. For each named catalog found, push one warning: `named catalog "<name>" detected but not yet supported in this iteration`. Do not emit update records for named-catalog entries.
+**pnpm named catalogs (`catalogs.<name>`, etc.):** detect by scanning `pnpm-workspace.yaml` for top-level keys matching `/^catalogs?\./` or a `catalogs:` map. For each named catalog found, push one warning: `named catalog "<name>" detected but not yet supported in this iteration`. Do not emit update records for pnpm named-catalog entries (unchanged this iteration).
+
+### bun — root `package.json` `catalog` / `catalogs`
+
+When `packageManager === "bun"`, bun declares catalogs in the root `package.json`, each placeable top-level **or** nested under `workspaces`:
+
+1. Read the catalog maps from the root `package.json`. Prefer the native readers `bun pm pkg get catalog` and `bun pm pkg get catalogs` (clean JSON, no hand-parsing — see `research/bun-cli-spike.md`); also inspect `workspaces.catalog` and `workspaces.catalogs`. If none are present, skip this branch.
+2. Parse all four placements:
+    - `catalog` (top-level) and `workspaces.catalog` → the **default** catalog: `field = { kind: "default" }`.
+    - `catalogs.<name>` (top-level) and `workspaces.catalogs.<name>` → a **named** catalog: `field = { kind: "named", name: "<name>" }`.
+    - Set `underWorkspaces` to `true` for blocks read from under `workspaces`, else `false`.
+3. For each `(name, version)` entry, resolve the candidate exactly as above (same `npm view` + `level` + `minimumReleaseAge` logic) and emit an update record with:
+    - `name`: the catalog key.
+    - `currentVersion`: the value from the catalog block.
+    - `targetVersion`: the resolved candidate.
+    - `location`: `"catalog:default"` for the default catalog; `"catalog:<name>"` for a named catalog.
+    - `sourceFile`: the repo-root-relative path of the root `package.json` (e.g. `"package.json"`).
+    - `catalogSource`: `{ sourceFile, manager: "bun", field, underWorkspaces }`.
+    - `skippedByReleaseAge` as resolved above.
+4. **Bun named catalogs ARE supported (Full scope)** — emit records for them and push **NO** `named catalog … not yet supported` warning.
+5. **Ambiguous default:** if the repo declares both a bare `catalog` (top-level or `workspaces.catalog`) AND a `catalogs.default`, push the warning `ambiguous default catalog: both 'catalog' and 'catalogs.default' present; treating as distinct sources` and emit both as distinct records. They share `location: "catalog:default"` but stay unambiguous downstream via `catalogSource.field` (the bare default is `{ kind: "default" }`; the named one is `{ kind: "named", name: "default" }`).
 
 ## Assembling the result
 
@@ -169,7 +200,9 @@ For each manifest in the repo:
     - root `package.json` in `single` → `"root"`.
     - root `package.json` in `workspace` → `"root"` (still valid; it's the workspace root manifest).
     - non-root workspace `package.json` → `workspace:<package-name>` where `<package-name>` is that manifest's `name` field.
-- `sourceFile`: repo-root-relative path (e.g. `apps/wealth-react/package.json`).
+    - default catalog (pnpm `catalog:` or bun `catalog`) → `"catalog:default"`; bun named catalog → `"catalog:<name>"`.
+- `sourceFile`: repo-root-relative path (e.g. `apps/wealth-react/package.json`, `pnpm-workspace.yaml`, or the root `package.json` for bun catalogs).
+- `catalogSource`: present on every `catalog:*` record (describing the exact edit target so apply is unambiguous); absent on `root`/`workspace:*` records.
 
 Preserve the version prefix from the current manifest when emitting `targetVersion`:
 
@@ -181,7 +214,7 @@ Concatenate all `warnings` from:
 
 - ncu stderr per invocation.
 - JSON parse failures.
-- Named-catalog notes.
+- pnpm named-catalog notes; the bun ambiguous-default note.
 - Any `npm view` failures during catalog processing.
 
 Dedupe warnings (same string appearing twice → keep one).
@@ -192,16 +225,18 @@ Emit the `ScanResult` JSON object. That's it. Do not print tables, do not ask qu
 
 ## Error paths summary
 
-| Scenario                                           | Behaviour                                                                                                                   |
-| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Unknown `level`                                    | Abort with precondition-1 error.                                                                                            |
-| No lockfile and no `packageManager` hint           | Abort with precondition-2 error.                                                                                            |
-| PM lacks `minimumReleaseAge` lookup row            | Abort with precondition-3 error.                                                                                            |
-| PM runner missing                                  | Abort with precondition-4 error.                                                                                            |
-| ncu exits non-zero on a manifest                   | Push stderr (or a synthesized `ncu failed on <manifest>`) into `warnings` and continue. `updates` for that manifest = `[]`. |
-| ncu output cannot be parsed as JSON                | Push raw stdout (truncated) into `warnings`; `updates` for that manifest = `[]`.                                            |
-| `npm view <pkg>` fails during catalog post-process | Push a warning naming the package; omit catalog record for that entry.                                                      |
-| Named catalog present                              | Push warning; skip those entries.                                                                                           |
+| Scenario                                               | Behaviour                                                                                                                   |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| Unknown `level`                                        | Abort with precondition-1 error.                                                                                            |
+| No lockfile and no `packageManager` hint               | Abort with precondition-2 error.                                                                                            |
+| PM lacks `minimumReleaseAge` lookup row                | Abort with precondition-3 error.                                                                                            |
+| PM runner missing                                      | Abort with precondition-4 error.                                                                                            |
+| ncu exits non-zero on a manifest                       | Push stderr (or a synthesized `ncu failed on <manifest>`) into `warnings` and continue. `updates` for that manifest = `[]`. |
+| ncu output cannot be parsed as JSON                    | Push raw stdout (truncated) into `warnings`; `updates` for that manifest = `[]`.                                            |
+| `npm view <pkg>` fails during catalog post-process     | Push a warning naming the package; omit catalog record for that entry.                                                      |
+| pnpm named catalog present                             | Push `not yet supported` warning; skip those entries.                                                                       |
+| bun named catalog present                              | Supported — emit records, no warning.                                                                                       |
+| bun ambiguous default (`catalog` + `catalogs.default`) | Push ambiguous-default warning; emit both as distinct records (differentiated by `catalogSource.field`).                    |
 
 The only abort paths are the four preconditions. Everything after is resilient: degrade to warnings and keep going.
 
@@ -224,9 +259,32 @@ The only abort paths are the four preconditions. Everything after is resilient: 
             "currentVersion": "4.0.18",
             "targetVersion": "4.0.24",
             "location": "catalog:default",
-            "sourceFile": "pnpm-workspace.yaml"
+            "sourceFile": "pnpm-workspace.yaml",
+            "catalogSource": {
+                "sourceFile": "pnpm-workspace.yaml",
+                "manager": "pnpm",
+                "field": { "kind": "default" }
+            }
         }
     ],
     "warnings": ["named catalog \"test\" detected but not yet supported in this iteration"]
+}
+```
+
+A bun catalog record (named catalog under `workspaces`) looks like:
+
+```json
+{
+    "name": "jest",
+    "currentVersion": "30.0.0",
+    "targetVersion": "30.0.1",
+    "location": "catalog:testing",
+    "sourceFile": "package.json",
+    "catalogSource": {
+        "sourceFile": "package.json",
+        "manager": "bun",
+        "field": { "kind": "named", "name": "testing" },
+        "underWorkspaces": true
+    }
 }
 ```

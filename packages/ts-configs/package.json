@@ -38,20 +38,20 @@
         "registry": "https://registry.npmjs.org/"
     },
     "scripts": {
-        "lint:eslint": "eslint --cache --max-warnings 40 .",
+        "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
         "lint:eslint:config-check": "eslint-config-prettier src/index.ts",
-        "lint:eslint:fix": "eslint --cache --max-warnings 40 --fix .",
+        "lint:eslint:fix": "eslint --cache --concurrency=auto --max-warnings 40 --fix .",
         "lint:knip": "knip --max-issues 40",
         "lint:knip:fix": "knip --fix",
         "lint:oxfmt": "oxfmt --check .",
         "lint:oxfmt:fix": "oxfmt ."
     },
     "devDependencies": {
-        "typescript": "5.9.3"
+        "typescript": "6.0.3"
     },
     "engines": {
         "node": ">=22.0.0",
-        "pnpm": "10.27.0"
+        "pnpm": "11.9.0"
     },
-    "packageManager": "pnpm@10.27.0"
+    "packageManager": "pnpm@11.9.0"
 }

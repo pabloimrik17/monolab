@@ -82,7 +82,7 @@ export interface HttpClient {
      * });
      * ```
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     get<TResponse, _TError = unknown>(
         url: string,
         config?: HttpRequestConfig,
@@ -119,7 +119,7 @@ export interface HttpClient {
      * console.log(response.data.id); // Type-safe access
      * ```
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     post<TResponse, TBody = unknown, _TError = unknown>(
         url: string,
         body?: TBody,
@@ -156,7 +156,7 @@ export interface HttpClient {
      * });
      * ```
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     put<TResponse, TBody = unknown, _TError = unknown>(
         url: string,
         body?: TBody,
@@ -187,7 +187,7 @@ export interface HttpClient {
      * });
      * ```
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     patch<TResponse, TBody = unknown, _TError = unknown>(
         url: string,
         body?: TBody,
@@ -217,7 +217,7 @@ export interface HttpClient {
      * console.log(response.data.deletedId);
      * ```
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     delete<TResponse = void, _TError = unknown>(
         url: string,
         config?: HttpRequestConfig,
@@ -240,7 +240,7 @@ export interface HttpClient {
      * console.log('Content-Type:', response.headers['content-type']);
      * ```
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     head<_TError = unknown>(url: string, config?: HttpRequestConfig): Promise<HttpResponse<void>>;
 
     /**
@@ -260,7 +260,7 @@ export interface HttpClient {
      * console.log('Allowed methods:', allowedMethods); // "GET, POST, PUT, DELETE"
      * ```
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     options<_TError = unknown>(
         url: string,
         config?: HttpRequestConfig,

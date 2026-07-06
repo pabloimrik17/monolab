@@ -4,6 +4,7 @@ export default defineConfig({
     name: "@m0n0lab/react-hooks",
     entry: ["src/index.ts"],
     format: ["esm"],
+    fixedExtension: false,
     outDir: "dist",
     dts: {
         compilerOptions: {
@@ -15,5 +16,5 @@ export default defineConfig({
     clean: true,
     minify: false,
     target: "ES2023",
-    external: ["react"],
+    deps: { neverBundle: ["react"] },
 });

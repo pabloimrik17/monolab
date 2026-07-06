@@ -30,5 +30,5 @@ export const useViewModel = <T extends BaseViewModel>(viewModel: () => T): T => 
         instanceRef.current!.willUnmount();
     });
 
-    return instanceRef.current!;
+    return instanceRef.current;
 };

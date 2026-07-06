@@ -3,9 +3,7 @@
 ## Purpose
 
 The `commander-update-orchestrator` skill drives multi-project npm dependency-update flows by coordinating `experiments:scan-npm-updates` across every project registered in the user-scoped Commander registry. It is invoked by sibling commands (`/experiments:commander-update-patch`, `-minor`, `-major`, `-engines`, and future deep variants) and produces a single cross-project plan, user confirmation gate, and sequential per-project apply step. The skill never mutates the registry, never runs tests/lint/build, and never creates commits.
-
 ## Requirements
-
 ### Requirement: Skill location and structure
 
 The `experiments` plugin SHALL include a skill at `claude-plugins/experiments/skills/commander-update-orchestrator/SKILL.md` with YAML frontmatter declaring a non-empty `description` field. The skill SHALL be invocable by sibling commands (`/experiments:commander-update-patch`, `-minor`, `-major`, `-engines`, and the future deep variants) via the `Skill` tool.
@@ -314,7 +312,7 @@ After the confirmation gate, the skill SHALL apply updates **sequentially, one p
 1. Resolve the project's working directory `<record.path>` (passed to `npm-update-apply` as `cwd`).
 2. Compute the per-project subset of accepted updates (the package occurrences for that project under the chosen conflict policy and override actions), including each occurrence's `effectiveTarget`.
 3. If the per-project subset is empty (every package skipped/overridden out for this project), the skill SHALL skip apply and install for this project and continue to the next.
-4. Build the resolved single-project apply spec for this project — generic `package.json` occurrences as `manifestBumps` (with `includeFilter` set whenever the per-project generic subset is a strict subset of the file's ncu candidate set), `pnpm-workspace.yaml` occurrences as `catalogEdits` (using `effectiveTarget`), interpolated `run-override` commands touching this project as `overrideCommands` (declaration order), and `skipInstall` per the install-skip rule — and invoke the `npm-update-apply` skill **once** with `target: <target>` and `cwd: <record.path>`. The skill performs the `ncu` bumps, catalog edits, override commands, and the single install for this project; the orchestrator SHALL NOT restate that recipe inline.
+4. Build the resolved single-project apply spec for this project — generic `package.json` occurrences as `manifestBumps`, `pnpm-workspace.yaml` occurrences as `catalogEdits` (using `effectiveTarget`), interpolated `run-override` commands touching this project as `overrideCommands` (declaration order), and `skipInstall` per the install-skip rule — and invoke the `npm-update-apply` skill **once** with `target: <target>` and `cwd: <record.path>`. The target→ncu mapping (`major→latest`) and the exact-pin write (`--removeRange`) are owned by `npm-update-apply`; the orchestrator passes `target` unchanged. For each `manifestBumps` element, `includeFilter` SHALL be set to `true` whenever the per-project generic subset is a strict subset of the file's ncu candidate set; additionally, when `target` is `major` (it maps to `ncu --target latest`), `includeFilter` SHALL ALWAYS be `true` for every element (the per-project `names` list is authoritative, preventing over-bumping dependencies that `scan-npm-updates` excluded). The skill performs the `ncu` bumps, catalog edits, override commands, and the single install for this project; the orchestrator SHALL NOT restate that recipe inline.
 
 If `npm-update-apply` returns a structured failure for a project (any of `ncu`, `catalog`, `override`, `install`), the skill SHALL **stop the entire run** at that point, format the cross-project abort message (`Stopping the run. Subsequent projects not attempted.`) from the returned `step` and `exitCode`, and SHALL NOT attempt apply on subsequent projects. The skill SHALL fold each project's returned result fragment into the cross-project summary, which SHALL list:
 
@@ -328,6 +326,12 @@ The user is responsible for reviewing partial state and re-running the command.
 
 - **WHEN** the resolved set is `[proj-B, proj-A]` (in the registry's insertion order, after filtering)
 - **THEN** apply runs `proj-B` to completion first, then `proj-A`; never in parallel and never reordered
+
+#### Scenario: Major forces per-project filter
+
+- **WHEN** the run is at `target: "major"` and a project's per-project generic subset for a `package.json` would otherwise qualify for `includeFilter: false`
+- **THEN** the orchestrator builds that `manifestBumps` element with `includeFilter: true`
+- **AND** `npm-update-apply` runs `ncu --target latest --filter "<names>"` for that file, bumping only the accepted major packages
 
 #### Scenario: Empty per-project subset skips that project
 
@@ -343,8 +347,6 @@ The user is responsible for reviewing partial state and re-running the command.
 
 - **WHEN** apply succeeds for two projects with different package managers
 - **THEN** each project's `npm-update-apply` invocation runs that project's install command exactly once (via the skill)
-
----
 
 ### Requirement: Cross-project summary
 
@@ -654,3 +656,4 @@ When `level=engines` and `mode=deep`, the orchestrator's deep-mode research inse
 
 - **WHEN** the orchestrator runs with `level: "engines"`, `mode: "deep"`
 - **THEN** it invokes `parallel-research-workflow` with `level=engines` and surfaces the `## Breaking changes & migration` + `## Changelogs` sections, with no `## PR plan` section
+

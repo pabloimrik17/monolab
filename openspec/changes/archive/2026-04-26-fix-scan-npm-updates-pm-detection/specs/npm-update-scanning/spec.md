@@ -2,211 +2,211 @@
 
 ### Requirement: Level input validation
 
-El skill SHALL aceptar exactamente uno de `patch`, `minor`, `major`, `engines` como input `level`. Cualquier otro valor SHALL abortar con un mensaje de la forma `Error: invalid level "<value>". Expected patch|minor|major|engines.`
+The skill SHALL accept exactly one of `patch`, `minor`, `major`, `engines` as the `level` input. Any other value SHALL abort with a message of the form `Error: invalid level "<value>". Expected patch|minor|major|engines.`
 
 #### Scenario: Valid level accepted
 
-- **WHEN** el caller pasa `level=patch`
-- **THEN** el skill procede más allá de esta precondición sin error
+- **WHEN** the caller passes `level=patch`
+- **THEN** the skill proceeds beyond this precondition without error
 
 #### Scenario: Invalid level aborts
 
-- **WHEN** el caller pasa `level=beta`
-- **THEN** el skill aborta con el error invalid-level y no invoca ncu
+- **WHEN** the caller passes `level=beta`
+- **THEN** the skill aborts with the invalid-level error and does not invoke ncu
 
 ### Requirement: Package manager detection
 
-El skill SHALL detectar el package manager consultando lockfiles en este orden, devolviendo la primera coincidencia: `pnpm-lock.yaml` → pnpm; `yarn.lock` → yarn; `bun.lock` o `bun.lockb` → bun; `deno.lock` → deno; `package-lock.json` → npm. Si no hay lockfile, el skill SHALL leer `package.json#packageManager` y derivar el PM del token antes de `@`. Si ninguna resolución tiene éxito, el skill SHALL abortar enumerando los lockfiles aceptados.
+The skill SHALL detect the package manager by consulting lockfiles in this order, returning the first match: `pnpm-lock.yaml` → pnpm; `yarn.lock` → yarn; `bun.lock` or `bun.lockb` → bun; `deno.lock` → deno; `package-lock.json` → npm. If there is no lockfile, the skill SHALL read `package.json#packageManager` and derive the PM from the token before `@`. If no resolution succeeds, the skill SHALL abort listing the accepted lockfiles.
 
 #### Scenario: Lockfile match wins
 
-- **WHEN** la raíz del repo contiene `pnpm-lock.yaml`
-- **THEN** el PM detectado es `pnpm`
+- **WHEN** the repo root contains `pnpm-lock.yaml`
+- **THEN** the detected PM is `pnpm`
 
 #### Scenario: packageManager field fallback
 
-- **WHEN** no existe lockfile pero `package.json#packageManager` es `yarn@4.5.0`
-- **THEN** el PM detectado es `yarn`
+- **WHEN** there is no lockfile but `package.json#packageManager` is `yarn@4.5.0`
+- **THEN** the detected PM is `yarn`
 
 #### Scenario: Ambiguous abort
 
-- **WHEN** no hay lockfile y `package.json#packageManager` está ausente
-- **THEN** el skill aborta con el error de detección y no procede
+- **WHEN** there is no lockfile and `package.json#packageManager` is absent
+- **THEN** the skill aborts with the detection error and does not proceed
 
 ### Requirement: Repo type detection
 
-El skill SHALL clasificar el repo como `workspace` cuando cualquiera de estos indicadores esté presente: `pnpm-workspace.yaml`, `package.json#workspaces` no-vacío (array u objeto con `packages`), `deno.json#workspace`. En caso contrario, `single`.
+The skill SHALL classify the repo as `workspace` when any of these indicators is present: `pnpm-workspace.yaml`, non-empty `package.json#workspaces` (array or object with `packages`), `deno.json#workspace`. Otherwise, `single`.
 
 #### Scenario: pnpm workspace detected
 
-- **WHEN** la raíz del repo contiene `pnpm-workspace.yaml`
-- **THEN** `repoType` es `workspace`
+- **WHEN** the repo root contains `pnpm-workspace.yaml`
+- **THEN** `repoType` is `workspace`
 
 #### Scenario: Single repo when no markers
 
-- **WHEN** no hay indicadores de workspace
-- **THEN** `repoType` es `single`
+- **WHEN** there are no workspace indicators
+- **THEN** `repoType` is `single`
 
 ### Requirement: Runner resolution
 
-El skill SHALL resolver el runner dlx-equivalent del PM (`pnpm dlx`, `npx -y`, `yarn dlx`, `bunx`, `deno run --allow-read --allow-net npm:`) y verificar que el binario subyacente (`pnpm`, `npx`, `yarn`, `bunx`, `deno`) esté en `PATH` antes de la primera invocación de ncu. Si falta, el skill SHALL abortar.
+The skill SHALL resolve the PM's dlx-equivalent runner (`pnpm dlx`, `npx -y`, `yarn dlx`, `bunx`, `deno run --allow-read --allow-net npm:`) and verify that the underlying binary (`pnpm`, `npx`, `yarn`, `bunx`, `deno`) is on `PATH` before the first ncu invocation. If it is missing, the skill SHALL abort.
 
 #### Scenario: Runner available
 
-- **WHEN** el PM detectado es pnpm y `pnpm` está en PATH
-- **THEN** el skill procede a invocar ncu
+- **WHEN** the detected PM is pnpm and `pnpm` is on PATH
+- **THEN** the skill proceeds to invoke ncu
 
 #### Scenario: Runner missing
 
-- **WHEN** el PM detectado es bun y `bunx` no está en PATH
-- **THEN** el skill aborta con un error de runner missing y no invoca ncu
+- **WHEN** the detected PM is bun and `bunx` is not on PATH
+- **THEN** the skill aborts with a runner-missing error and does not invoke ncu
 
 ### Requirement: minimumReleaseAge lookup
 
-El skill SHALL resolver un valor de `minimumReleaseAge` por PM usando esta tabla autoritativa:
+The skill SHALL resolve a `minimumReleaseAge` value per PM using this authoritative table:
 
-- **pnpm**: leer `pnpm-workspace.yaml#minimumReleaseAge` → `.npmrc#minimum-release-age` → `package.json#pnpm.minimumReleaseAge`. ncu lee el valor nativamente; el skill SHALL NOT pasar `--cooldown`.
-- **npm**: leer `.npmrc#minimum-release-age` (npm 11+) o `npm config get minimum-release-age`; el skill SHALL pasar `--cooldown <value>m` a ncu.
-- **yarn / bun / deno**: leer `.npmrc#minimum-release-age` si está presente, si no `0`; el skill SHALL pasar `--cooldown` como en npm (omitirlo si el valor es `0` o unset).
+- **pnpm**: read `pnpm-workspace.yaml#minimumReleaseAge` → `.npmrc#minimum-release-age` → `package.json#pnpm.minimumReleaseAge`. ncu reads the value natively; the skill SHALL NOT pass `--cooldown`.
+- **npm**: read `.npmrc#minimum-release-age` (npm 11+) or `npm config get minimum-release-age`; the skill SHALL pass `--cooldown <value>m` to ncu.
+- **yarn / bun / deno**: read `.npmrc#minimum-release-age` if present, otherwise `0`; the skill SHALL pass `--cooldown` as in npm (omitting it if the value is `0` or unset).
 
-Un PM sin fila en esta tabla SHALL abortar con precondición 3.
+A PM with no row in this table SHALL abort with precondition 3.
 
 #### Scenario: pnpm cooldown native
 
-- **WHEN** el PM es pnpm y `pnpm-workspace.yaml#minimumReleaseAge: 1440`
-- **THEN** el skill omite `--cooldown` (ncu lo lee nativamente)
+- **WHEN** the PM is pnpm and `pnpm-workspace.yaml#minimumReleaseAge: 1440`
+- **THEN** the skill omits `--cooldown` (ncu reads it natively)
 
 #### Scenario: npm cooldown explicit
 
-- **WHEN** el PM es npm y `.npmrc#minimum-release-age=1440`
-- **THEN** el skill pasa `--cooldown 1440m` a ncu
+- **WHEN** the PM is npm and `.npmrc#minimum-release-age=1440`
+- **THEN** the skill passes `--cooldown 1440m` to ncu
 
 ### Requirement: ncu invocation
 
-El skill SHALL invocar `npm-check-updates@21.0.2` (pinned) a través del runner resuelto con los siguientes flags:
+The skill SHALL invoke `npm-check-updates@21.0.2` (pinned) through the resolved runner with the following flags:
 
-- `-p <resolvedPackageManager>` — OBLIGATORIO. Usa el PM resuelto en la precondición 2 en lugar de confiar en la auto-detección de ncu. Esto es necesario porque ncu 21.0.2 con `--packageFile <sub>/package.json` auto-detecta `packageManager: 'deno'` cuando hay un `deno.json` hermano, lo que colapsa `--dep` a `['imports']` e ignora `dependencies`/`devDependencies`.
-- `--target <mapped-target>` (ver "level → target mapping").
+- `-p <resolvedPackageManager>` — MANDATORY. Uses the PM resolved in precondition 2 instead of relying on ncu's auto-detection. This is necessary because ncu 21.0.2 with `--packageFile <sub>/package.json` auto-detects `packageManager: 'deno'` when there is a sibling `deno.json`, which collapses `--dep` to `['imports']` and ignores `dependencies`/`devDependencies`.
+- `--target <mapped-target>` (see "level → target mapping").
 - `--jsonUpgraded`.
-- `--cooldown <value>` sólo cuando corresponda según el lookup de `minimumReleaseAge`.
-- `--enginesNode` cuando `level=engines`.
-- `--packageFile <manifest-path>` para cada manifest enumerado.
+- `--cooldown <value>` only when applicable per the `minimumReleaseAge` lookup.
+- `--enginesNode` when `level=engines`.
+- `--packageFile <manifest-path>` for each enumerated manifest.
 
-El skill SHALL NOT depender de la auto-detección de package manager por parte de ncu.
+The skill SHALL NOT rely on ncu's package manager auto-detection.
 
 #### Scenario: -p always present
 
-- **WHEN** ncu es invocado para cualquier manifest
-- **THEN** el command line incluye `-p <resolvedPM>` con el valor de la precondición
+- **WHEN** ncu is invoked for any manifest
+- **THEN** the command line includes `-p <resolvedPM>` with the value from the precondition
 
 #### Scenario: PM mis-detection avoided
 
-- **WHEN** un directorio sub-package contiene `package.json` (con deps declaradas) y `deno.json` hermano, y el PM de la precondición se resolvió a `pnpm`
-- **THEN** ncu es invocado con `-p pnpm` y reporta updates de `dependencies`/`devDependencies` en lugar de tratar el manifest como un import map de Deno
+- **WHEN** a sub-package directory contains `package.json` (with declared deps) and a sibling `deno.json`, and the PM from the precondition resolved to `pnpm`
+- **THEN** ncu is invoked with `-p pnpm` and reports updates of `dependencies`/`devDependencies` instead of treating the manifest as a Deno import map
 
 ### Requirement: Level to target mapping
 
-El skill SHALL traducir `level` a `--target` de ncu:
+The skill SHALL translate `level` to ncu's `--target`:
 
-- `patch` → `--target patch` (cap dentro del minor actual).
-- `minor` → `--target minor` (cap dentro del major actual).
-- `major` → `--target latest`, luego post-filtrar descartando entries cuyo target-major no sea estrictamente mayor que el current-major.
-- `engines` → `--target latest` más `--enginesNode`.
+- `patch` → `--target patch` (cap within the current minor).
+- `minor` → `--target minor` (cap within the current major).
+- `major` → `--target latest`, then post-filter discarding entries whose target-major is not strictly greater than the current-major.
+- `engines` → `--target latest` plus `--enginesNode`.
 
 #### Scenario: Patch cap
 
-- **WHEN** `level` es `patch`
-- **THEN** ncu es invocado con `--target patch`
+- **WHEN** `level` is `patch`
+- **THEN** ncu is invoked with `--target patch`
 
 #### Scenario: Major post-filter
 
-- **WHEN** `level` es `major` y ncu devuelve un target cuyo major es igual al current-major
-- **THEN** el skill descarta esa entry del output
+- **WHEN** `level` is `major` and ncu returns a target whose major equals the current-major
+- **THEN** the skill discards that entry from the output
 
 ### Requirement: Manifest enumeration
 
-En un repo `single`, el skill SHALL escanear `./package.json` exactamente una vez. En un repo `workspace`, el skill SHALL escanear la root `package.json` más cada sub-manifest resuelto vía la declaración PM-nativa (`pnpm-workspace.yaml#packages`, `package.json#workspaces`, `deno.json#workspace`). Cada manifest SHALL ser escaneado con una invocación de ncu.
+In a `single` repo, the skill SHALL scan `./package.json` exactly once. In a `workspace` repo, the skill SHALL scan the root `package.json` plus each sub-manifest resolved via the PM-native declaration (`pnpm-workspace.yaml#packages`, `package.json#workspaces`, `deno.json#workspace`). Each manifest SHALL be scanned with one ncu invocation.
 
 #### Scenario: Single repo one invocation
 
-- **WHEN** `repoType` es `single`
-- **THEN** ncu es invocado exactamente una vez con `--packageFile ./package.json`
+- **WHEN** `repoType` is `single`
+- **THEN** ncu is invoked exactly once with `--packageFile ./package.json`
 
 #### Scenario: Workspace invocation per manifest
 
-- **WHEN** `repoType` es `workspace` y el workspace declara 4 sub-packages
-- **THEN** ncu es invocado 5 veces (4 sub-manifests + root)
+- **WHEN** `repoType` is `workspace` and the workspace declares 4 sub-packages
+- **THEN** ncu is invoked 5 times (4 sub-manifests + root)
 
 ### Requirement: Parsing ncu stdout
 
-El skill SHALL tolerar una línea banner no-JSON precediendo el payload (ej. `Using minimumReleaseAge from pnpm-workspace.yaml: 1 day`). El parser SHALL:
+The skill SHALL tolerate a non-JSON banner line preceding the payload (e.g. `Using minimumReleaseAge from pnpm-workspace.yaml: 1 day`). The parser SHALL:
 
-1. Capturar stdout completo.
-2. Descartar todo lo anterior a la primera línea que comience con `{` (trimmed).
-3. `JSON.parse` del remanente. Ante fallo, empujar el stdout crudo (truncado a 500 chars) a `warnings` y continuar con `{}` para ese manifest.
-4. Capturar stderr a `warnings`, una entrada por línea no-vacía.
+1. Capture the complete stdout.
+2. Discard everything before the first line that begins with `{` (trimmed).
+3. `JSON.parse` the remainder. On failure, push the raw stdout (truncated to 500 chars) to `warnings` and continue with `{}` for that manifest.
+4. Capture stderr to `warnings`, one entry per non-empty line.
 
 #### Scenario: Banner stripped
 
-- **WHEN** stdout es `Using minimumReleaseAge from pnpm-workspace.yaml: 1 day\n{"pkg":"1.0.1"}`
-- **THEN** el skill parsea `{"pkg":"1.0.1"}` con éxito
+- **WHEN** stdout is `Using minimumReleaseAge from pnpm-workspace.yaml: 1 day\n{"pkg":"1.0.1"}`
+- **THEN** the skill parses `{"pkg":"1.0.1"}` successfully
 
 #### Scenario: Parse failure falls back
 
-- **WHEN** stdout no es JSON válido tras el strip del banner
-- **THEN** el skill empuja el stdout crudo (truncado) a `warnings` y trata los updates de ese manifest como `[]`
+- **WHEN** stdout is not valid JSON after stripping the banner
+- **THEN** the skill pushes the raw stdout (truncated) to `warnings` and treats that manifest's updates as `[]`
 
 ### Requirement: Catalog post-processing
 
-Cuando el PM es `pnpm` y `pnpm-workspace.yaml#catalog` está presente, el skill SHALL emitir records de update por cada entry `(name, version)` consultando `npm view <name> versions time --json` una vez por package (un spawn por package del catalog; cache in-memory por scan) y filtrando candidates por:
+When the PM is `pnpm` and `pnpm-workspace.yaml#catalog` is present, the skill SHALL emit an update record per `(name, version)` entry by querying `npm view <name> versions time --json` once per package (one spawn per catalog package; in-memory cache per scan) and filtering candidates by:
 
-- El `level` actual (mismo cap semantic que ncu: patch/minor/major-filtrado).
-- El umbral resuelto de `minimumReleaseAge`.
+- The current `level` (same semantic cap as ncu: patch/minor/major-filtered).
+- The resolved `minimumReleaseAge` threshold.
 
-Cada record de catalog SHALL tener `location: "catalog:default"` y `sourceFile: "pnpm-workspace.yaml"`. Si la versión máxima filtrada fue retenida por edad, `skippedByReleaseAge: true` SHALL ser set.
+Each catalog record SHALL have `location: "catalog:default"` and `sourceFile: "pnpm-workspace.yaml"`. If the maximum filtered version was held back by age, `skippedByReleaseAge: true` SHALL be set.
 
-Los named catalogs (`catalogs.<name>` o map `catalogs:`) SHALL producir un warning `named catalog "<name>" detected but not yet supported in this iteration` y no emitir records.
+Named catalogs (`catalogs.<name>` or a `catalogs:` map) SHALL produce a warning `named catalog "<name>" detected but not yet supported in this iteration` and emit no records.
 
 #### Scenario: Default catalog bumped
 
-- **WHEN** `pnpm-workspace.yaml#catalog.vitest` es `4.0.18`, `npm view vitest` devuelve `4.0.24` publicada >= `minimumReleaseAge` atrás, y `level` es `patch`
-- **THEN** el output contiene `{ name: "vitest", currentVersion: "4.0.18", targetVersion: "4.0.24", location: "catalog:default", sourceFile: "pnpm-workspace.yaml" }`
+- **WHEN** `pnpm-workspace.yaml#catalog.vitest` is `4.0.18`, `npm view vitest` returns `4.0.24` published >= `minimumReleaseAge` ago, and `level` is `patch`
+- **THEN** the output contains `{ name: "vitest", currentVersion: "4.0.18", targetVersion: "4.0.24", location: "catalog:default", sourceFile: "pnpm-workspace.yaml" }`
 
 #### Scenario: Named catalog warning
 
-- **WHEN** `pnpm-workspace.yaml` contiene `catalogs.test`
-- **THEN** `warnings` contiene `named catalog "test" detected but not yet supported in this iteration` y no se emiten records para esas entries
+- **WHEN** `pnpm-workspace.yaml` contains `catalogs.test`
+- **THEN** `warnings` contains `named catalog "test" detected but not yet supported in this iteration` and no records are emitted for those entries
 
 ### Requirement: Result assembly
 
-Cada record de update SHALL:
+Each update record SHALL:
 
-- Set `location` a `"root"` para la root manifest (single o workspace), `workspace:<package-name>` para un manifest workspace no-root (usando su campo `name`), o `catalog:default` para entries del default catalog.
-- Set `sourceFile` al path relativo a la raíz del repo del manifest a editar (ej. `apps/wealth-react/package.json` o `pnpm-workspace.yaml`).
-- Preservar el prefijo de versión del current manifest cuando emita `targetVersion` (ej. `"^19.0.0"` + ncu target `19.0.14` → `"^19.0.14"`; `"~5.4.0"` + `5.4.1` → `"~5.4.1"`; exact `"19.2.4"` + `19.2.5` → `"19.2.5"`).
+- Set `location` to `"root"` for the root manifest (single or workspace), `workspace:<package-name>` for a non-root workspace manifest (using its `name` field), or `catalog:default` for default-catalog entries.
+- Set `sourceFile` to the path, relative to the repo root, of the manifest to edit (e.g. `apps/wealth-react/package.json` or `pnpm-workspace.yaml`).
+- Preserve the version prefix of the current manifest when emitting `targetVersion` (e.g. `"^19.0.0"` + ncu target `19.0.14` → `"^19.0.14"`; `"~5.4.0"` + `5.4.1` → `"~5.4.1"`; exact `"19.2.4"` + `19.2.5` → `"19.2.5"`).
 
 #### Scenario: Workspace location
 
-- **WHEN** ncu reporta un bump para `apps/wealth-react/package.json` cuyo `#name` es `@m0n0lab/wealth-react`
-- **THEN** el record tiene `location: "workspace:@m0n0lab/wealth-react"` y `sourceFile: "apps/wealth-react/package.json"`
+- **WHEN** ncu reports a bump for `apps/wealth-react/package.json` whose `#name` is `@m0n0lab/wealth-react`
+- **THEN** the record has `location: "workspace:@m0n0lab/wealth-react"` and `sourceFile: "apps/wealth-react/package.json"`
 
 #### Scenario: Version prefix preserved
 
-- **WHEN** el manifest current tiene `"vitest": "^4.0.18"` y el target de ncu es `4.0.24`
-- **THEN** el `targetVersion` emitido es `"^4.0.24"`
+- **WHEN** the current manifest has `"vitest": "^4.0.18"` and ncu's target is `4.0.24`
+- **THEN** the emitted `targetVersion` is `"^4.0.24"`
 
 ### Requirement: Error paths
 
-El skill SHALL abortar SÓLO por las cuatro preconditions numeradas (invalid level, PM no detectable, PM sin fila de `minimumReleaseAge`, runner missing). Cada fallo runtime posterior (ncu exit no-cero, fallo de parse, fallo de `npm view` en catalog, named catalog encontrado) SHALL degradar a una entrada de `warnings` y continuar; los `updates` de los manifests afectados por defecto `[]`.
+The skill SHALL abort ONLY for the four numbered preconditions (invalid level, PM not detectable, PM with no `minimumReleaseAge` row, runner missing). Every subsequent runtime failure (ncu non-zero exit, parse failure, catalog `npm view` failure, named catalog found) SHALL degrade to a `warnings` entry and continue; the `updates` of the affected manifests default to `[]`.
 
 #### Scenario: ncu failure is non-fatal
 
-- **WHEN** ncu exit no-cero en uno de N manifests del workspace
-- **THEN** el skill continúa con los manifests restantes, empuja un warning, y emite `updates: []` para el manifest fallido
+- **WHEN** ncu exits non-zero on one of N workspace manifests
+- **THEN** the skill continues with the remaining manifests, pushes a warning, and emits `updates: []` for the failed manifest
 
 ### Requirement: Output contract
 
-El skill SHALL emitir un único JSON object conformando a `ScanResult`:
+The skill SHALL emit a single JSON object conforming to `ScanResult`:
 
 ```ts
 {
@@ -224,14 +224,14 @@ El skill SHALL emitir un único JSON object conformando a `ScanResult`:
 }
 ```
 
-El skill SHALL NOT emitir prosa, tablas o formato user-facing. El JSON object es la única salida (más los warnings embebidos en él). `warnings` SHALL ser de-duplicado (strings idénticos repetidos colapsan a una sola entry).
+The skill SHALL NOT emit prose, tables, or user-facing formatting. The JSON object is the only output (plus the warnings embedded in it). `warnings` SHALL be de-duplicated (identical repeated strings collapse to a single entry).
 
 #### Scenario: Raw JSON-only output
 
-- **WHEN** la ejecución del skill completa con éxito
-- **THEN** la única salida es el JSON **raw** de `ScanResult` (sin fences Markdown ni prosa adicional)
+- **WHEN** the skill execution completes successfully
+- **THEN** the only output is the **raw** JSON of `ScanResult` (no Markdown fences or additional prose)
 
 #### Scenario: Warnings deduped
 
-- **WHEN** dos manifests empujan el mismo warning de stderr verbatim
-- **THEN** `warnings` contiene ese string exactamente una vez
+- **WHEN** two manifests push the same stderr warning verbatim
+- **THEN** `warnings` contains that string exactly once

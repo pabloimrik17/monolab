@@ -2,69 +2,69 @@
 
 ### Requirement: All GitHub Actions SHALL be pinned to commit SHA
 
-Toda referencia `uses:` a una GitHub Action en `.github/workflows/**/*.yml` SHALL usar un commit SHA de 40 caracteres como ref, seguido de un comentario `# vX.Y.Z` con la versión semver legible. La regla aplica por igual a actions de terceros (`nrwl/*`, `pnpm/*`, `codecov/*`, etc.) y a las actions oficiales de GitHub (`actions/*`).
+Every `uses:` reference to a GitHub Action in `.github/workflows/**/*.yml` SHALL use a 40-character commit SHA as the ref, followed by a `# vX.Y.Z` comment with the readable semver version. The rule applies equally to third-party actions (`nrwl/*`, `pnpm/*`, `codecov/*`, etc.) and to the official GitHub actions (`actions/*`).
 
 #### Scenario: Pinned third-party action passes review
 
-- **WHEN** un workflow contiene `uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1`
-- **THEN** la referencia es válida y la versión legible queda documentada en el comentario
+- **WHEN** a workflow contains `uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1`
+- **THEN** the reference is valid and the readable version is documented in the comment
 
 #### Scenario: Pinned official GitHub action passes review
 
-- **WHEN** un workflow contiene `uses: actions/checkout@<40-char-sha> # v4.2.2`
-- **THEN** la referencia es válida; no hay carve-out para `actions/*`
+- **WHEN** a workflow contains `uses: actions/checkout@<40-char-sha> # v4.2.2`
+- **THEN** the reference is valid; there is no carve-out for `actions/*`
 
 #### Scenario: Mutable tag on any action is rejected
 
-- **WHEN** un workflow contiene `uses: codecov/codecov-action@v5` o `uses: actions/checkout@v4` (sin SHA)
-- **THEN** se considera no conforme y debe ser convertido a SHA-pinned con comentario `# vX.Y.Z`
+- **WHEN** a workflow contains `uses: codecov/codecov-action@v5` or `uses: actions/checkout@v4` (without SHA)
+- **THEN** it is considered non-compliant and must be converted to SHA-pinned with a `# vX.Y.Z` comment
 
 ### Requirement: Renovate SHALL maintain pinned action SHAs automatically
 
-`renovate.json` SHALL incluir el preset `helpers:pinGitHubActionDigestsToSemver` (o equivalente) en el array `extends`, de modo que Renovate:
+`renovate.json` SHALL include the preset `helpers:pinGitHubActionDigestsToSemver` (or equivalent) in the `extends` array, so that Renovate:
 
-- Pinee a SHA cualquier action nueva que aparezca con un major/minor tag (incluidas `actions/*`)
-- Actualice el SHA pineado cuando se publique una nueva versión, conservando el comentario `# vX.Y.Z` actualizado
-- Genere PRs separadas por update type (patch/minor/major) respetando los `packageRules` existentes
+- Pins to SHA any new action that appears with a major/minor tag (including `actions/*`)
+- Updates the pinned SHA when a new version is published, keeping the `# vX.Y.Z` comment updated
+- Generates separate PRs by update type (patch/minor/major) respecting the existing `packageRules`
 
-`renovate.json` SHALL NOT contener `packageRules` que pongan `pinDigests: false` para `actions/*` u otros owners.
+`renovate.json` SHALL NOT contain `packageRules` that set `pinDigests: false` for `actions/*` or other owners.
 
 #### Scenario: Renovate config includes the pin preset
 
-- **WHEN** se inspecciona `renovate.json`
-- **THEN** el array `extends` contiene `"helpers:pinGitHubActionDigestsToSemver"` y no hay `packageRules` que excluyan `actions/*` del pinning
+- **WHEN** `renovate.json` is inspected
+- **THEN** the `extends` array contains `"helpers:pinGitHubActionDigestsToSemver"` and there are no `packageRules` that exclude `actions/*` from pinning
 
 #### Scenario: Renovate updates a pinned SHA
 
-- **WHEN** se publica `nrwl/nx-set-shas@v5.0.2` upstream
-- **THEN** Renovate abre una PR que reemplaza el SHA actual y actualiza el comentario a `# v5.0.2` sin perder el formato
+- **WHEN** `nrwl/nx-set-shas@v5.0.2` is published upstream
+- **THEN** Renovate opens a PR that replaces the current SHA and updates the comment to `# v5.0.2` without losing the format
 
 ### Requirement: Renovate SHALL stagger PR creation across update types
 
-`renovate.json` SHALL definir schedules separados por `matchUpdateTypes` para evitar spikes de PRs cuando ciclos coinciden:
+`renovate.json` SHALL define separate schedules by `matchUpdateTypes` to avoid PR spikes when cycles coincide:
 
-- `patch` → primer día del mes
-- `minor` → día 8 del mes cada 2 meses
-- `major` → día 15 del mes cada 3 meses
+- `patch` → first day of the month
+- `minor` → day 8 of the month every 2 months
+- `major` → day 15 of the month every 3 months
 
-Adicionalmente, `minimumReleaseAge` SHALL ser de al menos `14 days` para reducir exposición a paquetes comprometidos recientemente publicados.
+Additionally, `minimumReleaseAge` SHALL be at least `14 days` to reduce exposure to recently published compromised packages.
 
 #### Scenario: Schedules are staggered
 
-- **WHEN** se inspecciona `renovate.json`
-- **THEN** los `packageRules` con `matchUpdateTypes: ["patch"|"minor"|"major"]` tienen `schedule` distintos por día/mes
+- **WHEN** `renovate.json` is inspected
+- **THEN** the `packageRules` with `matchUpdateTypes: ["patch"|"minor"|"major"]` have distinct `schedule` values by day/month
 
 #### Scenario: Release age window enforced
 
-- **WHEN** se publica una nueva versión de un paquete
-- **AND** han pasado menos de 14 días desde la publicación
-- **THEN** Renovate NO abre PR para esa versión hasta que la ventana se cumpla (excepto vulnerabilidades cubiertas por `:enableVulnerabilityAlertsWithLabel(security)`)
+- **WHEN** a new version of a package is published
+- **AND** fewer than 14 days have passed since publication
+- **THEN** Renovate does NOT open a PR for that version until the window is met (except vulnerabilities covered by `:enableVulnerabilityAlertsWithLabel(security)`)
 
 ### Requirement: nx-set-shas SHALL run on Node 24 runtime
 
-El step `Set Nx SHA` en `.github/workflows/ci.yml` SHALL usar `nrwl/nx-set-shas` pineado a un commit SHA de 40 caracteres con comentario `# vX.Y.Z`, ejecutándose sobre el runner ya configurado con Node 24.12.0.
+The `Set Nx SHA` step in `.github/workflows/ci.yml` SHALL use `nrwl/nx-set-shas` pinned to a 40-character commit SHA with a `# vX.Y.Z` comment, running on the runner already configured with Node 24.12.0.
 
 #### Scenario: CI step runs successfully on v5
 
-- **WHEN** se ejecuta el job `main` en el workflow CI
-- **THEN** el step `Set Nx SHA` completa sin error y exporta `NX_BASE` y `NX_HEAD` para los steps posteriores de `nx affected`
+- **WHEN** the `main` job is executed in the CI workflow
+- **THEN** the `Set Nx SHA` step completes without error and exports `NX_BASE` and `NX_HEAD` for the subsequent `nx affected` steps
