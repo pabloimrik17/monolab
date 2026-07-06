@@ -2,67 +2,69 @@
 
 import type { GetInfo, GetAnnotations } from "react-router/internal";
 
-type Module = typeof import("../root.js")
+type Module = typeof import("../root.js");
 
 type Info = GetInfo<{
-  file: "root.tsx",
-  module: Module
-}>
+    file: "root.tsx";
+    module: Module;
+}>;
 
-type Matches = [{
-  id: "root";
-  module: typeof import("../root.js");
-}];
+type Matches = [
+    {
+        id: "root";
+        module: typeof import("../root.js");
+    },
+];
 
-type Annotations = GetAnnotations<Info & { module: Module, matches: Matches }>;
+type Annotations = GetAnnotations<Info & { module: Module; matches: Matches }>;
 
 export namespace Route {
-  // links
-  export type LinkDescriptors = Annotations["LinkDescriptors"];
-  export type LinksFunction = Annotations["LinksFunction"];
+    // links
+    export type LinkDescriptors = Annotations["LinkDescriptors"];
+    export type LinksFunction = Annotations["LinksFunction"];
 
-  // meta
-  export type MetaArgs = Annotations["MetaArgs"];
-  export type MetaDescriptors = Annotations["MetaDescriptors"];
-  export type MetaFunction = Annotations["MetaFunction"];
+    // meta
+    export type MetaArgs = Annotations["MetaArgs"];
+    export type MetaDescriptors = Annotations["MetaDescriptors"];
+    export type MetaFunction = Annotations["MetaFunction"];
 
-  // headers
-  export type HeadersArgs = Annotations["HeadersArgs"];
-  export type HeadersFunction = Annotations["HeadersFunction"];
+    // headers
+    export type HeadersArgs = Annotations["HeadersArgs"];
+    export type HeadersFunction = Annotations["HeadersFunction"];
 
-  // middleware
-  export type MiddlewareFunction = Annotations["MiddlewareFunction"];
+    // middleware
+    export type MiddlewareFunction = Annotations["MiddlewareFunction"];
 
-  // clientMiddleware
-  export type ClientMiddlewareFunction = Annotations["ClientMiddlewareFunction"];
+    // clientMiddleware
+    export type ClientMiddlewareFunction = Annotations["ClientMiddlewareFunction"];
 
-  // loader
-  export type LoaderArgs = Annotations["LoaderArgs"];
+    // loader
+    export type LoaderArgs = Annotations["LoaderArgs"];
 
-  // clientLoader
-  export type ClientLoaderArgs = Annotations["ClientLoaderArgs"];
+    // clientLoader
+    export type ClientLoaderArgs = Annotations["ClientLoaderArgs"];
 
-  // action
-  export type ActionArgs = Annotations["ActionArgs"];
+    // action
+    export type ActionArgs = Annotations["ActionArgs"];
 
-  // clientAction
-  export type ClientActionArgs = Annotations["ClientActionArgs"];
+    // clientAction
+    export type ClientActionArgs = Annotations["ClientActionArgs"];
 
-  // HydrateFallback
-  export type HydrateFallbackProps = Annotations["HydrateFallbackProps"];
+    // HydrateFallback
+    export type HydrateFallbackProps = Annotations["HydrateFallbackProps"];
 
-  // ServerHydrateFallback
-  export type ServerHydrateFallbackProps = Annotations["ServerHydrateFallbackProps"];
+    // ServerHydrateFallback
+    export type ServerHydrateFallbackProps = Annotations["ServerHydrateFallbackProps"];
 
-  // Component
-  export type ComponentProps = Annotations["ComponentProps"];
+    // Component
+    export type ComponentProps = Annotations["ComponentProps"];
 
-  // ServerComponent
-  export type ServerComponentProps = Annotations["ServerComponentProps"];
+    // ServerComponent
+    export type ServerComponentProps = Annotations["ServerComponentProps"];
 
-  // ErrorBoundary
-  export type ErrorBoundaryProps = Annotations["ErrorBoundaryProps"];
+    // ErrorBoundary
+    export type ErrorBoundaryProps = Annotations["ErrorBoundaryProps"];
 
-  // ServerErrorBoundary
-  export type ServerErrorBoundaryProps = Annotations["ServerErrorBoundaryProps"];
+    // ServerErrorBoundary
+    export type ServerErrorBoundaryProps = Annotations["ServerErrorBoundaryProps"];
 }

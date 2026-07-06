@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.4.0](https://github.com/pabloimrik17/monolab/compare/experiments--v1.3.0...experiments--v1.4.0) (2026-07-06)
+
+
+### Features
+
+* **experiments:** support Bun catalogs in npm-update scan/apply ([1b69004](https://github.com/pabloimrik17/monolab/commit/1b690041a53142b95a0c48e42c1f7eb8a2c4dd0a))
+* **experiments:** support Bun catalogs in npm-update scan/apply ([58ed285](https://github.com/pabloimrik17/monolab/commit/58ed285a6e638777b1d752652ed28fefaf659bd7)), closes [#228](https://github.com/pabloimrik17/monolab/issues/228)
+
+
+### Bug Fixes
+
+* **experiments:** address CodeRabbit review on bun-catalog PR ([ed4716c](https://github.com/pabloimrik17/monolab/commit/ed4716c9ed52cec8dd9d1dd23cefdf8b9dbf8eb7))
+
+
+### Documentation
+
+* **experiments:** fix commander-update empty-registry hint and registry-contract link ([cb71e1b](https://github.com/pabloimrik17/monolab/commit/cb71e1b7cf907503879de184bc2d044834f77f25))
+
 ## [1.3.0](https://github.com/pabloimrik17/monolab/compare/experiments--v1.2.0...experiments--v1.3.0) (2026-06-14)
 
 
