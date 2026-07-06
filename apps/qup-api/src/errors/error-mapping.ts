@@ -49,3 +49,6 @@ export function errorJson(c: Context, error: DomainError): Response {
     const dto = toApiError(error);
     return c.json(dto, dto.statusCode as ContentfulStatusCode);
 }
+
+// Temporary probe for task 7.3: validates the fallow audit PR gate fails on new dead code.
+export const fallowAuditProbe = "remove-me";
