@@ -14,6 +14,8 @@ import {
     ValidationError,
 } from "@m0n0lab/qup-domain";
 import type { ApiErrorDto } from "@m0n0lab/qup-shared";
+import type { Context } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 const STATUS_MAP: ReadonlyMap<string, number> = new Map([
     [SessionNotFoundError.name, 404],
@@ -41,4 +43,9 @@ export function toApiError(error: DomainError): ApiErrorDto {
         message: statusCode >= 500 ? "Internal server error" : error.message,
         statusCode,
     };
+}
+
+export function errorJson(c: Context, error: DomainError): Response {
+    const dto = toApiError(error);
+    return c.json(dto, dto.statusCode as ContentfulStatusCode);
 }

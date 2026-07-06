@@ -28,12 +28,4 @@ export class SessionCode {
         }
         return ok(new SessionCode(normalized));
     }
-
-    equals(other: SessionCode): boolean {
-        return this._value === other._value;
-    }
-
-    toString(): string {
-        return this._value;
-    }
 }

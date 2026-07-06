@@ -16,6 +16,11 @@ permissions:
 jobs:
     main:
         runs-on: ubuntu-latest
+        permissions:
+            actions: read
+            contents: read
+            # fallow audit posts a sticky PR comment
+            pull-requests: write
         env:
             NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
             # Set to 'true' to disable Nx Cloud when monthly limit is reached
@@ -131,8 +136,15 @@ jobs:
               run: pnpm exec nx affected -t lint:eslint lint:stylelint lint:markdownlint lint:oxfmt && pnpm run lint:knip
               if: ${{ github.event_name == 'pull_request' }}
 
+            - name: 🔍 Fallow audit (changed-code quality gate)
+              uses: fallow-rs/fallow@0d568277b6cf91e95c98cb92f8228154e58d6984 # v3.2.0
+              with:
+                  command: audit
+                  comment: true
+              if: ${{ github.event_name == 'pull_request' }}
+
             - name: 🔍 Execute lint checks for all files (All)
-              run: pnpm exec nx run-many -t lint:publint lint:knip lint:eslint lint:stylelint lint:markdownlint lint:oxfmt
+              run: pnpm exec nx run-many -t lint:publint lint:knip lint:eslint lint:stylelint lint:markdownlint lint:oxfmt && pnpm run lint:fallow
               if: ${{ github.event_name == 'push' }}
 
             - name: 🧪 Execute unit test checks for affected files (Affected)

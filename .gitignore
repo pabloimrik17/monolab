@@ -360,3 +360,5 @@ sketch
 
 .nx/self-healing
 .nx/migrate-runs
+# fallow analysis cache
+.fallow/

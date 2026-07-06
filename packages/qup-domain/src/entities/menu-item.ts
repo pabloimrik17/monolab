@@ -73,10 +73,6 @@ export class MenuItem {
         return new MenuItem(props);
     }
 
-    toggleAvailability(): void {
-        this._available = !this._available;
-    }
-
     update(props: {
         name?: string;
         category?: Category;

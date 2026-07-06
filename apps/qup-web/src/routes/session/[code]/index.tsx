@@ -1,6 +1,8 @@
+// fallow-ignore-file code-duplication -- page-shell divergence, PageShell extraction not yet warranted
 import { useNavigate, useParams } from "@solidjs/router";
 import { For, Show } from "solid-js";
 import { useViewModel } from "@m0n0lab/solid-clean";
+import { VmStatus } from "../../../components/vm-status.tsx";
 import { container } from "../../../container.ts";
 import { TOKENS } from "../../../tokens.ts";
 import type { JoinSessionViewModel } from "../../../view-models/join-session.viewmodel.ts";
@@ -31,13 +33,11 @@ export default function SessionPage() {
                     </p>
                 </div>
 
-                <Show when={vm.loading()}>
-                    <p class="text-center text-stone-500">Loading...</p>
-                </Show>
-
-                <Show when={vm.error()}>
-                    <p class="text-center text-red-600">{vm.error()}</p>
-                </Show>
+                <VmStatus
+                    centered
+                    loading={vm.loading}
+                    error={vm.error}
+                />
 
                 <Show when={vm.session()}>
                     <div class="bg-white rounded-lg shadow p-4">

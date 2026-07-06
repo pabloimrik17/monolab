@@ -41,13 +41,4 @@ export class OrderItem {
         }
         return ok(new OrderItem(props));
     }
-
-    equals(other: OrderItem): boolean {
-        return (
-            this.menuItemId === other.menuItemId &&
-            this.menuItemName === other.menuItemName &&
-            this.quantity === other.quantity &&
-            this.customization === other.customization
-        );
-    }
 }

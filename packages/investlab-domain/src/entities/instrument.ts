@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-class-member -- getters used by investlab-data mapper (fallow misses cross-package typed access, reported upstream); update() tested, awaiting investlab use-cases
 import { err, ok, type Result } from "neverthrow";
 import { ValidationError } from "../errors.ts";
 import type { AssetClass } from "../value-objects/asset-class.ts";

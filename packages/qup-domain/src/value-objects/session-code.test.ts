@@ -54,22 +54,4 @@ describe("SessionCode", () => {
             expect(result.isErr()).toBe(true);
         });
     });
-
-    describe("equals", () => {
-        it("returns true for codes with same value", () => {
-            const a = SessionCode.from("ABC123");
-            const b = SessionCode.from("ABC123");
-            if (a.isOk() && b.isOk()) {
-                expect(a.value.equals(b.value)).toBe(true);
-            }
-        });
-
-        it("returns false for different codes", () => {
-            const a = SessionCode.from("ABC123");
-            const b = SessionCode.from("XYZ789");
-            if (a.isOk() && b.isOk()) {
-                expect(a.value.equals(b.value)).toBe(false);
-            }
-        });
-    });
 });

@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-class-member -- port impl bound in DI, use-cases pending
 import { eq } from "drizzle-orm";
 import { inject, injectable } from "inversify";
 import { ResultAsync } from "neverthrow";
