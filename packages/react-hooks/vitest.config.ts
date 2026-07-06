@@ -1,6 +1,6 @@
 import react from "@vitejs/plugin-react-swc";
 import { playwright } from "@vitest/browser-playwright";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
     plugins: [react()],
@@ -11,6 +11,8 @@ export default defineConfig({
     },
     test: {
         include: ["**/*.{test,spec}.{ts,tsx}"],
+        // Stryker inPlace backups contain copies of all tests; never collect them
+        exclude: [...configDefaults.exclude, "**/.stryker-tmp/**"],
         reporters: ["default", "junit"],
         outputFile: {
             junit: "./test-results.junit.xml",
