@@ -51,7 +51,7 @@
 
 - [x] 7.1 `pnpm run lint:fallow` → 0 issues; `pnpm run lint:knip` still passes untouched
 - [x] 7.2 Grep guard: no `fallow license` / `fallow coverage` / `--runtime-coverage` anywhere
-- [ ] 7.3 Open a test PR introducing a dummy unused export → audit comment appears, verdict fail; remove → pass
+- [x] 7.3 Open a test PR introducing a dummy unused export → audit comment appears, verdict fail; remove → pass
 
 ## 8. Optional / follow-ups
 
