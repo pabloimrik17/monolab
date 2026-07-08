@@ -36,7 +36,7 @@ interface ScanResult {
             underWorkspaces?: boolean; // bun only: true when the catalog block lives under `workspaces`
         };
     }>;
-    warnings: string[]; // non-fatal: tool stderr, unsupported-catalog notes, parse notes
+    warnings: string[]; // non-fatal: tool stderr, ambiguous-default notes, parse notes
 }
 ```
 
@@ -155,22 +155,22 @@ Each candidate is resolved once via:
 - Filter by the current `level` (patch = max version within the current minor band; minor = max within major band; major = max version whose major > current's major) and the resolved `minimumReleaseAge` threshold (a version is acceptable iff `now - publishTime >= threshold`).
 - `skippedByReleaseAge: true` when a higher version was filtered by the age threshold.
 
-### pnpm — `pnpm-workspace.yaml#catalog`
+### pnpm — `pnpm-workspace.yaml` `catalog` / `catalogs`
 
-When `packageManager === "pnpm"`:
+When `packageManager === "pnpm"`, pnpm declares catalogs in `pnpm-workspace.yaml`: a top-level `catalog:` map (the **default** catalog) plus a `catalogs:` map whose blocks (`catalogs.<name>`, referenced as `catalog:<name>`) are **named** catalogs.
 
-1. Read `pnpm-workspace.yaml` and parse the top-level `catalog:` map. If absent, skip this branch.
-2. For each `(name, version)` pair under `catalog:`, resolve the candidate as above and emit an update record with:
+1. Read `pnpm-workspace.yaml` and parse the top-level `catalog:` map and every block under the `catalogs:` map. If none are present, skip this branch.
+2. For each `(name, version)` entry, resolve the candidate exactly as above (same `npm view` + `level` + `minimumReleaseAge` logic) and emit an update record with:
     - `name`: the catalog key.
-    - `currentVersion`: the value from `pnpm-workspace.yaml#catalog`.
+    - `currentVersion`: the value from the catalog block.
     - `targetVersion`: the resolved candidate.
-    - `location`: `"catalog:default"`.
+    - `location`: `"catalog:default"` for the top-level `catalog:` map; `"catalog:<name>"` for a `catalogs.<name>` block.
     - `sourceFile`: `"pnpm-workspace.yaml"`.
-    - `catalogSource`: `{ sourceFile: "pnpm-workspace.yaml", manager: "pnpm", field: { kind: "default" } }`.
+    - `catalogSource`: `{ sourceFile: "pnpm-workspace.yaml", manager: "pnpm", field }`, where `field = { kind: "default" }` for the top-level `catalog:` map and `field = { kind: "named", name: "<name>" }` for a `catalogs.<name>` block. pnpm has no `underWorkspaces` concept, so `underWorkspaces` SHALL be **absent** on pnpm records.
     - `skippedByReleaseAge` as resolved above.
-3. If a consumer `package.json` has `"<pkg>": "catalog:"` AND ncu separately reported `<pkg>` from that manifest (shouldn't happen because `catalog:` is not a version, but defensive), drop the manifest-level record and keep the catalog record.
-
-**pnpm named catalogs (`catalogs.<name>`, etc.):** detect by scanning `pnpm-workspace.yaml` for top-level keys matching `/^catalogs?\./` or a `catalogs:` map. For each named catalog found, push one warning: `named catalog "<name>" detected but not yet supported in this iteration`. Do not emit update records for pnpm named-catalog entries (unchanged this iteration).
+3. **pnpm named catalogs ARE supported (Full scope)** — emit records for `catalogs.<name>` entries and push **NO** `named catalog … not yet supported` warning.
+4. **Ambiguous default:** if the repo declares both a top-level `catalog:` map AND a `catalogs.default` block, push the warning `ambiguous default catalog: both 'catalog' and 'catalogs.default' present; treating as distinct sources` and emit both as distinct records. They share `location: "catalog:default"` but stay unambiguous downstream via `catalogSource.field` (the top-level `catalog:` entries are `{ kind: "default" }`; the `catalogs.default` entries are `{ kind: "named", name: "default" }`).
+5. If a consumer `package.json` has `"<pkg>": "catalog:"` / `"catalog:<name>"` AND ncu separately reported `<pkg>` from that manifest (shouldn't happen because a `catalog:` specifier carries no version, but defensive), drop the manifest-level record and keep the catalog record.
 
 ### bun — root `package.json` `catalog` / `catalogs`
 
@@ -200,7 +200,7 @@ For each manifest in the repo:
     - root `package.json` in `single` → `"root"`.
     - root `package.json` in `workspace` → `"root"` (still valid; it's the workspace root manifest).
     - non-root workspace `package.json` → `workspace:<package-name>` where `<package-name>` is that manifest's `name` field.
-    - default catalog (pnpm `catalog:` or bun `catalog`) → `"catalog:default"`; bun named catalog → `"catalog:<name>"`.
+    - default catalog (pnpm top-level `catalog:` or bun `catalog`) → `"catalog:default"`; pnpm or bun named catalog (`catalogs.<name>`) → `"catalog:<name>"`.
 - `sourceFile`: repo-root-relative path (e.g. `apps/wealth-react/package.json`, `pnpm-workspace.yaml`, or the root `package.json` for bun catalogs).
 - `catalogSource`: present on every `catalog:*` record (describing the exact edit target so apply is unambiguous); absent on `root`/`workspace:*` records.
 
@@ -214,7 +214,7 @@ Concatenate all `warnings` from:
 
 - ncu stderr per invocation.
 - JSON parse failures.
-- pnpm named-catalog notes; the bun ambiguous-default note.
+- The pnpm / bun ambiguous-default note.
 - Any `npm view` failures during catalog processing.
 
 Dedupe warnings (same string appearing twice → keep one).
@@ -234,7 +234,8 @@ Emit the `ScanResult` JSON object. That's it. Do not print tables, do not ask qu
 | ncu exits non-zero on a manifest                       | Push stderr (or a synthesized `ncu failed on <manifest>`) into `warnings` and continue. `updates` for that manifest = `[]`. |
 | ncu output cannot be parsed as JSON                    | Push raw stdout (truncated) into `warnings`; `updates` for that manifest = `[]`.                                            |
 | `npm view <pkg>` fails during catalog post-process     | Push a warning naming the package; omit catalog record for that entry.                                                      |
-| pnpm named catalog present                             | Push `not yet supported` warning; skip those entries.                                                                       |
+| pnpm named catalog present                             | Supported — emit records, no warning.                                                                                       |
+| pnpm ambiguous default (`catalog` + `catalogs.default`) | Push ambiguous-default warning; emit both as distinct records (differentiated by `catalogSource.field`).                   |
 | bun named catalog present                              | Supported — emit records, no warning.                                                                                       |
 | bun ambiguous default (`catalog` + `catalogs.default`) | Push ambiguous-default warning; emit both as distinct records (differentiated by `catalogSource.field`).                    |
 
@@ -265,9 +266,21 @@ The only abort paths are the four preconditions. Everything after is resilient: 
                 "manager": "pnpm",
                 "field": { "kind": "default" }
             }
+        },
+        {
+            "name": "react",
+            "currentVersion": "18.2.0",
+            "targetVersion": "18.3.1",
+            "location": "catalog:react17",
+            "sourceFile": "pnpm-workspace.yaml",
+            "catalogSource": {
+                "sourceFile": "pnpm-workspace.yaml",
+                "manager": "pnpm",
+                "field": { "kind": "named", "name": "react17" }
+            }
         }
     ],
-    "warnings": ["named catalog \"test\" detected but not yet supported in this iteration"]
+    "warnings": []
 }
 ```
 
