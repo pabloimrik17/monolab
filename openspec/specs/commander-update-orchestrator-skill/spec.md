@@ -181,8 +181,8 @@ The aggregation step SHALL:
 
 #### Scenario: Per-project warnings prefixed
 
-- **WHEN** `proj-A`'s scan produces `warnings: ["pnpm catalog 'test' unsupported"]`
-- **THEN** the aggregated plan's `warnings` array contains `proj-A: pnpm catalog 'test' unsupported`
+- **WHEN** `proj-A`'s scan produces `warnings: ["ncu failed on package.json"]`
+- **THEN** the aggregated plan's `warnings` array contains `proj-A: ncu failed on package.json`
 
 ---
 
