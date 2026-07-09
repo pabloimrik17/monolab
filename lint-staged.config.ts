@@ -24,6 +24,10 @@ export default {
         // knip runs on the whole project, not per file
         () => `knip --max-issues ${KNIP_MAX_ISSUES}`,
     ],
+    // function form ignores the file list: fallow audit runs once per commit, not per file.
+    // Changed-files vs merge-base, new-only ratchet — only findings introduced by the commit fail.
+    // Full-repo lint:fallow (dead-code --fail-on-issues) stays exclusive to the push CI gate.
+    "*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc}": () => "fallow audit",
     "*.md": "markdownlint --fix",
     "*.css": "stylelint --fix",
     "*.scss": "stylelint --fix",

@@ -1,3 +1,4 @@
+// fallow-ignore-file code-duplication -- page-shell divergence, PageShell extraction not yet warranted
 import { useNavigate, useParams, useSearchParams } from "@solidjs/router";
 import { For, Show } from "solid-js";
 import { useViewModel } from "@m0n0lab/solid-clean";

@@ -1,16 +1,11 @@
 import { useParams } from "@solidjs/router";
 import { For, Show } from "solid-js";
 import { useViewModel } from "@m0n0lab/solid-clean";
+import { OrderCard } from "../../../components/order-card.tsx";
+import { VmStatus } from "../../../components/vm-status.tsx";
 import { container } from "../../../container.ts";
 import { TOKENS } from "../../../tokens.ts";
 import type { OrderQueueViewModel } from "../../../view-models/order-queue.viewmodel.ts";
-
-const STATUS_COLORS: Record<string, string> = {
-    PENDING: "bg-yellow-100 text-yellow-800",
-    PREPARING: "bg-blue-100 text-blue-800",
-    DONE: "bg-green-100 text-green-800",
-    CANCELLED: "bg-red-100 text-red-800",
-};
 
 export default function OrderQueuePage() {
     const params = useParams<{ id: string }>();
@@ -41,44 +36,14 @@ export default function OrderQueuePage() {
                     </a>
                 </div>
 
-                <Show when={vm.error()}>
-                    <p class="text-red-600">{vm.error()}</p>
-                </Show>
-
-                <Show when={vm.loading()}>
-                    <p class="text-stone-500">Loading...</p>
-                </Show>
+                <VmStatus
+                    loading={vm.loading}
+                    error={vm.error}
+                />
 
                 <For each={vm.orders()}>
                     {(order) => (
-                        <div class="bg-white rounded-lg shadow p-4 space-y-3">
-                            <div class="flex justify-between items-center">
-                                <span class="font-medium text-stone-800">{order.guestName}</span>
-                                <span
-                                    class={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[order.status] ?? ""}`}
-                                >
-                                    {order.status}
-                                </span>
-                            </div>
-
-                            <For each={order.items}>
-                                {(item) => (
-                                    <div class="text-sm text-stone-600">
-                                        {item.menuItemName} x{item.quantity}
-                                        <Show when={item.customization}>
-                                            <span class="text-stone-400">
-                                                {" "}
-                                                — {item.customization}
-                                            </span>
-                                        </Show>
-                                    </div>
-                                )}
-                            </For>
-
-                            <Show when={order.notes}>
-                                <p class="text-xs text-stone-400 italic">{order.notes}</p>
-                            </Show>
-
+                        <OrderCard order={order}>
                             <Show when={order.status === "PENDING" || order.status === "PREPARING"}>
                                 <div class="flex gap-2 pt-1">
                                     <Show when={order.status === "PENDING"}>
@@ -107,7 +72,7 @@ export default function OrderQueuePage() {
                                     </button>
                                 </div>
                             </Show>
-                        </div>
+                        </OrderCard>
                     )}
                 </For>
             </div>
