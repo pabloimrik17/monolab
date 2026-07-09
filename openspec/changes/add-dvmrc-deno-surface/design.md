@@ -22,7 +22,7 @@ Current monolab state (all `2.9.0`, aligned): `engines.deno`, `devEngines.runtim
 
 ## Decisions
 
-**D1 — `.dvmrc` is a whole-file surface, mirror of `.nvmrc`.** Read the whole-file token (trim whitespace, preserve a leading `v`), locus `file`, classified `runtime` unconditionally like every other non-`package.json` runtime file. Rationale: `.dvmrc` is the exact Deno analog of `.nvmrc`; reusing that treatment keeps the matcher uniform and the apply-side rewrite trivial. Alternative considered: a bespoke Deno-only surface type — rejected as needless divergence.
+**D1 — `.dvmrc` is a whole-file surface, mirror of `.nvmrc`.** Read the whole-file token (trim whitespace, strip a leading `v`), locus `file`, classified `runtime` unconditionally like every other non-`package.json` runtime file. Stripping the `v` on read (like `.nvmrc`) keeps the recorded `currentVersion` prefix-normalized so a `v`-prefixed `.dvmrc` does not read as a distinct runtime version vs an unprefixed `engines.deno` (false misalignment); the apply side re-applies whatever leading `v` the file used on rewrite. Rationale: `.dvmrc` is the exact Deno analog of `.nvmrc`; reusing that treatment keeps the matcher uniform and the apply-side rewrite trivial. Alternative considered: a bespoke Deno-only surface type — rejected as needless divergence.
 
 **D2 — Root-only.** Scan `.dvmrc` once at the repo root, as `deno-version-file` in CI references and as the tool's convention expect. Rationale: matches the issue scope and `denoland/setup-deno` usage; no known nested `.dvmrc` case in monolab. Alternative: scan any path — deferred, no use case and widens false-positive surface.
 

@@ -4,7 +4,7 @@ The engines-update tooling (`/experiments:npm-update-engines`, `/experiments:*-d
 
 ## What Changes
 
-- **`detect-toolchain-surfaces`**: add a matcher row for a root `.dvmrc` as a **deno** `runtime` whole-file surface (locus `file`), parsed/aligned the same way `.nvmrc` is for Node (trim whitespace, preserve a leading `v`), classified `runtime` unconditionally.
+- **`detect-toolchain-surfaces`**: add a matcher row for a root `.dvmrc` as a **deno** `runtime` whole-file surface (locus `file`), parsed/aligned the same way `.nvmrc` is for Node (trim whitespace, strip a leading `v` on read; the leading `v` is re-applied on rewrite), classified `runtime` unconditionally.
 - **`detect-toolchain-surfaces`**: recognize `denoland/setup-deno`'s `with.deno-version-file` as a **pointer** to the referenced file — not an inline version surface, and not an `unknownSurface`. The version lives in the pointed-to file (`.dvmrc`), which is already scanned as its own surface, so the CI step must not be double-counted.
 - **`apply-engine-bumps`**: rewrite the `.dvmrc` whole-file version token on a Deno bump, preserving any leading `v`, same surgical treatment as `.nvmrc`/`.node-version`.
 - **No change** to `.tool-versions`/mise `deno` parsing — already covered by the existing matcher.
