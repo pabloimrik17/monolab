@@ -34,9 +34,9 @@ A **hard co-upgrade set** is a group of packages that MUST share a bucket becaus
 
 Seed hard co-upgrade sets from, in order:
 
-1. **Override-registry families** (`overrideFamilies`): every `bumpSet` package whose name matches a family's `matches` globs joins that family's set (e.g. `storybook` + `@storybook/react` + `@storybook/addon-essentials` + `eslint-plugin-storybook` → one set).
-2. **Known peer/lockstep groups**: `react` + `react-dom` + `react-is` + `@types/react` + `@types/react-dom`; `vue` + `@vue/*`; `@angular/*`; `eslint` + its plugins/config packages; `jest` + `@types/jest` + `ts-jest`; `typescript` + `tslib`. These are framework lockstep sets where a major must move together.
-3. **`peerDependencies` read** (`depGraph[name].peerDependencies`): if package A in `bumpSet` declares a peer on package B that is also in `bumpSet`, A and B join the same set.
+1. **Shared version-group registry** (`references/version-groups.yaml` in the `scan-npm-updates` skill): the single source of truth for locked families (e.g. `react` + `react-dom` + `react-is` + `@types/react`; `@storybook/*`; `vue` + `@vue/*`; `vitest` + `@vitest/*`). Every `bumpSet` package whose name matches a group's `matches` globs joins that group's set. Do NOT maintain a duplicate hardcoded family list here — add or edit families in the registry so both this skill and the scan's coherence rule stay in sync.
+2. **Override-registry families** (`overrideFamilies`): every `bumpSet` package whose name matches a family's `matches` globs joins that family's set (e.g. `storybook` + `@storybook/react` + `@storybook/addon-essentials` + `eslint-plugin-storybook` → one set). Augments the registry for command-side override families.
+3. **`peerDependencies` read** (`depGraph[name].peerDependencies`): if package A in `bumpSet` declares a peer on package B that is also in `bumpSet`, A and B join the same set. Covers looser co-upgrade relationships not declared as version-lockstep families in the registry (e.g. `eslint` + its plugins, `jest` + `ts-jest` + `@types/jest`, `typescript` + `tslib`).
 
 Merge transitively: if two seed sets share a package, they merge into one. Any `bumpSet` package not pulled into a seeded set is its own singleton set.
 
@@ -118,4 +118,5 @@ The **count-by-policy** summary reports the bucket count (and largest bucket) un
 - `parallel-research-workflow` — produces the `## Breaking changes & migration` findings + the bump set this skill consumes (level=major).
 - `update-isolation` — consumes a bucket's `suggestedBranch` to create the worktree; this skill never creates one itself.
 - `group-packages-for-research` — a sibling "bounded partition" skill, but a distinct concern (it batches for research subagents; this batches for review/PR granularity).
-- `scan-npm-updates/data/pkg-upgrade-overrides.yaml` — the override-registry families that seed hard co-upgrade sets.
+- `scan-npm-updates/references/version-groups.yaml` — the shared version-group registry (single source of truth) that seeds hard co-upgrade sets here and drives must-match coherence in the scan.
+- `scan-npm-updates/data/pkg-upgrade-overrides.yaml` — the override-registry families that additionally seed hard co-upgrade sets.
