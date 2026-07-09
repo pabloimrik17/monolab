@@ -1,6 +1,6 @@
 ---
 name: detect-toolchain-surfaces
-description: Scans package.json (engines/packageManager/devEngines/volta), .nvmrc/.node-version, .tool-versions/mise, Dockerfiles, and CI configs (GitHub Actions, GitLab CI, CircleCI) for runtime or package-manager version pins, classifies each locus as runtime/support/ambiguous, detects intra-repo misalignment, and returns a structured inventory. Read-only — never edits files, runs installs, runs ncu, or performs any VCS action. The engines-level analog of `scan-npm-updates`; invoked by the engines update commands (`/experiments:npm-update-engines`, `/experiments:npm-update-deep-engines`) and the `commander-update-orchestrator` at `level=engines`.
+description: Scans package.json (engines/packageManager/devEngines/volta), .nvmrc/.node-version, .dvmrc (Deno), .tool-versions/mise, Dockerfiles, and CI configs (GitHub Actions, GitLab CI, CircleCI) for runtime or package-manager version pins, classifies each locus as runtime/support/ambiguous, detects intra-repo misalignment, and returns a structured inventory. Read-only — never edits files, runs installs, runs ncu, or performs any VCS action. The engines-level analog of `scan-npm-updates`; invoked by the engines update commands (`/experiments:npm-update-engines`, `/experiments:npm-update-deep-engines`) and the `commander-update-orchestrator` at `level=engines`.
 ---
 
 # detect-toolchain-surfaces
@@ -80,12 +80,17 @@ The skill enumerates **matchers**; each matcher knows how to read the current ve
 | `package.json` `devEngines.runtime` / `devEngines.packageManager` | all                | object or array element `version` (each element keyed by its `name`)                                                                                                    |
 | `package.json` `volta.{node,pnpm,yarn}`                           | node/pnpm/yarn     | JSON value at `volta.<engine>`                                                                                                                                          |
 | `.nvmrc`, `.node-version`                                         | node               | the whole-file version token (trim whitespace, strip a leading `v`)                                                                                                     |
+| `.dvmrc`                                                          | deno               | the whole-file version token (trim whitespace, strip a leading `v`)                                                                                                     |
 | `.tool-versions` (asdf)                                           | node/pnpm/deno/bun | the `<tool> <version>` line for a recognized tool                                                                                                                       |
 | `mise.toml`, `.mise.toml`                                         | node/pnpm/deno/bun | the `[tools]` entry for a recognized tool                                                                                                                               |
 | `Dockerfile*`                                                     | node/deno/bun      | `FROM <image>:<tag>` tag AND `ARG <NAME>_VERSION=<default>` defaults                                                                                                    |
 | GitHub Actions (`.github/workflows/*.{yml,yaml}`)                 | all                | `actions/setup-node` → `with.node-version`; `pnpm/action-setup` → `with.version`; `denoland/setup-deno` → `with.deno-version`; `oven-sh/setup-bun` → `with.bun-version` |
 | GitLab CI (`.gitlab-ci.yml`)                                      | all                | job `image:` tag; `variables: NODE_VERSION`                                                                                                                             |
 | CircleCI (`.circleci/config.yml`)                                 | all                | `docker: - image:` tag; Node orb `node/install` `node-version` / `version` params                                                                                       |
+
+### CI version-file pointers (not inline surfaces)
+
+Some setup actions read the version from a **file** instead of an inline input. When a `denoland/setup-deno` step declares `with.deno-version-file` (e.g. `deno-version-file: .dvmrc`) and no inline `with.deno-version`, treat that input as a **pointer** to the referenced version file: the version is surfaced through that file (`.dvmrc`, already scanned as its own root surface), so do NOT record the step as an inline version surface and do NOT push it to `unknownSurfaces`. This avoids double-counting the same Deno version (which would trip the intra-repo misalignment flag) and avoids a false `unknownSurface` for a fully-understood step.
 
 ### Engine-name recognition in version-manager files
 
@@ -96,7 +101,7 @@ For `.tool-versions` and `mise` `[tools]`, recognize tool names: `node`/`nodejs`
 `locus` is a precise pointer so `apply-engine-bumps` can re-find the exact token to rewrite:
 
 - `package.json` → `engines.node`, `packageManager`, `devEngines.runtime[0].version`, `volta.node`, …
-- `.nvmrc`/`.node-version` → `file` (whole file).
+- `.nvmrc`/`.node-version` → `file` (whole file); `.dvmrc` → `file` (whole file).
 - `.tool-versions` → `tools.node` (the line for that tool); mise → `[tools].node`.
 - Dockerfile → `FROM:<line-number>` for an image tag, `ARG:<NAME>_VERSION:<line-number>` for an ARG default.
 - GitHub Actions → `<job>.<step-index>.with.node-version` (job id + step index + input key).
@@ -111,7 +116,7 @@ For `.tool-versions` and `mise` `[tools]`, recognize tool names: `node`/`nodejs`
 
 ## Workspaces
 
-In a workspace, scan the root `package.json` and **every** workspace member `package.json` (enumerate the same way `scan-npm-updates` does — `package.json#workspaces` globs, `pnpm-workspace.yaml#packages`, `deno.json#workspace`). Non-`package.json` runtime files (`.nvmrc`, CI, Docker, version-manager files) are repo-level — scan each once at the path it lives.
+In a workspace, scan the root `package.json` and **every** workspace member `package.json` (enumerate the same way `scan-npm-updates` does — `package.json#workspaces` globs, `pnpm-workspace.yaml#packages`, `deno.json#workspace`). Non-`package.json` runtime files (`.nvmrc`, `.dvmrc`, CI, Docker, version-manager files) are repo-level — scan each once at the path it lives (`.dvmrc` at the repo root only).
 
 ## Runtime-vs-support classification (D3)
 
@@ -124,7 +129,7 @@ For each `engines.node`-bearing `package.json` (and, by the same logic, other `e
 - **`support`** (leave untouched — a consumer contract) when the manifest **is** publishable (not `private`, has `publishConfig`/`exports`/library `main`) AND its `engines.<engine>` value is a **range** (`>=`, `^`, `~`, `||`, `*`, `x`, or any comparator/union — i.e. not a single exact `x.y.z`).
 - **`ambiguous`** otherwise — i.e. a publishable manifest pinning an **exact** `engines.<engine>` (e.g. `24.12.0`), or a `private` manifest declaring a **range**. Flag for the caller to resolve (with a conservative default of _leave_).
 
-**All non-`package.json` runtime files** (`.nvmrc`, `.node-version`, `.tool-versions`, mise, CI, Docker) are classified **`runtime` unconditionally** — they describe the toolchain the project runs, never a published-package support contract.
+**All non-`package.json` runtime files** (`.nvmrc`, `.node-version`, `.dvmrc`, `.tool-versions`, mise, CI, Docker) are classified **`runtime` unconditionally** — they describe the toolchain the project runs, never a published-package support contract.
 
 `packageManager`, `devEngines`, and `volta` loci are always `runtime` (they describe the dev toolchain, not a consumer support range).
 
