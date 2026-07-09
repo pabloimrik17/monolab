@@ -40,9 +40,23 @@ Reword the live plugin files to match the reworded specs. Pattern per site: drop
 - [x] `commands/commander-update-deep-major.md`
 - [x] `commands/commander-update-deep-engines.md`
 
+## 6. Sibling commander command spec deltas (coherence fix)
+
+Verify surfaced that `commander-update-{minor,major,engines}` and `commander-update-deep-{minor,major,engines}` restate `SHALL NOT run tests/lint/build` **normatively** (requirement prose, not just no-op scenario assertions) — the design Open-Question tripwire. Added MODIFIED deltas dropping the clause so they no longer contradict the reworded canonical orchestrator rule + live files. (`commander-update-{patch}` and every `npm-update-*` sibling already had deltas.)
+
+- [x] `specs/commander-update-minor-command/spec.md` (also D6: `commits/branches/PRs` → isolation-permitting phrasing).
+- [x] `specs/commander-update-major-command/spec.md`
+- [x] `specs/commander-update-engines-command/spec.md`
+- [x] `specs/commander-update-deep-minor-command/spec.md` (also D6 branch-phrasing align).
+- [x] `specs/commander-update-deep-major-command/spec.md`
+- [x] `specs/commander-update-deep-engines-command/spec.md`
+- [x] `specs/commander-update-deep-patch-command/spec.md` — bullet-form ban (`SHALL NOT: - Run tests, lint, or build`) missed by the narrow verify grep; delta drops the bullet + aligns the `commits, branches, or PRs` bullet to isolation-permitting phrasing (D6). (7 commander specs, not 6.)
+- [x] Capability-overview prose lines (L5, not requirement-delta-addressable) reworded directly during sync — these carry a forbidding tests/lint/build claim outside any requirement: `commander-update-orchestrator-skill`, `npm-update-engines-command`, `engine-update-apply`. All now read "never commits/pushes/opens PRs autonomously (read-only checks permitted, never automatic)".
+
 ## 5. Verification
 
 - [x] `grep -rE "SHALL NOT run tests, lint, or build|Never runs? tests, lint|tests/lint/build" claude-plugins/experiments` returns no _forbidding_ occurrences (only permitted-form phrasing remains). (Also reworded `README.md` catalog entries, which the file list omitted but this grep covers; orchestrator L722 reconnaissance stays "Pure read" per the proposal non-goal — not matched by this grep.)
+- [x] `grep -rniE "SHALL NOT run tests" openspec/specs/commander-update-*` returns no matches after the deltas archive (the 6 sibling command specs no longer forbid checks normatively).
 - [x] `openspec validate relax-update-hard-rules` passes.
 - [x] Spot-check: a plain (shallow) run description still invokes no checks (default behavior unchanged); every deep command's round now permits read-only verification of its edits.
 - [x] Confirm each command's `Suggested next steps` carries the "branch may not pass repo commit hooks — run lint/build before committing" note. (npm-update-* carry it directly; commander-update-* surface the orchestrator's summary, which carries it.)

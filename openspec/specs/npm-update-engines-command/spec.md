@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The `/experiments:npm-update-engines` command is the shallow single-project sibling of `/experiments:npm-update-major`, operating exclusively at **engines level** to bump the runtime/package-manager toolchain. It detects toolchain surfaces, resolves per-engine targets, gates the user with a breaking-changes caution, and delegates the rewrite to `apply-engine-bumps`. It never touches npm dependency scans or `ncu`, never modifies `support` ranges, and never runs tests, commits, or PRs.
+The `/experiments:npm-update-engines` command is the shallow single-project sibling of `/experiments:npm-update-major`, operating exclusively at **engines level** to bump the runtime/package-manager toolchain. It detects toolchain surfaces, resolves per-engine targets, gates the user with a breaking-changes caution, and delegates the rewrite to `apply-engine-bumps`. It never touches npm dependency scans or `ncu`, never modifies `support` ranges, and never commits, pushes, or opens PRs autonomously (running read-only checks is permitted, never automatic).
 
 ## Requirements
 
@@ -55,7 +55,7 @@ For `apply-all` and `pick-subset`, the command SHALL invoke `apply-engine-bumps`
 
 ### Requirement: Hard rules
 
-The command SHALL NOT run tests, lint, or build; SHALL NOT create commits, push, or open PRs; SHALL NOT modify files on `cancel`; SHALL NOT modify `support` or `unknownSurfaces` loci; SHALL always operate at engines level and ignore any user-supplied level. The command MAY offer an opt-in isolation gate delegating branch/worktree creation to `update-isolation` (default `none`); creating an isolation branch/worktree is permitted, committing/pushing/PR-ing is not.
+The command SHALL NOT create commits, push, or open PRs; SHALL NOT modify files on `cancel`; SHALL NOT modify `support` or `unknownSurfaces` loci; SHALL always operate at engines level and ignore any user-supplied level. The command stops for human-in-the-loop review before any commit/push/PR. The command MAY offer an opt-in isolation gate delegating branch/worktree creation to `update-isolation` (default `none`); creating an isolation branch/worktree is permitted, committing/pushing/PR-ing is not.
 
 #### Scenario: Optional isolation creates a workspace but never commits
 

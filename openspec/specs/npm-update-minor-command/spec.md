@@ -56,7 +56,7 @@ The command SHALL resolve overrides using the `npm-update-apply` override-resolu
 
 ### Requirement: Summary and hard rules
 
-After apply (or after `cancel`), the command SHALL print a summary headed `## npm-update-minor summary`, composing the `npm-update-apply` result fragment into the same section shape as `/experiments:npm-update-patch` (applied generically, applied via override, skipped by override policy, skipped by user, install line, always-present `Suggested next steps`). On an `npm-update-apply` structured failure, the command SHALL format and print the single-project abort copy (`Re-run /experiments:npm-update-minor to retry the rest.`). The command SHALL NOT run tests, lint, build, or create commits/PRs, and SHALL NOT mutate `catalog:` consumer `package.json` entries.
+After apply (or after `cancel`), the command SHALL print a summary headed `## npm-update-minor summary`, composing the `npm-update-apply` result fragment into the same section shape as `/experiments:npm-update-patch` (applied generically, applied via override, skipped by override policy, skipped by user, install line, always-present `Suggested next steps`). On an `npm-update-apply` structured failure, the command SHALL format and print the single-project abort copy (`Re-run /experiments:npm-update-minor to retry the rest.`). The command SHALL NOT create commits, push, or open PRs autonomously — it stops for human-in-the-loop review before any such outward/VCS action — and SHALL NOT mutate `catalog:` consumer `package.json` entries.
 
 #### Scenario: Summary heading is minor-namespaced
 

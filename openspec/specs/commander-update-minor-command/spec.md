@@ -58,7 +58,7 @@ The command SHALL invoke the `commander-update-orchestrator` skill exactly **onc
 
 ### Requirement: Hard rules inherited from the orchestrator
 
-The command SHALL inherit and preserve every hard rule from `commander-update-orchestrator` (shallow mode). The command SHALL NOT run tests/lint/build; SHALL NOT create commits/branches/PRs; SHALL NOT modify any file when the user selects `cancel`; SHALL NOT mutate `<HOME>/.claude/commander/projects.json` (byte-identical before/after, verifiable via `shasum`); SHALL NOT mutate a `catalog:` consumer `package.json` (only `pnpm-workspace.yaml`); SHALL NOT auto-execute an override without explicit `run-override`; and SHALL NOT run `ncu --upgrade` as a fallback after an override fails.
+The command SHALL inherit and preserve every hard rule from `commander-update-orchestrator` (shallow mode). The command SHALL NOT create commits, push, or open PRs (branch/worktree isolation via `update-isolation` is permitted); SHALL NOT modify any file when the user selects `cancel`; SHALL NOT mutate `<HOME>/.claude/commander/projects.json` (byte-identical before/after, verifiable via `shasum`); SHALL NOT mutate a `catalog:` consumer `package.json` (only `pnpm-workspace.yaml`); SHALL NOT auto-execute an override without explicit `run-override`; and SHALL NOT run `ncu --upgrade` as a fallback after an override fails.
 
 #### Scenario: Cancel at the gate leaves the workspace untouched
 

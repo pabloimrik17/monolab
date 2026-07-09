@@ -128,7 +128,7 @@ For `apply-all` and `pick-subset` (when improvements are included), the command 
 2. **Plan-mode entry (mandatory)**: the main agent invokes the `EnterPlanMode` tool with a markdown plan listing every applicable improvement (file path, brief description, and before/after snippet for non-trivial edits) and every inapplicable improvement (with the reason). A summary footer counts applicable vs inapplicable.
 3. **User review**: plan mode pauses until the user accepts or rejects the plan. On approval, edits are executed via `Edit` / `Write`. On rejection, the command prints `Improvements rejected at plan-mode review. No improvement edits applied; bumps are preserved.` and skips to the summary step. Bumps applied in the prior step are NOT reverted.
 
-The command SHALL NOT execute tests, lint, or build, and SHALL NOT create commits or PRs as part of improvement application. The command SHALL NOT expand scope beyond bullets present in `plan.md`; adjacent opportunities the agent identifies during reconnaissance or plan-mode review SHALL be surfaced as suggestions in the final summary, never silently added to the plan-mode plan.
+After the reviewed edits are applied, the command may run read-only verification over those edits and surface the result in the final summary (read-only, no `--fix`). The command SHALL NOT create commits or PRs as part of improvement application; it stops for human-in-the-loop review before any such outward/VCS action. The command SHALL NOT expand scope beyond bullets present in `plan.md`; adjacent opportunities the agent identifies during reconnaissance or plan-mode review SHALL be surfaced as suggestions in the final summary, never silently added to the plan-mode plan.
 
 #### Scenario: Plan mode is entered before any improvement edit
 
@@ -150,10 +150,10 @@ The command SHALL NOT execute tests, lint, or build, and SHALL NOT create commit
 - **WHEN** the user selects `apply-all` and the plan contains 4 improvement bullets
 - **THEN** improvement application proceeds against exactly those 4 bullets, with no expansion to items outside `plan.md`
 
-#### Scenario: No tests run
+#### Scenario: No autonomous commit/push/PR
 
 - **WHEN** improvement application completes
-- **THEN** no `vitest`, `nx test`, lint, build, or commit command has been invoked by the command
+- **THEN** no `git commit`, `git push`, or pull-request-creation command has been invoked by the command
 
 ### Requirement: Final summary
 
@@ -182,8 +182,7 @@ Sections with count zero SHALL be omitted, except `Suggested next steps`, which 
 
 The command SHALL preserve every hard rule of `/experiments:npm-update-patch`:
 
-- The command SHALL NOT run tests, lint, or build at any point.
-- The command SHALL NOT create git commits or open pull requests.
+- The command SHALL NOT create commits, push, or open pull requests autonomously; it stops for human-in-the-loop review before any such outward/VCS action.
 - The command SHALL NOT modify any file when the user selects `cancel`.
 - The command SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
 

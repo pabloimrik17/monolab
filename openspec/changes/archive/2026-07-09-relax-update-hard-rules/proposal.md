@@ -37,7 +37,7 @@ Command specs restating the prohibition normatively (relax the forbidding bullet
 
 ## Impact
 
-- **Spec layer**: 12 modified capabilities above. The remaining `commander-update-{minor,major,engines}-command` and `commander-update-deep-*-command` specs match the prohibition only in _default no-op scenario assertions_ (which stay valid, since default behavior is unchanged) — reviewed at the specs phase, expected untouched.
+- **Spec layer**: 19 modified capabilities. The 12 above, plus the 7 sibling command specs `commander-update-{minor,major,engines}-command` and `commander-update-deep-{patch,minor,major,engines}-command`, which turned out to restate the prohibition **normatively** in their "Hard rules inherited from the orchestrator" requirement (not merely in default no-op scenario assertions) — so they get MODIFIED deltas dropping the clause too (else they would contradict the reworded canonical orchestrator rule + live files). `commander-update-deep-patch-command` states it in bullet-list form (`SHALL NOT: - Run tests, lint, or build`). Additionally, the `commander-update-orchestrator-skill` spec's overview line (capability-summary prose, not a requirement) is reworded directly during sync.
 - **Implementation**: edit the matching hard-rule sections + frontmatter in `claude-plugins/experiments/commands/*.md` and `claude-plugins/experiments/skills/*/SKILL.md`.
 - **Behavior**: default runs unchanged (fast, no autonomous commit). New: read-only checks are no longer forbidden; the deep migration round may self-verify its edits.
 - **Resolves #249's three complaints**: unverifiable majors, unverified migration edits, and forced `--no-verify` (the plugin no longer commits → the human commits through hooks after review).

@@ -262,16 +262,15 @@ The skill SHALL contain no level-specific branching logic; behavior is parameter
 
 The skill SHALL preserve the family hard rules:
 
-- SHALL NOT run tests, lint, or build.
-- SHALL NOT create git commits, branches, or pull requests.
+- SHALL NOT create commits, push, or open pull requests autonomously; the skill stops for human-in-the-loop review before any such outward/VCS action (opt-in isolation branch/worktree creation via `update-isolation` is permitted).
 - SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file: `pnpm-workspace.yaml` for pnpm, the root `package.json` `catalog`/`catalogs.<name>` map for Bun.
 - SHALL NOT run `ncu --upgrade` as a fallback after an override command fails.
 - SHALL NOT read or write the override registry data file except via the read-only resolution procedure.
 
-#### Scenario: No verification steps executed
+#### Scenario: No autonomous commit/push/PR
 
 - **WHEN** an apply completes
-- **THEN** no `vitest`, `nx test`, lint, build, or git commit command has been invoked by the skill
+- **THEN** no `git commit`, `git push`, or pull-request-creation command has been invoked by the skill
 
 #### Scenario: No ncu fallback after override failure
 
