@@ -704,7 +704,6 @@ After the cleanup choice, the workflow returns control to the consumer. The cons
 ## Hard rules
 
 - The workflow SHALL NOT write outside `~/.claude/experiments/plans/<slug>-<level>-<unix-ts>[-N]/` (where `[-N]` is omitted unless collision resolution appended `-2`, `-3`, …).
-- The workflow is read-only research and applies no edits, so running lint/typecheck/build is not part of its job (verifying applied edits belongs to the consuming command); performing a read-only check is never a hard-rule violation.
 - The workflow SHALL NOT create commits or PRs.
 - The workflow SHALL NOT auto-delete any plan dir without explicit user confirmation.
 - The workflow SHALL NOT advance the global phase past `planning` on its own — the consumer (command) advances `executing` and `done`.

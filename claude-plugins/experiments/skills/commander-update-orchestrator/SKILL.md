@@ -768,7 +768,7 @@ Plan mode pauses until the user accepts or rejects.
 #### 10b.4 Plan-mode hard rules
 
 - The plan-mode round SHALL NOT expand scope beyond bullets present in `plan.md`. Adjacent opportunities the main agent discovers during reconnaissance SHALL be surfaced in the Step 11 `Suggested next steps` list, NEVER silently added to the plan-mode document.
-- After the reviewed edits are applied, the plan-mode round MAY run read-only verification (lint, typecheck, or build) over those edits and surface the result in the summary — never with `--fix`, and never automatically by default.
+- After the reviewed edits are applied, the plan-mode round may run read-only verification over those edits and surface the result in the summary (read-only, no `--fix`).
 - The plan-mode round SHALL NOT create commits or pull requests (or push); it stops for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation is a separate pre-apply step (Step 9.5); the plan-mode round itself creates no branch.
 - The plan-mode round SHALL NOT touch any file outside the bullet's `affects projects:` set.
 
@@ -928,7 +928,6 @@ After the run completes (success, partial, cancel), the user-scoped registry `<H
 
 ## Hard rules
 
-- Running read-only verification (lint, typecheck, or build) is permitted and is never a hard-rule violation; the skill performs none automatically by default, so a plain run stays behaviorally unchanged. The binding restriction is the commit/push/PR review gate below.
 - The skill SHALL NOT create commits, push, or open pull requests autonomously in any project; it stops for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation via the `update-isolation` skill (Step 9.5) is permitted (opt-in; default `none` = apply in place); creating an isolation branch/worktree is allowed, committing/pushing/PR-ing is not.
 - The skill SHALL NOT modify any file outside the per-project manifests it bumps. In particular, `<HOME>/.claude/commander/projects.json` SHALL remain byte-identical before and after every run.
 - The skill SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).

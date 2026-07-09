@@ -8,7 +8,7 @@ For `apply-all` and `pick-subset` (when improvements are included), the command 
 2. **Plan-mode entry (mandatory)**: the main agent invokes the `EnterPlanMode` tool with a markdown plan listing every applicable improvement (file path, brief description, and before/after snippet for non-trivial edits) and every inapplicable improvement (with the reason). A summary footer counts applicable vs inapplicable.
 3. **User review**: plan mode pauses until the user accepts or rejects the plan. On approval, edits are executed via `Edit` / `Write`. On rejection, the command prints `Improvements rejected at plan-mode review. No improvement edits applied; bumps are preserved.` and skips to the summary step. Bumps applied in the prior step are NOT reverted.
 
-After the reviewed edits are applied, the command MAY run read-only verification (lint, typecheck, or build) over those edits and surface the result in the final summary — never with `--fix`, and never automatically by default. The command SHALL NOT create commits or PRs as part of improvement application; it stops for human-in-the-loop review before any such outward/VCS action. The command SHALL NOT expand scope beyond bullets present in `plan.md`; adjacent opportunities the agent identifies during reconnaissance or plan-mode review SHALL be surfaced as suggestions in the final summary, never silently added to the plan-mode plan.
+After the reviewed edits are applied, the command may run read-only verification over those edits and surface the result in the final summary (read-only, no `--fix`). The command SHALL NOT create commits or PRs as part of improvement application; it stops for human-in-the-loop review before any such outward/VCS action. The command SHALL NOT expand scope beyond bullets present in `plan.md`; adjacent opportunities the agent identifies during reconnaissance or plan-mode review SHALL be surfaced as suggestions in the final summary, never silently added to the plan-mode plan.
 
 #### Scenario: Plan mode is entered before any improvement edit
 
@@ -39,7 +39,6 @@ After the reviewed edits are applied, the command MAY run read-only verification
 
 The command SHALL preserve every hard rule of `/experiments:npm-update-patch`:
 
-- Running read-only verification (lint, typecheck, or build) is permitted and is never a hard-rule violation; the command performs none automatically by default, so a plain run stays behaviorally unchanged. The binding restriction is the commit/push/PR review gate below.
 - The command SHALL NOT create commits, push, or open pull requests autonomously; it stops for human-in-the-loop review before any such outward/VCS action.
 - The command SHALL NOT modify any file when the user selects `cancel`.
 - The command SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.

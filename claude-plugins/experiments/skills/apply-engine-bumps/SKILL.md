@@ -17,7 +17,7 @@ The skill runs in the **working directory handed to it** (branch/worktree isolat
 - run `ncu` / `npm-check-updates`;
 - create a branch or worktree (the caller does that via `update-isolation` before invoking this skill).
 
-The skill stops for human-in-the-loop review before any such outward/VCS action. Running read-only verification (lint, typecheck, or build) is permitted but never performed automatically by default. It performs surgical version-token writes only, streams the edits it makes, and returns a structured fragment. It does **not** print a consumer-facing summary or abort copy — the caller owns those.
+The skill stops for human-in-the-loop review before any such outward/VCS action. It performs surgical version-token writes only, streams the edits it makes, and returns a structured fragment. It does **not** print a consumer-facing summary or abort copy — the caller owns those.
 
 ## Inputs
 
@@ -98,7 +98,7 @@ On a write failure, stop and return `failure: { step: "write", file, detail }` w
 
 ## Hard rules
 
-- VCS-free: no commits/push/PRs, no branch/worktree creation, no `ncu` (see "VCS-safe contract"). Read-only verification (lint, typecheck, build) is permitted, never automatic.
+- VCS-free: no commits/push/PRs, no branch/worktree creation, no `ncu` (see "VCS-safe contract").
 - Confirm before any write unless `confirmed: true`.
 - Pin exact and align all `runtime` loci per engine; never write a range for a runtime locus.
 - Preserve the `packageManager` `name@` prefix; drop + report the `+sha…` hash.

@@ -6,7 +6,7 @@ description: Scan and interactively apply npm minor-level updates across a works
 
 Scan the current project for **minor-level** dependency updates, present them to the user, and apply the accepted subset. The shallow single-project sibling of `/experiments:npm-update-patch` — identical flow, only the level differs. Project-agnostic: works on pnpm/npm/yarn/bun/deno, single-repo or workspace, and treats pnpm and Bun `catalog:` entries as first-class.
 
-The command **only bumps manifests and runs a single install** (via the `apply-npm-updates` skill) — it runs no tests, lint, or build automatically and creates no commits. Running read-only checks (lint, typecheck, build) is permitted but never automatic; the binding rule is no autonomous commit/push/PR. The final summary suggests those as next steps; the caller decides.
+The command **only bumps manifests and runs a single install** (via the `apply-npm-updates` skill); it never creates commits autonomously. The final summary suggests verification and commit as next steps; the caller decides.
 
 This command operates exclusively at **minor level**. It always passes `level=minor` to the scan skill and ignores any user-supplied level argument.
 
@@ -261,7 +261,6 @@ Compose the summary from the `apply-npm-updates` result fragment (Step 6) — `{
 
 ## Hard rules
 
-- Running read-only verification (lint, typecheck, or build) is permitted but never performed automatically by default; a plain run stays behaviorally unchanged. The binding restriction is the commit/push/PR review gate below.
 - Never create commits, push, or open PRs autonomously; stop for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation via `update-isolation` is allowed (Step 5.6, opt-in, default `none`).
 - Never modify files on `cancel` or when every accepted update is skipped by override policy.
 - Never mutate a consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).

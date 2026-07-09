@@ -10,7 +10,7 @@ The "deep" sibling of `/experiments:npm-update-major`. Same scope (major-level, 
 
 This command operates exclusively at **major level**. It always passes `level=major` to the scan skill and to `parallel-research-workflow`, and ignores any user-supplied level argument.
 
-> Tip: this command runs no tests, lint, or build automatically and creates no commits. It bumps manifests, runs a single install at most, and (on `apply-all`) applies reviewed migration/improvement edits — after which it MAY run read-only checks (lint, typecheck, build) over those edits and surface the result, never with `--fix`, never automatic. The summary recommends verification + commit as next steps; the caller decides.
+> Tip: this command bumps manifests, runs a single install at most, and (on `apply-all`) applies reviewed migration/improvement edits, and never commits autonomously. After those edits land it may run read-only checks over them and surface the result (read-only, no `--fix`). The summary recommends verification + commit as next steps; the caller decides.
 
 ## Step 1 — Scan
 
@@ -171,7 +171,7 @@ After the bumps install completes successfully (per bucket-or-set), the command 
 
 The plan-mode round SHALL NOT expand scope beyond bullets present in `plan.md`. Adjacent opportunities discovered during reconnaissance are surfaced in the Step 7 summary's `Suggested next steps`, never silently added.
 
-After the reviewed edits are applied, the plan-mode round MAY run read-only verification (lint, typecheck, or build) over those edits and surface the result in the Step 7 summary — never with `--fix`, and never automatically by default. It SHALL NOT create commits or PRs (or push); it stops for human-in-the-loop review before any such outward/VCS action.
+After the reviewed edits are applied, the plan-mode round may run read-only verification over those edits and surface the result in the Step 7 summary (read-only, no `--fix`). It SHALL NOT create commits or PRs (or push); it stops for human-in-the-loop review before any such outward/VCS action.
 
 ### Step 6c — `pick-subset`
 
@@ -265,7 +265,6 @@ The command invokes the workflow's cleanup exactly once at this step. This appli
 
 ## Hard rules
 
-- Running read-only verification (lint, typecheck, or build) — including over the reviewed migration edits — is permitted and is never a hard-rule violation; the command performs none automatically by default, so a plain run stays behaviorally unchanged. The binding restriction is the commit/push/PR review gate below.
 - The command SHALL NOT create commits, push, or open pull requests autonomously; it stops for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation via `update-isolation` is permitted (Step 5.5, opt-in, default `none`).
 - The command SHALL NOT modify any file when the user selects `cancel`. The plan dir under `~/.claude/experiments/plans/` is preserved until the user selects `delete-plan` at cleanup.
 - The command SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).

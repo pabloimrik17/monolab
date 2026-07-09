@@ -8,7 +8,7 @@ Scan the current project for **major-level** dependency updates, present them to
 
 > **Major updates may include breaking changes.** This command bumps + installs only; it does not migrate code. Review each package's changelog (and consider `/experiments:npm-update-deep-major` for researched migration guidance) before applying.
 
-The command **only bumps manifests and runs a single install** (via the `apply-npm-updates` skill) — it runs no tests, lint, or build automatically and creates no commits. Running read-only checks (lint, typecheck, build) is permitted but never automatic; the binding rule is no autonomous commit/push/PR. The final summary suggests those as next steps; the caller decides.
+The command **only bumps manifests and runs a single install** (via the `apply-npm-updates` skill); it never creates commits autonomously. The final summary suggests verification and commit as next steps; the caller decides.
 
 This command operates exclusively at **major level**. It always passes `level=major` to the scan skill and `target: "major"` to `apply-npm-updates`, and ignores any user-supplied level argument.
 
@@ -265,7 +265,6 @@ Compose the summary from the `apply-npm-updates` result fragment (Step 6) — `{
 
 ## Hard rules
 
-- Running read-only verification (lint, typecheck, or build) is permitted but never performed automatically by default; a plain run stays behaviorally unchanged. The binding restriction is the commit/push/PR review gate below.
 - Never create commits, push, or open PRs autonomously; stop for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation via `update-isolation` is allowed (Step 5.6, opt-in, default `none`).
 - Never modify files on `cancel` or when every accepted update is skipped by override policy.
 - Never mutate a consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).

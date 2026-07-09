@@ -174,7 +174,6 @@ Omit any block whose count is zero (except `Suggested next steps`, always presen
 
 ## Hard rules
 
-- Running read-only verification (lint, typecheck, or build) is permitted but never performed automatically by default; a plain run stays behaviorally unchanged. The binding restriction is the commit/push/PR review gate below.
 - Never create commits, push, or open PRs autonomously; stop for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation via `update-isolation` is allowed (Step 6.5, opt-in, default `none`).
 - Never modify any file on `cancel` or when every engine is excluded.
 - Never modify `support` or `unknownSurfaces` loci; modify `ambiguous` loci only when the user resolved them to `runtime`.
