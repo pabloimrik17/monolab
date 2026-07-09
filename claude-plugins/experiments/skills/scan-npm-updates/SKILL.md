@@ -29,8 +29,9 @@ interface ScanResult {
         sourceFile: string; // repo-root-relative path of the manifest to edit
         skippedByReleaseAge?: boolean; // true if a newer in-band version was filtered by the uniform minimumReleaseAge gate and this is the newest eligible fallback. MAY appear on ANY record (root/workspace/catalog) — the age gate is uniform.
         clampedTo?: {
-            // present ONLY when the @types/node engine-major clamp LOWERED or REMOVED the target
-            // that per-package resolution would otherwise have proposed. Absent otherwise.
+            // present ONLY when the @types/node engine-major clamp LOWERED the target to a smaller
+            // in-band version than per-package resolution would have proposed. Absent otherwise —
+            // including when @types/node is omitted entirely (an omitted record carries no fields).
             rule: "engine-major";
             from: string; // the higher target that was clamped away (what would have been proposed)
         };
@@ -47,7 +48,7 @@ interface ScanResult {
 ```
 
 - `skippedByReleaseAge` MAY appear on records of **any** `location` (the release-age gate is applied uniformly skill-side — see "Uniform release-age gate"), not only on catalog records.
-- `clampedTo` SHALL be present **only** on the `@types/node` record when the engine-major clamp lowered or removed its target, and absent otherwise. `from` is the higher target that would have been proposed before the clamp.
+- `clampedTo` SHALL be present **only** on an emitted `@types/node` record whose target the engine-major clamp lowered, and absent otherwise. When no eligible target within the Node major exists, the record is omitted entirely (a warning is pushed) — an omitted record has no `clampedTo`. `from` is the higher target that would have been proposed before the clamp.
 - Version-family skew (e.g. `vitest` vs `@vitest/*` on different versions) is surfaced through `warnings`, not through any record field — the scan flags it but does not silently rewrite targets (see "Version-family skew detection").
 
 **Do not** output prose or tables. The caller renders user-facing output. The only output of this skill is the JSON block (fenced or raw, caller decides) plus warnings embedded inside it.
@@ -237,7 +238,7 @@ Resolve the target Node major:
 Then, for each `@types/node` record:
 
 - A candidate whose major is `<=` the target Node major passes unchanged (no `clampedTo`).
-- A candidate whose major **exceeds** the target Node major is **not** emitted as that bump. Instead emit the newest eligible (age-gated) target within the allowed major, or **omit** the record entirely if there is no eligible version above current inside the allowed major. Set `clampedTo: { rule: "engine-major", from: <the-dropped-higher-target> }`.
+- A candidate whose major **exceeds** the target Node major is **not** emitted as that bump. If an age-eligible target exists within the allowed major and above current, emit the record at that newest eligible target and set `clampedTo: { rule: "engine-major", from: <the-dropped-higher-target> }`. If there is **no** eligible version above current inside the allowed major, **omit** the record entirely (no bump) and push a warning naming `@types/node` and the blocked higher major — the omitted record carries no `clampedTo` (there is no record to attach it to).
 
 This is what fixes #251 at the dependency level: `@types/node` never crosses the Node major, so Node-N-only typings can't typecheck code that runs on an older Node.
 
@@ -282,6 +283,7 @@ Concatenate all `warnings` from:
 - The pnpm / bun ambiguous-default note.
 - Any `npm view` failures during catalog processing or the uniform release-age gate.
 - Engine-surface notes from the `@types/node` clamp: disagreement between `devEngines.runtime.node` and `engines.node` (naming both loci), or no Node engine surface found.
+- `@types/node` omit note: the only higher candidate crosses the Node major and no eligible target within the allowed major exists, so the record is omitted (naming `@types/node` and the blocked major).
 - Version-family skew notes: an umbrella family (`X` + `@X/*`, e.g. `vitest` + `@vitest/*`) resolved to different versions.
 
 Dedupe warnings (same string appearing twice → keep one).
@@ -307,6 +309,7 @@ Emit the `ScanResult` JSON object. That's it. Do not print tables, do not ask qu
 | bun ambiguous default (`catalog` + `catalogs.default`) | Push ambiguous-default warning; emit both as distinct records (differentiated by `catalogSource.field`).                    |
 | `devEngines.runtime.node` vs `engines.node` disagree   | Use the **lower** major for the `@types/node` clamp; push a warning naming both loci.                                       |
 | No Node engine surface present                         | Do **not** clamp `@types/node`; push a warning that no Node engine surface was found.                                       |
+| `@types/node` major blocked, no in-band target        | Omit the record (no bump); push a warning naming `@types/node` + the blocked major. No `clampedTo` (no record).             |
 | Umbrella family resolves to mixed versions             | Push a version-family skew warning; leave targets untouched (advisory — no hold/clamp).                                     |
 
 The only abort paths are the four preconditions. Everything after is resilient: degrade to warnings and keep going.

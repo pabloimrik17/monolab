@@ -23,16 +23,21 @@ For each record, the emitted `targetVersion` SHALL be the newest version that is
 
 ### Requirement: Engine-major clamp for @types/node
 
-The skill SHALL clamp the `@types/node` candidate so its major version never exceeds the Node major the repo targets. The target Node major SHALL be read from `devEngines.runtime.node` when present, otherwise from the major of the lower bound of `engines.node`. A patch/minor candidate within that Node major SHALL pass unchanged. A candidate whose major exceeds the target Node major SHALL NOT be emitted as a bump; instead the record SHALL either be omitted (no eligible lower-major target) or emitted at the newest eligible target within the allowed major, carrying `clampedTo: { rule: "engine-major", from: <the-dropped-higher-target> }`.
+The skill SHALL clamp the `@types/node` candidate so its major version never exceeds the Node major the repo targets. The target Node major SHALL be read from `devEngines.runtime.node` when present, otherwise from the major of the lower bound of `engines.node`. A patch/minor candidate within that Node major SHALL pass unchanged. A candidate whose major exceeds the target Node major SHALL NOT be emitted as a bump. When an age-eligible target exists within the allowed major and above current, the record SHALL be emitted at that newest eligible target and carry `clampedTo: { rule: "engine-major", from: <the-dropped-higher-target> }`. When no such target exists, the record SHALL be omitted entirely (no bump) and a warning naming `@types/node` and the blocked major SHALL be pushed; an omitted record carries no `clampedTo`.
 
 If `devEngines.runtime.node` and `engines.node` disagree on the major, the skill SHALL use the **lower** major and push a warning naming both loci. If neither source is present, the skill SHALL NOT clamp `@types/node` and SHALL push a warning that no Node engine surface was found.
 
 This clamp applies only to `@types/node` in this iteration.
 
-#### Scenario: Major crossing blocked at dependency level
+#### Scenario: Major crossing lowered to an eligible in-band target
 
-- **WHEN** `engines.node` is `>=24.12.0`, `@types/node` current is `24.x`, and the level would resolve `@types/node` to `26.x`
-- **THEN** the record is not emitted as a `26.x` bump; it is clamped to the newest eligible `24.x` (or omitted) with `clampedTo.rule = "engine-major"` and `clampedTo.from` = the `26.x` target
+- **WHEN** `engines.node` is `>=24.12.0`, `@types/node` current is `24.13.1`, the level would resolve `@types/node` to `26.x`, and a newer age-eligible `24.x` exists above current
+- **THEN** the record is not emitted as a `26.x` bump; it is emitted at the newest eligible `24.x` with `clampedTo.rule = "engine-major"` and `clampedTo.from` = the `26.x` target
+
+#### Scenario: Major crossing blocked with no eligible lower-major target
+
+- **WHEN** `engines.node` is `>=24.12.0`, `@types/node` current is already the newest `24.x`, and the only higher candidate is `26.x`
+- **THEN** no `@types/node` record is emitted (no bump) and a warning names `@types/node` and the blocked `26.x`; no record carries `clampedTo`
 
 #### Scenario: Patch within the Node major passes
 
@@ -86,7 +91,7 @@ The skill SHALL emit a single JSON object conforming to `ScanResult`:
     sourceFile: string;
     skippedByReleaseAge?: boolean; // may appear on ANY record (root/workspace/catalog) — the age gate is uniform
     clampedTo?: {
-      // present ONLY on the @types/node record when the engine-major clamp lowered or removed its target
+      // present ONLY on an emitted @types/node record whose target the engine-major clamp lowered (an omitted record carries no fields)
       rule: "engine-major";
       from: string; // the higher target that was clamped away
     };
@@ -101,7 +106,7 @@ The skill SHALL emit a single JSON object conforming to `ScanResult`:
 }
 ```
 
-`catalogSource` SHALL be present on every record whose `location` is `catalog:default` or `catalog:<name>`, and absent on `root`/`workspace:*` records. `skippedByReleaseAge` MAY appear on records of any `location` (the release-age gate is applied uniformly). `clampedTo` SHALL be present only on the `@types/node` record when the engine-major clamp lowered or removed its target, and absent otherwise; version-family skew is reported through `warnings`, never by rewriting a record. The skill SHALL NOT emit prose, tables, or user-facing formatting. The JSON object is the only output (plus the warnings embedded in it). `warnings` SHALL be de-duplicated (identical repeated strings collapse to a single entry).
+`catalogSource` SHALL be present on every record whose `location` is `catalog:default` or `catalog:<name>`, and absent on `root`/`workspace:*` records. `skippedByReleaseAge` MAY appear on records of any `location` (the release-age gate is applied uniformly). `clampedTo` SHALL be present only on an emitted `@types/node` record whose target the engine-major clamp lowered, and absent otherwise; when no eligible lower-major target exists the record is omitted entirely (a warning is pushed) and carries no `clampedTo`. Version-family skew is reported through `warnings`, never by rewriting a record. The skill SHALL NOT emit prose, tables, or user-facing formatting. The JSON object is the only output (plus the warnings embedded in it). `warnings` SHALL be de-duplicated (identical repeated strings collapse to a single entry).
 
 #### Scenario: Raw JSON-only output
 
