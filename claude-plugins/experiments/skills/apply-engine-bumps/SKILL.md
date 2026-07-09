@@ -1,6 +1,6 @@
 ---
 name: apply-engine-bumps
-description: Resolves Node→latest LTS and pnpm/npm/yarn/bun/Deno→latest, confirms before any write, then pins + aligns every runtime locus exact (no ranges) across package.json, .nvmrc/.node-version, .dvmrc (Deno), CI configs, Dockerfiles, and version-manager files; leaves publishable-lib support ranges and unknown surfaces untouched. VCS-free — never commits, pushes, opens PRs, runs tests/lint/build, or runs ncu. The engines-level analog of `apply-npm-updates`; invoked by the engines update commands (`/experiments:npm-update-engines`, `/experiments:npm-update-deep-engines`) and the `commander-update-orchestrator` at `level=engines`.
+description: Resolves Node→latest LTS and pnpm/npm/yarn/bun/Deno→latest, confirms before any write, then pins + aligns every runtime locus exact (no ranges) across package.json, .nvmrc/.node-version, .dvmrc (Deno), CI configs, Dockerfiles, and version-manager files; leaves publishable-lib support ranges and unknown surfaces untouched. VCS-free — never commits, pushes, opens PRs, or runs ncu autonomously. The engines-level analog of `apply-npm-updates`; invoked by the engines update commands (`/experiments:npm-update-engines`, `/experiments:npm-update-deep-engines`) and the `commander-update-orchestrator` at `level=engines`.
 ---
 
 # apply-engine-bumps
@@ -14,11 +14,10 @@ Given the inventory from `detect-toolchain-surfaces` and a per-engine resolved t
 The skill runs in the **working directory handed to it** (branch/worktree isolation, if any, is a separate `update-isolation` pre-step — see `npm-update-engines.md`). It SHALL NOT:
 
 - create commits, push, or open PRs (`git commit`, `git push`, `gh pr create`, …);
-- run tests, lint, or build;
 - run `ncu` / `npm-check-updates`;
 - create a branch or worktree (the caller does that via `update-isolation` before invoking this skill).
 
-It performs surgical version-token writes only, streams the edits it makes, and returns a structured fragment. It does **not** print a consumer-facing summary or abort copy — the caller owns those.
+The skill stops for human-in-the-loop review before any such outward/VCS action. It performs surgical version-token writes only, streams the edits it makes, and returns a structured fragment. It does **not** print a consumer-facing summary or abort copy — the caller owns those.
 
 ## Inputs
 
@@ -99,7 +98,7 @@ On a write failure, stop and return `failure: { step: "write", file, detail }` w
 
 ## Hard rules
 
-- VCS-free: no commits/push/PRs, no branch/worktree creation, no tests/lint/build, no `ncu` (see "VCS-safe contract").
+- VCS-free: no commits/push/PRs, no branch/worktree creation, no `ncu` (see "VCS-safe contract").
 - Confirm before any write unless `confirmed: true`.
 - Pin exact and align all `runtime` loci per engine; never write a range for a runtime locus.
 - Preserve the `packageManager` `name@` prefix; drop + report the `+sha…` hash.

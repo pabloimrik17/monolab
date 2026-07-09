@@ -1,6 +1,6 @@
 ---
 name: commander-update-orchestrator
-description: Use when a Commander update command (`/experiments:commander-update-{patch,minor,major,engines}` and their deep variants) needs to apply npm dependency or toolchain-engine updates across every project registered in the user-scoped Commander registry. Owns the cross-project pipeline — list+filter projects, parallel scan dispatch, deduplicate updates, version-align (max-wins with per-project fallback; engine-version alignment at `level=engines`), render unified plan, sequential apply with stop-on-fail, aggregated summary. Read-only against the registry; dependency-level writes go to each project's own manifests via `ncu --upgrade` + one `<pm> install`, engines-level writes via `apply-engine-bumps` (runtime surfaces, no ncu). Never runs tests, lint, build, or commits.
+description: Use when a Commander update command (`/experiments:commander-update-{patch,minor,major,engines}` and their deep variants) needs to apply npm dependency or toolchain-engine updates across every project registered in the user-scoped Commander registry. Owns the cross-project pipeline — list+filter projects, parallel scan dispatch, deduplicate updates, version-align (max-wins with per-project fallback; engine-version alignment at `level=engines`), render unified plan, sequential apply with stop-on-fail, aggregated summary. Read-only against the registry; dependency-level writes go to each project's own manifests via `ncu --upgrade` + one `<pm> install`, engines-level writes via `apply-engine-bumps` (runtime surfaces, no ncu). Never commits/pushes/opens PRs autonomously.
 ---
 
 # commander-update-orchestrator
@@ -768,8 +768,8 @@ Plan mode pauses until the user accepts or rejects.
 #### 10b.4 Plan-mode hard rules
 
 - The plan-mode round SHALL NOT expand scope beyond bullets present in `plan.md`. Adjacent opportunities the main agent discovers during reconnaissance SHALL be surfaced in the Step 11 `Suggested next steps` list, NEVER silently added to the plan-mode document.
-- The plan-mode round SHALL NOT execute tests, lint, or build.
-- The plan-mode round SHALL NOT create commits or pull requests (or push). Branch/worktree isolation is a separate pre-apply step (Step 9.5); the plan-mode round itself creates no branch.
+- After the reviewed edits are applied, the plan-mode round may run read-only verification over those edits and surface the result in the summary (read-only, no `--fix`).
+- The plan-mode round SHALL NOT create commits or pull requests (or push); it stops for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation is a separate pre-apply step (Step 9.5); the plan-mode round itself creates no branch.
 - The plan-mode round SHALL NOT touch any file outside the bullet's `affects projects:` set.
 
 ### Step 10c — End-of-flow cleanup invocation (deep mode only)
@@ -879,7 +879,7 @@ Print a markdown summary. The H1 varies by mode. Render sections conditionally; 
 
 - Run your test suite in each modified project.
 - Run lint / typecheck in each modified project.
-- Review changes (`git diff`) and commit per project.
+- Review changes (`git diff`) and commit per project — any isolation branch may not pass repo commit hooks, so run lint/build before committing.
 - Review <plan-dir>/plan.md before re-running. # deep mode only, when cleanupOutcome === "keep-plan"
 ```
 
@@ -928,8 +928,7 @@ After the run completes (success, partial, cancel), the user-scoped registry `<H
 
 ## Hard rules
 
-- The skill SHALL NOT run tests, lint, or build at any point in any project.
-- The skill SHALL NOT create git commits or pull requests (or push) in any project. Branch/worktree isolation via the `update-isolation` skill (Step 9.5) is permitted (opt-in; default `none` = apply in place); creating an isolation branch/worktree is allowed, committing/pushing/PR-ing is not.
+- The skill SHALL NOT create commits, push, or open pull requests autonomously in any project; it stops for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation via the `update-isolation` skill (Step 9.5) is permitted (opt-in; default `none` = apply in place); creating an isolation branch/worktree is allowed, committing/pushing/PR-ing is not.
 - The skill SHALL NOT modify any file outside the per-project manifests it bumps. In particular, `<HOME>/.claude/commander/projects.json` SHALL remain byte-identical before and after every run.
 - The skill SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).
 - The skill SHALL NOT auto-execute an override command without the user selecting `run-override` for that entry.

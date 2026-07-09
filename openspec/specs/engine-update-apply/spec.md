@@ -2,13 +2,13 @@
 
 ## Purpose
 
-This capability provides a VCS-safe `apply-engine-bumps` skill that takes the inventory from `detect-toolchain-surfaces` plus resolved per-engine targets, then rewrites a project's runtime version loci to those targets and returns a structured result fragment. It is the engines-level analog of `apply-npm-updates`: it resolves targets deterministically with user confirmation, exact-pins and aligns all runtime surfaces, leaves support/unknown loci untouched, and never commits, pushes, opens PRs, or runs tests/lint/build.
+This capability provides a VCS-safe `apply-engine-bumps` skill that takes the inventory from `detect-toolchain-surfaces` plus resolved per-engine targets, then rewrites a project's runtime version loci to those targets and returns a structured result fragment. It is the engines-level analog of `apply-npm-updates`: it resolves targets deterministically with user confirmation, exact-pins and aligns all runtime surfaces, leaves support/unknown loci untouched, and never commits, pushes, or opens PRs autonomously (running read-only checks is permitted, never automatic).
 
 ## Requirements
 
 ### Requirement: Skill location and VCS-safe contract
 
-The `experiments` plugin SHALL include a skill at `claude-plugins/experiments/skills/apply-engine-bumps/SKILL.md` with frontmatter declaring a non-empty `description`. Given the inventory from `detect-toolchain-surfaces` and a resolved per-engine target, the skill rewrites the project's `runtime` version loci to the target and returns a structured result fragment. The skill SHALL run in the working directory handed to it (branch/worktree isolation, if any, is a separate `update-isolation` pre-step); it SHALL NOT create commits, push, open PRs, run tests/lint/build, or run `ncu`. It is the engines-level analog of `apply-npm-updates` (`npm-update-apply`).
+The `experiments` plugin SHALL include a skill at `claude-plugins/experiments/skills/apply-engine-bumps/SKILL.md` with frontmatter declaring a non-empty `description`. Given the inventory from `detect-toolchain-surfaces` and a resolved per-engine target, the skill rewrites the project's `runtime` version loci to the target and returns a structured result fragment. The skill SHALL run in the working directory handed to it (branch/worktree isolation, if any, is a separate `update-isolation` pre-step); it SHALL NOT create commits, push, open PRs, or run `ncu`, and it stops for human-in-the-loop review before any such outward/VCS action. It is the engines-level analog of `apply-npm-updates` (`npm-update-apply`).
 
 #### Scenario: Skill file exists with frontmatter
 

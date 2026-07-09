@@ -1,5 +1,5 @@
 ---
-description: Scan, fetch every minor changelog in parallel, research applicable improvements/workarounds against this codebase, then drive a user-gated apply step. Minor level only. No tests/lint/build/commits.
+description: Scan, fetch every minor changelog in parallel, research applicable improvements/workarounds against this codebase, then drive a user-gated apply step. Minor level only. Never commits/pushes/opens PRs autonomously.
 ---
 
 # npm-update-deep-minor
@@ -8,7 +8,7 @@ The "deep" sibling of `/experiments:npm-update-minor`. Same scope (minor-level, 
 
 This command operates exclusively at **minor level**. It always passes `level=minor` to the scan skill and to `parallel-research-workflow`, and ignores any user-supplied level argument.
 
-> Tip: this command **never runs tests, lint, build, or commits**. It bumps manifests and runs a single install at most. The summary recommends those as next steps; the caller decides.
+> Tip: this command bumps manifests and runs a single install at most, and never commits autonomously. After the reviewed plan-mode edits land it may run read-only checks over them and surface the result (read-only, no `--fix`). The summary recommends verification + commit as next steps; the caller decides.
 
 ## Step 1 — Scan
 
@@ -157,7 +157,7 @@ After the bumps install completes successfully, the command SHALL apply the `Imp
 
 The improvements step SHALL NOT expand scope beyond bullets present in `plan.md`. If during reconnaissance or plan-mode review the agent identifies adjacent improvements not in `plan.md`, those are surfaced as suggestions in the Step 7 summary's `Suggested next steps` list — never silently added to the plan-mode plan.
 
-The improvements step SHALL NOT execute tests, lint, or build. SHALL NOT create commits or PRs (or push) — branch/worktree isolation is the separate Step 5.5 pre-apply step.
+After the reviewed edits are applied, the improvements step may run read-only verification over those edits and surface the result in the Step 7 summary (read-only, no `--fix`). It SHALL NOT create commits or PRs (or push) — branch/worktree isolation is the separate Step 5.5 pre-apply step.
 
 ### Step 6c — `pick-subset`
 
@@ -227,7 +227,7 @@ Then emit, **conditionally**, these sections (omit any whose count is zero, exce
 - `Suggested next steps (not executed):` — always present, with three bullets:
     - `Run your test suite.`
     - `Run lint / typecheck.`
-    - `Review changes (\`git diff\`) and commit.`
+    - `Review changes (\`git diff\`) and commit — any isolation branch may not pass repo commit hooks, so run lint/build before committing.`
 
 For the `cancel` path specifically, the summary contains:
 
@@ -253,8 +253,7 @@ The command invokes the workflow's cleanup exactly once at this step. The workfl
 
 ## Hard rules
 
-- The command SHALL NOT run tests, lint, or build at any point.
-- The command SHALL NOT create git commits or open pull requests (or push). Branch/worktree isolation via `update-isolation` is permitted (Step 5.5, opt-in, default `none`).
+- The command SHALL NOT create commits, push, or open pull requests autonomously; it stops for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation via `update-isolation` is permitted (Step 5.5, opt-in, default `none`).
 - The command SHALL NOT modify any file when the user selects `cancel`. The plan dir under `~/.claude/experiments/plans/` is preserved (it is not part of the workspace) until the user selects `delete-plan` at cleanup.
 - The command SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).
 - The command SHALL NOT consult the package upgrade override registry. Override flows (Storybook, etc.) belong to `/experiments:npm-update-minor`'s shallow path; the deep path goes straight through ncu + catalog edits (`apply-npm-updates` with empty `overrideCommands`). (The plan can mention overridable family upgrades as improvements; the user then picks whether to apply them via the standard mechanism.)

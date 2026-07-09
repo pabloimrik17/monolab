@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The `commander-update-orchestrator` skill drives multi-project npm dependency-update flows by coordinating `experiments:scan-npm-updates` across every project registered in the user-scoped Commander registry. It is invoked by sibling commands (`/experiments:commander-update-patch`, `-minor`, `-major`, `-engines`, and future deep variants) and produces a single cross-project plan, user confirmation gate, and sequential per-project apply step. The skill never mutates the registry, never runs tests/lint/build, and never creates commits.
+The `commander-update-orchestrator` skill drives multi-project npm dependency-update flows by coordinating `experiments:scan-npm-updates` across every project registered in the user-scoped Commander registry. It is invoked by sibling commands (`/experiments:commander-update-patch`, `-minor`, `-major`, `-engines`, and future deep variants) and produces a single cross-project plan, user confirmation gate, and sequential per-project apply step. The skill never mutates the registry and never commits/pushes/opens PRs autonomously (running read-only checks is permitted but never automatic).
 ## Requirements
 ### Requirement: Skill location and structure
 
@@ -381,8 +381,7 @@ Sections with count zero SHALL be omitted, except `Suggested next steps`, which 
 
 The skill SHALL preserve every hard rule of `/experiments:npm-update-patch`:
 
-- The skill SHALL NOT run tests, lint, or build at any point in any project.
-- The skill SHALL NOT create git commits, branches, or pull requests in any project.
+- The skill SHALL NOT create commits, push, or open pull requests autonomously in any project; it stops for human-in-the-loop review before any such outward/VCS action (opt-in isolation branch/worktree creation via `update-isolation` is permitted).
 - The skill SHALL NOT modify any file outside the per-project manifests it bumps; in particular, the user-scoped registry `<HOME>/.claude/commander/projects.json` SHALL remain byte-identical before and after the run.
 - The skill SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
 - The skill SHALL NOT auto-execute an override command without the user selecting `run-override` for that entry.
@@ -393,10 +392,10 @@ The skill SHALL preserve every hard rule of `/experiments:npm-update-patch`:
 - **WHEN** the skill completes any run (success, partial, cancel)
 - **THEN** `<HOME>/.claude/commander/projects.json` SHALL be byte-identical before and after the run (verifiable by `shasum`)
 
-#### Scenario: No tests run
+#### Scenario: No autonomous commit/push/PR
 
 - **WHEN** the skill completes apply across multiple projects
-- **THEN** no `vitest`, `nx test`, lint, build, or git commit command has been invoked by the skill in any project
+- **THEN** no `git commit`, `git push`, or pull-request-creation command has been invoked by the skill in any project
 
 ---
 

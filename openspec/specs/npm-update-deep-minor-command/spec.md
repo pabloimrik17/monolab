@@ -61,7 +61,7 @@ When the workflow finishes phase 4 successfully, the command SHALL raise a singl
 
 ### Requirement: Final summary, changelog plan section, and hard rules
 
-The command SHALL print a summary headed `## npm-update-deep-minor summary` with the same conditional sections as `npm-update-deep-patch` (applied bumps, applied improvements, skipped improvements, skipped-or-unavailable groups, install line, always-present `Suggested next steps`). The `plan.md` the command surfaces SHALL include the `## Changelogs` chronology section produced by `parallel-research-workflow`. The command SHALL delegate end-of-flow cleanup to the workflow (one `delete-plan` / `keep-plan` prompt). The command SHALL NOT run tests, lint, or build; SHALL NOT create commits/PRs; SHALL NOT consult the override registry; and SHALL NOT mutate `catalog:` consumer `package.json` entries.
+The command SHALL print a summary headed `## npm-update-deep-minor summary` with the same conditional sections as `npm-update-deep-patch` (applied bumps, applied improvements, skipped improvements, skipped-or-unavailable groups, install line, always-present `Suggested next steps`). The `plan.md` the command surfaces SHALL include the `## Changelogs` chronology section produced by `parallel-research-workflow`. The command SHALL delegate end-of-flow cleanup to the workflow (one `delete-plan` / `keep-plan` prompt). The command SHALL NOT create commits, push, or open PRs autonomously — it stops for human-in-the-loop review before any such outward/VCS action; SHALL NOT consult the override registry; and SHALL NOT mutate `catalog:` consumer `package.json` entries.
 
 #### Scenario: Summary heading is deep-minor-namespaced
 

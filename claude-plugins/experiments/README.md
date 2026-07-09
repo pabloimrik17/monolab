@@ -34,7 +34,7 @@ Major sibling of `/experiments:commander-update-patch` — identical cross-proje
 
 ### `/experiments:commander-update-engines`
 
-Engines sibling of `/experiments:commander-update-patch` — bumps the **dev/runtime toolchain** (Node + pnpm/npm/yarn/bun + Deno + Bun-runtime) across every registered project, **not** an ncu dependency level. Thin wrapper over `commander-update-orchestrator` (`level: "engines"`, `target: "engines"`, shallow). The orchestrator routes `level=engines` to `detect-toolchain-surfaces` (scan every runtime/PM version-pin surface) + `apply-engine-bumps` (resolve one target per engine — Node→latest LTS, others→latest — and rewrite every runtime surface to that exact pinned version), aligns cross-project on the engine version, and skips the override registry. **Runtime/toolchain upgrades may include breaking changes.** Publishable-library `engines.<engine>` support ranges are left untouched (only runtime surfaces are pinned). Inherits every hard rule: no tests/lint/build, no commits/PRs (worktree isolation allowed, opt-in default `none`), never mutates the registry.
+Engines sibling of `/experiments:commander-update-patch` — bumps the **dev/runtime toolchain** (Node + pnpm/npm/yarn/bun + Deno + Bun-runtime) across every registered project, **not** an ncu dependency level. Thin wrapper over `commander-update-orchestrator` (`level: "engines"`, `target: "engines"`, shallow). The orchestrator routes `level=engines` to `detect-toolchain-surfaces` (scan every runtime/PM version-pin surface) + `apply-engine-bumps` (resolve one target per engine — Node→latest LTS, others→latest — and rewrite every runtime surface to that exact pinned version), aligns cross-project on the engine version, and skips the override registry. **Runtime/toolchain upgrades may include breaking changes.** Publishable-library `engines.<engine>` support ranges are left untouched (only runtime surfaces are pinned). Inherits every hard rule: never commits/pushes/opens PRs autonomously (worktree isolation allowed, opt-in default `none`), never mutates the registry.
 
 ```bash
 /experiments:commander-update-engines
@@ -58,7 +58,7 @@ Minor sibling of `/experiments:commander-update-deep-patch` — identical deep c
 
 ### `/experiments:commander-update-deep-major`
 
-Major sibling of `/experiments:commander-update-deep-minor` — identical deep cross-project flow (research deduplicated by package, four-option gate), with research weighted toward **breaking changes & migration** and a `## PR plan` (from `partition-breaking-changes`) surfaced in the cross-project `plan.md`. Thin wrapper over `commander-update-orchestrator` (`level: "major"`, `target: "major"`, `mode: "deep"`). The surfaced `plan.md` carries `## Breaking changes & migration` + `## PR plan` + `## Changelogs`; the unified plan-mode round applies improvements **and** reviewed migration edits. v1 isolation caps at **one worktree per project** (per-(project,bucket) deferred). Inherits every hard rule from the shallow command plus `npm-update-deep-major` — no tests/lint/build, no commits/PRs (worktree isolation allowed, opt-in default `none`), never mutates the registry, never auto-executes an override.
+Major sibling of `/experiments:commander-update-deep-minor` — identical deep cross-project flow (research deduplicated by package, four-option gate), with research weighted toward **breaking changes & migration** and a `## PR plan` (from `partition-breaking-changes`) surfaced in the cross-project `plan.md`. Thin wrapper over `commander-update-orchestrator` (`level: "major"`, `target: "major"`, `mode: "deep"`). The surfaced `plan.md` carries `## Breaking changes & migration` + `## PR plan` + `## Changelogs`; the unified plan-mode round applies improvements **and** reviewed migration edits. v1 isolation caps at **one worktree per project** (per-(project,bucket) deferred). Inherits every hard rule from the shallow command plus `npm-update-deep-major` — never commits/pushes/opens PRs autonomously (worktree isolation allowed, opt-in default `none`), never mutates the registry, never auto-executes an override.
 
 ```bash
 /experiments:commander-update-deep-major
@@ -66,7 +66,7 @@ Major sibling of `/experiments:commander-update-deep-minor` — identical deep c
 
 ### `/experiments:commander-update-deep-engines`
 
-Engines sibling of `/experiments:commander-update-deep-major` — identical deep cross-project flow (four-option gate, one unified cross-project plan-mode round), with research over **engine release notes** (Node/pnpm/npm/yarn/Deno/Bun) **deduplicated once per engine/version** and weighted toward breaking changes/migration. Thin wrapper over `commander-update-orchestrator` (`level: "engines"`, `target: "engines"`, `mode: "deep"`). The surfaced `plan.md` carries `## Breaking changes & migration` + `## Changelogs` (engine notes) and **no `## PR plan`** — an engine bump is a single coordinated co-upgrade (Node + its PM), so `partition-breaking-changes` does not apply. v1 isolation caps at one worktree per project. Inherits every hard rule: no tests/lint/build, no commits/PRs (worktree isolation allowed, opt-in default `none`), never mutates the registry, runtime surfaces only (publishable support ranges untouched).
+Engines sibling of `/experiments:commander-update-deep-major` — identical deep cross-project flow (four-option gate, one unified cross-project plan-mode round), with research over **engine release notes** (Node/pnpm/npm/yarn/Deno/Bun) **deduplicated once per engine/version** and weighted toward breaking changes/migration. Thin wrapper over `commander-update-orchestrator` (`level: "engines"`, `target: "engines"`, `mode: "deep"`). The surfaced `plan.md` carries `## Breaking changes & migration` + `## Changelogs` (engine notes) and **no `## PR plan`** — an engine bump is a single coordinated co-upgrade (Node + its PM), so `partition-breaking-changes` does not apply. v1 isolation caps at one worktree per project. Inherits every hard rule: never commits/pushes/opens PRs autonomously (worktree isolation allowed, opt-in default `none`), never mutates the registry, runtime surfaces only (publishable support ranges untouched).
 
 ```bash
 /experiments:commander-update-deep-engines
@@ -104,7 +104,7 @@ Explains the purpose of this plugin and lists any experimental features currentl
 
 ### `/experiments:npm-update-deep-patch`
 
-Same scope as `npm-update-patch` (patch-level, semver-safe, manifest bump + one install) but with **research**: every changelog is fetched in parallel by subagents who cross-reference it against this codebase, then the main agent enters plan mode and synthesizes a single integrated `plan.md` of (a) applicable improvements and (b) workarounds-resolved-by-upgrade, plus the bump set. The user picks `apply-all` / `apply-bumps-only` / `pick-subset` / `cancel`. Plan dir lives under `~/.claude/experiments/plans/` with stale-cleanup (>10 days) prompted on each invocation. Never runs tests, lint, build, or commits.
+Same scope as `npm-update-patch` (patch-level, semver-safe, manifest bump + one install) but with **research**: every changelog is fetched in parallel by subagents who cross-reference it against this codebase, then the main agent enters plan mode and synthesizes a single integrated `plan.md` of (a) applicable improvements and (b) workarounds-resolved-by-upgrade, plus the bump set. The user picks `apply-all` / `apply-bumps-only` / `pick-subset` / `cancel`. Plan dir lives under `~/.claude/experiments/plans/` with stale-cleanup (>10 days) prompted on each invocation. Never commits/pushes/opens PRs autonomously.
 
 ```bash
 /experiments:npm-update-deep-patch
@@ -112,7 +112,7 @@ Same scope as `npm-update-patch` (patch-level, semver-safe, manifest bump + one 
 
 ### `/experiments:npm-update-deep-minor`
 
-Minor sibling of `/experiments:npm-update-deep-patch` — same deep single-project flow (parallel changelog research, plan-mode synthesis, `apply-all` / `apply-bumps-only` / `pick-subset` / `cancel` gate), only the level differs. Scans at `level=minor`, runs `parallel-research-workflow` at `level: "minor"`, and applies bumps via the shared `apply-npm-updates` skill (generic-only — the deep path consults no override registry). The synthesized `plan.md` carries a `## Minor bump set` table and a final `## Changelogs` chronology section. Never runs tests, lint, build, or commits.
+Minor sibling of `/experiments:npm-update-deep-patch` — same deep single-project flow (parallel changelog research, plan-mode synthesis, `apply-all` / `apply-bumps-only` / `pick-subset` / `cancel` gate), only the level differs. Scans at `level=minor`, runs `parallel-research-workflow` at `level: "minor"`, and applies bumps via the shared `apply-npm-updates` skill (generic-only — the deep path consults no override registry). The synthesized `plan.md` carries a `## Minor bump set` table and a final `## Changelogs` chronology section. Never commits/pushes/opens PRs autonomously.
 
 ```bash
 /experiments:npm-update-deep-minor
@@ -120,7 +120,7 @@ Minor sibling of `/experiments:npm-update-deep-patch` — same deep single-proje
 
 ### `/experiments:npm-update-deep-major`
 
-Major sibling of `/experiments:npm-update-deep-minor` — same deep single-project flow (parallel changelog research, plan-mode synthesis, four-option gate), with research weighted toward **breaking changes & migration**. After research the accepted set is partitioned into PR-sized buckets (`partition-breaking-changes`) surfaced as a `## PR plan`; optionally each bucket applies into its own worktree (`update-isolation`). The synthesized `plan.md` carries `## Breaking changes & migration` + `## Major bump set` + `## PR plan` + `## Changelogs`. On `apply-all` the plan-mode round applies improvements **and** reviewed migration edits. Deps are written exact (no `^`/`~`); the deep path consults no override registry. Never runs tests/lint/build, never commits/PRs (worktree isolation allowed, opt-in default `none`).
+Major sibling of `/experiments:npm-update-deep-minor` — same deep single-project flow (parallel changelog research, plan-mode synthesis, four-option gate), with research weighted toward **breaking changes & migration**. After research the accepted set is partitioned into PR-sized buckets (`partition-breaking-changes`) surfaced as a `## PR plan`; optionally each bucket applies into its own worktree (`update-isolation`). The synthesized `plan.md` carries `## Breaking changes & migration` + `## Major bump set` + `## PR plan` + `## Changelogs`. On `apply-all` the plan-mode round applies improvements **and** reviewed migration edits. Deps are written exact (no `^`/`~`); the deep path consults no override registry. Never commits/pushes/opens PRs autonomously (worktree isolation allowed, opt-in default `none`).
 
 ```bash
 /experiments:npm-update-deep-major
@@ -128,7 +128,7 @@ Major sibling of `/experiments:npm-update-deep-minor` — same deep single-proje
 
 ### `/experiments:npm-update-deep-engines`
 
-Deep sibling of `/experiments:npm-update-engines` — same engines-level toolchain bump (detect → resolve → pin + align runtime surfaces), with research over **engine release notes** (Node/pnpm/npm/yarn/Deno/Bun) weighted toward breaking changes/migration. Drives `detect-toolchain-surfaces` → `parallel-research-workflow(level=engines)` → `apply-engine-bumps` + a plan-mode migration round. The synthesized `plan.md` carries `## Breaking changes & migration` + `## Engines bump set` + `## Changelogs` (engine notes) and **no `## PR plan`**. On `apply-all` the plan-mode round applies reviewed migration + improvement edits; rejection preserves the bumps. Never runs tests/lint/build, never commits/PRs (worktree isolation allowed, opt-in default `none`).
+Deep sibling of `/experiments:npm-update-engines` — same engines-level toolchain bump (detect → resolve → pin + align runtime surfaces), with research over **engine release notes** (Node/pnpm/npm/yarn/Deno/Bun) weighted toward breaking changes/migration. Drives `detect-toolchain-surfaces` → `parallel-research-workflow(level=engines)` → `apply-engine-bumps` + a plan-mode migration round. The synthesized `plan.md` carries `## Breaking changes & migration` + `## Engines bump set` + `## Changelogs` (engine notes) and **no `## PR plan`**. On `apply-all` the plan-mode round applies reviewed migration + improvement edits; rejection preserves the bumps. Never commits/pushes/opens PRs autonomously (worktree isolation allowed, opt-in default `none`).
 
 ```bash
 /experiments:npm-update-deep-engines
@@ -136,7 +136,7 @@ Deep sibling of `/experiments:npm-update-engines` — same engines-level toolcha
 
 ### `/experiments:npm-update-engines`
 
-Engines sibling of `/experiments:npm-update-major` — bumps the **dev/runtime toolchain** (Node + pnpm/npm/yarn/bun + Deno + Bun-runtime), **not** an ncu dependency level. Drives `detect-toolchain-surfaces` (find every place a runtime/PM version is pinned: `package.json` engines/`packageManager`/`devEngines`/`volta`, `.nvmrc`, `.tool-versions`/mise, Dockerfiles, GitHub Actions / GitLab CI / CircleCI) → resolve one target per engine (Node→latest LTS, others→latest, confirmed) → `apply-engine-bumps` (rewrite every runtime surface to that exact pinned version). Distinguishes the **runtime** a project runs (bump + pin) from a publishable library's **support range** (leave) — with a per-locus ambiguity prompt defaulting to leave. **Runtime/toolchain upgrades may include breaking changes.** Never runs tests/lint/build, never commits/PRs (worktree isolation allowed, opt-in default `none`); never invokes `scan-npm-updates`/`ncu`.
+Engines sibling of `/experiments:npm-update-major` — bumps the **dev/runtime toolchain** (Node + pnpm/npm/yarn/bun + Deno + Bun-runtime), **not** an ncu dependency level. Drives `detect-toolchain-surfaces` (find every place a runtime/PM version is pinned: `package.json` engines/`packageManager`/`devEngines`/`volta`, `.nvmrc`, `.tool-versions`/mise, Dockerfiles, GitHub Actions / GitLab CI / CircleCI) → resolve one target per engine (Node→latest LTS, others→latest, confirmed) → `apply-engine-bumps` (rewrite every runtime surface to that exact pinned version). Distinguishes the **runtime** a project runs (bump + pin) from a publishable library's **support range** (leave) — with a per-locus ambiguity prompt defaulting to leave. **Runtime/toolchain upgrades may include breaking changes.** Never commits/pushes/opens PRs autonomously (worktree isolation allowed, opt-in default `none`); never invokes `scan-npm-updates`/`ncu`.
 
 ```bash
 /experiments:npm-update-engines
@@ -144,7 +144,7 @@ Engines sibling of `/experiments:npm-update-major` — bumps the **dev/runtime t
 
 ### `/experiments:npm-update-patch`
 
-Scan the current project for patch-level npm updates and interactively apply the subset you accept. Works on pnpm/npm/yarn/bun/deno, single-repo or workspace; treats pnpm and Bun `catalog:` entries as first-class. Bumps `package.json` manifests via a single `ncu --upgrade` per file (prefix- and format-preserving), edits the catalog source (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun) in-memory, and runs one final install unless all accepted updates were handled via `run-override`. Never runs tests, lint, or commits.
+Scan the current project for patch-level npm updates and interactively apply the subset you accept. Works on pnpm/npm/yarn/bun/deno, single-repo or workspace; treats pnpm and Bun `catalog:` entries as first-class. Bumps `package.json` manifests via a single `ncu --upgrade` per file (prefix- and format-preserving), edits the catalog source (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun) in-memory, and runs one final install unless all accepted updates were handled via `run-override`. Never commits/pushes/opens PRs autonomously.
 
 When the accepted set contains packages that ship their own upgrade command (e.g. Storybook), the command consults a **package upgrade override registry** and asks per matched family whether to run the override, skip it, or fall through to the generic flow.
 
@@ -158,7 +158,7 @@ Tip: pair with `/experiments:npm-changelog <pkg> <from>..<to>` before accepting 
 
 ### `/experiments:npm-update-minor`
 
-Minor sibling of `/experiments:npm-update-patch` — same shallow single-project flow (scan → table → `apply-all` / `pick-subset` / `cancel`, override-registry consultation per matched family), only the level differs. Scans at `level=minor` and applies the accepted set via the shared `apply-npm-updates` skill (`target: minor`): one `ncu --upgrade` per `package.json`, in-memory catalog source edits (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun), one final install. Never runs tests, lint, build, or commits.
+Minor sibling of `/experiments:npm-update-patch` — same shallow single-project flow (scan → table → `apply-all` / `pick-subset` / `cancel`, override-registry consultation per matched family), only the level differs. Scans at `level=minor` and applies the accepted set via the shared `apply-npm-updates` skill (`target: minor`): one `ncu --upgrade` per `package.json`, in-memory catalog source edits (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun), one final install. Never commits/pushes/opens PRs autonomously.
 
 ```bash
 /experiments:npm-update-minor
@@ -166,7 +166,7 @@ Minor sibling of `/experiments:npm-update-patch` — same shallow single-project
 
 ### `/experiments:npm-update-major`
 
-Major sibling of `/experiments:npm-update-minor` — same shallow single-project flow (scan → table → `apply-all` / `pick-subset` / `cancel`, override-registry consultation per matched family), only the level differs. **Major updates may include breaking changes** — the prompt carries a caution; review changelogs (or use the deep variant) first. Scans at `level=major` and applies via `apply-npm-updates` (`target: major`), which maps `major → ncu --target latest`, always applies `--filter` (no over-bump of minor/patch-only deps), and writes exact versions (no `^`/`~`). Never runs tests/lint/build, never commits/PRs (branch/worktree isolation allowed, opt-in default `none`).
+Major sibling of `/experiments:npm-update-minor` — same shallow single-project flow (scan → table → `apply-all` / `pick-subset` / `cancel`, override-registry consultation per matched family), only the level differs. **Major updates may include breaking changes** — the prompt carries a caution; review changelogs (or use the deep variant) first. Scans at `level=major` and applies via `apply-npm-updates` (`target: major`), which maps `major → ncu --target latest`, always applies `--filter` (no over-bump of minor/patch-only deps), and writes exact versions (no `^`/`~`). Never commits/pushes/opens PRs autonomously (branch/worktree isolation allowed, opt-in default `none`).
 
 ```bash
 /experiments:npm-update-major
@@ -198,7 +198,7 @@ Shared dependency-scan backend used by `/experiments:npm-update-{patch,minor,maj
 
 ### `apply-npm-updates`
 
-Shared single-project apply backend — the single source of truth for the apply mechanism. Given a fully-resolved apply spec (`packageManager`, `cwd`, `target`, `manifestBumps[]`, `catalogEdits[]`, `overrideCommands[]`, `skipInstall`), it runs one `npm-check-updates@21.0.2 --upgrade` per `package.json`, edits the catalog source (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun) in place, runs override commands in declaration order, and runs one install — streaming `ncu`/install/override output verbatim and returning a structured result fragment (it never prints a consumer summary or abort message). Level-agnostic (parameterized solely by `target`). Also documents the caller-invoked override-resolution procedure (registry load → first-win glob match → `{version}` resolution → GENERIC/OVERRIDE_RUN/OVERRIDE_SKIP partition) consumed by the shallow single-project commands and the orchestrator. Consumed by `/experiments:npm-update-{patch,minor}`, `/experiments:npm-update-deep-{patch,minor}`, and `commander-update-orchestrator` (once per project). Never runs tests/lint/build/commits.
+Shared single-project apply backend — the single source of truth for the apply mechanism. Given a fully-resolved apply spec (`packageManager`, `cwd`, `target`, `manifestBumps[]`, `catalogEdits[]`, `overrideCommands[]`, `skipInstall`), it runs one `npm-check-updates@21.0.2 --upgrade` per `package.json`, edits the catalog source (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun) in place, runs override commands in declaration order, and runs one install — streaming `ncu`/install/override output verbatim and returning a structured result fragment (it never prints a consumer summary or abort message). Level-agnostic (parameterized solely by `target`). Also documents the caller-invoked override-resolution procedure (registry load → first-win glob match → `{version}` resolution → GENERIC/OVERRIDE_RUN/OVERRIDE_SKIP partition) consumed by the shallow single-project commands and the orchestrator. Consumed by `/experiments:npm-update-{patch,minor}`, `/experiments:npm-update-deep-{patch,minor}`, and `commander-update-orchestrator` (once per project). Never commits/pushes/opens PRs autonomously.
 
 ### `detect-toolchain-surfaces`
 
@@ -206,7 +206,7 @@ Engines-level analog of `scan-npm-updates`. Read-only scan for **every** place a
 
 ### `apply-engine-bumps`
 
-Engines-level analog of `apply-npm-updates`. Given a `detect-toolchain-surfaces` inventory and a per-engine target (Node→latest LTS, pnpm/npm/yarn/bun→registry latest, Deno→latest release), resolves/confirms targets and rewrites every `runtime` locus to the **same exact** pinned version (aligning all runtime surfaces). Surgical version-only edits: preserves the `packageManager` `name@` prefix (drops + reports the `+sha…` corepack hash), and rewrites only the version **input** of a GitHub Actions step (never its `@<sha>` pin or version comment). Leaves `support` and `unknownSurfaces` untouched; touches `ambiguous` only on caller resolution. VCS-free — never commits/pushes/PRs, runs no tests/lint/build, and runs no `ncu`. Returns a structured `{ resolvedTargets, applied, skipped, droppedHashes, failure? }` fragment.
+Engines-level analog of `apply-npm-updates`. Given a `detect-toolchain-surfaces` inventory and a per-engine target (Node→latest LTS, pnpm/npm/yarn/bun→registry latest, Deno→latest release), resolves/confirms targets and rewrites every `runtime` locus to the **same exact** pinned version (aligning all runtime surfaces). Surgical version-only edits: preserves the `packageManager` `name@` prefix (drops + reports the `+sha…` corepack hash), and rewrites only the version **input** of a GitHub Actions step (never its `@<sha>` pin or version comment). Leaves `support` and `unknownSurfaces` untouched; touches `ambiguous` only on caller resolution. VCS-free — never commits/pushes/opens PRs autonomously, and runs no `ncu`. Returns a structured `{ resolvedTargets, applied, skipped, droppedHashes, failure? }` fragment.
 
 ### `group-packages-for-research`
 

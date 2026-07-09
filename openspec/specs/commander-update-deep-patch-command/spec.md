@@ -67,8 +67,7 @@ The command SHALL NOT:
 
 The command SHALL inherit and preserve every hard rule from `commander-update-orchestrator` (deep mode) and `npm-update-deep-patch`. The command SHALL NOT:
 
-- Run tests, lint, or build at any point.
-- Create git commits, branches, or pull requests.
+- Create commits, push, or open pull requests autonomously (branch/worktree isolation via `update-isolation` is permitted); it stops for human-in-the-loop review before any such outward/VCS action.
 - Modify any file when the user selects `cancel` at the orchestrator's confirmation gate or rejects the plan-mode round at apply time.
 - Mutate `<HOME>/.claude/commander/projects.json` — the registry is read-only on this path. The on-disk file SHALL be byte-identical before and after every run (verifiable via `shasum`).
 - Mutate any consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.

@@ -248,7 +248,7 @@ The command SHALL:
 - Resolve overrides via the `npm-update-apply` override-resolution procedure against the accepted set (loading the Package Upgrade Override Registry at `claude-plugins/experiments/skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml`). For each matched entry, present the user with an `AskUserQuestion` with options `run-override`, `skip-matched`, `force-generic`, then partition the accepted set into `GENERIC` / `OVERRIDE_RUN` / `OVERRIDE_SKIP` per the chosen actions (`run-override` → handled by the override command and excluded from generic ncu; `skip-matched` → excluded from everything; `force-generic` → bumped generically as if unmatched).
 - Build the resolved apply spec and invoke the `npm-update-apply` skill once with `target: patch` to perform the mechanical apply: generic `package.json` updates as `manifestBumps` (with `--filter "<names>"` membership — the per-manifest GENERIC partition, space-separated and literal — whenever that set is a strict subset of ncu's detected candidates, i.e. `pick-subset` or any `OVERRIDE_RUN`/`OVERRIDE_SKIP` touching the manifest); `pnpm-workspace.yaml#catalog` updates as `catalogEdits` (in-memory key edit preserving whitespace and comments); interpolated `run-override` commands as `overrideCommands` (executed once each, skipping generic ncu for their matched packages); and `skipInstall` set when every accepted package was handled by `run-override` and nothing was written outside the override command. The skill runs `npm-check-updates@21.0.2` per manifest (mirroring the `--target` and `--cooldown` flags resolved by the scan), performs the catalog edits, runs the override commands, and runs the single `<pm> install`. The command SHALL NOT restate that recipe inline.
 - Display a textual summary composed from the `npm-update-apply` result fragment: what was applied (generic vs. override), what was skipped, what overrides ran (if any), and a message suggesting (not executing) verification steps to the dev/agent (tests, lint, commit).
-- Not execute tests, lint, build, or create commits.
+- Not create commits, push, or open PRs autonomously; the command stops for human-in-the-loop review before any such outward/VCS action.
 
 #### Scenario: Command file exists with frontmatter
 
@@ -335,11 +335,11 @@ The command SHALL:
 - **THEN** the command SHALL NOT run the final `<pm> install`
 - **AND** the summary SHALL note that the install was delegated to the override command(s)
 
-#### Scenario: No post-install verification
+#### Scenario: No autonomous commit/push/PR
 
 - **WHEN** the command completes applying updates
-- **THEN** the command SHALL NOT invoke tests, lint, build, or create a commit
-- **AND** the final message SHALL suggest these as next steps for the dev/agent
+- **THEN** the command SHALL NOT autonomously create a commit, push, or open a PR
+- **AND** the final message SHALL suggest tests, lint, and commit as next steps for the dev/agent
 
 ### Requirement: Package Upgrade Override Registry
 
