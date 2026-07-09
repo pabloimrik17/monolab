@@ -64,8 +64,8 @@ Every line the skill emits — including:
 
 Inherited from `/experiments:npm-update-minor` and the orchestrator. The command preserves every one of them:
 
-- Never run tests, lint, or build.
-- Never create commits or PRs (or push). Branch/worktree isolation via `update-isolation` (the orchestrator's opt-in Step 9.5 gate, default `none`) is allowed.
+- Running read-only verification (lint, typecheck, or build) is permitted and is never a hard-rule violation; the command performs none automatically by default, so a plain run stays behaviorally unchanged. The binding restriction is the commit/push/PR review gate below.
+- Never create commits, push, or open PRs autonomously; stop for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation via `update-isolation` (the orchestrator's opt-in Step 9.5 gate, default `none`) is allowed.
 - Never modify any file when the user selects `cancel` at the orchestrator's confirmation gate.
 - Never mutate `<HOME>/.claude/commander/projects.json` — the registry is read-only on this path. The on-disk file SHALL be byte-identical before and after every run (verifiable via `shasum`).
 - Never mutate a consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).

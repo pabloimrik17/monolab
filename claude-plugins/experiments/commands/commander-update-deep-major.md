@@ -1,5 +1,5 @@
 ---
-description: Apply major-level npm updates across every Commander-registered project with deep research — cross-project plan, deduplicated changelog research weighted toward breaking changes/migration, a ## PR plan, and a unified plan-mode round for improvements + migration edits. Major updates may include breaking changes. No tests, no commits.
+description: Apply major-level npm updates across every Commander-registered project with deep research — cross-project plan, deduplicated changelog research weighted toward breaking changes/migration, a ## PR plan, and a unified plan-mode round for improvements + migration edits. Major updates may include breaking changes. Never commits/pushes/opens PRs autonomously.
 ---
 
 # commander-update-deep-major
@@ -73,8 +73,8 @@ Every line the skill emits — including:
 
 Inherited from `commander-update-orchestrator` (deep mode) and `/experiments:npm-update-deep-major`. The command preserves every one of them:
 
-- Never run tests, lint, or build at any point.
-- Never create git commits or pull requests (or push). Branch/worktree isolation via `update-isolation` is permitted (opt-in; v1 cross-project caps at **one worktree per project** — per-(project,bucket) is deferred).
+- Running read-only verification (lint, typecheck, or build) — including over the reviewed migration edits — is permitted and is never a hard-rule violation; the command performs none automatically by default, so a plain run stays behaviorally unchanged. The binding restriction is the commit/push/PR review gate below.
+- Never create commits, push, or open pull requests autonomously; stop for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation via `update-isolation` is permitted (opt-in; v1 cross-project caps at **one worktree per project** — per-(project,bucket) is deferred).
 - Never modify any file when the user selects `cancel` at the orchestrator's confirmation gate or rejects the plan-mode round.
 - Never mutate `<HOME>/.claude/commander/projects.json` — the registry is read-only on this path. The on-disk file SHALL be byte-identical before and after every run (verifiable via `shasum`).
 - Never mutate a consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).

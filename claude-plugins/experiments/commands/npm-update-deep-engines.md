@@ -1,12 +1,12 @@
 ---
-description: Detect the dev/runtime toolchain (Node + pnpm/npm/yarn/bun + Deno + Bun-runtime), research engine release notes for breaking changes/migration, then pin + align every runtime surface and apply reviewed migration edits via plan mode. Engines level only. No tests/lint/build/commits. A single coordinated co-upgrade — no PR partition.
+description: Detect the dev/runtime toolchain (Node + pnpm/npm/yarn/bun + Deno + Bun-runtime), research engine release notes for breaking changes/migration, then pin + align every runtime surface and apply reviewed migration edits via plan mode. Engines level only. Never commits/pushes/opens PRs autonomously. A single coordinated co-upgrade — no PR partition.
 ---
 
 # npm-update-deep-engines
 
 The "deep" sibling of `/experiments:npm-update-engines`. Same scope (engines-level toolchain bump: detect → resolve → pin + align runtime surfaces), but with research weighted toward **breaking changes & migration** sourced from **engine release notes** (Node/pnpm/npm/yarn/Deno/Bun): the release notes are fetched and cross-referenced against this codebase, then the main agent enters plan mode and synthesizes a single integrated plan. The deep single-project sibling of `/experiments:npm-update-deep-major`, but at engines level — it drives `detect-toolchain-surfaces` + `parallel-research-workflow(level=engines)` + `apply-engine-bumps`, never `scan-npm-updates`/`apply-npm-updates`/`ncu`.
 
-> **Runtime/toolchain upgrades may include breaking changes.** This command pins runtime surfaces and (on `apply-all`) applies reviewed migration edits via plan mode. It never commits or PRs.
+> **Runtime/toolchain upgrades may include breaking changes.** This command pins runtime surfaces and (on `apply-all`) applies reviewed migration edits via plan mode. It runs no tests, lint, or build automatically, and never commits, pushes, or opens PRs autonomously; after the reviewed edits land it MAY run read-only checks (lint, typecheck, build) over them and surface the result, never with `--fix`, never automatic.
 
 There is **no `## PR plan` / partition** at engines level: an engine bump is a single coordinated co-upgrade (Node + its PM, moved together), so there is one bucket. The command always operates at engines level and ignores any user-supplied level argument.
 
@@ -78,7 +78,7 @@ Invoke `apply-engine-bumps` **once** with `{ cwd: <resolved workdir>, inventory,
 
 ### 6b — Plan-mode migration round (`apply-all`)
 
-After bumps land, apply the `Breaking changes & migration` bullets **and** `Improvements` bullets from `plan.md` **via Claude Code plan mode** (reconnaissance → `EnterPlanMode` preview → user-gated apply), migration edits presented first (they gate the upgrade). On **approval**, execute the listed edits via `Edit`/`Write`. On **rejection**, print `Plan-mode round rejected. No improvement or migration edits applied; bumps are preserved.` and skip to Step 7 — **already-applied bumps are NOT reverted**. The round SHALL NOT expand scope beyond bullets present in `plan.md`, and SHALL NOT run tests/lint/build or commit.
+After bumps land, apply the `Breaking changes & migration` bullets **and** `Improvements` bullets from `plan.md` **via Claude Code plan mode** (reconnaissance → `EnterPlanMode` preview → user-gated apply), migration edits presented first (they gate the upgrade). On **approval**, execute the listed edits via `Edit`/`Write`. On **rejection**, print `Plan-mode round rejected. No improvement or migration edits applied; bumps are preserved.` and skip to Step 7 — **already-applied bumps are NOT reverted**. The round SHALL NOT expand scope beyond bullets present in `plan.md`. After the reviewed edits land, it MAY run read-only verification (lint, typecheck, or build) over those edits and surface the result — never with `--fix`, never automatic — and SHALL NOT create commits or PRs (or push); it stops for human-in-the-loop review before any such outward/VCS action.
 
 ### 6c — `pick-subset`
 
@@ -90,7 +90,7 @@ Print `Cancelled. No files modified.` and skip to Step 7. The plan dir is preser
 
 ## Step 7 — Summary
 
-Print `## npm-update-deep-engines summary` with conditional sections (omit zero-count, except `Suggested next steps`, always present): `Applied bumps`, `Applied migration edits`, `Applied improvements`, `Skipped improvements / migration`, `Left untouched (support / unknown)`, `Isolation:`, and `Suggested next steps (not executed)` (reinstall under new toolchain, run tests, lint/typecheck, review `git diff` + commit). The surfaced `plan.md` includes `## Breaking changes & migration` + `## Changelogs` and **no** `## PR plan`.
+Print `## npm-update-deep-engines summary` with conditional sections (omit zero-count, except `Suggested next steps`, always present): `Applied bumps`, `Applied migration edits`, `Applied improvements`, `Skipped improvements / migration`, `Left untouched (support / unknown)`, `Isolation:`, and `Suggested next steps (not executed)` (reinstall under new toolchain, run tests, lint/typecheck, review `git diff` + commit — any isolation branch may not pass repo commit hooks, so run lint/build before committing). The surfaced `plan.md` includes `## Breaking changes & migration` + `## Changelogs` and **no** `## PR plan`.
 
 ## Step 8 — Cleanup
 
@@ -98,8 +98,8 @@ Delegate the cleanup prompt to `parallel-research-workflow` (it owns `delete-pla
 
 ## Hard rules
 
-- Never run tests, lint, or build at any point.
-- Never create commits or PRs (or push). Branch/worktree isolation via `update-isolation` is permitted (Step 5.5, opt-in, default `none`).
+- Running read-only verification (lint, typecheck, or build) — including over the reviewed migration edits — is permitted and is never a hard-rule violation; the command performs none automatically by default, so a plain run stays behaviorally unchanged. The binding restriction is the commit/push/PR review gate below.
+- Never create commits, push, or open PRs autonomously; stop for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation via `update-isolation` is permitted (Step 5.5, opt-in, default `none`).
 - Never modify any file on `cancel`. The plan dir is preserved until `delete-plan` at cleanup.
 - Never modify `support`/`unknownSurfaces` loci; modify `ambiguous` only on resolution to `runtime`.
 - Never expand the plan-mode round beyond bullets present in `plan.md`.

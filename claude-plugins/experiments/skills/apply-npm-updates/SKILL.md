@@ -1,6 +1,6 @@
 ---
 name: apply-npm-updates
-description: Use when a single-project npm update command (`/experiments:npm-update-patch`, `/experiments:npm-update-minor`, `/experiments:npm-update-major`, and their deep variants) or the `commander-update-orchestrator` (once per project) needs to perform the mechanical apply of a fully-resolved update set — generic `package.json` bumps via `npm-check-updates`, catalog source edits (`pnpm-workspace.yaml` for pnpm, root `package.json` for Bun), override commands, and one install. Level-agnostic (parameterized by `target`). Also documents the caller-invoked override-resolution procedure (registry load → first-win glob match → `{version}` resolution → GENERIC/OVERRIDE_RUN/OVERRIDE_SKIP partition). Performs writes only; streams ncu/install verbatim; returns a structured result fragment and NEVER prints a consumer summary or abort message. No tests, lint, build, or commits.
+description: Use when a single-project npm update command (`/experiments:npm-update-patch`, `/experiments:npm-update-minor`, `/experiments:npm-update-major`, and their deep variants) or the `commander-update-orchestrator` (once per project) needs to perform the mechanical apply of a fully-resolved update set — generic `package.json` bumps via `npm-check-updates`, catalog source edits (`pnpm-workspace.yaml` for pnpm, root `package.json` for Bun), override commands, and one install. Level-agnostic (parameterized by `target`). Also documents the caller-invoked override-resolution procedure (registry load → first-win glob match → `{version}` resolution → GENERIC/OVERRIDE_RUN/OVERRIDE_SKIP partition). Performs writes only; streams ncu/install verbatim; returns a structured result fragment and NEVER prints a consumer summary or abort message. Never commits/pushes/opens PRs autonomously.
 ---
 
 # apply-npm-updates
@@ -239,8 +239,8 @@ The skill contains **no** level-specific branching logic. Behavior is parameteri
 
 ## Hard rules
 
-- SHALL NOT run tests, lint, or build (`vitest`, `nx test`, lint, build are never invoked).
-- SHALL NOT create git commits, branches, or pull requests.
+- Running read-only verification (lint, typecheck, or build) is permitted and is never a hard-rule violation; the skill performs none automatically by default, so a plain run stays behaviorally unchanged. The binding restriction is the commit/push/PR review gate below.
+- SHALL NOT create commits, push, or open pull requests autonomously; the skill stops for human-in-the-loop review before any such outward/VCS action (opt-in isolation branch/worktree creation via `update-isolation` is permitted).
 - SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` `catalog`/`catalogs.<name>` map for Bun).
 - SHALL NOT run `ncu --upgrade` as a fallback after an override command fails.
 - SHALL NOT read or write the override registry data file except via the read-only resolution procedure (R1).

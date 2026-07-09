@@ -1,5 +1,5 @@
 ---
-description: Detect and align the dev/runtime toolchain (Node + pnpm/npm/yarn/bun + Deno + Bun-runtime) across a single project, then pin every runtime surface to one resolved target (Node→latest LTS, others→latest). Detect + confirm + apply only — no tests, no commits. Runtime/toolchain upgrades may include breaking changes — review release notes first.
+description: Detect and align the dev/runtime toolchain (Node + pnpm/npm/yarn/bun + Deno + Bun-runtime) across a single project, then pin every runtime surface to one resolved target (Node→latest LTS, others→latest). Detect + confirm + apply only — never commits autonomously. Runtime/toolchain upgrades may include breaking changes — review release notes first.
 ---
 
 # npm-update-engines
@@ -166,15 +166,16 @@ Compose from the `apply-engine-bumps` result fragment:
 
 - Reinstall dependencies under the new toolchain if needed.
 - Run your test suite.
-- Review changes (`git diff`) and commit.
+- Run lint / typecheck.
+- Review changes (`git diff`) and commit — any isolation branch may not pass repo commit hooks, so run lint/build before committing.
 ```
 
-Omit any block whose count is zero (except `Suggested next steps`, always present). The `Isolation:` line is always present. Do not run any suggested step (hard rule).
+Omit any block whose count is zero (except `Suggested next steps`, always present). The `Isolation:` line is always present. Do not execute these suggested steps automatically as part of the command; they are for the caller to decide.
 
 ## Hard rules
 
-- Never run tests, lint, or build.
-- Never create commits or PRs (or push). Branch/worktree isolation via `update-isolation` is allowed (Step 6.5, opt-in, default `none`).
+- Running read-only verification (lint, typecheck, or build) is permitted but never performed automatically by default; a plain run stays behaviorally unchanged. The binding restriction is the commit/push/PR review gate below.
+- Never create commits, push, or open PRs autonomously; stop for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation via `update-isolation` is allowed (Step 6.5, opt-in, default `none`).
 - Never modify any file on `cancel` or when every engine is excluded.
 - Never modify `support` or `unknownSurfaces` loci; modify `ambiguous` loci only when the user resolved them to `runtime`.
 - Always operate at engines level; ignore any user-supplied level argument. Never invoke `scan-npm-updates`, `apply-npm-updates`, or `ncu`.

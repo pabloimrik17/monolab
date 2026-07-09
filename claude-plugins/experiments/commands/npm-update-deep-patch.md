@@ -1,5 +1,5 @@
 ---
-description: Scan, fetch every patch changelog in parallel, research applicable improvements/workarounds against this codebase, then drive a user-gated apply step. Patch level only. No tests/lint/build/commits.
+description: Scan, fetch every patch changelog in parallel, research applicable improvements/workarounds against this codebase, then drive a user-gated apply step. Patch level only. Never commits/pushes/opens PRs autonomously.
 ---
 
 # npm-update-deep-patch
@@ -8,7 +8,7 @@ The "deep" sibling of `/experiments:npm-update-patch`. Same scope (patch-level, 
 
 This command operates exclusively at **patch level**. It always passes `level=patch` to the scan skill and ignores any user-supplied level argument.
 
-> Tip: this command **never runs tests, lint, build, or commits**. It bumps manifests and runs a single install at most. The summary recommends those as next steps; the caller decides.
+> Tip: this command runs no tests, lint, or build automatically and creates no commits. After the reviewed plan-mode edits land it MAY run read-only checks (lint, typecheck, build) over them and surface the result — never with `--fix`, never automatic. The summary recommends verification + commit as next steps; the caller decides.
 
 ## Step 1 — Scan
 
@@ -157,7 +157,7 @@ After the bumps install completes successfully, the command SHALL apply the `Imp
 
 The improvements step SHALL NOT expand scope beyond bullets present in `plan.md`. If during reconnaissance or plan-mode review the agent identifies adjacent improvements not in `plan.md`, those are surfaced as suggestions in the Step 7 summary's `Suggested next steps` list — never silently added to the plan-mode plan.
 
-The improvements step SHALL NOT execute tests, lint, or build. SHALL NOT create commits or PRs (or push) — branch/worktree isolation is the separate Step 5.5 pre-apply step.
+After the reviewed edits are applied, the improvements step MAY run read-only verification (lint, typecheck, or build) over those edits and surface the result in the Step 7 summary — never with `--fix`, and never automatically by default. It SHALL NOT create commits or PRs (or push); it stops for human-in-the-loop review before any such outward/VCS action — branch/worktree isolation is the separate Step 5.5 pre-apply step.
 
 **Why plan mode is mandatory here**: this is the only point in the workflow where the command modifies workspace files based on synthesized research that the user has not yet seen rendered as concrete edits. The earlier apply-choice prompt (Step 5) commits the user to a path; plan mode lets them veto specifically the improvements before any source file is touched. Without it, the user only learns "0 of 10 improvements were actually applicable to my codebase" via the Step 7 summary, which is too late to course-correct.
 
@@ -229,7 +229,7 @@ Then emit, **conditionally**, these sections (omit any whose count is zero, exce
 - `Suggested next steps (not executed):` — always present, with three bullets:
     - `Run your test suite.`
     - `Run lint / typecheck.`
-    - `Review changes (\`git diff\`) and commit.`
+    - `Review changes (\`git diff\`) and commit — any isolation branch may not pass repo commit hooks, so run lint/build before committing.`
 
 For the `cancel` path specifically, the summary contains:
 
@@ -253,8 +253,8 @@ The command invokes the workflow's cleanup exactly once at this step. The workfl
 
 ## Hard rules
 
-- The command SHALL NOT run tests, lint, or build at any point.
-- The command SHALL NOT create git commits or open pull requests (or push). Branch/worktree isolation via `update-isolation` is permitted (Step 5.5, opt-in, default `none`).
+- Running read-only verification (lint, typecheck, or build) is permitted and is never a hard-rule violation; the command performs none automatically by default, so a plain run stays behaviorally unchanged. The binding restriction is the commit/push/PR review gate below.
+- The command SHALL NOT create commits, push, or open pull requests autonomously; it stops for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation via `update-isolation` is permitted (Step 5.5, opt-in, default `none`).
 - The command SHALL NOT modify any file when the user selects `cancel`. The plan dir under `~/.claude/experiments/plans/` is preserved (it is not part of the workspace) until the user selects `delete-plan` at cleanup.
 - The command SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).
 - The command SHALL NOT consult the package upgrade override registry. Override flows (Storybook, etc.) belong to `/experiments:npm-update-patch`'s shallow path; the deep path goes straight through ncu + catalog edits. (The plan can mention overridable family upgrades as improvements; the user then picks whether to apply them via the standard mechanism.)

@@ -1,5 +1,5 @@
 ---
-description: Scan and interactively apply npm major-level updates across a workspace or single repo (bump + install only, no tests/commits). Major updates may include breaking changes — review changelogs first.
+description: Scan and interactively apply npm major-level updates across a workspace or single repo (bump + install only; never commits autonomously). Major updates may include breaking changes — review changelogs first.
 ---
 
 # npm-update-major
@@ -8,7 +8,7 @@ Scan the current project for **major-level** dependency updates, present them to
 
 > **Major updates may include breaking changes.** This command bumps + installs only; it does not migrate code. Review each package's changelog (and consider `/experiments:npm-update-deep-major` for researched migration guidance) before applying.
 
-The command **only bumps manifests and runs a single install** (via the `apply-npm-updates` skill). It does NOT run tests, lint, build, or create commits — that is explicitly out of scope. The final summary suggests those as next steps; the caller decides.
+The command **only bumps manifests and runs a single install** (via the `apply-npm-updates` skill) — it runs no tests, lint, or build automatically and creates no commits. Running read-only checks (lint, typecheck, build) is permitted but never automatic; the binding rule is no autonomous commit/push/PR. The final summary suggests those as next steps; the caller decides.
 
 This command operates exclusively at **major level**. It always passes `level=major` to the scan skill and `target: "major"` to `apply-npm-updates`, and ignores any user-supplied level argument.
 
@@ -255,18 +255,18 @@ Compose the summary from the `apply-npm-updates` result fragment (Step 6) — `{
 
 - Run your test suite.
 - Run lint / typecheck.
-- Review changes (`git diff`) and commit.
+- Review changes (`git diff`) and commit — any isolation branch may not pass repo commit hooks, so run lint/build before committing.
 ```
 
 - Omit any block whose count is zero (except `Suggested next steps`, which is always present). The `Isolation:` line is always present.
 - When `{Ng}` is non-zero, list each update with its original `location`.
 - When `{No}` is non-zero, list each override entry with the command that ran and the matched names (surface enough information that the user can re-invoke the override manually if needed).
-- Do not run any of the suggested steps. This is a hard rule.
+- Do not execute these suggested steps automatically as part of the command; they are for the caller to decide.
 
 ## Hard rules
 
-- Never run tests, lint, or build.
-- Never create commits or PRs (or push). Branch/worktree isolation via `update-isolation` is allowed (Step 5.6, opt-in, default `none`).
+- Running read-only verification (lint, typecheck, or build) is permitted but never performed automatically by default; a plain run stays behaviorally unchanged. The binding restriction is the commit/push/PR review gate below.
+- Never create commits, push, or open PRs autonomously; stop for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation via `update-isolation` is allowed (Step 5.6, opt-in, default `none`).
 - Never modify files on `cancel` or when every accepted update is skipped by override policy.
 - Never mutate a consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).
 - Never auto-execute an override command without the user selecting `run-override` explicitly for that entry.

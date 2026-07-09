@@ -1,16 +1,16 @@
 ---
-description: Scan, fetch every major changelog in parallel, research breaking changes/migration + improvements against this codebase, partition into PR-sized buckets, then drive a user-gated apply step (optionally per-bucket worktrees). Major level only. No tests/lint/build/commits.
+description: Scan, fetch every major changelog in parallel, research breaking changes/migration + improvements against this codebase, partition into PR-sized buckets, then drive a user-gated apply step (optionally per-bucket worktrees). Major level only. Never commits/pushes/opens PRs autonomously.
 ---
 
 # npm-update-deep-major
 
 The "deep" sibling of `/experiments:npm-update-major`. Same scope (major-level, manifest bumps + one install), but with research weighted toward breaking changes: every changelog is fetched in parallel by subagents who cross-reference it against this codebase — capturing **breaking changes & migration steps** as first-class findings alongside improvements and workarounds — then the main agent enters plan mode and synthesizes a single integrated plan. After research, the accepted set is partitioned into PR-sized buckets (`partition-breaking-changes`) and, optionally, each bucket is applied into its own worktree. The deep single-project sibling of `/experiments:npm-update-deep-minor` — same flow, plus the major-only breaking-change weighting, PR plan, and per-bucket isolation.
 
-> **Major updates may include breaking changes.** This command bumps + installs, and (on `apply-all`) applies reviewed migration edits via plan mode. It never commits or PRs.
+> **Major updates may include breaking changes.** This command bumps + installs, and (on `apply-all`) applies reviewed migration edits via plan mode. It never commits, pushes, or opens PRs autonomously.
 
 This command operates exclusively at **major level**. It always passes `level=major` to the scan skill and to `parallel-research-workflow`, and ignores any user-supplied level argument.
 
-> Tip: this command **never runs tests, lint, build, or commits**. It bumps manifests, runs a single install at most, and may apply reviewed migration/improvement edits. The summary recommends test/lint/commit as next steps; the caller decides.
+> Tip: this command runs no tests, lint, or build automatically and creates no commits. It bumps manifests, runs a single install at most, and (on `apply-all`) applies reviewed migration/improvement edits — after which it MAY run read-only checks (lint, typecheck, build) over those edits and surface the result, never with `--fix`, never automatic. The summary recommends verification + commit as next steps; the caller decides.
 
 ## Step 1 — Scan
 
@@ -171,7 +171,7 @@ After the bumps install completes successfully (per bucket-or-set), the command 
 
 The plan-mode round SHALL NOT expand scope beyond bullets present in `plan.md`. Adjacent opportunities discovered during reconnaissance are surfaced in the Step 7 summary's `Suggested next steps`, never silently added.
 
-The plan-mode round SHALL NOT execute tests, lint, or build. SHALL NOT create commits or PRs.
+After the reviewed edits are applied, the plan-mode round MAY run read-only verification (lint, typecheck, or build) over those edits and surface the result in the Step 7 summary — never with `--fix`, and never automatically by default. It SHALL NOT create commits or PRs (or push); it stops for human-in-the-loop review before any such outward/VCS action.
 
 ### Step 6c — `pick-subset`
 
@@ -239,7 +239,7 @@ Then emit, **conditionally**, these sections (omit any whose count is zero, exce
 - `Suggested next steps (not executed):` — always present, with:
     - `Run your test suite.`
     - `Run lint / typecheck.`
-    - `Review changes (\`git diff\`) and commit per bucket/branch.`
+    - `Review changes (\`git diff\`) and commit per bucket/branch — an isolation/bucket branch may not pass repo commit hooks, so run lint/build before committing.`
 
 For the `cancel` path specifically, the summary contains:
 
@@ -265,8 +265,8 @@ The command invokes the workflow's cleanup exactly once at this step. This appli
 
 ## Hard rules
 
-- The command SHALL NOT run tests, lint, or build at any point.
-- The command SHALL NOT create git commits or open pull requests (or push). Branch/worktree isolation via `update-isolation` is permitted (Step 5.5, opt-in, default `none`).
+- Running read-only verification (lint, typecheck, or build) — including over the reviewed migration edits — is permitted and is never a hard-rule violation; the command performs none automatically by default, so a plain run stays behaviorally unchanged. The binding restriction is the commit/push/PR review gate below.
+- The command SHALL NOT create commits, push, or open pull requests autonomously; it stops for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation via `update-isolation` is permitted (Step 5.5, opt-in, default `none`).
 - The command SHALL NOT modify any file when the user selects `cancel`. The plan dir under `~/.claude/experiments/plans/` is preserved until the user selects `delete-plan` at cleanup.
 - The command SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).
 - The command SHALL NOT consult the package upgrade override registry. Override flows belong to `/experiments:npm-update-major`'s shallow path; the deep path goes straight through ncu + catalog edits (`apply-npm-updates` with empty `overrideCommands`).

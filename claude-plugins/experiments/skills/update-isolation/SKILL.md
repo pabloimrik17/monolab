@@ -110,7 +110,7 @@ Worktrunk may run `post-start` hooks when a worktree is created (e.g. a configur
 ## Hard rules
 
 - SHALL create at most a **branch and/or worktree**. SHALL NOT run `git commit`. SHALL NOT run `git push`. SHALL NOT run `gh pr create` or any other PR-creation command.
-- SHALL NOT run tests, lint, or build.
+- The skill only creates the branch/worktree and applies nothing, so it runs no checks; performing read-only verification (lint, typecheck, or build) is never a hard-rule violation.
 - SHALL NOT bump any manifest or run any install itself — that is `apply-npm-updates`'s job, invoked by the caller with the returned `workdir`.
 - `none` mode SHALL touch no VCS state at all.
 - On any worktrunk failure, degrade gracefully (worktrunk → plain worktree; if even plain worktree fails, surface the error and return `{ mode: "none", workdir: projectPath }` with a note so the caller can apply in place rather than aborting the whole update).
