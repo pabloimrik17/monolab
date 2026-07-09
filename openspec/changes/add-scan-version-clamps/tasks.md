@@ -3,11 +3,11 @@
 - [x] 1.1 Verify whether ncu 21.0.2 applies pnpm `minimumReleaseAge` to `--packageFile <root>/package.json` (reproduce the #247 root vs catalog divergence); record findings in a short note under the change dir
 - [x] 1.2 Confirm `npm view <name> versions time --json` gives publish times sufficient to gate manifest packages the same way the catalog path already does
 
-## 2. Partition-owned version-lockstep registry
+## 2. Partition — drop the hardcoded family list (no registry)
 
-- [x] 2.1 Create `claude-plugins/experiments/skills/partition-breaking-changes/references/version-groups.yaml` with header/schema docs (`id`, `matches` glob list); keep it minimal (only families the peer/override reads miss)
-- [x] 2.2 Seed the previously-missing `vitest` ↔ `@vitest/*` plus the react members without a peer edge (`@types/react`, `react-is`)
-- [x] 2.3 Repoint `partition-breaking-changes/SKILL.md`: `peerDependencies` is the primary source, then override registry, then this slim registry; remove the old inline hardcoded family list. The scan does NOT read this file.
+- [x] 2.1 Verify `peerDependencies` recovers the key families (confirmed live: `@vitest/*` peer-dep `vitest`; `react-dom` peer-deps `react`)
+- [x] 2.2 Rewrite `partition-breaking-changes/SKILL.md` Step 1: sources are the `peerDependencies` read (authoritative) + override registry; agent reasoning fills the peer-less `@types/*`-to-runtime gap. Remove the old inline hardcoded family list.
+- [x] 2.3 Maintain NO family file — neither a shared scan registry nor a partition-owned one
 
 ## 3. Scan skill — uniform release-age gate (#247, primary fix)
 

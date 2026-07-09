@@ -46,7 +46,7 @@ The uniform gate (D2) is the real fix for #247: because a monorepo family publis
 
 Instead the scan **detects and warns** using a registry-free heuristic: a bare package `X` plus its `@X/*` siblings in the same scan (catches `vitest` + `@vitest/*`, `jest` + `@jest/*`, `storybook` + `@storybook/*`). It never groups scopes without a bare root (`@types/*`, `@radix-ui/*`), so no false positives. If such a family resolves to divergent versions, push one warning + a documented protocol; leave targets untouched. Rare by construction (the gate already syncs the normal case), so signal not noise.
 - **Alternative (rejected):** enforce coherence by holding/rewriting targets from a maintained registry — the over-hold + maintenance cost above, for a case the uniform gate already covers.
-- **Registry relocation:** the lockstep family list that `partition-breaking-changes` needs for PR bucketing (a genuinely different concern from scanning) moves into that skill's own `references/version-groups.yaml`, slimmed to what its `peerDependencies` + override reads miss, plus the previously-missing `vitest`. The scan does not read it.
+- **Partition drops the list too:** `partition-breaking-changes` needs family knowledge for PR bucketing, but it runs as an agent, so it computes hard co-upgrade sets from the authoritative `peerDependencies` read (verified: `@vitest/*` peer-dep `vitest`, `react-dom` peer-deps `react`) + the override registry, and recognizes the one peer-less case (`@types/*` ↔ its runtime) by reasoning. No hardcoded list and no registry file anywhere — the maintenance burden the reviewer objected to is removed on both sides.
 
 ### D5 — Output contract: additive optional `clampedTo`
 
@@ -62,7 +62,7 @@ Instead the scan **detects and warns** using a registry-free heuristic: a bare p
 
 ## Migration Plan
 
-Docs/skills only — no runtime deploy. Land both skill edits + the partition registry + spec deltas together; `openspec validate --strict`; archive syncs specs. Rollback = revert the change dir + skill edits. No consumer migration (additive contract).
+Docs/skills only — no runtime deploy. Land both skill edits + spec deltas together; `openspec validate --strict`; archive syncs specs. Rollback = revert the change dir + skill edits. No consumer migration (additive contract).
 
 ## Open Questions
 

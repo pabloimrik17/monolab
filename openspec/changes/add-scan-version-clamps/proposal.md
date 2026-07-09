@@ -16,7 +16,7 @@ Make `scan-npm-updates` emit **policy-coherent** targets. Two clamps live in the
 - **Version-family skew detection (advisory)** — because a monorepo family publishes in lockstep, the uniform gate already resolves its members alike; we do **not** enforce coherence (no holds, no target rewrites, no maintained registry — that path over-holds mixed-version families like `react` + `@types/react`). Instead the scan uses a registry-free heuristic (a bare name `X` plus its `@X/*` siblings) to **warn** on residual skew, with a short protocol for resolving it. Rare by construction, so it is signal not noise.
 - Optional additive `clampedTo` field (rule `"engine-major"` only) so downstream/UI can explain a clamped `@types/node` target. Non-breaking.
 
-The version-lockstep family list `partition-breaking-changes` needs for PR bucketing moves into that skill's own `references/version-groups.yaml` (slimmed to what its `peerDependencies` + override-registry reads miss, and adding the previously-missing `vitest` ↔ `@vitest/*`). The scan does not read it.
+`partition-breaking-changes` drops its hardcoded family list entirely — no registry (shared or its own). It computes hard co-upgrade sets from the authoritative `peerDependencies` read (verified live: `@vitest/*` peer-dep `vitest`, `react-dom` peer-deps `react`) + the override registry, and — being an agent-run reasoning skill — recognizes the one residual case peers can't express (a `@types/*` package pairing with its runtime) without codifying a list.
 
 Out of scope (follow-up): `apply-engine-bumps` promoting `@types/node` to the matching major when Node's major moves (the "engines owns promotion" half of #251).
 
@@ -29,12 +29,12 @@ _None._
 ### Modified Capabilities
 
 - `npm-update-scanning`: add the uniform release-age gate, the `@types/node` engine-major clamp, and registry-free version-family skew detection (warning-only); extend the output contract with optional `clampedTo` (`"engine-major"` only).
-- `breaking-change-pr-grouping`: source hard co-upgrade families primarily from a `peerDependencies` read + override registry, with a small skill-owned `references/version-groups.yaml` for lockstep members lacking a peer edge (replaces the old inline hardcoded list; adds the missing `vitest`).
+- `breaking-change-pr-grouping`: source hard co-upgrade families from the `peerDependencies` read + override registry (plus agent reasoning for peer-less `@types/*` pairings); remove the old inline hardcoded family list and maintain no family registry.
 
 ## Impact
 
 - **Skill**: `claude-plugins/experiments/skills/scan-npm-updates/SKILL.md` (uniform gate, `@types/node` clamp, skew-detection warning). No scan-owned registry file.
-- **Skill**: `claude-plugins/experiments/skills/partition-breaking-changes/SKILL.md` + new `references/version-groups.yaml` (its own slim lockstep list; replaces the inline hardcoded groups).
+- **Skill**: `claude-plugins/experiments/skills/partition-breaking-changes/SKILL.md` (remove the inline hardcoded family list; rely on `peerDependencies` + override registry + agent reasoning — no family file).
 - **Consuming commands**: none need logic changes — they receive already-coherent `ScanResult`s.
 - **Output contract**: additive optional `clampedTo` (`"engine-major"` only); `skippedByReleaseAge` semantics broadened to all record locations; a new `version-family skew` warning string. Backward-compatible for consumers that ignore the new field.
 - **Behavior**: `@types/node` no longer crosses the Node major; manifest records now gated skill-side (extra `npm view` calls, cached per scan). Family skew surfaces as a warning rather than being silently rewritten.
