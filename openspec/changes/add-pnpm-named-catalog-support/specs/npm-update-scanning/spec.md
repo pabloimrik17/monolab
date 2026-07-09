@@ -28,7 +28,7 @@ If the max filtered version was held back by age, `skippedByReleaseAge: true` SH
 #### Scenario: pnpm default catalog bumped
 
 - **WHEN** the PM is `pnpm`, `pnpm-workspace.yaml#catalog.vitest` is `4.0.18`, `npm view vitest` returns `4.0.24` published >= `minimumReleaseAge` ago, and `level` is `patch`
-- **THEN** the output contains `{ name: "vitest", currentVersion: "4.0.18", targetVersion: "4.0.24", location: "catalog:default", sourceFile: "pnpm-workspace.yaml", catalogSource: { manager: "pnpm", field: { kind: "default" } } }`
+- **THEN** the output contains `{ name: "vitest", currentVersion: "4.0.18", targetVersion: "4.0.24", location: "catalog:default", sourceFile: "pnpm-workspace.yaml", catalogSource: { sourceFile: "pnpm-workspace.yaml", manager: "pnpm", field: { kind: "default" } } }`
 
 #### Scenario: pnpm named catalog bumped (no warning)
 

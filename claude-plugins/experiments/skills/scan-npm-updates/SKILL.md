@@ -36,7 +36,7 @@ interface ScanResult {
             underWorkspaces?: boolean; // bun only: true when the catalog block lives under `workspaces`
         };
     }>;
-    warnings: string[]; // non-fatal: tool stderr, ambiguous-default notes, parse notes
+    warnings: string[]; // non-fatal: tool stderr, ambiguous-default notes, npm view failures, parse notes
 }
 ```
 
