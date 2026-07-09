@@ -9,13 +9,14 @@ Both are the same class of bug: the scan does not clamp candidates to the polici
 
 ## What Changes
 
-Make `scan-npm-updates` emit **policy-coherent** targets. Three clamp/coherence rules, all in the scan skill so every consuming command (`npm-update-{patch,minor,major}`, deep variants, `commander-update-*`) inherits them with **no command-side wiring**:
+Make `scan-npm-updates` emit **policy-coherent** targets. Two clamps live in the scan skill so every consuming command (`npm-update-{patch,minor,major}`, deep variants, `commander-update-*`) inherits them with **no command-side wiring**, plus a lightweight advisory:
 
-- **Uniform release-age gate (#247a)** — apply the resolved `minimumReleaseAge` threshold skill-side to **every** record (`root`, `workspace:*`, `catalog:*`) via the same cached `npm view versions time` path already used for catalogs. ncu's `--cooldown` / pnpm native read becomes a non-authoritative pre-filter. `skippedByReleaseAge` now meaningful on manifest records, not only catalog records.
+- **Uniform release-age gate (#247)** — apply the resolved `minimumReleaseAge` threshold skill-side to **every** record (`root`, `workspace:*`, `catalog:*`) via the same cached `npm view versions time` path already used for catalogs. ncu's `--cooldown` / pnpm native read becomes a non-authoritative pre-filter. `skippedByReleaseAge` now meaningful on manifest records, not only catalog records. **This is the actual fix for #247**: the skew came from the gate being split across two code paths (catalog skill-side, manifest via ncu), letting a root-pinned `@vitest/browser` escape while the catalog `vitest` was held. One gate over all records keeps a lockstep family in sync with no explicit coherence machinery.
 - **Engine-major clamp for `@types/node` (#251)** — clamp the `@types/node` candidate major to `≤` the Node major targeted by `devEngines.runtime.node` / `engines.node`. Never cross the Node major at dependency level.
-- **Must-match version-group coherence (#247b)** — locked families (e.g. `vitest` ↔ `@vitest/*`) resolve to a single gate-approved version in lockstep; if they can't all reach one eligible version, hold the whole group back rather than split it. Families come from a new scan-owned registry.
-- **New `references/version-groups.yaml`** — authoritative, extensible family list. Single source of truth: seeds both scan coherence **and** `partition-breaking-changes` hard co-upgrade sets (which today hardcode a near-identical list that is **missing `vitest`**). Adding a family = one entry.
-- Optional additive `clampedTo` field on records so downstream/UI can explain a held-back or clamped target. Non-breaking.
+- **Version-family skew detection (advisory)** — because a monorepo family publishes in lockstep, the uniform gate already resolves its members alike; we do **not** enforce coherence (no holds, no target rewrites, no maintained registry — that path over-holds mixed-version families like `react` + `@types/react`). Instead the scan uses a registry-free heuristic (a bare name `X` plus its `@X/*` siblings) to **warn** on residual skew, with a short protocol for resolving it. Rare by construction, so it is signal not noise.
+- Optional additive `clampedTo` field (rule `"engine-major"` only) so downstream/UI can explain a clamped `@types/node` target. Non-breaking.
+
+The version-lockstep family list `partition-breaking-changes` needs for PR bucketing moves into that skill's own `references/version-groups.yaml` (slimmed to what its `peerDependencies` + override-registry reads miss, and adding the previously-missing `vitest` ↔ `@vitest/*`). The scan does not read it.
 
 Out of scope (follow-up): `apply-engine-bumps` promoting `@types/node` to the matching major when Node's major moves (the "engines owns promotion" half of #251).
 
@@ -23,18 +24,18 @@ Out of scope (follow-up): `apply-engine-bumps` promoting `@types/node` to the ma
 
 ### New Capabilities
 
-_None._ (The new `references/version-groups.yaml` is an input artifact of the existing scan capability, not a new capability.)
+_None._
 
 ### Modified Capabilities
 
-- `npm-update-scanning`: add the uniform release-age gate, the `@types/node` engine-major clamp, the version-group registry, and version-group coherence; extend the output contract with optional `clampedTo`.
-- `breaking-change-pr-grouping`: source hard co-upgrade families from the shared `references/version-groups.yaml` registry (single source of truth) instead of a hardcoded list.
+- `npm-update-scanning`: add the uniform release-age gate, the `@types/node` engine-major clamp, and registry-free version-family skew detection (warning-only); extend the output contract with optional `clampedTo` (`"engine-major"` only).
+- `breaking-change-pr-grouping`: source hard co-upgrade families primarily from a `peerDependencies` read + override registry, with a small skill-owned `references/version-groups.yaml` for lockstep members lacking a peer edge (replaces the old inline hardcoded list; adds the missing `vitest`).
 
 ## Impact
 
-- **Skill**: `claude-plugins/experiments/skills/scan-npm-updates/SKILL.md` + new `references/version-groups.yaml`.
-- **Skill**: `claude-plugins/experiments/skills/partition-breaking-changes/SKILL.md` (seed families from the shared registry).
+- **Skill**: `claude-plugins/experiments/skills/scan-npm-updates/SKILL.md` (uniform gate, `@types/node` clamp, skew-detection warning). No scan-owned registry file.
+- **Skill**: `claude-plugins/experiments/skills/partition-breaking-changes/SKILL.md` + new `references/version-groups.yaml` (its own slim lockstep list; replaces the inline hardcoded groups).
 - **Consuming commands**: none need logic changes — they receive already-coherent `ScanResult`s.
-- **Output contract**: additive optional `clampedTo`; `skippedByReleaseAge` semantics broadened to all record locations. Backward-compatible for consumers that ignore the new field.
-- **Behavior**: fewer/held-back bumps in some scans (correct). Extra `npm view` calls for manifest records now gated skill-side (cached per scan).
+- **Output contract**: additive optional `clampedTo` (`"engine-major"` only); `skippedByReleaseAge` semantics broadened to all record locations; a new `version-family skew` warning string. Backward-compatible for consumers that ignore the new field.
+- **Behavior**: `@types/node` no longer crosses the Node major; manifest records now gated skill-side (extra `npm view` calls, cached per scan). Family skew surfaces as a warning rather than being silently rewritten.
 - **Fixes**: #247, #251 (dependency-clamp half).

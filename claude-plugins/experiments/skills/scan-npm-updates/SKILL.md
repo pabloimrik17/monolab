@@ -29,9 +29,9 @@ interface ScanResult {
         sourceFile: string; // repo-root-relative path of the manifest to edit
         skippedByReleaseAge?: boolean; // true if a newer in-band version was filtered by the uniform minimumReleaseAge gate and this is the newest eligible fallback. MAY appear on ANY record (root/workspace/catalog) — the age gate is uniform.
         clampedTo?: {
-            // present ONLY when a clamp LOWERED or REMOVED the target that per-package resolution
-            // would otherwise have proposed. Absent when the emitted target equals the resolved max.
-            rule: "engine-major" | "version-group";
+            // present ONLY when the @types/node engine-major clamp LOWERED or REMOVED the target
+            // that per-package resolution would otherwise have proposed. Absent otherwise.
+            rule: "engine-major";
             from: string; // the higher target that was clamped away (what would have been proposed)
         };
         catalogSource?: {
@@ -42,12 +42,13 @@ interface ScanResult {
             underWorkspaces?: boolean; // bun only: true when the catalog block lives under `workspaces`
         };
     }>;
-    warnings: string[]; // non-fatal: tool stderr, unsupported-catalog notes, parse notes, engine-surface/registry warnings
+    warnings: string[]; // non-fatal: tool stderr, unsupported-catalog notes, parse notes, engine-surface notes, version-family skew notes
 }
 ```
 
 - `skippedByReleaseAge` MAY appear on records of **any** `location` (the release-age gate is applied uniformly skill-side — see "Uniform release-age gate"), not only on catalog records.
-- `clampedTo` SHALL be present **only** on records whose target was lowered or removed by the `@types/node` engine-major clamp or by version-group coherence, and absent otherwise. `from` is the higher target that would have been proposed before the clamp.
+- `clampedTo` SHALL be present **only** on the `@types/node` record when the engine-major clamp lowered or removed its target, and absent otherwise. `from` is the higher target that would have been proposed before the clamp.
+- Version-family skew (e.g. `vitest` vs `@vitest/*` on different versions) is surfaced through `warnings`, not through any record field — the scan flags it but does not silently rewrite targets (see "Version-family skew detection").
 
 **Do not** output prose or tables. The caller renders user-facing output. The only output of this skill is the JSON block (fenced or raw, caller decides) plus warnings embedded inside it.
 
@@ -205,9 +206,9 @@ When `packageManager === "bun"`, bun declares catalogs in the root `package.json
 4. **Bun named catalogs ARE supported (Full scope)** — emit records for them and push **NO** `named catalog … not yet supported` warning.
 5. **Ambiguous default:** if the repo declares both a bare `catalog` (top-level or `workspaces.catalog`) AND a `catalogs.default`, push the warning `ambiguous default catalog: both 'catalog' and 'catalogs.default' present; treating as distinct sources` and emit both as distinct records. They share `location: "catalog:default"` but stay unambiguous downstream via `catalogSource.field` (the bare default is `{ kind: "default" }`; the named one is `{ kind: "named", name: "default" }`).
 
-## Post-resolution pipeline (clamps & coherence)
+## Post-resolution pipeline (clamps & skew detection)
 
-After ncu parsing and catalog post-processing produce the raw candidate set, run these three stages **in order** over the assembled records, before emitting. Each stage may lower or remove a target; none ever raises one. Together they make the emitted set policy-coherent so no consuming command needs its own clamp wiring.
+After ncu parsing and catalog post-processing produce the raw candidate set, run these stages **in order** over the assembled records, before emitting. The first two clamp targets (they may lower or remove a target; never raise one) so the emitted set is policy-coherent with no command-side wiring; the third only detects and warns. `@types/node` engine-major clamping (#251) and the uniform release-age gate (#247) are the load-bearing fixes.
 
 ### Uniform release-age gate
 
@@ -220,7 +221,7 @@ For each record:
 - If a newer in-band version exists but is younger than the threshold, clamp to the newest eligible version and set `skippedByReleaseAge: true`. Because this runs on manifest records too, `skippedByReleaseAge` is now settable on `root` / `workspace:*` records, not only catalog records.
 - If the resolved threshold is `0` or unset, do not age-gate and do not set `skippedByReleaseAge`.
 
-This is what fixes #247a: a root-pinned `@vitest/browser` is gated identically to its catalog `vitest` sibling, instead of escaping through ncu's native read while the catalog stayed held.
+This is the primary fix for #247: a root-pinned `@vitest/browser` is gated identically to its catalog `vitest` sibling, instead of escaping through ncu's native read while the catalog stayed held. With one gate over all records, the family stays in sync without any explicit coherence machinery.
 
 ### Engine-major clamp for `@types/node`
 
@@ -240,18 +241,21 @@ Then, for each `@types/node` record:
 
 This is what fixes #251 at the dependency level: `@types/node` never crosses the Node major, so Node-N-only typings can't typecheck code that runs on an older Node.
 
-### Must-match version-group coherence
+### Version-family skew detection (advisory)
 
-Load the scan-owned registry `references/version-groups.yaml` (relative to this skill; see that file's header for the schema — `id` + `matches` glob list, same `*` semantics as the override registry). It is the single source of truth for locked families and includes at minimum `vitest` ↔ `@vitest/*`. If the file is **missing or empty**, skip this stage, push a warning, and leave per-record resolution unchanged (no abort).
+The uniform release-age gate above already keeps a lockstep family in sync in the normal case: family members publish the same version at the same time, so one gate applied to all records resolves them to the same version. #247 happened because the gate was **split** (catalog vs manifest), not because `vitest` published inconsistently — and the uniform gate closes that. This stage is a cheap safety net for the rare residual cases (members that start from different versions/bands in the manifests, or minutes-wide publish jitter).
 
-After the two stages above, reconcile each registry group so every bumped member shares one version. For a group with **two or more** members that have candidates in the scan:
+The skill SHALL NOT enforce coherence (no holds, no clamps, no target rewrites — that path over-holds mixed-version families like `react` + `@types/react` and needs a hand-maintained registry). Instead it **detects and warns**, using a narrow, low-false-positive heuristic that needs no registry:
 
-- The group `targetVersion` is the greatest version `V` such that (a) **every** member publishes `V`, (b) `V` satisfies the release-age threshold, and (c) `V` is within each member's `level` band relative to its own current.
-- If such a `V` exists and is greater than the members' current versions, emit **every** member record at `V`.
-- If **no** eligible common `V` above current exists, **hold the entire group back** — emit no bump for any member — rather than bumping a subset. When a newer common version existed but failed the age gate, held members carry `skippedByReleaseAge: true`.
-- Any member whose emitted target was **moved or held** by group reconciliation (i.e. differs from what it would have resolved to on its own) carries `clampedTo: { rule: "version-group", from: <the-independently-resolved-target> }`.
+- Group the emitted `updates` by the umbrella-package shape: a bare package name `X` together with any `@X/*` scoped siblings present in the same scan (e.g. `vitest` + `@vitest/browser` + `@vitest/ui`; `jest` + `@jest/*`; `storybook` + `@storybook/*`).
+- This shape only fires for genuine umbrella tools. It does **not** group independently-versioned scopes that have no bare root (`@types/*`, `@radix-ui/*`, `@aws-sdk/*`), so those never produce false positives.
+- If such a group has **two or more** bumped members whose emitted `targetVersion` (ignoring the `^`/`~` prefix) differ, push one warning:
 
-This is what fixes #247b: the `vitest` family resolves in lockstep to one gate-approved version, or is held back whole, so a scan can never propose `vitest@4.0.x` alongside `@vitest/browser@4.1.x` ("Running mixed versions is not supported").
+  `version-family skew: <name>@<v>, <name2>@<v2> resolved to different versions. If these are a lockstep family (e.g. vitest + @vitest/*), align them to one version before installing — mixed family versions cause "Running mixed versions is not supported" (see #247).`
+
+Targets are left untouched; the caller/user decides. Because the uniform gate makes this warning rare, it is signal, not noise.
+
+**Protocol if you hit skew (the #247 failure):** the symptom is a test run that hangs (~minutes) then fails with `Running mixed versions is not supported` / `birpc rpc is closed`. To resolve: pin every member of the family (catalog entries AND manifest deps — check the root `package.json`, which is where a stray manifest pin escaped in #247) to a single version, then reinstall. The scan's skew warning is meant to surface this at scan time, before the bad set is ever applied.
 
 ## Assembling the result
 
@@ -278,7 +282,7 @@ Concatenate all `warnings` from:
 - pnpm named-catalog notes; the bun ambiguous-default note.
 - Any `npm view` failures during catalog processing or the uniform release-age gate.
 - Engine-surface notes from the `@types/node` clamp: disagreement between `devEngines.runtime.node` and `engines.node` (naming both loci), or no Node engine surface found.
-- Version-group registry notes: `references/version-groups.yaml` missing or empty (coherence skipped).
+- Version-family skew notes: an umbrella family (`X` + `@X/*`, e.g. `vitest` + `@vitest/*`) resolved to different versions.
 
 Dedupe warnings (same string appearing twice → keep one).
 
@@ -302,13 +306,13 @@ Emit the `ScanResult` JSON object. That's it. Do not print tables, do not ask qu
 | bun ambiguous default (`catalog` + `catalogs.default`) | Push ambiguous-default warning; emit both as distinct records (differentiated by `catalogSource.field`).                    |
 | `devEngines.runtime.node` vs `engines.node` disagree   | Use the **lower** major for the `@types/node` clamp; push a warning naming both loci.                                       |
 | No Node engine surface present                         | Do **not** clamp `@types/node`; push a warning that no Node engine surface was found.                                       |
-| `references/version-groups.yaml` missing/empty         | Skip version-group coherence; push a warning; per-record resolution proceeds unchanged.                                     |
+| Umbrella family resolves to mixed versions             | Push a version-family skew warning; leave targets untouched (advisory — no hold/clamp).                                     |
 
 The only abort paths are the four preconditions. Everything after is resilient: degrade to warnings and keep going.
 
 ## Example output
 
-A `minor` scan illustrating all three clamp/coherence behaviors. `@types/react` is a plain uncalmped record; `@types/node` is held to the Node major (#251); `vitest` was lowered by version-group coherence to match its `@vitest/browser` sibling (#247b); `@vitest/browser` also carries `skippedByReleaseAge` because a newer patch was too young:
+A `minor` scan illustrating the two clamps plus a skew warning. `@types/react` is a plain unclamped record; `@types/node` is held to the Node major (#251); the `vitest` family started skewed in the manifests (`4.1.9` catalog vs a stray `4.0.x` root pin), so after the uniform gate they resolve to different versions and the scan emits a `version-family skew` warning rather than rewriting either target:
 
 ```json
 {
@@ -336,7 +340,6 @@ A `minor` scan illustrating all three clamp/coherence behaviors. `@types/react` 
             "targetVersion": "4.1.10",
             "location": "catalog:default",
             "sourceFile": "pnpm-workspace.yaml",
-            "clampedTo": { "rule": "version-group", "from": "4.2.0" },
             "catalogSource": {
                 "sourceFile": "pnpm-workspace.yaml",
                 "manager": "pnpm",
@@ -345,18 +348,20 @@ A `minor` scan illustrating all three clamp/coherence behaviors. `@types/react` 
         },
         {
             "name": "@vitest/browser",
-            "currentVersion": "4.1.9",
-            "targetVersion": "4.1.10",
+            "currentVersion": "4.0.5",
+            "targetVersion": "4.0.9",
             "location": "root",
-            "sourceFile": "package.json",
-            "skippedByReleaseAge": true
+            "sourceFile": "package.json"
         }
     ],
-    "warnings": ["named catalog \"test\" detected but not yet supported in this iteration"]
+    "warnings": [
+        "named catalog \"test\" detected but not yet supported in this iteration",
+        "version-family skew: vitest@4.1.10, @vitest/browser@4.0.9 resolved to different versions. If these are a lockstep family (e.g. vitest + @vitest/*), align them to one version before installing — mixed family versions cause \"Running mixed versions is not supported\" (see #247)."
+    ]
 }
 ```
 
-Both `vitest` and `@vitest/browser` land on `4.1.10` — the greatest age-eligible version the whole group publishes within band. `vitest`'s independent max was `4.2.0`, which `@vitest/browser` does not publish, so coherence lowered it to the common `4.1.10` and records `clampedTo.from: "4.2.0"`. `@vitest/browser` gets no `clampedTo` (its independent target was already `4.1.10`) but keeps `skippedByReleaseAge` because a still-newer `4.1.x` patch was younger than the threshold.
+In the normal case — where the family shares one current version and publishes in lockstep — the uniform release-age gate resolves every member to the same version and **no** skew warning is emitted. The warning above only appears because the root `@vitest/browser` pin (`4.0.5`) was already on a different minor than the catalog (`4.1.9`); the scan surfaces that at scan time instead of letting it blow up at test time.
 
 A bun catalog record (named catalog under `workspaces`) looks like:
 

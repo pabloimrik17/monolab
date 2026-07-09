@@ -1,0 +1,45 @@
+# Version-lockstep family registry (partition-breaking-changes)
+#
+# Declarative list of package families that release in lockstep on the SAME
+# version and MUST land in the same PR bucket. Read ONLY by
+# partition-breaking-changes to seed its hard co-upgrade sets. It is NOT read
+# by scan-npm-updates: the scan keeps families in sync via its uniform
+# release-age gate and merely *warns* on residual skew (see that skill's
+# "Version-family skew detection"), so it needs no maintained list.
+#
+# This file is intentionally small. It only needs to hold families that the
+# `peerDependencies` read does NOT already recover (peer edges merge, e.g.,
+# `react-dom` -> `react`; this file adds the members that have no peer edge to
+# the family, e.g. `@types/react`, `react-is`). Prefer to rely on the
+# peerDependencies + override-registry augmentation; add an entry here only
+# when a genuine lockstep family would otherwise be split.
+#
+# Entry fields:
+#   id       (string, required) stable identifier for the family.
+#   matches  (list of strings, required, non-empty) glob patterns over package
+#            names. `*` matches any run of characters WITHIN a name — same
+#            semantics as the override registry — so `@vitest/*` matches
+#            `@vitest/browser`, `@vitest/ui`, etc. No other glob metacharacters.
+#
+# Matching is first-win: a package matches at most one family, the first in
+# declaration order whose `matches` patterns coincide.
+
+groups:
+    - id: react
+      # react/react-dom/react-is lockstep; @types/react[-dom] co-upgrade with
+      # the runtime. peerDependencies only recovers react-dom -> react, so the
+      # types + react-is are listed explicitly.
+      matches:
+          - react
+          - react-dom
+          - react-is
+          - "@types/react"
+          - "@types/react-dom"
+
+    - id: vitest
+      # The #247 family: vitest and every @vitest/* package release together on
+      # one version. Listed so a deep-major PR plan buckets them together even
+      # if a peer edge is missing.
+      matches:
+          - vitest
+          - "@vitest/*"

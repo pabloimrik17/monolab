@@ -49,38 +49,24 @@ This clamp applies only to `@types/node` in this iteration.
 - **WHEN** neither `devEngines.runtime.node` nor `engines.node` is present
 - **THEN** `@types/node` is not clamped and a warning is pushed that no Node engine surface was found
 
-### Requirement: Version-group registry
+### Requirement: Version-family skew detection
 
-The skill SHALL read a scan-owned registry at `references/version-groups.yaml` (relative to the skill) declaring must-match version groups. Each group entry SHALL have an `id` (string) and a non-empty `matches` list of package-name glob patterns using the same `*` semantics as the override registry (a run of characters within a name). This registry is a scan-side **input** and is distinct from the command-side `data/pkg-upgrade-overrides.yaml`; the read-only contract is preserved. The registry SHALL be the single source of truth for locked families and SHALL include at minimum `vitest` ↔ `@vitest/*`. A missing or empty registry SHALL disable group coherence (no abort) and push a warning.
+The uniform release-age gate keeps a lockstep family in sync in the normal case (members publish the same version at the same time, so one gate resolves them alike). The skill SHALL NOT enforce version-group coherence — it SHALL NOT hold groups back, rewrite targets, or read a maintained family registry for this purpose. Instead, after resolution, the skill SHALL **detect and warn** on residual skew using a heuristic that needs no registry: it SHALL group emitted records by the umbrella-package shape — a bare package name `X` together with any `@X/*` scoped siblings present in the same scan (e.g. `vitest` + `@vitest/*`). For any such group with two or more bumped members whose emitted `targetVersion` (ignoring the `^`/`~` prefix) differ, the skill SHALL push exactly one warning identifying the divergent members and versions and noting they should be aligned before installing. Targets SHALL be left untouched. The heuristic SHALL NOT group scopes that lack a bare root package (`@types/*`, `@radix-ui/*`, etc.), so independently-versioned scopes never trigger a warning.
 
-#### Scenario: Registry parsed and vitest family present
+#### Scenario: Umbrella family skew warned, not rewritten
 
-- **WHEN** the skill loads `references/version-groups.yaml`
-- **THEN** a group whose `matches` cover `vitest` and `@vitest/*` is available for coherence resolution
+- **WHEN** `vitest` resolves to `4.1.10` and root-pinned `@vitest/browser` resolves to `4.0.9` in the same scan
+- **THEN** both records keep their independently-resolved `targetVersion` AND a single `version-family skew` warning names `vitest@4.1.10` and `@vitest/browser@4.0.9`
 
-#### Scenario: Missing registry degrades gracefully
+#### Scenario: Lockstep family in sync emits no warning
 
-- **WHEN** `references/version-groups.yaml` is absent
-- **THEN** group coherence is skipped, a warning is pushed, and per-package resolution proceeds unchanged
+- **WHEN** `vitest` and `@vitest/browser` share the current version and the uniform gate resolves both to `4.1.10`
+- **THEN** no `version-family skew` warning is pushed and both are emitted at `4.1.10`
 
-### Requirement: Must-match version-group coherence
+#### Scenario: Independently-versioned scope never warns
 
-After per-record candidate resolution (including the uniform release-age gate), the skill SHALL reconcile every version group from the registry so all bumped members share one version. For a group with two or more members that have candidates in the scan, the group `targetVersion` SHALL be the greatest version V such that: (a) every member publishes V, (b) V satisfies the release-age threshold, and (c) V is within each member's `level` band relative to its own current. If such a V exists and is greater than the members' current versions, every member record SHALL be emitted at V. If no eligible common V above current exists, the skill SHALL hold the entire group back (emit no bump for any member) rather than bump a subset; when a newer common version existed but failed the age gate, held members SHALL carry `skippedByReleaseAge: true`. Members held or moved by group reconciliation (rather than their own independent max) SHALL carry `clampedTo: { rule: "version-group", from: <the-independently-resolved-target> }` when the group version differs from what the member would have resolved alone.
-
-#### Scenario: Family resolves in lockstep
-
-- **WHEN** `vitest` and `@vitest/browser` both have candidates and the greatest age-eligible common in-band version is `4.0.24`
-- **THEN** both records are emitted with `targetVersion` `4.0.24`
-
-#### Scenario: Group held back rather than split
-
-- **WHEN** `vitest` could reach `4.0.24` but `@vitest/browser` has no age-eligible version above current that `vitest` also publishes
-- **THEN** neither member is emitted as a bump (the group is held back), rather than bumping `vitest` alone
-
-#### Scenario: Group move annotated
-
-- **WHEN** a member's independent resolution would have been `4.1.8` but group coherence lowers it to `4.0.24`
-- **THEN** that record carries `clampedTo: { rule: "version-group", from: "4.1.8" }`
+- **WHEN** `@types/node` and `@types/react` resolve to different versions in the same scan
+- **THEN** no `version-family skew` warning is pushed (the `@types` scope has no bare root and is not treated as an umbrella family)
 
 ## MODIFIED Requirements
 
@@ -100,8 +86,8 @@ The skill SHALL emit a single JSON object conforming to `ScanResult`:
     sourceFile: string;
     skippedByReleaseAge?: boolean; // may appear on ANY record (root/workspace/catalog) — the age gate is uniform
     clampedTo?: {
-      // present ONLY when a clamp lowered or removed the target that per-package resolution would have proposed
-      rule: "engine-major" | "version-group";
+      // present ONLY on the @types/node record when the engine-major clamp lowered or removed its target
+      rule: "engine-major";
       from: string; // the higher target that was clamped away
     };
     catalogSource?: {
@@ -115,7 +101,7 @@ The skill SHALL emit a single JSON object conforming to `ScanResult`:
 }
 ```
 
-`catalogSource` SHALL be present on every record whose `location` is `catalog:default` or `catalog:<name>`, and absent on `root`/`workspace:*` records. `skippedByReleaseAge` MAY appear on records of any `location` (the release-age gate is applied uniformly). `clampedTo` SHALL be present only on records whose target was lowered or removed by the `@types/node` engine-major clamp or by version-group coherence, and absent otherwise. The skill SHALL NOT emit prose, tables, or user-facing formatting. The JSON object is the only output (plus the warnings embedded in it). `warnings` SHALL be de-duplicated (identical repeated strings collapse to a single entry).
+`catalogSource` SHALL be present on every record whose `location` is `catalog:default` or `catalog:<name>`, and absent on `root`/`workspace:*` records. `skippedByReleaseAge` MAY appear on records of any `location` (the release-age gate is applied uniformly). `clampedTo` SHALL be present only on the `@types/node` record when the engine-major clamp lowered or removed its target, and absent otherwise; version-family skew is reported through `warnings`, never by rewriting a record. The skill SHALL NOT emit prose, tables, or user-facing formatting. The JSON object is the only output (plus the warnings embedded in it). `warnings` SHALL be de-duplicated (identical repeated strings collapse to a single entry).
 
 #### Scenario: Raw JSON-only output
 
@@ -129,5 +115,5 @@ The skill SHALL emit a single JSON object conforming to `ScanResult`:
 
 #### Scenario: clampedTo present only when clamped
 
-- **WHEN** a record's emitted `targetVersion` equals what per-package resolution proposed (no engine-major or version-group clamp lowered it)
+- **WHEN** a record's emitted `targetVersion` equals what per-package resolution proposed (the engine-major clamp did not lower it)
 - **THEN** the record has no `clampedTo` field
