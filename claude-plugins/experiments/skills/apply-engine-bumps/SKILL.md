@@ -1,6 +1,6 @@
 ---
 name: apply-engine-bumps
-description: Resolves Node→latest LTS and pnpm/npm/yarn/bun/Deno→latest, confirms before any write, then pins + aligns every runtime locus exact (no ranges) across package.json, .nvmrc, CI configs, Dockerfiles, and version-manager files; leaves publishable-lib support ranges and unknown surfaces untouched. VCS-free — never commits, pushes, opens PRs, runs tests/lint/build, or runs ncu. The engines-level analog of `apply-npm-updates`; invoked by the engines update commands (`/experiments:npm-update-engines`, `/experiments:npm-update-deep-engines`) and the `commander-update-orchestrator` at `level=engines`.
+description: Resolves Node→latest LTS and pnpm/npm/yarn/bun/Deno→latest, confirms before any write, then pins + aligns every runtime locus exact (no ranges) across package.json, .nvmrc/.node-version, .dvmrc (Deno), CI configs, Dockerfiles, and version-manager files; leaves publishable-lib support ranges and unknown surfaces untouched. VCS-free — never commits, pushes, opens PRs, runs tests/lint/build, or runs ncu. The engines-level analog of `apply-npm-updates`; invoked by the engines update commands (`/experiments:npm-update-engines`, `/experiments:npm-update-deep-engines`) and the `commander-update-orchestrator` at `level=engines`.
 ---
 
 # apply-engine-bumps
@@ -71,7 +71,7 @@ When rewriting GitHub Actions workflows, change ONLY the version **input** — `
 
 ### Docker, version-manager, and `.nvmrc` loci
 
-Rewrite only the version token: the `FROM <image>:<tag>` tag and `ARG *_VERSION=` default for Docker; the `<tool> <version>` line for `.tool-versions`/mise; the whole-file token for `.nvmrc`/`.node-version` (preserving any leading `v` convention the file used). Never change the image name/runtime choice or migrate a CI provider.
+Rewrite only the version token: the `FROM <image>:<tag>` tag and `ARG *_VERSION=` default for Docker; the `<tool> <version>` line for `.tool-versions`/mise; the whole-file token for `.nvmrc`/`.node-version` (Node) and `.dvmrc` (Deno) — same surgical treatment, preserving any leading `v` convention the file used. Never change the image name/runtime choice or migrate a CI provider.
 
 ## What is left untouched
 

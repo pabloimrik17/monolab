@@ -46,7 +46,7 @@ If the scan returns `updates.length === 0`, the command SHALL:
 
 #### Scenario: Warnings printed before empty message
 
-- **WHEN** the scan returns `updates: []` and `warnings: ["named catalog \"test\" detected but not yet supported in this iteration"]`
+- **WHEN** the scan returns `updates: []` and `warnings: ["ncu failed on package.json"]`
 - **THEN** the command prints the `Warnings:` heading followed by the warning bullet, then `No patch updates available.`, then exits
 
 ### Requirement: Workflow orchestration

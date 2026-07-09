@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-07-08
+goal: "Close issue #233 for pnpm named catalogs: scan emits records instead of a
+  not-yet-supported warning; apply bumps catalogs.<name> blocks in place."
