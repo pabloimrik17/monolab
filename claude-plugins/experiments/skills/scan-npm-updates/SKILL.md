@@ -252,7 +252,7 @@ The skill SHALL NOT enforce coherence (no holds, no clamps, no target rewrites �
 - This shape only fires for genuine umbrella tools. It does **not** group independently-versioned scopes that have no bare root (`@types/*`, `@radix-ui/*`, `@aws-sdk/*`), so those never produce false positives.
 - If such a group has **two or more** bumped members whose emitted `targetVersion` (ignoring the `^`/`~` prefix) differ, push one warning:
 
-  `version-family skew: <name>@<v>, <name2>@<v2> resolved to different versions. If these are a lockstep family (e.g. vitest + @vitest/*), align them to one version before installing — mixed family versions cause "Running mixed versions is not supported" (see #247).`
+    `version-family skew: <name>@<v>, <name2>@<v2> resolved to different versions. If these are a lockstep family (e.g. vitest + @vitest/*), align them to one version before installing — mixed family versions cause "Running mixed versions is not supported" (see #247).`
 
 Targets are left untouched; the caller/user decides. Because the uniform gate makes this warning rare, it is signal, not noise.
 
@@ -294,23 +294,23 @@ Emit the `ScanResult` JSON object. That's it. Do not print tables, do not ask qu
 
 ## Error paths summary
 
-| Scenario                                               | Behaviour                                                                                                                   |
-| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| Unknown `level`                                        | Abort with precondition-1 error.                                                                                            |
-| No lockfile and no `packageManager` hint               | Abort with precondition-2 error.                                                                                            |
-| PM lacks `minimumReleaseAge` lookup row                | Abort with precondition-3 error.                                                                                            |
-| PM runner missing                                      | Abort with precondition-4 error.                                                                                            |
-| ncu exits non-zero on a manifest                       | Push stderr (or a synthesized `ncu failed on <manifest>`) into `warnings` and continue. `updates` for that manifest = `[]`. |
-| ncu output cannot be parsed as JSON                    | Push raw stdout (truncated) into `warnings`; `updates` for that manifest = `[]`.                                            |
-| `npm view <pkg>` fails during catalog post-process     | Push a warning naming the package; omit catalog record for that entry.                                                      |
-| pnpm named catalog present                             | Supported — emit records, no warning.                                                                                       |
-| pnpm ambiguous default (`catalog` + `catalogs.default`) | Push ambiguous-default warning; emit both as distinct records (differentiated by `catalogSource.field`).                   |
-| bun named catalog present                              | Supported — emit records, no warning.                                                                                       |
-| bun ambiguous default (`catalog` + `catalogs.default`) | Push ambiguous-default warning; emit both as distinct records (differentiated by `catalogSource.field`).                    |
-| `devEngines.runtime.node` vs `engines.node` disagree   | Use the **lower** major for the `@types/node` clamp; push a warning naming both loci.                                       |
-| No Node engine surface present                         | Do **not** clamp `@types/node`; push a warning that no Node engine surface was found.                                       |
-| `@types/node` major blocked, no in-band target        | Omit the record (no bump); push a warning naming `@types/node` + the blocked major. No `clampedTo` (no record).             |
-| Umbrella family resolves to mixed versions             | Push a version-family skew warning; leave targets untouched (advisory — no hold/clamp).                                     |
+| Scenario                                                | Behaviour                                                                                                                   |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Unknown `level`                                         | Abort with precondition-1 error.                                                                                            |
+| No lockfile and no `packageManager` hint                | Abort with precondition-2 error.                                                                                            |
+| PM lacks `minimumReleaseAge` lookup row                 | Abort with precondition-3 error.                                                                                            |
+| PM runner missing                                       | Abort with precondition-4 error.                                                                                            |
+| ncu exits non-zero on a manifest                        | Push stderr (or a synthesized `ncu failed on <manifest>`) into `warnings` and continue. `updates` for that manifest = `[]`. |
+| ncu output cannot be parsed as JSON                     | Push raw stdout (truncated) into `warnings`; `updates` for that manifest = `[]`.                                            |
+| `npm view <pkg>` fails during catalog post-process      | Push a warning naming the package; omit catalog record for that entry.                                                      |
+| pnpm named catalog present                              | Supported — emit records, no warning.                                                                                       |
+| pnpm ambiguous default (`catalog` + `catalogs.default`) | Push ambiguous-default warning; emit both as distinct records (differentiated by `catalogSource.field`).                    |
+| bun named catalog present                               | Supported — emit records, no warning.                                                                                       |
+| bun ambiguous default (`catalog` + `catalogs.default`)  | Push ambiguous-default warning; emit both as distinct records (differentiated by `catalogSource.field`).                    |
+| `devEngines.runtime.node` vs `engines.node` disagree    | Use the **lower** major for the `@types/node` clamp; push a warning naming both loci.                                       |
+| No Node engine surface present                          | Do **not** clamp `@types/node`; push a warning that no Node engine surface was found.                                       |
+| `@types/node` major blocked, no in-band target          | Omit the record (no bump); push a warning naming `@types/node` + the blocked major. No `clampedTo` (no record).             |
+| Umbrella family resolves to mixed versions              | Push a version-family skew warning; leave targets untouched (advisory — no hold/clamp).                                     |
 
 The only abort paths are the four preconditions. Everything after is resilient: degrade to warnings and keep going.
 
