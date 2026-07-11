@@ -136,7 +136,7 @@ Per project, a single teammate SHALL perform reconnaissance and write `changeset
 
 ### Requirement: Human approval gate interface
 
-The per-project human approval gate SHALL be presented through one of two interfaces. The primary approach SHALL use the orchestrator's plan mode as a review/iteration surface (the orchestrator enters plan mode, presents the changeset via the plan-approval flow, and on approval leaves plan mode and delegates the apply to the teammate rather than implementing in the main). The fallback approach SHALL use `AskUserQuestion` showing the changeset digest. In either case the gate SHALL block for the human, and approval SHALL result in delegating the apply to the teammate.
+The per-project human approval gate SHALL default to the orchestrator's plan mode as its review/iteration surface: the orchestrator enters plan mode, presents the changeset via the plan-approval flow, and on approval leaves plan mode and delegates the apply to the teammate rather than implementing in the main. (The orchestrator's own plan-approval flow is empirically verified to block for the human even under `defaultMode: "auto"`.) The fallback interface SHALL be `AskUserQuestion` showing the changeset digest, used only when the orchestrator's plan-mode approval is unavailable or non-blocking in the active runtime (e.g. non-interactive execution). In either case the gate SHALL block for the human, and approval SHALL result in delegating the apply to the teammate.
 
 #### Scenario: Primary — plan mode used only to gate
 
@@ -146,7 +146,7 @@ The per-project human approval gate SHALL be presented through one of two interf
 
 #### Scenario: Fallback — AskUserQuestion gate
 
-- **WHEN** the orchestrator's own plan-mode approval is not reliable under the active permission mode
+- **WHEN** the orchestrator's plan-mode approval is unavailable or non-blocking in the active runtime (e.g. non-interactive execution)
 - **THEN** the gate SHALL be presented via `AskUserQuestion` with the changeset digest
 - **AND** approval SHALL delegate the apply to the teammate
 
