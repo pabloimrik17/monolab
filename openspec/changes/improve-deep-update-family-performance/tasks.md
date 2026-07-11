@@ -32,7 +32,7 @@
 - [ ] 5.1 Implement the single apply teammate: turn-1 recon + write `changeset.md`, pause at turn boundary, no source edit
 - [ ] 5.2 Add the orchestrator pre-gate check (source untouched via hash/`git diff`); abort the project on early edit
 - [ ] 5.3 Implement the primary gate: orchestrator plan mode as review/iteration UI; approval delegates to the teammate (no in-main implementation); reject-with-feedback relays `revise` to the teammate
-- [ ] 5.4 Implement the `AskUserQuestion` fallback gate (digest-based) for when orchestrator plan-mode approval is unreliable under the active permission mode
+- [ ] 5.4 Implement the `AskUserQuestion` fallback gate (digest-based) for when orchestrator plan-mode approval is unavailable or non-blocking in the active runtime (e.g. non-interactive execution)
 - [ ] 5.5 On approval, resume the same teammate via `SendMessage proceed`; verify the applied result on disk (never trust the completion message)
 - [ ] 5.6 Implement sequential cross-project apply with a stop/continue user decision on per-project failure
 - [ ] 5.7 Use `TaskStop` for teammate teardown (structured `shutdown_request` is unreliable for idle agents)
@@ -47,5 +47,5 @@
 
 - [ ] 7.1 Dry-run each level (patch/minor/major/engines) single-project; confirm changelogs fetched, chronology present, main stays context-clean
 - [ ] 7.2 Dry-run the cross-project `commander-update-deep-patch` path end-to-end (dossier → per-project gate → apply → verify-on-disk)
-- [ ] 7.3 Resolve the open question on orchestrator `ExitPlanMode` behavior under `auto` mode; lock primary vs fallback gate
-- [ ] 7.4 Run `openspec validate --strict` and reconcile the `experiments-plugin` spec deltas at archive time
+- [ ] 7.3 Confirm the shipped gate wiring matches the resolved spike (plan-mode primary blocks under `auto`; `AskUserQuestion` fallback for non-interactive runtimes) — the open question itself is RESOLVED (design.md, 2026-07-11)
+- [ ] 7.4 Run `openspec validate --strict`; at archive-sync apply every capability delta (12 capabilities) and sweep capability overview/Purpose prose (not covered by deltas) for `plan.md`/`planning`/plan-mode leftovers

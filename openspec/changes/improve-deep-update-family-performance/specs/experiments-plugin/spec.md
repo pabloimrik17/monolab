@@ -8,7 +8,7 @@ The deep-update family SHALL use three distinct, non-colliding artifact names to
 - `changeset.md` — a per-project concrete apply plan (target file paths, before/after snippets, exact old/new strings).
 - Claude Code **plan mode** — the harness feature only.
 
-No pipeline artifact SHALL be named `plan.md`. The internal research phase formerly named `planning` SHALL be named `synthesis`. The word "plan"/"planning" SHALL be reserved exclusively for Claude Code plan mode in all command and skill prose.
+No pipeline artifact SHALL be named `plan.md`. The internal research phase formerly named `planning` SHALL be named `synthesis`. Within the deep-update family's command and skill prose, the word "plan"/"planning" SHALL refer only to Claude Code plan mode, with these retained legacy names carved out: the run-directory storage path `~/.claude/experiments/plans/` and its derived terms ("plan directory", "plan-dir", `planDirName` — kept for on-disk compatibility), and the `## PR plan` section name produced by `partition-breaking-changes`. Files outside the deep-update family (e.g. the shallow update commands) are outside this requirement's scope.
 
 #### Scenario: No artifact named plan.md
 
@@ -25,9 +25,9 @@ No pipeline artifact SHALL be named `plan.md`. The internal research phase forme
 
 #### Scenario: "plan" reserved for the harness feature
 
-- **WHEN** command or skill prose refers to writing or reviewing a document
+- **WHEN** deep-update-family command or skill prose refers to writing or reviewing a pipeline document
 - **THEN** it SHALL use `dossier` or `changeset` for the artifact
-- **AND** SHALL use "plan mode" only when referring to the Claude Code harness feature
+- **AND** SHALL use "plan"/"planning" only for Claude Code plan mode or a carved-out legacy name (run-directory terms, `## PR plan`)
 
 ### Requirement: Changelog fetch is a deterministic executable
 
@@ -68,7 +68,7 @@ The `## Changelogs` chronology section SHALL be assembled by a deterministic scr
 
 ### Requirement: Dossier synthesis by teammate with two-layer compliance check
 
-The global dossier SHALL be authored by a named synthesizer teammate and validated before it is shown to the user. Validation SHALL comprise (1) a deterministic layer that asserts structural completeness against the changelog cache and bump set (every bump-set package has a chronology block; required headings present; empty sections carry sentinels), and (2) a fresh-eyes subagent that checks semantic fidelity (findings are grounded in the changelogs; hints reference real areas; priorities are coherent). Violations SHALL be relayed to the still-alive synthesizer for repair; the repair loop SHALL be capped (at most 3 rounds) with residual violations escalated into the user gate rather than looped indefinitely.
+The global dossier SHALL be authored by a named synthesizer teammate and validated before it is shown to the user. Validation SHALL comprise (1) a deterministic layer that asserts structural completeness against the changelog cache and bump set (the changelog cache contains an entry or a recorded error for every bump-set package; every bump-set package has a chronology block; required headings present; empty sections carry sentinels — this enumeration is the single normative home for the deterministic check's criteria), and (2) a fresh-eyes subagent that checks semantic fidelity (findings are grounded in the changelogs; hints reference real areas; priorities are coherent). Violations SHALL be relayed to the still-alive synthesizer for repair; the repair loop SHALL be capped (at most 3 rounds) with residual violations escalated into the user gate rather than looped indefinitely.
 
 #### Scenario: Dossier validated before user sees it
 
@@ -91,7 +91,7 @@ The global dossier SHALL be authored by a named synthesizer teammate and validat
 
 ### Requirement: Main-window context diet
 
-The orchestrator (main conversation) SHALL hold only paths and small status digests during a deep-update run; it SHALL NOT load changelog bodies, per-group research files, or the dossier into its own context. `ncu`/install output SHALL be redirected to on-disk logs; the main SHALL receive a digest and, on failure only, a bounded tail (at most ~40 lines). Verbatim streaming of `ncu`/install output into the main conversation SHALL NOT occur.
+The orchestrator (main conversation) SHALL hold only paths and small status digests (target ≤ ~30 lines each; structured tables such as the bump set may exceed the target but SHALL remain bounded digests, never full artifact bodies) during a deep-update run; it SHALL NOT load changelog bodies, per-group research files, or the dossier into its own context. `ncu`/install output SHALL be redirected to on-disk logs; the main SHALL receive a digest and, on failure only, a bounded tail (at most ~40 lines). Verbatim streaming of `ncu`/install output into the main conversation SHALL NOT occur.
 
 #### Scenario: Install output goes to disk, not the main window
 
@@ -128,6 +128,12 @@ Per project, a single teammate SHALL perform reconnaissance and write `changeset
 - **AND** SHALL send the still-alive teammate a proceed instruction
 - **AND** the teammate SHALL apply the approved edits with its reconnaissance context intact
 
+#### Scenario: Reject-with-feedback loops through revision
+
+- **WHEN** the user rejects the presented changeset with feedback
+- **THEN** the orchestrator SHALL relay the feedback to the still-alive teammate to revise `changeset.md`
+- **AND** SHALL re-present the revised changeset through the same gate
+
 #### Scenario: Result verified on disk
 
 - **WHEN** the teammate reports the apply is complete
@@ -136,7 +142,7 @@ Per project, a single teammate SHALL perform reconnaissance and write `changeset
 
 ### Requirement: Human approval gate interface
 
-The per-project human approval gate SHALL default to the orchestrator's plan mode as its review/iteration surface: the orchestrator enters plan mode, presents the changeset via the plan-approval flow, and on approval leaves plan mode and delegates the apply to the teammate rather than implementing in the main. (The orchestrator's own plan-approval flow is empirically verified to block for the human even under `defaultMode: "auto"`.) The fallback interface SHALL be `AskUserQuestion` showing the changeset digest, used only when the orchestrator's plan-mode approval is unavailable or non-blocking in the active runtime (e.g. non-interactive execution). In either case the gate SHALL block for the human, and approval SHALL result in delegating the apply to the teammate.
+The per-project human approval gate SHALL default to the orchestrator's plan mode as its review/iteration surface: the orchestrator enters plan mode, presents the changeset via the plan-approval flow, and on approval leaves plan mode and delegates the apply to the teammate rather than implementing in the main. The fallback interface SHALL be `AskUserQuestion` showing the changeset digest, used only when the orchestrator's plan-mode approval is unavailable or non-blocking in the active runtime (e.g. non-interactive execution). In either case the gate SHALL block for the human, and approval SHALL result in delegating the apply to the teammate.
 
 #### Scenario: Primary — plan mode used only to gate
 
@@ -149,6 +155,11 @@ The per-project human approval gate SHALL default to the orchestrator's plan mod
 - **WHEN** the orchestrator's plan-mode approval is unavailable or non-blocking in the active runtime (e.g. non-interactive execution)
 - **THEN** the gate SHALL be presented via `AskUserQuestion` with the changeset digest
 - **AND** approval SHALL delegate the apply to the teammate
+
+#### Scenario: Gate blocks for the human
+
+- **WHEN** the gate is presented through either interface
+- **THEN** the flow SHALL NOT continue to the apply until the human responds
 
 ### Requirement: Sequential cross-project apply with stop-on-fail
 
