@@ -44,11 +44,7 @@ import {
     writeVerifiedVersion,
 } from "./lib/cache.mjs";
 import { detectPattern, extractSections } from "./lib/changelog-parse.mjs";
-import {
-    ENGINES,
-    isEngineRequest,
-    nodeVersionsFromDistIndex,
-} from "./lib/engines.mjs";
+import { ENGINES, isEngineRequest, nodeVersionsFromDistIndex } from "./lib/engines.mjs";
 import {
     defaultHttp,
     githubApi,
@@ -60,28 +56,18 @@ import {
     sleep,
     TAG_TEMPLATES,
 } from "./lib/github.mjs";
-import {
-    compare,
-    isValid,
-    maxVersion,
-    stableInRange,
-} from "./lib/semver.mjs";
+import { compare, isValid, maxVersion, stableInRange } from "./lib/semver.mjs";
 
-const CHANGELOG_FILENAMES = [
-    "CHANGELOG.md",
-    "CHANGELOG",
-    "History.md",
-    "CHANGES.md",
-];
+const CHANGELOG_FILENAMES = ["CHANGELOG.md", "CHANGELOG", "History.md", "CHANGES.md"];
+
+/** Usage/structural error → main() prints { ok:false, error } and exits 2. */
+export class UsageError extends Error {}
 
 function usageError(message) {
-    process.stdout.write(
-        JSON.stringify({ ok: false, error: message }, null, 2) + "\n",
-    );
-    process.exit(2);
+    throw new UsageError(message);
 }
 
-function parseArgs(argv) {
+export function parseArgs(argv) {
     const args = { engine: false, cacheRoot: defaultCacheRoot() };
     const positional = [];
     for (let i = 0; i < argv.length; i++) {
@@ -91,11 +77,7 @@ function parseArgs(argv) {
         else positional.push(a);
     }
     // Scoped package split across two tokens: `@scope name` → `@scope/name`
-    if (
-        positional[0]?.startsWith("@") &&
-        !positional[0].includes("/") &&
-        positional.length >= 3
-    ) {
+    if (positional[0]?.startsWith("@") && !positional[0].includes("/") && positional.length >= 3) {
         positional.splice(0, 2, `${positional[0]}/${positional[1]}`);
     }
     if (positional.length !== 2) {
@@ -122,7 +104,7 @@ function npmView(pkg, fields) {
 }
 
 /** Resolve FROM/TO from the version part against the stable version list. */
-function resolveRange(versionPart, allVersions) {
+export function resolveRange(versionPart, allVersions) {
     if (versionPart.includes("..")) {
         const [from, to] = versionPart.split("..");
         if (!isValid(from) || !isValid(to) || compare(from, to) > 0) {
@@ -143,17 +125,15 @@ function resolveRange(versionPart, allVersions) {
 
 /** Strategy A: fetch + parse raw changelog files with the monorepo cascade. */
 async function strategyA(ctx, fetchVersions) {
-    const { cacheDir, meta, owner, repo, http } = ctx;
+    const { cacheDir, meta, owner, repo, http, useGh } = ctx;
     const resolved = new Map();
     let fetchErrored = false;
-    const branch = await resolveDefaultBranch(owner, repo, { http });
+    const branch = await resolveDefaultBranch(owner, repo, { http, useGh });
     if (!branch) return { resolved, fetchErrored: true };
 
     const chains = [];
     if (meta.isMonorepo && meta.monorepoDirectory) {
-        chains.push(
-            CHANGELOG_FILENAMES.map((f) => `${meta.monorepoDirectory}/${f}`),
-        );
+        chains.push(CHANGELOG_FILENAMES.map((f) => `${meta.monorepoDirectory}/${f}`));
     }
     chains.push(CHANGELOG_FILENAMES.slice());
 
@@ -199,9 +179,7 @@ async function strategyA(ctx, fetchVersions) {
 
     // Split-archive handling for still-unresolved versions.
     if (remaining.size > 0) {
-        const majorsMinors = new Set(
-            [...remaining].map((v) => v.split(".").slice(0, 2).join(".")),
-        );
+        const majorsMinors = new Set([...remaining].map((v) => v.split(".").slice(0, 2).join(".")));
         const archivePaths = [
             ...[...majorsMinors].map((mm) => `changelogs/CHANGELOG-${mm}.md`),
             "CHANGELOG_ARCHIVE.md",
@@ -233,7 +211,7 @@ async function strategyA(ctx, fetchVersions) {
 
 /** Strategy B: GitHub Releases with tag-format probe chain. */
 async function strategyB(ctx, versions, tagTemplatesOverride) {
-    const { cacheDir, meta, owner, repo, pkg, http } = ctx;
+    const { cacheDir, meta, owner, repo, pkg, http, useGh } = ctx;
     const resolved = new Map();
     const emptyBody = [];
     const errored = new Set();
@@ -255,7 +233,7 @@ async function strategyB(ctx, versions, tagTemplatesOverride) {
             const tag = resolveTagTemplate(template, pkg, version);
             const res = await githubApi(
                 `/repos/${owner}/${repo}/releases/tags/${encodeURIComponent(tag)}`,
-                { http },
+                { http, useGh },
             );
             await sleep(100);
             if (res.status === 200 && res.json) {
@@ -326,7 +304,7 @@ async function strategyC(ctx, versions) {
     return { resolved, failed };
 }
 
-async function enumerateEngineVersions(engine, http) {
+export async function enumerateEngineVersions(engine, http, npmViewFn = npmView) {
     const spec = ENGINES[engine];
     if (spec.versionSource === "node-dist") {
         const res = await http("https://nodejs.org/dist/index.json");
@@ -338,13 +316,19 @@ async function enumerateEngineVersions(engine, http) {
         }
     }
     const npmName = spec.versionSource.slice("npm:".length);
-    const versions = npmView(npmName, ["versions"]);
+    const versions = npmViewFn(npmName, ["versions"]);
     return Array.isArray(versions) ? versions : null;
 }
 
-async function main() {
-    const args = parseArgs(process.argv.slice(2));
-    const http = defaultHttp;
+/**
+ * Full fetch pipeline with injectable transports (tests run offline).
+ * deps: { http, npmView, useGh } — all optional, defaults preserve the
+ * CLI behavior. Returns { result, exitCode } (0 all verified, 1 some
+ * failed); throws UsageError for structural problems (main() → exit 2).
+ */
+export async function runFetch(argv, deps = {}) {
+    const { http = defaultHttp, npmView: npmViewFn = npmView, useGh } = deps;
+    const args = parseArgs(argv);
     const engineMode = isEngineRequest(args.pkg, args.engine);
 
     let owner;
@@ -358,14 +342,12 @@ async function main() {
         const spec = ENGINES[args.pkg];
         ({ owner, repo } = spec.repo);
         tagTemplatesOverride = spec.tagTemplates;
-        allVersions = await enumerateEngineVersions(args.pkg, http);
+        allVersions = await enumerateEngineVersions(args.pkg, http, npmViewFn);
         if (!allVersions) {
-            usageError(
-                `could not enumerate versions for engine "${args.pkg}"`,
-            );
+            usageError(`could not enumerate versions for engine "${args.pkg}"`);
         }
     } else {
-        const view = npmView(args.pkg, ["repository", "versions"]);
+        const view = npmViewFn(args.pkg, ["repository", "versions"]);
         if (!view) usageError(`npm view failed for "${args.pkg}"`);
         const repository = view.repository ?? null;
         const parsed = parseGithubRepository(repository);
@@ -405,9 +387,7 @@ async function main() {
         monorepoDirectory,
     });
 
-    const fetchVersions = versions.filter((v) =>
-        versionNeedsFetch(cacheDir, v),
-    );
+    const fetchVersions = versions.filter((v) => versionNeedsFetch(cacheDir, v));
     const results = new Map(); // version → {status, source, failReason, retryable, byteSize}
     for (const v of versions) {
         if (!fetchVersions.includes(v)) {
@@ -423,16 +403,16 @@ async function main() {
     }
 
     if (fetchVersions.length > 0) {
-        const ctx = { cacheDir, meta, owner, repo, pkg: args.pkg, http };
+        const ctx = { cacheDir, meta, owner, repo, pkg: args.pkg, http, useGh };
         let resolvedA = new Map();
         let fetchErroredA = false;
         if (!engineMode) {
-            ({ resolved: resolvedA, fetchErrored: fetchErroredA } =
-                await strategyA(ctx, fetchVersions));
+            ({ resolved: resolvedA, fetchErrored: fetchErroredA } = await strategyA(
+                ctx,
+                fetchVersions,
+            ));
         }
-        const unresolvedAfterA = fetchVersions.filter(
-            (v) => !resolvedA.has(v),
-        );
+        const unresolvedAfterA = fetchVersions.filter((v) => !resolvedA.has(v));
         const {
             resolved: resolvedB,
             strategyCVersions,
@@ -448,12 +428,7 @@ async function main() {
         for (const v of fetchVersions) {
             const hit = resolvedA.get(v) ?? resolvedB.get(v) ?? resolvedC.get(v);
             if (hit) {
-                const written = writeVerifiedVersion(
-                    cacheDir,
-                    v,
-                    hit.content,
-                    hit,
-                );
+                const written = writeVerifiedVersion(cacheDir, v, hit.content, hit);
                 results.set(v, {
                     status: written.status === "verified" ? "fetched" : "failed",
                     source: written.source,
@@ -493,40 +468,39 @@ async function main() {
         requested: versions.length,
         cached: list.filter((r) => r.status === "cached").length,
         fetched: list.filter((r) => r.status === "fetched").length,
-        failed: list.filter(
-            (r) => r.status === "failed" || r.status === "skipped",
-        ).length,
+        failed: list.filter((r) => r.status === "failed" || r.status === "skipped").length,
     };
-    const ok = list.every(
-        (r) => r.status === "cached" || r.status === "fetched",
-    );
-    process.stdout.write(
-        JSON.stringify(
-            {
-                ok,
-                package: args.pkg,
-                engine: engineMode,
-                from,
-                to,
-                cacheDir,
-                versions: list,
-                summary,
-                error: null,
-            },
-            null,
-            2,
-        ) + "\n",
-    );
-    process.exit(ok ? 0 : 1);
+    const ok = list.every((r) => r.status === "cached" || r.status === "fetched");
+    return {
+        result: {
+            ok,
+            package: args.pkg,
+            engine: engineMode,
+            from,
+            to,
+            cacheDir,
+            versions: list,
+            summary,
+            error: null,
+        },
+        exitCode: ok ? 0 : 1,
+    };
 }
 
-main().catch((err) => {
-    process.stdout.write(
-        JSON.stringify(
-            { ok: false, error: `unexpected: ${err?.message ?? err}` },
-            null,
-            2,
-        ) + "\n",
-    );
-    process.exit(2);
-});
+async function main() {
+    try {
+        const { result, exitCode } = await runFetch(process.argv.slice(2));
+        process.stdout.write(JSON.stringify(result, null, 2) + "\n");
+        process.exit(exitCode);
+    } catch (err) {
+        const error =
+            err instanceof UsageError ? err.message : `unexpected: ${err?.message ?? err}`;
+        process.stdout.write(JSON.stringify({ ok: false, error }, null, 2) + "\n");
+        process.exit(2);
+    }
+}
+
+const invokedDirectly =
+    process.argv[1] &&
+    import.meta.url === (await import("node:url")).pathToFileURL(process.argv[1]).href;
+if (invokedDirectly) main();

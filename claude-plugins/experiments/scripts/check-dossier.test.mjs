@@ -3,13 +3,13 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "vitest";
+import { checkDossier, expectedHeadings } from "./check-dossier.mjs";
 import {
     ensurePackageMeta,
     packageCacheDir,
     writeFailedVersion,
     writeVerifiedVersion,
 } from "./lib/cache.mjs";
-import { checkDossier, expectedHeadings } from "./check-dossier.mjs";
 
 function seededRoot() {
     const root = mkdtempSync(join(tmpdir(), "dossier-"));
@@ -63,15 +63,8 @@ test("expectedHeadings per level and mode", () => {
         "Patch bump set",
         "Changelogs",
     ]);
-    assert.ok(
-        expectedHeadings("major", "single-project").includes(
-            "Breaking changes & migration",
-        ),
-    );
-    assert.deepEqual(
-        expectedHeadings("minor", "cross-project")[3],
-        "Cross-project bump set",
-    );
+    assert.ok(expectedHeadings("major", "single-project").includes("Breaking changes & migration"));
+    assert.deepEqual(expectedHeadings("minor", "cross-project")[3], "Cross-project bump set");
 });
 
 test("compliant dossier passes", () => {
@@ -99,9 +92,7 @@ test("missing chronology block for a bump-set package fails", () => {
     });
     assert.ok(!result.ok);
     assert.ok(
-        result.violations.some(
-            (v) => v.rule === "missing-chronology-block" && v.package === "zod",
-        ),
+        result.violations.some((v) => v.rule === "missing-chronology-block" && v.package === "zod"),
     );
 });
 
@@ -119,9 +110,7 @@ test("missing required heading fails", () => {
     });
     assert.ok(
         result.violations.some(
-            (v) =>
-                v.rule === "missing-heading" &&
-                v.message.includes("Workarounds resolved"),
+            (v) => v.rule === "missing-heading" && v.message.includes("Workarounds resolved"),
         ),
     );
 });
@@ -140,10 +129,7 @@ test("empty section without sentinel fails", () => {
 
 test("uncovered package fails unless its block carries the sentinel", () => {
     const root = seededRoot(); // cache has zod only
-    const bumpSet = [
-        ...BUMP_SET,
-        { name: "left-pad", from: "1.0.0", to: "1.3.0" },
-    ];
+    const bumpSet = [...BUMP_SET, { name: "left-pad", from: "1.0.0", to: "1.3.0" }];
     const withoutBlock = checkDossier({
         content: compliantDossier(),
         bumpSet,
@@ -189,10 +175,7 @@ test("verbatim H2 headings inside changelog bodies do not truncate ## Changelogs
         source: "raw_changelog",
         sourceUrl: "u",
     });
-    const bumpSet = [
-        ...BUMP_SET,
-        { name: "semver", from: "7.5.4", to: "7.6.0" },
-    ];
+    const bumpSet = [...BUMP_SET, { name: "semver", from: "7.5.4", to: "7.6.0" }];
     const content = compliantDossier().replace(
         /### zod[\s\S]*$/,
         [
@@ -227,12 +210,7 @@ test("verbatim H2 headings inside changelog bodies do not truncate ## Changelogs
 test("trailing ## PR plan after ## Changelogs is not swallowed and stays valid", () => {
     const content =
         compliantDossier() +
-        [
-            "## PR plan",
-            "",
-            "- Bucket 1 — zod (HIGH). Branch: deps/major-zod.",
-            "",
-        ].join("\n");
+        ["## PR plan", "", "- Bucket 1 — zod (HIGH). Branch: deps/major-zod.", ""].join("\n");
     const result = checkDossier({
         content,
         bumpSet: BUMP_SET,
@@ -267,10 +245,134 @@ test("genuinely missing block still fails when bodies carry H2 headings", () => 
         cacheRoot: seededRoot(),
     });
     assert.ok(
+        result.violations.some((v) => v.rule === "missing-chronology-block" && v.package === "zod"),
+    );
+});
+
+function seededEnginesRoot() {
+    const root = mkdtempSync(join(tmpdir(), "dossier-engines-"));
+    const node = packageCacheDir("node", root);
+    ensurePackageMeta(node, { package: "node", repository: "nodejs/node" });
+    writeVerifiedVersion(node, "22.14.0", "## 2025-02-11, Version 22.14.0", {
+        source: "raw_changelog",
+        sourceUrl: "u",
+    });
+    return root;
+}
+
+const ENGINES_BUMP_SET = [{ name: "node", from: "22.11.0", to: "22.14.0" }];
+
+function compliantEnginesDossier() {
+    return [
+        "# Deep-engines dossier: demo",
+        "",
+        "## Breaking changes & migration",
+        "",
+        "_no breaking changes_",
+        "",
+        "## Improvements (applicable to this codebase)",
+        "",
+        "- [high] node — new fs API. (group: engines-1)",
+        "",
+        "## Workarounds resolved",
+        "",
+        "_no workarounds resolved_",
+        "",
+        "## Skipped or unavailable",
+        "",
+        "_no skipped groups_",
+        "",
+        "## Engines bump set",
+        "",
+        "| engine | current → target | location |",
+        "| ------ | ---------------- | -------- |",
+        "| node   | 22.11.0 → 22.14.0 | .nvmrc  |",
+        "",
+        "## Changelogs",
+        "",
+        "### node (22.11.0 → 22.14.0)",
+        "",
+        "<details><summary>22.14.0</summary>body</details>",
+        "",
+    ].join("\n");
+}
+
+test("expectedHeadings for engines matches major shape with level-derived bump set", () => {
+    assert.deepEqual(expectedHeadings("engines", "single-project"), [
+        "Breaking changes & migration",
+        "Improvements (applicable to this codebase)",
+        "Workarounds resolved",
+        "Skipped or unavailable",
+        "Engines bump set",
+        "Changelogs",
+    ]);
+    assert.deepEqual(expectedHeadings("engines", "cross-project")[4], "Cross-project bump set");
+});
+
+test("compliant engines dossier passes", () => {
+    const result = checkDossier({
+        content: compliantEnginesDossier(),
+        bumpSet: ENGINES_BUMP_SET,
+        level: "engines",
+        mode: "single-project",
+        cacheRoot: seededEnginesRoot(),
+    });
+    assert.deepEqual(result, { ok: true, violations: [] });
+});
+
+test("engines dossier missing breaking-changes section fails", () => {
+    const content = compliantEnginesDossier().replace(
+        "## Breaking changes & migration\n\n_no breaking changes_\n\n",
+        "",
+    );
+    const result = checkDossier({
+        content,
+        bumpSet: ENGINES_BUMP_SET,
+        level: "engines",
+        mode: "single-project",
+        cacheRoot: seededEnginesRoot(),
+    });
+    assert.ok(!result.ok);
+    assert.ok(
         result.violations.some(
-            (v) => v.rule === "missing-chronology-block" && v.package === "zod",
+            (v) =>
+                v.rule === "missing-heading" && v.message.includes("Breaking changes & migration"),
         ),
     );
+});
+
+test("engines dossier with wrong bump-set heading fails", () => {
+    // Level-derived heading: a patch-style heading fails an engines check.
+    const content = compliantEnginesDossier().replace("## Engines bump set", "## Patch bump set");
+    const result = checkDossier({
+        content,
+        bumpSet: ENGINES_BUMP_SET,
+        level: "engines",
+        mode: "single-project",
+        cacheRoot: seededEnginesRoot(),
+    });
+    assert.ok(!result.ok);
+    assert.ok(
+        result.violations.some(
+            (v) => v.rule === "missing-heading" && v.message.includes("Engines bump set"),
+        ),
+    );
+});
+
+test("engines dossier with breaking-changes after improvements fails order", () => {
+    const breaking = "## Breaking changes & migration\n\n_no breaking changes_\n\n";
+    const content = compliantEnginesDossier()
+        .replace(breaking, "")
+        .replace("## Workarounds resolved", `${breaking}## Workarounds resolved`);
+    const result = checkDossier({
+        content,
+        bumpSet: ENGINES_BUMP_SET,
+        level: "engines",
+        mode: "single-project",
+        cacheRoot: seededEnginesRoot(),
+    });
+    assert.ok(!result.ok);
+    assert.ok(result.violations.some((v) => v.rule === "heading-order"));
 });
 
 test("major level requires breaking-changes section before improvements", () => {
@@ -284,16 +386,13 @@ test("major level requires breaking-changes section before improvements", () => 
     assert.ok(
         result.violations.some(
             (v) =>
-                v.rule === "missing-heading" &&
-                v.message.includes("Breaking changes & migration"),
+                v.rule === "missing-heading" && v.message.includes("Breaking changes & migration"),
         ),
     );
     // Bump-set heading is level-derived: patch heading fails a major check.
     assert.ok(
         result.violations.some(
-            (v) =>
-                v.rule === "missing-heading" &&
-                v.message.includes("Major bump set"),
+            (v) => v.rule === "missing-heading" && v.message.includes("Major bump set"),
         ),
     );
 });

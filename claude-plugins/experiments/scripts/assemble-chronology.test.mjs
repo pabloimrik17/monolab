@@ -3,8 +3,8 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { test } from "vitest";
 import { fileURLToPath } from "node:url";
+import { test } from "vitest";
 import {
     ensurePackageMeta,
     packageCacheDir,
@@ -13,10 +13,7 @@ import {
     writeVerifiedVersion,
 } from "./lib/cache.mjs";
 
-const SCRIPT = join(
-    dirname(fileURLToPath(import.meta.url)),
-    "assemble-chronology.mjs",
-);
+const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), "assemble-chronology.mjs");
 
 function seedCache(root) {
     // zod: two fetched versions inside the span + the installed one (excluded)
@@ -74,8 +71,7 @@ test("assembles alphabetical blocks, half-open span, details wrappers, sentinel"
     assert.match(out, /### zod \(3\.23\.0 → 3\.24\.1\)/);
     // half-open span: installed 3.23.0 excluded, 3.23.5 + 3.24.1 included ascending
     assert.ok(!out.includes("installed version body"));
-    assert.ok(out.indexOf("<summary>3.23.5</summary>") <
-        out.indexOf("<summary>3.24.1</summary>"));
+    assert.ok(out.indexOf("<summary>3.23.5</summary>") < out.indexOf("<summary>3.24.1</summary>"));
     assert.match(out, /<details>\n<summary>3\.23\.5<\/summary>/);
     assert.match(out, /- mid fix/);
     // links line from cached metadata
@@ -142,9 +138,7 @@ test("tampered cached body is not rendered", () => {
     writeFileSync(
         scanPath,
         JSON.stringify({
-            updates: [
-                { name: "zod", currentVersion: "3.23.0", targetVersion: "3.24.1" },
-            ],
+            updates: [{ name: "zod", currentVersion: "3.23.0", targetVersion: "3.24.1" }],
         }),
     );
     const out = run(["--scan", scanPath, "--cache-dir", root]);
@@ -154,6 +148,59 @@ test("tampered cached body is not rendered", () => {
     assert.match(out, /<summary>3\.23\.5<\/summary>/);
 });
 
+test("engine-shaped entries (node) go through the generic path", () => {
+    // assemble-chronology has no engines-specific branch: the engines flow
+    // feeds engine release-note cache entries ("node", "pnpm", …) through the
+    // same scan-shaped generic path. Document that this works end to end.
+    const root = mkdtempSync(join(tmpdir(), "chrono-engines-"));
+    const node = packageCacheDir("node", root);
+    ensurePackageMeta(node, { package: "node", repository: "nodejs/node" });
+    for (const [v, body] of [
+        ["22.12.0", "## 2024-12-03, Version 22.12.0 'Jod' (LTS)\n- mid note"],
+        ["22.14.0", "## 2025-02-11, Version 22.14.0 'Jod' (LTS)\n- target note"],
+    ]) {
+        writeVerifiedVersion(node, v, body, {
+            source: "raw_changelog",
+            sourceUrl: `https://raw.example/node/${v}`,
+        });
+    }
+    // pnpm: no release notes cached → sentinel
+    const pnpm = packageCacheDir("pnpm", root);
+    ensurePackageMeta(pnpm, { package: "pnpm", repository: "pnpm/pnpm" });
+    writeFailedVersion(pnpm, "10.6.0", "no_changelog_source", false);
+    const scanPath = join(root, "scan.json");
+    writeFileSync(
+        scanPath,
+        JSON.stringify({
+            updates: [
+                {
+                    name: "node",
+                    currentVersion: "22.11.0",
+                    targetVersion: "22.14.0",
+                },
+                {
+                    name: "pnpm",
+                    currentVersion: "10.4.0",
+                    targetVersion: "10.6.0",
+                },
+            ],
+        }),
+    );
+    const out = run(["--scan", scanPath, "--cache-dir", root]);
+    assert.match(out, /### node \(22\.11\.0 → 22\.14\.0\)/);
+    // half-open span, ascending: 22.12.0 then 22.14.0
+    assert.ok(
+        out.indexOf("<summary>22.12.0</summary>") < out.indexOf("<summary>22.14.0</summary>"),
+    );
+    assert.match(out, /- target note/);
+    assert.match(out, /\[repository\]\(https:\/\/github\.com\/nodejs\/node\)/);
+    // engine with no cached notes falls back to the sentinel
+    assert.match(
+        out,
+        /### pnpm \(10\.4\.0 → 10\.6\.0\)\n\nSources: \[repository\]\(https:\/\/github\.com\/pnpm\/pnpm\)\n\n_no changelog available_/,
+    );
+});
+
 test("--out writes the section to a file", () => {
     const root = mkdtempSync(join(tmpdir(), "chrono-out-"));
     seedCache(root);
@@ -161,9 +208,7 @@ test("--out writes the section to a file", () => {
     writeFileSync(
         scanPath,
         JSON.stringify({
-            updates: [
-                { name: "zod", currentVersion: "3.23.0", targetVersion: "3.24.1" },
-            ],
+            updates: [{ name: "zod", currentVersion: "3.23.0", targetVersion: "3.24.1" }],
         }),
     );
     const outPath = join(root, "chronology.md");
