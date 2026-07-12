@@ -23,9 +23,10 @@ Zero dependencies; Node >= 22. All entry points are invoked as
 pnpm --filter @m0n0lab/plugin-experiments run test:unit
 ```
 
-`node:test`, offline fixtures. `test/existing-cache.test.mjs` additionally
-validates the readers against the real `~/.claude/changelogs` cache and
-skips when absent (CI).
+Vitest (`vitest run` via `test:unit`), offline fixtures; `*.test.mjs`
+files sit adjacent to their sources. `lib/existing-cache.test.mjs`
+additionally validates the readers against the real `~/.claude/changelogs`
+cache and skips when absent (CI).
 
 ## Permission allowlist
 
