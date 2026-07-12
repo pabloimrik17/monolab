@@ -172,9 +172,9 @@ After every batch of phase 1+2 has returned (or after `degrade-to-direct-synthes
 1. Set the global `_meta.json.phase` to `"integrity"`.
 2. Enumerate every `groupId` listed in the global `_meta.json.groupIds`.
 3. For each `groupId`, read `groups/<groupId>/_meta.json` from disk and classify:
-   - **healthy** if the file exists AND `phase: "done"` AND `status: "ok"`.
-   - **failed** if the file exists AND (`status: "error"` OR `phase !== "done"`).
-   - **missing** if the file does not exist on disk.
+    - **healthy** if the file exists AND `phase: "done"` AND `status: "ok"`.
+    - **failed** if the file exists AND (`status: "error"` OR `phase !== "done"`).
+    - **missing** if the file does not exist on disk.
 4. Classification SHALL be done by reading from disk, not from in-memory state — disk is the source of truth.
 
 If every group is `healthy`, the skill SHALL set the global `_meta.json.phase` to `"synthesis"` and advance to phase 4 silently.
@@ -316,6 +316,8 @@ The teammate populates the first four sections by reading the healthy groups' `r
 
 Before the dossier is surfaced to the user, the two-layer compliance check defined by the experiments-plugin "Dossier synthesis by teammate with two-layer compliance check" requirement SHALL run (repair loop capped at 3 rounds, residual violations escalated into the user gate).
 
+**Synthesizer terminal-failure fallback.** If the synthesizer teammate terminates abnormally (e.g., an API failure) before completing `dossier.md`, the skill SHALL tear it down and re-dispatch a fresh synthesizer exactly once. On a second consecutive terminal failure the skill SHALL degrade to **direct synthesis**: the main agent authors the dossier from the healthy groups' `research.md` files and the script-assembled chronology (appended verbatim, never re-typed). Both compliance layers remain mandatory on the degraded path — the layer-2 fresh-eyes subagent is the independence backstop once author independence is lost — and the degraded dossier SHALL carry a one-line banner noting the fallback. Every input needed for recovery already lives on disk (per-group `research.md`, `chronology.md`, scan artifacts); no phase SHALL be re-run.
+
 The skill SHALL update the global `_meta.json.phase` to `"synthesis"` before dispatching the synthesizer teammate. The skill SHALL NOT set `_meta.json.phase` to `"executing"` or `"done"`; advancing past `"synthesis"` is consumer-owned (the calling command sets these phases when applying begins or completes).
 
 #### Scenario: Dossier authored by the teammate, not the main
@@ -323,6 +325,12 @@ The skill SHALL update the global `_meta.json.phase` to `"synthesis"` before dis
 - **WHEN** phase 3 completes successfully or the user chose `continue-without`
 - **THEN** `dossier.md` is authored by the named synthesizer teammate
 - **AND** the main conversation does not read `research.md` files or changelog bodies
+
+#### Scenario: Synthesizer dies twice → direct synthesis with both layers
+
+- **WHEN** the synthesizer teammate terminates abnormally before writing `dossier.md` and its one re-dispatch also terminates abnormally
+- **THEN** the main agent authors the dossier directly from the on-disk `research.md` files + script-assembled chronology, with a one-line fallback banner
+- **AND** both compliance layers still run before the dossier is surfaced
 
 #### Scenario: Dossier structure is fixed
 

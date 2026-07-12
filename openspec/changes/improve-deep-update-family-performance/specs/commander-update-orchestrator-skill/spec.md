@@ -1,5 +1,70 @@
 ## MODIFIED Requirements
 
+### Requirement: Project subset selection via AskUserQuestion
+
+When `projectsFilter` is unset and the registry has at least one project (after path-drift filtering), the skill SHALL present project selection as multi-select. The interface depends on the selectable-project count `N`, because `AskUserQuestion` caps a question at 4 options:
+
+- **`N ≤ 3`** — a single `AskUserQuestion` call, multi-select, one option per project (label `<name> — <path>`) plus a final `"all"` option labeled `All registered projects (<N>)`.
+- **`N ≥ 4`** (the project options plus `all` no longer fit the 4-option cap) — the skill SHALL fall back to a free-form selection message (no `AskUserQuestion`): print the selectable projects as a numbered `<name> — <path>` list and ask for a comma-separated list of names (or `all`). Unknown names re-prompt with the valid list; an empty response cancels.
+
+In both interfaces: selecting `all` is equivalent to selecting every individual project; selecting zero projects aborts with `No projects selected. Cancelled.` and exits zero with no side effects. The skill SHALL NOT raise this prompt when `projectsFilter` is provided, and SHALL NOT attempt a single `AskUserQuestion` whose option count exceeds the tool cap (the call fails with invalid parameters, observed in dry-run 2026-07-12 with 4 registered projects).
+
+#### Scenario: Multi-select with subset
+
+- **WHEN** the registry has three projects and the user picks two
+- **THEN** the skill operates on exactly those two records for the rest of the run
+
+#### Scenario: All option shortcut
+
+- **WHEN** the user selects the `all` option
+- **THEN** the skill operates on every selectable project as if each had been picked individually
+
+#### Scenario: Empty selection aborts
+
+- **WHEN** the user submits the multi-select prompt without selecting any project
+- **THEN** the skill prints `No projects selected. Cancelled.` and exits zero with no scan or apply
+
+#### Scenario: Picker overflow falls back to free-form selection
+
+- **WHEN** the registry resolves 4 or more selectable projects
+- **THEN** the skill presents the free-form numbered-list selection instead of a single `AskUserQuestion`
+- **AND** never issues an `AskUserQuestion` whose option count exceeds the tool's 4-option cap
+
+### Requirement: Parallel scan dispatch
+
+For the resolved project set, the skill SHALL invoke `experiments:scan-npm-updates` once per project, dispatched in parallel via the `Agent` tool with one tool-use per project in a single message. Each `Agent` call SHALL:
+
+- Inherit the session model (the skill SHALL NOT force a latency-optimized tier: the agent executes the full `scan-npm-updates` skill, not a JSON echo — a weaker tier returned a fabricated empty `ScanResult` in dry-run 2026-07-12, silently dropping every update for a project).
+- Use `subagent_type: "general-purpose"`.
+- Run with the agent's working directory set to `<record.path>`.
+- Receive the `level` input and instructions to invoke the skill and return the `ScanResult` JSON verbatim, with no additional prose.
+
+The skill SHALL collect each agent's response, parse it as a `ScanResult`, and tag each result with the originating project's `name` and `path`. Results SHALL be combined into a `ScanResultByProject = { [projectName]: ScanResult }` map.
+
+**Empty-scan cross-check (dependency levels only).** For `level ∈ {patch, minor, major}`, when an agent returns a `ScanResult` with zero `updates`, the skill SHALL cross-check with one direct read-only `ncu` invocation (`--jsonUpgraded`, no `--upgrade`, no file writes) in that project before accepting the empty result. On a mismatch the skill SHALL re-dispatch that project's scan agent once; if the re-dispatch still mismatches, mark the project `scan-failed` with reason `scan disagreed with ncu cross-check`. An empty result confirmed by the cross-check is accepted normally. At `level=engines` this cross-check does not apply (the scan is `detect-toolchain-surfaces`, not ncu-based).
+
+If an agent fails to return parseable JSON or aborts with a `scan-npm-updates` precondition error, the skill SHALL mark that project as `scan-failed`, surface the error in the summary block, and exclude the project from aggregation and apply. The skill SHALL continue processing other projects' results normally.
+
+#### Scenario: Parallel dispatch in one message
+
+- **WHEN** three projects are resolved
+- **THEN** the skill sends a single message containing exactly three `Agent` tool-use calls in parallel (not sequential)
+
+#### Scenario: Per-agent CWD
+
+- **WHEN** dispatching the scan for project `qup` whose `path` is `/Users/x/qup`
+- **THEN** the agent runs with its working directory at `/Users/x/qup` so `scan-npm-updates` detects the local package manager
+
+#### Scenario: Scan failure contained per project
+
+- **WHEN** project `proj-A` returns parseable JSON, `proj-B` returns invalid JSON, and `proj-C` aborts with a precondition error
+- **THEN** the skill aggregates only `proj-A`, marks `proj-B` and `proj-C` as `scan-failed` in the summary, and proceeds to apply for `proj-A`
+
+#### Scenario: Falsely-empty scan caught by the cross-check
+
+- **WHEN** a project's scan agent returns zero updates but the direct read-only `ncu` cross-check reports available updates
+- **THEN** the skill re-dispatches that project's scan once instead of silently accepting the empty result
+
 ### Requirement: Deep-mode research insertion (Step 6.5) between version alignment and override consultation
 
 When `mode === "deep"`, the skill SHALL insert a research step between Step 6 (version alignment) and Step 7 (dossier gate rendering). The research step SHALL:

@@ -7,24 +7,24 @@ description: Use when a deep-major update command (`/experiments:npm-update-deep
 
 Turn a flat accepted set of major updates into an ordered list of **PR-sized buckets**, so the user can review and land breaking changes in coherent, low-blast-radius chunks (each mappable to its own worktree via `update-isolation`). The output renders as a `## PR plan` section in the deep-major plan.
 
-This skill is **pure**: it performs no network call, writes no manifest, and creates no branch/worktree/commit. It reads only data already produced upstream (the plan's breaking-change findings, the bump set, and a dependency-graph read the caller passes in) and returns a structure. Branch/worktree creation is `update-isolation`'s job; this skill only proposes a `suggestedBranch` per bucket.
+This skill is **pure**: it performs no network call, writes no manifest, and creates no branch/worktree/commit. It reads only data already produced upstream (the dossier's breaking-change findings, the bump set, and a dependency-graph read the caller passes in) and returns a structure. Branch/worktree creation is `update-isolation`'s job; this skill only proposes a `suggestedBranch` per bucket.
 
 ## When to use
 
-- `/experiments:npm-update-deep-major` (single-project) — after `parallel-research-workflow` returns `plan.md`, partition the accepted major set into buckets, surface the `## PR plan`, then (if isolation is chosen) apply each bucket into its own worktree.
+- `/experiments:npm-update-deep-major` (single-project) — after `parallel-research-workflow` returns `dossier.md`, partition the accepted major set into buckets, surface the `## PR plan` (retained legacy section name — see the deep-update artifact glossary carve-outs), then (if isolation is chosen) apply each bucket into its own worktree.
 - `commander-update-deep-major` (cross-project, via the orchestrator) — surface the `## PR plan` as advice; v1 isolation is one worktree per project (per-(project,bucket) deferred), so the buckets are advisory cross-project.
 
 This skill is implemented entirely with built-in reasoning over its inputs — no tool calls required beyond what the caller already gathered.
 
 ## Inputs
 
-| Field              | Type                                                                                          | Required | Notes                                                                                                                                                                                                                                       |
-| ------------------ | --------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bumpSet`          | `Array<{ name, from, to, location? }>`                                                        | yes      | The accepted major bump set (from `plan.md`'s `## Major bump set` / `## Cross-project bump set`).                                                                                                                                           |
-| `breakingFindings` | `Array<{ name, items: string[], codemods?: string[] }>`                                       | yes      | The per-package `### Breaking changes & migration` findings parsed from each `research.md` / the plan's `## Breaking changes & migration` section. `items` = the breaking-change bullets; `codemods` = any codemod/migration-step mentions. |
-| `depGraph`         | `{ [name]: { dependents: string[], peerDependencies?: string[], importSiteCount?: number } }` | yes      | A dependency-graph read the caller gathers (e.g. from `peerDependencies` in manifests + a grep of import sites). Used for blast radius + hard co-upgrade detection.                                                                         |
-| `overrideFamilies` | `Array<{ id, matches: string[] }>`                                                            | no       | Seed families from the override registry (e.g. `storybook` → `["storybook", "@storybook/*", ...]`). Used to seed hard co-upgrade sets. Default: the shipped registry families.                                                              |
-| `policy`           | `{ isolateHighRisk?, batchLowRisk?, maxPackagesPerBucket?, maxRiskPerBucket? }`               | no       | Tunable knobs (see below). Sensible defaults: `isolateHighRisk: true`, `batchLowRisk: true`, `maxPackagesPerBucket: 8`, `maxRiskPerBucket: HIGH`.                                                                                           |
+| Field              | Type                                                                                          | Required | Notes                                                                                                                                                                                                                                          |
+| ------------------ | --------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bumpSet`          | `Array<{ name, from, to, location? }>`                                                        | yes      | The accepted major bump set (from `dossier.md`'s `## Major bump set` / `## Cross-project bump set`).                                                                                                                                           |
+| `breakingFindings` | `Array<{ name, items: string[], codemods?: string[] }>`                                       | yes      | The per-package `### Breaking changes & migration` findings parsed from each `research.md` / the dossier's `## Breaking changes & migration` section. `items` = the breaking-change bullets; `codemods` = any codemod/migration-step mentions. |
+| `depGraph`         | `{ [name]: { dependents: string[], peerDependencies?: string[], importSiteCount?: number } }` | yes      | A dependency-graph read the caller gathers (e.g. from `peerDependencies` in manifests + a grep of import sites). Used for blast radius + hard co-upgrade detection.                                                                            |
+| `overrideFamilies` | `Array<{ id, matches: string[] }>`                                                            | no       | Seed families from the override registry (e.g. `storybook` → `["storybook", "@storybook/*", ...]`). Used to seed hard co-upgrade sets. Default: the shipped registry families.                                                                 |
+| `policy`           | `{ isolateHighRisk?, batchLowRisk?, maxPackagesPerBucket?, maxRiskPerBucket? }`               | no       | Tunable knobs (see below). Sensible defaults: `isolateHighRisk: true`, `batchLowRisk: true`, `maxPackagesPerBucket: 8`, `maxRiskPerBucket: HIGH`.                                                                                              |
 
 The skill SHALL NOT mutate any input.
 
@@ -82,7 +82,11 @@ Return:
         suggestedBranch: string; // e.g. "deps/major-react" — caller passes to update-isolation
         suggestedMergeOrder: number; // 1-based; lower lands first
     }>;
-    countByPolicy: Array<{ policy: string; bucketCount: number; largestBucket: number }>;
+    countByPolicy: Array<{
+        policy: string;
+        bucketCount: number;
+        largestBucket: number;
+    }>;
 }
 ```
 
