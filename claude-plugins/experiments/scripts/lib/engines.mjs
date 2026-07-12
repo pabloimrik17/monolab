@@ -50,8 +50,6 @@ export function isEngineRequest(name, engineFlag) {
 /** Stable Node versions from the dist index (newest-first in source). */
 export function nodeVersionsFromDistIndex(indexJson) {
     return sortAscending(
-        indexJson
-            .map((entry) => String(entry.version).replace(/^v/, ""))
-            .filter(isStable),
+        indexJson.map((entry) => String(entry.version).replace(/^v/, "")).filter(isStable),
     );
 }

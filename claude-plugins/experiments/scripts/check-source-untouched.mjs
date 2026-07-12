@@ -59,12 +59,7 @@ function hashFile(path) {
 /** { head, porcelain: [{ status, path }], dirtyHashes: { path: sha } } */
 export function captureState(dir) {
     const head = git(dir, ["rev-parse", "HEAD"]).trim();
-    const porcelainRaw = git(dir, [
-        "status",
-        "--porcelain=v1",
-        "-z",
-        "--untracked-files=all",
-    ]);
+    const porcelainRaw = git(dir, ["status", "--porcelain=v1", "-z", "--untracked-files=all"]);
     const porcelain = [];
     const tokens = porcelainRaw.split("\0");
     for (let i = 0; i < tokens.length; i++) {
@@ -130,9 +125,7 @@ function main() {
         if (!args.out) fail("snapshot requires --out <baseline.json>");
         const state = captureState(args.dir);
         writeFileSync(args.out, JSON.stringify(state, null, 2) + "\n");
-        process.stderr.write(
-            `check-source-untouched: baseline written to ${args.out}\n`,
-        );
+        process.stderr.write(`check-source-untouched: baseline written to ${args.out}\n`);
         return;
     }
     if (mode === "check") {
@@ -153,7 +146,5 @@ function main() {
 
 const invokedDirectly =
     process.argv[1] &&
-    import.meta.url === (await import("node:url")).pathToFileURL(
-        process.argv[1],
-    ).href;
+    import.meta.url === (await import("node:url")).pathToFileURL(process.argv[1]).href;
 if (invokedDirectly) main();

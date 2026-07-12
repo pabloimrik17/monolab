@@ -34,11 +34,7 @@ import {
     readVersionMeta,
     sha256,
 } from "./lib/cache.mjs";
-import {
-    mostCommon,
-    stableInHalfOpenSpan,
-    stripRangePrefix,
-} from "./lib/semver.mjs";
+import { mostCommon, stableInHalfOpenSpan, stripRangePrefix } from "./lib/semver.mjs";
 
 function fail(message) {
     process.stderr.write(`assemble-chronology: ${message}\n`);
@@ -85,9 +81,7 @@ function buildBumpSet(args) {
                 });
             }
         }
-        return [...byName.values()].sort((a, b) =>
-            a.name.localeCompare(b.name),
-        );
+        return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name));
     }
     const plan = readJson(args.crossPlan);
     const scans = args.scanByProject ? readJson(args.scanByProject) : {};
@@ -115,10 +109,7 @@ function buildBumpSet(args) {
                 name: p.name,
                 from: representative,
                 to: stripRangePrefix(
-                    p.effectiveTarget ??
-                        p.proposedTarget ??
-                        p.targetVersion ??
-                        "",
+                    p.effectiveTarget ?? p.proposedTarget ?? p.targetVersion ?? "",
                 ),
             };
         })
@@ -129,9 +120,7 @@ function linksLine(cacheDir, versions) {
     const meta = readPackageMeta(cacheDir);
     const parts = [];
     if (meta?.repository) {
-        parts.push(
-            `[repository](https://github.com/${meta.repository})`,
-        );
+        parts.push(`[repository](https://github.com/${meta.repository})`);
     }
     for (const v of versions) {
         const vMeta = readVersionMeta(cacheDir, v);
@@ -145,11 +134,7 @@ function packageBlock(pkg, cacheRoot) {
     const lines = [`### ${pkg.name} (${pkg.from} → ${pkg.to})`, ""];
     let covered = [];
     if (pkg.from && pkg.to && pkg.from !== pkg.to) {
-        covered = stableInHalfOpenSpan(
-            listCachedVersions(cacheDir),
-            pkg.from,
-            pkg.to,
-        );
+        covered = stableInHalfOpenSpan(listCachedVersions(cacheDir), pkg.from, pkg.to);
     } else if (pkg.from === pkg.to && pkg.to) {
         covered = []; // empty half-open span
     }

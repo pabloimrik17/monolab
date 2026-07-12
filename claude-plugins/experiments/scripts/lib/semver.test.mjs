@@ -40,29 +40,17 @@ test("compare follows semver precedence including prereleases", () => {
 
 test("stableInRange is both-inclusive and stable-only", () => {
     const versions = ["1.0.0", "1.1.0", "1.2.0-rc.1", "1.2.0", "1.3.0"];
-    assert.deepEqual(stableInRange(versions, "1.0.0", "1.2.0"), [
-        "1.0.0",
-        "1.1.0",
-        "1.2.0",
-    ]);
+    assert.deepEqual(stableInRange(versions, "1.0.0", "1.2.0"), ["1.0.0", "1.1.0", "1.2.0"]);
 });
 
 test("stableInHalfOpenSpan excludes the installed from", () => {
     const versions = ["1.7.0", "1.7.1", "1.7.5", "1.7.9", "1.8.0"];
-    assert.deepEqual(stableInHalfOpenSpan(versions, "1.7.0", "1.7.9"), [
-        "1.7.1",
-        "1.7.5",
-        "1.7.9",
-    ]);
+    assert.deepEqual(stableInHalfOpenSpan(versions, "1.7.0", "1.7.9"), ["1.7.1", "1.7.5", "1.7.9"]);
     assert.deepEqual(stableInHalfOpenSpan(versions, "1.7.9", "1.7.9"), []);
 });
 
 test("sortAscending orders semver, not lexicographic", () => {
-    assert.deepEqual(sortAscending(["1.10.0", "1.2.0", "1.9.9"]), [
-        "1.2.0",
-        "1.9.9",
-        "1.10.0",
-    ]);
+    assert.deepEqual(sortAscending(["1.10.0", "1.2.0", "1.9.9"]), ["1.2.0", "1.9.9", "1.10.0"]);
 });
 
 test("maxVersion and mostCommon", () => {

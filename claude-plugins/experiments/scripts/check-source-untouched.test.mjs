@@ -57,11 +57,7 @@ test("edit to an already-dirty file is detected via content hash", () => {
     const baseline = captureState(dir);
     writeFileSync(join(dir, "wip.txt"), "teammate edited this\n");
     const changed = diffStates(baseline, captureState(dir));
-    assert.ok(
-        changed.some(
-            (c) => c.path === "wip.txt" && c.kind === "content-changed",
-        ),
-    );
+    assert.ok(changed.some((c) => c.path === "wip.txt" && c.kind === "content-changed"));
 });
 
 test("removing a previously-dirty file is detected", () => {

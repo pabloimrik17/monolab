@@ -87,9 +87,7 @@ function main() {
     }
     let raw;
     try {
-        raw = inputPath
-            ? readFileSync(inputPath, "utf8")
-            : readFileSync(0, "utf8");
+        raw = inputPath ? readFileSync(inputPath, "utf8") : readFileSync(0, "utf8");
     } catch (err) {
         fail(`cannot read input: ${err.message}`);
     }
@@ -106,7 +104,5 @@ function main() {
 
 const invokedDirectly =
     process.argv[1] &&
-    import.meta.url === (await import("node:url")).pathToFileURL(
-        process.argv[1],
-    ).href;
+    import.meta.url === (await import("node:url")).pathToFileURL(process.argv[1]).href;
 if (invokedDirectly) main();
