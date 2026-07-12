@@ -4,6 +4,9 @@
     "private": true,
     "description": "Beta skills and commands staging area for monolab",
     "scripts": {
-        "test:unit": "node --test scripts/test/*.test.mjs"
+        "test:unit": "vitest run"
+    },
+    "devDependencies": {
+        "vitest": "catalog:"
     }
 }

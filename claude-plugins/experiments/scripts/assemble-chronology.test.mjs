@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { test } from "node:test";
+import { test } from "vitest";
 import { fileURLToPath } from "node:url";
 import {
     ensurePackageMeta,
@@ -11,11 +11,10 @@ import {
     updatePackageMeta,
     writeFailedVersion,
     writeVerifiedVersion,
-} from "../lib/cache.mjs";
+} from "./lib/cache.mjs";
 
 const SCRIPT = join(
     dirname(fileURLToPath(import.meta.url)),
-    "..",
     "assemble-chronology.mjs",
 );
 

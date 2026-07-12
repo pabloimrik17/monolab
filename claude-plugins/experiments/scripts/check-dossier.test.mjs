@@ -2,14 +2,14 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { test } from "node:test";
+import { test } from "vitest";
 import {
     ensurePackageMeta,
     packageCacheDir,
     writeFailedVersion,
     writeVerifiedVersion,
-} from "../lib/cache.mjs";
-import { checkDossier, expectedHeadings } from "../check-dossier.mjs";
+} from "./lib/cache.mjs";
+import { checkDossier, expectedHeadings } from "./check-dossier.mjs";
 
 function seededRoot() {
     const root = mkdtempSync(join(tmpdir(), "dossier-"));

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import {
     compare,
     isStable,
@@ -11,7 +11,7 @@ import {
     stableInHalfOpenSpan,
     stableInRange,
     stripRangePrefix,
-} from "../lib/semver.mjs";
+} from "./semver.mjs";
 
 test("stripRangePrefix removes ^ ~ = v and >=", () => {
     assert.equal(stripRangePrefix("^4.17.21"), "4.17.21");

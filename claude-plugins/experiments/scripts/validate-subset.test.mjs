@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
-import { tokenizeSelection, validateSubset } from "../validate-subset.mjs";
+import { test } from "vitest";
+import { tokenizeSelection, validateSubset } from "./validate-subset.mjs";
 
 test("tokenizeSelection splits on commas outside quotes", () => {
     assert.deepEqual(

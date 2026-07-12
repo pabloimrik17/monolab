@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
-import { nodeVersionsFromDistIndex } from "../lib/engines.mjs";
+import { test } from "vitest";
+import { nodeVersionsFromDistIndex } from "./engines.mjs";
 import {
     packageBasename,
     parseGithubRepository,
     probeTemplates,
     resolveTagTemplate,
-} from "../lib/github.mjs";
+} from "./github.mjs";
 
 test("parseGithubRepository handles url object, git+, scp, non-github", () => {
     assert.deepEqual(

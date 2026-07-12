@@ -3,8 +3,8 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { test } from "node:test";
-import { captureState, diffStates } from "../check-source-untouched.mjs";
+import { test } from "vitest";
+import { captureState, diffStates } from "./check-source-untouched.mjs";
 
 function initRepo() {
     const dir = mkdtempSync(join(tmpdir(), "pregate-"));

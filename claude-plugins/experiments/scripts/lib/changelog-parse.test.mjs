@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import {
     detectPattern,
     extractSections,
     versionFromHeading,
-} from "../lib/changelog-parse.mjs";
+} from "./changelog-parse.mjs";
 
 test("detectPattern picks the highest-priority match", () => {
     const conventional = "## [3.5.28](https://x) (2026-02-09)\n\n- fix";

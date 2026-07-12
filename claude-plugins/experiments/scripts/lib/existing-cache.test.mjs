@@ -8,7 +8,7 @@
 import assert from "node:assert/strict";
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { test } from "node:test";
+import { test } from "vitest";
 import {
     defaultCacheRoot,
     listCachedVersions,
@@ -16,7 +16,7 @@ import {
     readVersionBody,
     readVersionMeta,
     versionCovered,
-} from "../lib/cache.mjs";
+} from "./cache.mjs";
 
 const root = defaultCacheRoot();
 const shouldVerifyExistingCache =
@@ -24,7 +24,7 @@ const shouldVerifyExistingCache =
     existsSync(root) &&
     readdirSync(root).some((d) => !d.startsWith("."));
 
-test("real cache entries parse under the script readers", { skip: !shouldVerifyExistingCache }, () => {
+test.skipIf(!shouldVerifyExistingCache)("real cache entries parse under the script readers", () => {
     const packages = readdirSync(root).filter((d) => !d.startsWith("."));
     let verifiedSeen = 0;
     for (const dirName of packages.slice(0, 10)) {
