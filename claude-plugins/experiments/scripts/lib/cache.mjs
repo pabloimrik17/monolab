@@ -109,17 +109,13 @@ export function ensurePackageMeta(cacheDir, initial) {
         package: initial.package,
         repository: existing.repository ?? initial.repository ?? null,
         isMonorepo: existing.isMonorepo ?? initial.isMonorepo ?? false,
-        monorepoDirectory:
-            existing.monorepoDirectory ?? initial.monorepoDirectory ?? null,
+        monorepoDirectory: existing.monorepoDirectory ?? initial.monorepoDirectory ?? null,
         tagFormat: existing.tagFormat ?? null,
         changelogSource: existing.changelogSource ?? null,
         changelogFiles: existing.changelogFiles ?? [],
         lastUpdated: new Date().toISOString(),
     };
-    writeFileSync(
-        join(cacheDir, "_meta.json"),
-        JSON.stringify(merged, null, 2) + "\n",
-    );
+    writeFileSync(join(cacheDir, "_meta.json"), JSON.stringify(merged, null, 2) + "\n");
     return merged;
 }
 
@@ -128,17 +124,11 @@ export function updatePackageMeta(cacheDir, patch) {
     const merged = { ...existing, ...patch };
     if (patch.changelogFiles) {
         merged.changelogFiles = [
-            ...new Set([
-                ...(existing.changelogFiles ?? []),
-                ...patch.changelogFiles,
-            ]),
+            ...new Set([...(existing.changelogFiles ?? []), ...patch.changelogFiles]),
         ];
     }
     merged.lastUpdated = new Date().toISOString();
-    writeFileSync(
-        join(cacheDir, "_meta.json"),
-        JSON.stringify(merged, null, 2) + "\n",
-    );
+    writeFileSync(join(cacheDir, "_meta.json"), JSON.stringify(merged, null, 2) + "\n");
     return merged;
 }
 

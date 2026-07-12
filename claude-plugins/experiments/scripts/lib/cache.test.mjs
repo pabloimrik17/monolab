@@ -103,10 +103,7 @@ test("package meta preserves discoveries and unions changelogFiles", () => {
     });
     const meta = readPackageMeta(dir);
     assert.equal(meta.tagFormat, "v{version}");
-    assert.deepEqual(meta.changelogFiles, [
-        "CHANGELOG.md",
-        "packages/x/CHANGELOG.md",
-    ]);
+    assert.deepEqual(meta.changelogFiles, ["CHANGELOG.md", "packages/x/CHANGELOG.md"]);
     // ensurePackageMeta must not clobber existing discoveries
     ensurePackageMeta(dir, { package: "demo-pkg" });
     assert.equal(readPackageMeta(dir).tagFormat, "v{version}");

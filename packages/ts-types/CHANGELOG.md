@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/pabloimrik17/monolab/compare/ts-types-v1.0.7...ts-types-v1.1.0) (2026-07-12)
+
+
+### Features
+
+* **tooling:** adopt fallow codebase intelligence (MON-204) ([#256](https://github.com/pabloimrik17/monolab/issues/256)) ([30070f1](https://github.com/pabloimrik17/monolab/commit/30070f1c4a73cb34805ea63d3fd4e9fd636e41cd))
+
 ## [1.0.7](https://github.com/pabloimrik17/monolab/compare/ts-types-v1.0.6...ts-types-v1.0.7) (2026-05-17)
 
 

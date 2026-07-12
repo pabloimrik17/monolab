@@ -104,9 +104,7 @@ function buildBumpSet(args) {
     return (plan.packages ?? plan.updates ?? []).map((p) => ({
         name: p.name,
         from: stripRangePrefix(p.currentVersion ?? ""),
-        to: stripRangePrefix(
-            p.effectiveTarget ?? p.proposedTarget ?? p.targetVersion ?? "",
-        ),
+        to: stripRangePrefix(p.effectiveTarget ?? p.proposedTarget ?? p.targetVersion ?? ""),
     }));
 }
 
@@ -120,9 +118,7 @@ export function expectedHeadings(level, mode) {
     const improvements = cross
         ? "Improvements (universal — applicability checked per project at apply time)"
         : "Improvements (applicable to this codebase)";
-    const bumpSet = cross
-        ? "Cross-project bump set"
-        : `${titleCase(level)} bump set`;
+    const bumpSet = cross ? "Cross-project bump set" : `${titleCase(level)} bump set`;
     if (level === "major" || level === "engines") {
         return [
             "Breaking changes & migration",
@@ -133,13 +129,7 @@ export function expectedHeadings(level, mode) {
             "Changelogs",
         ];
     }
-    return [
-        improvements,
-        "Workarounds resolved",
-        "Skipped or unavailable",
-        bumpSet,
-        "Changelogs",
-    ];
+    return [improvements, "Workarounds resolved", "Skipped or unavailable", bumpSet, "Changelogs"];
 }
 
 /**
@@ -226,9 +216,7 @@ export function checkDossier({ content, bumpSet, level, mode, cacheRoot }) {
                 span = [];
             }
         }
-        const coveredCount = span.filter((v) =>
-            versionCovered(cacheDir, v),
-        ).length;
+        const coveredCount = span.filter((v) => versionCovered(cacheDir, v)).length;
         if (coveredCount === 0) {
             // Zero covered versions is acceptable only if the dossier
             // carries the per-package sentinel (recorded unavailability).
@@ -237,8 +225,7 @@ export function checkDossier({ content, bumpSet, level, mode, cacheRoot }) {
                 new RegExp(
                     `### ${pkg.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} \\([^)]*\\)\\n([\\s\\S]*?)(?=\\n### |$)`,
                 ).exec(changelogs.body);
-            const hasSentinel =
-                block && block[1].includes(SENTINELS.changelogPkg);
+            const hasSentinel = block && block[1].includes(SENTINELS.changelogPkg);
             if (!hasSentinel) {
                 violations.push({
                     rule: "cache-coverage",
@@ -251,25 +238,17 @@ export function checkDossier({ content, bumpSet, level, mode, cacheRoot }) {
 
     // 4. Sentinels on empty sections.
     const sentinelChecks = [
-        [
-            expected.find((h) => h.startsWith("Improvements")),
-            SENTINELS.improvements,
-        ],
+        [expected.find((h) => h.startsWith("Improvements")), SENTINELS.improvements],
         ["Workarounds resolved", SENTINELS.workarounds],
         ["Skipped or unavailable", SENTINELS.skipped],
     ];
     if (level === "major" || level === "engines") {
-        sentinelChecks.unshift([
-            "Breaking changes & migration",
-            SENTINELS.breaking,
-        ]);
+        sentinelChecks.unshift(["Breaking changes & migration", SENTINELS.breaking]);
     }
     for (const [title, sentinel] of sentinelChecks) {
         const section = byTitle.get(title);
         if (!section) continue; // already reported as missing-heading
-        const meaningful = section.body
-            .split("\n")
-            .filter((l) => l.trim().length > 0);
+        const meaningful = section.body.split("\n").filter((l) => l.trim().length > 0);
         if (meaningful.length === 0) {
             violations.push({
                 rule: "missing-sentinel",
@@ -302,6 +281,5 @@ function main() {
 
 const invokedDirectly =
     process.argv[1] &&
-    import.meta.url ===
-        (await import("node:url")).pathToFileURL(process.argv[1]).href;
+    import.meta.url === (await import("node:url")).pathToFileURL(process.argv[1]).href;
 if (invokedDirectly) main();
