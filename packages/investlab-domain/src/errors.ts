@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-class-member -- abstract code contract implemented by subclasses, read by use-cases pending
 export abstract class DomainError extends Error {
     abstract readonly code: string;
 }

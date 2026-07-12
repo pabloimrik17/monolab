@@ -2,13 +2,13 @@
 
 ## Purpose
 
-This capability provides a VCS-safe `apply-engine-bumps` skill that takes the inventory from `detect-toolchain-surfaces` plus resolved per-engine targets, then rewrites a project's runtime version loci to those targets and returns a structured result fragment. It is the engines-level analog of `apply-npm-updates`: it resolves targets deterministically with user confirmation, exact-pins and aligns all runtime surfaces, leaves support/unknown loci untouched, and never commits, pushes, opens PRs, or runs tests/lint/build.
+This capability provides a VCS-safe `apply-engine-bumps` skill that takes the inventory from `detect-toolchain-surfaces` plus resolved per-engine targets, then rewrites a project's runtime version loci to those targets and returns a structured result fragment. It is the engines-level analog of `apply-npm-updates`: it resolves targets deterministically with user confirmation, exact-pins and aligns all runtime surfaces, leaves support/unknown loci untouched, and never commits, pushes, or opens PRs autonomously (running read-only checks is permitted, never automatic).
 
 ## Requirements
 
 ### Requirement: Skill location and VCS-safe contract
 
-The `experiments` plugin SHALL include a skill at `claude-plugins/experiments/skills/apply-engine-bumps/SKILL.md` with frontmatter declaring a non-empty `description`. Given the inventory from `detect-toolchain-surfaces` and a resolved per-engine target, the skill rewrites the project's `runtime` version loci to the target and returns a structured result fragment. The skill SHALL run in the working directory handed to it (branch/worktree isolation, if any, is a separate `update-isolation` pre-step); it SHALL NOT create commits, push, open PRs, run tests/lint/build, or run `ncu`. It is the engines-level analog of `apply-npm-updates` (`npm-update-apply`).
+The `experiments` plugin SHALL include a skill at `claude-plugins/experiments/skills/apply-engine-bumps/SKILL.md` with frontmatter declaring a non-empty `description`. Given the inventory from `detect-toolchain-surfaces` and a resolved per-engine target, the skill rewrites the project's `runtime` version loci to the target and returns a structured result fragment. The skill SHALL run in the working directory handed to it (branch/worktree isolation, if any, is a separate `update-isolation` pre-step); it SHALL NOT create commits, push, open PRs, or run `ncu`, and it stops for human-in-the-loop review before any such outward/VCS action. It is the engines-level analog of `apply-npm-updates` (`npm-update-apply`).
 
 #### Scenario: Skill file exists with frontmatter
 
@@ -41,12 +41,17 @@ The skill SHALL resolve a target version per engine: Node → the latest LTS (th
 
 ### Requirement: Exact pinning and alignment of runtime surfaces
 
-For each engine, the skill SHALL rewrite every `runtime` locus to the **same exact** resolved version (no ranges), aligning all runtime surfaces — consistent with the family-wide exact-pin policy. Edits SHALL be surgical: only the version token changes. For a `packageManager` value (`name@X`) the skill SHALL preserve the `name@` prefix and replace the version; any corepack integrity suffix (`+sha…`) SHALL be dropped by default (corepack re-resolves), and that drop SHALL be reported.
+For each engine, the skill SHALL rewrite every `runtime` locus to the **same exact** resolved version (no ranges), aligning all runtime surfaces — consistent with the family-wide exact-pin policy. Edits SHALL be surgical: only the version token changes. For a `packageManager` value (`name@X`) the skill SHALL preserve the `name@` prefix and replace the version; any corepack integrity suffix (`+sha…`) SHALL be dropped by default (corepack re-resolves), and that drop SHALL be reported. For a whole-file version file (`.nvmrc`, `.node-version`, `.dvmrc`) the skill SHALL replace the entire version token, preserving any leading `v` the file used.
 
 #### Scenario: All runtime Node surfaces aligned and pinned exact
 
 - **WHEN** the Node target is `26.0.0` and the repo pins Node in `.nvmrc`, root `engines.node`, and CI
 - **THEN** all three are rewritten to exactly `26.0.0` (no `^`/`~`)
+
+#### Scenario: Deno .dvmrc rewritten and aligned on a Deno bump
+
+- **WHEN** the Deno target is `2.10.0` and the repo pins Deno in a root `.dvmrc` (`2.9.0`), `engines.deno`, and `devEngines.runtime`
+- **THEN** all three are rewritten to exactly `2.10.0`, and the `.dvmrc` whole-file token is replaced preserving any leading `v` the file used
 
 #### Scenario: packageManager prefix preserved, hash dropped
 

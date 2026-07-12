@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-class-member -- bound in DI container, awaiting consumers
 import { injectable } from "inversify";
 
 @injectable()

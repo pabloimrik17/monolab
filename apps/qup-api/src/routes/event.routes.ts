@@ -1,9 +1,8 @@
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import { type EventBus, type GetSessionByCodeUseCase, Order, TOKENS } from "@m0n0lab/qup-domain";
-import { toApiError } from "../errors/error-mapping.ts";
+import { errorJson } from "../errors/error-mapping.ts";
 import { toOrderDto } from "../serializers/dto-serializers.ts";
-import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { Container } from "inversify";
 
 export function eventRoutes(container: Container) {
@@ -17,8 +16,7 @@ export function eventRoutes(container: Container) {
         const sessionResult = await getSession.execute(code);
 
         if (sessionResult.isErr()) {
-            const dto = toApiError(sessionResult.error);
-            return c.json(dto, dto.statusCode as ContentfulStatusCode);
+            return errorJson(c, sessionResult.error);
         }
 
         const session = sessionResult.value;

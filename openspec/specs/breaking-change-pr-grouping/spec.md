@@ -19,12 +19,22 @@ The `experiments` plugin SHALL include a skill at `claude-plugins/experiments/sk
 
 ### Requirement: Hard co-upgrade sets precede risk grouping
 
-The skill SHALL first compute **hard co-upgrade sets** — packages that MUST share a bucket — from peer/lockstep relationships (e.g. `react`+`react-dom`+`react-is`+`@types/react`; `@storybook/*`; `vue`+`@vue/*`), seeded from the override-registry families and a `peerDependencies` read. Risk heuristics SHALL only decide whether an already-cohesive set is isolated or batched; they SHALL NOT split a co-upgrade set across buckets.
+The skill SHALL first compute **hard co-upgrade sets** — packages that MUST share a bucket — before any risk scoring, from: (1) a `peerDependencies` read (the authoritative source, recovering most families, e.g. `react-dom`→`react`, `@vitest/*`→`vitest`, `@angular/*`→`@angular/core`); and (2) the override-registry families. The skill SHALL NOT maintain a hardcoded family list or a family registry (neither its own nor a shared one). For the residual case the peer read cannot express — a `@types/*` package that pairs with its runtime but declares no peer edge — the executing agent MAY recognize the obvious lockstep pairing from the package names; this reasoning SHALL NOT be codified as a maintained list. Risk heuristics SHALL only decide whether an already-cohesive set is isolated or batched; they SHALL NOT split a co-upgrade set across buckets.
 
 #### Scenario: Peer set never split
 
 - **WHEN** `react` and `react-dom` both have a major update
-- **THEN** they appear in the same bucket regardless of risk scoring
+- **THEN** they appear in the same bucket regardless of risk scoring (recovered from `react-dom`'s peer on `react`)
+
+#### Scenario: Vitest family recovered from peerDependencies
+
+- **WHEN** `vitest` and `@vitest/browser` both have a major update
+- **THEN** they are computed as one hard co-upgrade set and share a bucket (recovered from `@vitest/browser`'s peer on `vitest`, with no maintained family list)
+
+#### Scenario: No hardcoded family list
+
+- **WHEN** the skill computes hard co-upgrade sets
+- **THEN** it relies on the `peerDependencies` read and the override registry (plus agent reasoning for peer-less types pairings), and does NOT read or maintain a version-group family file
 
 ### Requirement: Risk scoring and tunable partition policy
 
@@ -42,15 +52,16 @@ The skill SHALL score each co-upgrade set by blast radius (dependent / import-si
 
 ### Requirement: Output shape — ordered buckets + count-by-policy summary
 
-The skill SHALL return an ordered list of buckets, each `{ title, packages, riskTier, rationale, suggestedBranch, suggestedMergeOrder }`, plus a count-by-policy summary that reports the number of buckets (and the largest bucket) under at least two policies, so the caller can let the user choose granularity before any worktree is created. The buckets render as a `## PR plan` section in the plan output. The skill SHALL NOT create branches or worktrees itself (that is `update-isolation`'s role).
+The skill SHALL return an ordered list of buckets, each `{ title, packages, riskTier, rationale, suggestedBranch, suggestedMergeOrder }`, plus a count-by-policy summary `countByPolicy: Array<{ policy: string, bucketCount: number, largestBucket: number }>` with at least two entries in deterministic order: the active-knobs policy (identifier `isolate-high + batch-low` under default knobs) first, then the `one-per-package` baseline, so the caller can render the choices and let the user choose granularity before any worktree is created. The buckets render as a `## PR plan` section appended to the caller's surfaced digest — the dossier file template itself does not include it (the section name `## PR plan` is a retained legacy name — see the deep-update artifact glossary carve-outs). The skill SHALL NOT create branches or worktrees itself (that is `update-isolation`'s role).
 
-#### Scenario: Count-by-policy table produced
+#### Scenario: Buckets render in the surfaced digest
 
-- **WHEN** the skill partitions a set of major updates
-- **THEN** the result includes a count-by-policy summary (e.g. `isolate-high + batch-low` vs `one-per-project`) reporting bucket counts before materialization
+- **WHEN** the caller surfaces the returned buckets
+- **THEN** they render as a `## PR plan` section in the surfaced digest (legacy section name retained; the dossier file does not carry it)
 
-#### Scenario: Buckets carry rationale and a suggested branch
+#### Scenario: Count-by-policy summary is stable
 
-- **WHEN** a bucket is produced
-- **THEN** it includes its packages, a risk tier, a one-line rationale, and a `suggestedBranch` name the caller may pass to `update-isolation`
+- **WHEN** the skill returns its result under default policy knobs
+- **THEN** `countByPolicy` has `{ policy, bucketCount, largestBucket }` entries
+- **AND** the first entry's `policy` is `isolate-high + batch-low` and the second is the `one-per-package` baseline
 

@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-enum-member -- WIP investlab taxonomy, values arrive via DB casts
 export enum Sector {
     Technology = "technology",
     Healthcare = "healthcare",

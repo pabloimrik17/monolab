@@ -54,6 +54,9 @@
             "inputs": ["default", "{workspaceRoot}/eslint.config.ts"],
             "outputs": ["{projectRoot}/.eslintcache"]
         },
+        "lint:fallow": {
+            "cache": false
+        },
         "lint:knip": {
             "cache": true,
             "dependsOn": ["^lint:knip"],

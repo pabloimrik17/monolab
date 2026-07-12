@@ -8,7 +8,7 @@ import {
     type GetSessionOrdersUseCase,
     TOKENS,
 } from "@m0n0lab/qup-domain";
-import { toApiError } from "../errors/error-mapping.ts";
+import { errorJson } from "../errors/error-mapping.ts";
 import { adminOnly } from "../middleware/admin-only.ts";
 import { toOrderDto, toSessionDto } from "../serializers/dto-serializers.ts";
 import type { CreateSessionRequest } from "@m0n0lab/qup-shared";
@@ -26,10 +26,7 @@ export function sessionRoutes(container: Container) {
 
         return result.match(
             (session) => c.json(toSessionDto(session), 201),
-            (error) => {
-                const dto = toApiError(error);
-                return c.json(dto, dto.statusCode as 422);
-            },
+            (error) => errorJson(c, error),
         );
     });
 
@@ -41,10 +38,7 @@ export function sessionRoutes(container: Container) {
             const result = await uc.execute();
             return result.match(
                 (sessions) => c.json(sessions.map(toSessionDto)),
-                (error) => {
-                    const dto = toApiError(error);
-                    return c.json(dto, dto.statusCode as 500);
-                },
+                (error) => errorJson(c, error),
             );
         }
         return c.json(
@@ -62,10 +56,7 @@ export function sessionRoutes(container: Container) {
 
         return result.match(
             (session) => c.json(toSessionDto(session)),
-            (error) => {
-                const dto = toApiError(error);
-                return c.json(dto, dto.statusCode as 404);
-            },
+            (error) => errorJson(c, error),
         );
     });
 
@@ -77,10 +68,7 @@ export function sessionRoutes(container: Container) {
 
         return result.match(
             (orders) => c.json(orders.map(toOrderDto)),
-            (error) => {
-                const dto = toApiError(error);
-                return c.json(dto, dto.statusCode as 500);
-            },
+            (error) => errorJson(c, error),
         );
     });
 
@@ -93,26 +81,21 @@ export function sessionRoutes(container: Container) {
 
         return result.match(
             (session) => c.json(toSessionDto(session)),
-            (error) => {
-                const dto = toApiError(error);
-                return c.json(dto, dto.statusCode as 404);
-            },
+            (error) => errorJson(c, error),
         );
     });
 
     // PATCH /sessions/:id/close (admin)
     app.patch("/:id/close", adminOnly(), async (c) => {
         const id = c.req.param("id")!;
+        // fallow-ignore-next-line code-duplication -- uniform use-case handler shell after errorJson extraction, handler factory not warranted
         const uc = container.get<CloseSessionUseCase>(TOKENS.CloseSessionUseCase);
 
         const result = await uc.execute(id);
 
         return result.match(
             () => c.json({ ok: true }),
-            (error) => {
-                const dto = toApiError(error);
-                return c.json(dto, dto.statusCode as 404);
-            },
+            (error) => errorJson(c, error),
         );
     });
 

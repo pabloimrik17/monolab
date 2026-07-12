@@ -49,16 +49,6 @@ export async function login(pin: string): Promise<{ success: boolean }> {
     return { success: true };
 }
 
-export async function logout(): Promise<void> {
-    setCookie(COOKIE_NAME, "", {
-        httpOnly: true,
-        secure: IS_PROD,
-        sameSite: "lax",
-        path: "/",
-        maxAge: 0,
-    });
-}
-
 export async function isAuthenticated(): Promise<boolean> {
     const value = getCookie(COOKIE_NAME);
     return isValidCookie(value);

@@ -7,7 +7,7 @@ import {
     TOKENS,
     type UpdateOrderStatusUseCase,
 } from "@m0n0lab/qup-domain";
-import { toApiError } from "../errors/error-mapping.ts";
+import { errorJson } from "../errors/error-mapping.ts";
 import { adminOnly } from "../middleware/admin-only.ts";
 import { toOrderDto } from "../serializers/dto-serializers.ts";
 import type { CreateOrderRequest, UpdateOrderStatusRequest } from "@m0n0lab/qup-shared";
@@ -25,8 +25,7 @@ export function orderRoutes(container: Container) {
         const sessionResult = await getSession.execute(body.sessionCode);
 
         if (sessionResult.isErr()) {
-            const dto = toApiError(sessionResult.error);
-            return c.json(dto, dto.statusCode as 404);
+            return errorJson(c, sessionResult.error);
         }
 
         const uc = container.get<CreateOrderUseCase>(TOKENS.CreateOrderUseCase);
@@ -39,10 +38,7 @@ export function orderRoutes(container: Container) {
 
         return result.match(
             (order) => c.json(toOrderDto(order), 201),
-            (error) => {
-                const dto = toApiError(error);
-                return c.json(dto, dto.statusCode as 422);
-            },
+            (error) => errorJson(c, error),
         );
     });
 
@@ -69,10 +65,7 @@ export function orderRoutes(container: Container) {
                 const filtered = guest ? orders.filter((o) => o.guestName === guest) : orders;
                 return c.json(filtered.map(toOrderDto));
             },
-            (error) => {
-                const dto = toApiError(error);
-                return c.json(dto, dto.statusCode as 500);
-            },
+            (error) => errorJson(c, error),
         );
     });
 
@@ -90,14 +83,12 @@ export function orderRoutes(container: Container) {
                 422,
             );
         }
+        // fallow-ignore-next-line code-duplication -- uniform use-case handler shell after errorJson extraction, handler factory not warranted
         const result = await uc.execute(id, action);
 
         return result.match(
             () => c.json({ ok: true }),
-            (error) => {
-                const dto = toApiError(error);
-                return c.json(dto, dto.statusCode as 404);
-            },
+            (error) => errorJson(c, error),
         );
     });
 
@@ -110,10 +101,7 @@ export function orderRoutes(container: Container) {
 
         return result.match(
             () => c.json({ ok: true }),
-            (error) => {
-                const dto = toApiError(error);
-                return c.json(dto, dto.statusCode as 404);
-            },
+            (error) => errorJson(c, error),
         );
     });
 

@@ -1,5 +1,6 @@
 import { For, Show } from "solid-js";
 import { useViewModel } from "@m0n0lab/solid-clean";
+import { VmStatus } from "../../components/vm-status.tsx";
 import { container } from "../../container.ts";
 import { TOKENS } from "../../tokens.ts";
 import type { DashboardViewModel } from "../../view-models/dashboard.viewmodel.ts";
@@ -33,13 +34,10 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                <Show when={vm.error()}>
-                    <p class="text-red-600">{vm.error()}</p>
-                </Show>
-
-                <Show when={vm.loading()}>
-                    <p class="text-stone-500">Loading...</p>
-                </Show>
+                <VmStatus
+                    loading={vm.loading}
+                    error={vm.error}
+                />
 
                 {/* Order summary */}
                 <div class="grid grid-cols-4 gap-3">

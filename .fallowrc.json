@@ -1,0 +1,68 @@
+{
+    "$schema": "./node_modules/fallow/schema.json",
+    "entry": [
+        // qup-web SolidStart entries (mirror knip.config.ts EXCEPT src/server/** so dead "use server" endpoints stay detectable)
+        "apps/qup-web/app.config.ts",
+        "apps/qup-web/src/entry-client.tsx",
+        "apps/qup-web/src/entry-server.tsx",
+        "apps/qup-web/src/app.tsx",
+        "apps/qup-web/src/middleware.ts",
+        "apps/qup-web/src/routes/**/*.tsx",
+        // type-level test files are entries for their assertions
+        "**/*.test-d.ts",
+        // tool-loaded configs (oxfmt CLI, validate-branch-name via husky)
+        "oxfmt.config.ts",
+        "validate-branch-name.config.cjs"
+    ],
+    "ignorePatterns": [
+        // agent tooling, not part of the analyzed codebase
+        ".opencode/**",
+        ".agents/**",
+        ".claude/**",
+        ".codex/**",
+        ".junie/**",
+        "claude-plugins/**"
+    ],
+    "ignoreDependencies": [
+        // tool-loaded (stryker resolves plugins at runtime)
+        "@stryker-mutator/typescript-checker",
+        "@stryker-mutator/vitest-runner",
+        // tool-loaded (swc node register / helpers, injected by toolchain)
+        "@swc-node/register",
+        "@swc/helpers",
+        "tslib",
+        // loaded by husky hook via CLI, never imported
+        "validate-branch-name",
+        // scoped intent: driver used by drizzle in *-data workspaces only
+        "pg",
+        // scoped intent: deliberate keep in apps/qup-web (mirrors knip decision)
+        "@kobalte/core"
+    ],
+    "publicPackages": ["@m0n0lab/qup-domain", "@m0n0lab/solid-clean", "@m0n0lab/react-clean"],
+    "ignoreDecorators": ["injectable"],
+    "duplicates": {
+        // type-level test files are per-type assertion boilerplate; clone detection adds no signal there
+        "ignore": ["**/*.test-d.ts"]
+    },
+    // knip parity: type/interface exports referenced in their own file are not dead (e.g. CartItem)
+    "ignoreExportsUsedInFile": {
+        "type": true,
+        "interface": true
+    },
+    "ignoreUnresolvedImports": [
+        // vite public/ asset served from web root
+        "/vite.svg"
+    ],
+    "usedClassMembers": [
+        // view-model members are consumed in routes via container.get<T>() + useViewModel;
+        // fallow misses member usage through generic receivers (reported upstream)
+        { "extends": "BaseViewModel", "members": ["*"] },
+        // port implementations bound in DI; members invoked by use-cases via the port interface
+        { "implements": "MenuItemRepository", "members": ["*"] },
+        { "implements": "OrderRepository", "members": ["*"] },
+        { "implements": "SessionRepository", "members": ["*"] }
+    ],
+    "rules": {
+        "require-suppression-reason": "warn"
+    }
+}

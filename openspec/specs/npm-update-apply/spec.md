@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The `npm-update-apply` skill is the single source of truth for the single-project npm apply mechanism. It accepts a fully-resolved, single-project apply spec and performs the mechanical apply (generic `ncu` bumps, `pnpm-workspace.yaml` catalog edits, override commands, and a single install), returning a structured, composable result. It is level-agnostic — behavior is parameterized solely by `target` — and leaves all consumer-facing messaging and conflict/override resolution to the caller.
+The `apply-npm-updates` skill (the `npm-update-apply` capability) is the single source of truth for the single-project npm apply mechanism. It accepts a fully-resolved, single-project apply spec and performs the mechanical apply (generic `ncu` bumps, `pnpm-workspace.yaml` catalog edits, override commands, and a single install), returning a structured, composable result. It is level-agnostic — behavior is parameterized solely by `target` — and leaves all consumer-facing messaging and conflict/override resolution to the caller.
 ## Requirements
 ### Requirement: Skill location and structure
 
@@ -57,66 +57,21 @@ The skill SHALL reject an unknown `packageManager` or `target` before any side e
 
 ### Requirement: Generic package.json bumps via npm-check-updates
 
-For each `manifestBumps` element (a `package.json` `sourceFile`), the skill SHALL invoke `npm-check-updates@21.0.2` exactly once via the package-manager runner prefix (`pnpm dlx`, `npx -y`, `yarn dlx`, `bunx`, `deno run --allow-read --allow-net npm:`):
+For each `manifestBumps` element (a `package.json` `sourceFile`), the skill SHALL invoke `npm-check-updates@21.0.2` exactly once via the package-manager runner prefix (`pnpm dlx`, `npx -y`, `yarn dlx`, `bunx`, `deno run --allow-read --allow-net npm:`), with the same invocation shape, `<ncuTarget>` resolution table, `--removeRange` exact-pin rule, `--filter` rules, and catalog-reference guard as today (all unchanged).
 
-```bash
-<runner-prefix> npm-check-updates@21.0.2 -p <packageManager> --target <ncuTarget> --upgrade --removeRange --packageFile <sourceFile> [--cooldown <period>] [--filter "<names>"]
-```
+**Output handling (replaces verbatim streaming):** the skill SHALL redirect `ncu` stdout/stderr to an on-disk log file — under the caller-provided run directory (`<run-dir>/logs/`) when one is supplied, else a temporary path — and surface a one-line digest per manifest. Verbatim streaming of `ncu` output into the conversation SHALL NOT occur. If `ncu` exits non-zero for a manifest, the skill SHALL stop immediately, surface a bounded tail of the log (at most ~40 lines), and return a structured failure `{ step: "ncu", sourceFile, exitCode, appliedSoFar }` without printing any consumer-specific abort message.
 
-The skill SHALL resolve `<ncuTarget>` from the `target` input via the same table `scan-npm-updates` uses (NOT passing `target` verbatim):
+#### Scenario: ncu output goes to a log, not the conversation
 
-| `target` (= level) | `<ncuTarget>` | extra flag |
-| --- | --- | --- |
-| `patch` | `patch` | — |
-| `minor` | `minor` | — |
-| `major` | `latest` | — |
-
-`-p <packageManager>` SHALL always be passed (mirror scan semantics, prevent ncu auto-detect drift). `--cooldown` SHALL be included when `cooldown` is set and omitted for `pnpm`.
-
-**`--removeRange` SHALL always be passed**, at every level and every bump type: each bumped dependency is written as an **exact version** (no `^`/`~`/range operator) — e.g. `"react": "19.0.2"`, not `"^19.0.2"`. This is a deliberate, family-wide behavior change (the whole update cascade pins exact); it is NOT byte-equivalent to the pre-change patch/minor output, which preserved the existing range operator. Override-managed families (run via `overrideCommands`) pin according to their own upgrade tool and are out of scope of this rule.
-
-`--filter "<names>"` (the element's `names`, space-separated, double-quoted) SHALL be included when `includeFilter` is `true`. Additionally, when `<ncuTarget>` resolves to `latest` (i.e. `target` is `major`), the skill SHALL ALWAYS include `--filter "<names>"` regardless of the element's `includeFilter` value — the caller's `names` list is authoritative. This is required because `scan-npm-updates` produces the `latest`-level candidate set by running `ncu --target latest` and then post-filtering (e.g. major-only); running `ncu --target latest` without `--filter` would bump every dependency with any newer version, exceeding the accepted set. For `patch`/`minor` targets `--filter` is omitted when `includeFilter` is `false`.
-
-**Catalog-reference guard (package-manager-agnostic, defense-in-depth).** The skill SHALL NOT include in `--filter` any package name whose declared value in `<sourceFile>` matches `/^catalog:/`, and SHALL NOT write a pinned version over any consumer value matching `/^catalog:/`. A `catalog:*` specifier is a reference, not a version, and its source is bumped via `catalogEdits` (see "Catalog source edits"). At the pinned `ncu@21.0.2` this is a no-op (ncu already skips `catalog:*` specifiers, verified for both pnpm and bun); the guard prevents a silent regression should a future ncu stop skipping them.
-
-The skill SHALL stream `ncu` stdout/stderr to the user verbatim.
-
-If `ncu` exits non-zero for a manifest, the skill SHALL stop immediately and return a structured failure `{ step: "ncu", sourceFile, exitCode, appliedSoFar }` without printing any consumer-specific abort message.
-
-#### Scenario: One ncu invocation per manifest
-
-- **WHEN** the spec has two distinct `package.json` source files
-- **THEN** the skill invokes `npm-check-updates@21.0.2` exactly once per file, with `-p <pm> --target <ncuTarget> --upgrade --removeRange --packageFile <sourceFile>`
-
-#### Scenario: Exact pin at all levels via --removeRange
-
-- **WHEN** the skill bumps `react` to `19.0.2` (any level)
-- **THEN** the written `package.json` value is `"react": "19.0.2"` with no `^`/`~` prefix
-- **AND** the same exact-pin rule applies to `patch`, `minor`, and `major` bumps
-
-#### Scenario: Major maps to latest and always filters
-
-- **WHEN** the skill is invoked with `target: "major"` and a `manifestBumps` element `{ names: ["react", "react-dom"], includeFilter: false }`
-- **THEN** the ncu invocation uses `--target latest --removeRange` and includes `--filter "react react-dom"` despite `includeFilter` being `false`
-- **AND** no dependency outside `["react", "react-dom"]` is bumped
-
-#### Scenario: Patch/minor pin exact (intentional change, not byte-equivalent)
-
-- **WHEN** the skill is invoked with `target: "minor"` and an element with `includeFilter: false`
-- **THEN** the ncu invocation uses `--target minor --removeRange` and omits `--filter`
-- **AND** the bumped deps are written as exact versions (a deliberate change from the pre-change `^`-preserving output)
+- **WHEN** the skill runs `ncu` for a manifest
+- **THEN** the full stdout/stderr is written to an on-disk log
+- **AND** the conversation receives a one-line digest, not the verbatim output
 
 #### Scenario: ncu failure returns structured failure, not consumer copy
 
 - **WHEN** `ncu` exits non-zero on a manifest
-- **THEN** the skill stops, returns `{ step: "ncu", sourceFile, exitCode, appliedSoFar }`, and does NOT run the install or any override command
+- **THEN** the skill stops, surfaces at most ~40 tail lines from the log, returns `{ step: "ncu", sourceFile, exitCode, appliedSoFar }`, and does NOT run the install or any override command
 - **AND** the skill does NOT print a `Re-run /experiments:...` or `Stopping the run...` line (the caller owns that copy)
-
-#### Scenario: Consumer catalog reference excluded from generic bumps
-
-- **WHEN** a `manifestBumps` `sourceFile` declares `"eslint-plugin-storybook": "catalog:default"` (Bun) or `"vitest": "catalog:"` (pnpm)
-- **THEN** the skill does NOT add that name to `--filter` and does NOT write a pinned version over the `catalog:*` value
-- **AND** the consumer `package.json` reference is left untouched
 
 ---
 
@@ -124,16 +79,27 @@ If `ncu` exits non-zero for a manifest, the skill SHALL stop immediately and ret
 
 For each `catalogEdits` element, the skill SHALL bump the entry **in its catalog source** (resolved from `catalogSource`, defaulting to `pnpm-workspace.yaml` when absent) by replacing its value with the **exact** version — `targetVersion` with any leading range operator (`^`/`~`/`=`) stripped — preserving surrounding whitespace, comments, and the order of other keys. This is an in-place `Edit`, never an `npm-check-updates` invocation (ncu does not rewrite catalog sources for pnpm or bun). The skill SHALL NOT touch any consumer `package.json` entry that is a `catalog:` reference.
 
-- **pnpm** (`catalogSource.manager === "pnpm"` or omitted): locate the key under the top-level `catalog:` block of `pnpm-workspace.yaml` and replace its value.
+- **pnpm** (`catalogSource.manager === "pnpm"` or omitted): in `pnpm-workspace.yaml`, locate the catalog block from `catalogSource.field` — `{ kind: "default" }` (or omitted `catalogSource`) → the top-level `catalog:` block; `{ kind: "named", name }` → the `catalogs.<name>` block under the `catalogs:` map — then locate the `name` key within that block and replace its value. When the `name: <version>` token is not unique within the file (the same dep appears in more than one catalog block, e.g. `catalog.react` and `catalogs.react17.react`), the `Edit` match SHALL include enough surrounding context (neighboring keys or the enclosing block's opening line) to scope the replacement to the block resolved from `catalogSource.field`.
 - **bun** (`catalogSource.manager === "bun"`): in the root `package.json` identified by `catalogSource.sourceFile`, locate the catalog block from `catalogSource.field` — `{ kind: "default" }` → the `catalog` map; `{ kind: "named", name }` → `catalogs.<name>` — nested under `workspaces` when `underWorkspaces` is `true`. Replace the matched `"name": "<version>"` token with the exact target via a targeted `Edit` (NOT a `JSON.parse`→`JSON.stringify`, which would reformat the file). If the version token is non-unique within the file, the `Edit` match SHALL include enough surrounding context to scope it to the resolved block.
 
 If a catalog key (or its resolved block) is unexpectedly missing, the skill SHALL stop and return `{ step: "catalog", name, exitCode: null, appliedSoFar }`.
 
-#### Scenario: pnpm catalog value pinned exact in place
+#### Scenario: pnpm default catalog value pinned exact in place
 
 - **WHEN** `catalogEdits` includes `{ name: "zod", targetVersion: "^3.24.1" }` with no `catalogSource`
-- **THEN** the skill rewrites the `zod` key under `catalog:` in `pnpm-workspace.yaml` to `3.24.1` (exact, prefix stripped)
+- **THEN** the skill rewrites the `zod` key under the top-level `catalog:` block in `pnpm-workspace.yaml` to `3.24.1` (exact, prefix stripped)
 - **AND** does NOT invoke `npm-check-updates` for the catalog file
+
+#### Scenario: pnpm named catalog pinned
+
+- **WHEN** `catalogEdits` includes `{ name: "react", targetVersion: "18.3.1", catalogSource: { sourceFile: "pnpm-workspace.yaml", manager: "pnpm", field: { kind: "named", name: "react17" } } }`
+- **THEN** the skill rewrites the `react` key under `catalogs.react17` in `pnpm-workspace.yaml` to `18.3.1` in place, preserving formatting and key order
+- **AND** does NOT modify the `react` key under any other catalog block
+
+#### Scenario: pnpm non-unique catalog token scoped to resolved block
+
+- **WHEN** `catalogEdits` targets `{ name: "react", catalogSource.field: { kind: "named", name: "react17" } }` and the same `react:` token also appears under the top-level `catalog:` block
+- **THEN** the `Edit` match includes surrounding context so only the `catalogs.react17.react` value is rewritten
 
 #### Scenario: Bun default catalog pinned in package.json
 
@@ -148,60 +114,43 @@ If a catalog key (or its resolved block) is unexpectedly missing, the skill SHAL
 
 #### Scenario: Consumer catalog reference untouched
 
-- **WHEN** a consumer `package.json` declares `"zod": "catalog:"` (pnpm) or `"eslint-plugin-storybook": "catalog:default"` (Bun)
+- **WHEN** a consumer `package.json` declares `"zod": "catalog:"` / `"react": "catalog:react17"` (pnpm) or `"eslint-plugin-storybook": "catalog:default"` (Bun)
 - **THEN** the skill does NOT modify that consumer `package.json`
 
 ---
 
 ### Requirement: Override command execution
 
-After every generic manifest write and catalog edit for the project has succeeded, the skill SHALL execute each `overrideCommands` element's `command` exactly once, in declaration order, streaming stdout/stderr. If any override exits non-zero, the skill SHALL stop and return `{ step: "override", entryId, exitCode, appliedSoFar }`. The skill SHALL NOT run `ncu --upgrade` as a fallback after an override fails, and SHALL NOT run the final install on this path.
+After every generic manifest write and catalog edit for the project has succeeded, the skill SHALL execute each `overrideCommands` element's `command` exactly once, in declaration order, redirecting stdout/stderr to the run log (digest to the conversation; no verbatim streaming). If any override exits non-zero, the skill SHALL stop, surface a bounded tail of the log (at most ~40 lines), and return `{ step: "override", entryId, exitCode, appliedSoFar }`. The skill SHALL NOT run `ncu --upgrade` as a fallback after an override fails, and SHALL NOT run the final install on this path.
 
-#### Scenario: Overrides run after generic writes in declaration order
+#### Scenario: Override output logged, not streamed
 
-- **WHEN** the spec has generic manifest bumps and two override commands
-- **THEN** the skill writes all manifests first, then runs the two override commands in declaration order
-
-#### Scenario: Override failure stops with no fallback
-
-- **WHEN** an override command exits non-zero
-- **THEN** the skill returns `{ step: "override", entryId, exitCode, appliedSoFar }`
-- **AND** does NOT run `ncu --upgrade` for the matched packages and does NOT run the install
+- **WHEN** an override command runs
+- **THEN** its stdout/stderr goes to the on-disk log and the conversation receives a digest line
 
 ---
 
 ### Requirement: Single install with skip rule
 
-After all generic bumps, catalog edits, and override commands for the project land successfully, the skill SHALL run exactly one install command for the project's package manager (`pnpm install` / `npm install` / `yarn install` / `bun install` / `deno install`), unless `skipInstall` is `true`. The skill SHALL skip the install when `skipInstall` is `true` (every accepted package was handled by an override that ran its own install). If the install exits non-zero, the skill SHALL return `{ step: "install", exitCode, appliedSoFar }`.
+After all generic bumps, catalog edits, and override commands for the project land successfully, the skill SHALL run exactly one install command for the project's package manager (`pnpm install` / `npm install` / `yarn install` / `bun install` / `deno install`), unless `skipInstall` is `true`, redirecting its stdout/stderr to the run log and surfacing a one-line digest. The skill SHALL skip the install when `skipInstall` is `true` (every accepted package was handled by an override that ran its own install). If the install exits non-zero, the skill SHALL surface a bounded tail of the log (at most ~40 lines) and return `{ step: "install", exitCode, appliedSoFar }`.
 
-#### Scenario: One install per invocation
+#### Scenario: Install output logged with digest
 
-- **WHEN** the spec applies bumps across three manifests with `skipInstall: false` and `packageManager: "pnpm"`
-- **THEN** the skill runs `pnpm install` exactly once after all manifests are written
-
-#### Scenario: Install skipped when overrides handled everything
-
-- **WHEN** `skipInstall: true` and no generic manifest write or catalog edit occurred
-- **THEN** the skill runs no install command
-- **AND** the result records that the install was delegated to the override command(s)
+- **WHEN** the install runs
+- **THEN** its full output is written to the on-disk log and the conversation receives a one-line digest
+- **AND** a bounded tail (≤ ~40 lines) is surfaced only when the install fails
 
 ---
 
 ### Requirement: Structured result and caller-owned messaging
 
-On success the skill SHALL return a structured result `{ appliedGeneric: [{ name, location }], appliedOverrides: [{ id, command, matchedNames }], installRan: boolean, failure: null }`. On failure the skill SHALL return the same shape with `failure` populated per the failing-step requirements above. The skill SHALL stream `ncu` / install / override stdout/stderr verbatim (observability), but SHALL NOT print the consumer-facing summary block or the consumer-specific abort copy — the caller composes those so that single-project and cross-project consumers each preserve their own wording and exit semantics.
+On success the skill SHALL return a structured result `{ appliedGeneric: [{ name, location }], appliedOverrides: [{ id, command, matchedNames }], installRan: boolean, logPath: "<string>", failure: null }`. On failure the skill SHALL return the same shape with `failure` populated per the failing-step requirements above. The skill SHALL write `ncu` / install / override stdout/stderr to the on-disk log referenced by `logPath` (observability moves to disk; verbatim streaming into the conversation SHALL NOT occur), and SHALL NOT print the consumer-facing summary block or the consumer-specific abort copy — the caller composes those so that single-project and cross-project consumers each preserve their own wording and exit semantics.
 
 #### Scenario: Success returns a composable fragment
 
 - **WHEN** the apply completes successfully
-- **THEN** the result lists every generically-bumped package (with `location`) and every override that ran (with command and matched names) and `installRan`
+- **THEN** the result lists every generically-bumped package (with `location`), every override that ran (with command and matched names), `installRan`, and the `logPath` of the run log
 - **AND** the skill prints no `## ...-<level> summary` heading of its own
-
-#### Scenario: Failure leaves messaging to the caller
-
-- **WHEN** any step fails
-- **THEN** the structured `failure` carries the step, identifiers, exit code, and `appliedSoFar`
-- **AND** the skill does NOT print a consumer-specific abort message; the caller formats and prints it
 
 ---
 
@@ -251,16 +200,15 @@ The skill SHALL contain no level-specific branching logic; behavior is parameter
 
 The skill SHALL preserve the family hard rules:
 
-- SHALL NOT run tests, lint, or build.
-- SHALL NOT create git commits, branches, or pull requests.
+- SHALL NOT create commits, push, or open pull requests autonomously; the skill stops for human-in-the-loop review before any such outward/VCS action (opt-in isolation branch/worktree creation via `update-isolation` is permitted).
 - SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file: `pnpm-workspace.yaml` for pnpm, the root `package.json` `catalog`/`catalogs.<name>` map for Bun.
 - SHALL NOT run `ncu --upgrade` as a fallback after an override command fails.
 - SHALL NOT read or write the override registry data file except via the read-only resolution procedure.
 
-#### Scenario: No verification steps executed
+#### Scenario: No autonomous commit/push/PR
 
 - **WHEN** an apply completes
-- **THEN** no `vitest`, `nx test`, lint, build, or git commit command has been invoked by the skill
+- **THEN** no `git commit`, `git push`, or pull-request-creation command has been invoked by the skill
 
 #### Scenario: No ncu fallback after override failure
 

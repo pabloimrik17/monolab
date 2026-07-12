@@ -27,7 +27,14 @@ interface ScanResult {
         targetVersion: string; // semver proposed by the tool (same prefix convention as current)
         location: "root" | `workspace:${string}` | "catalog:default" | `catalog:${string}`;
         sourceFile: string; // repo-root-relative path of the manifest to edit
-        skippedByReleaseAge?: boolean; // true if a newer version was filtered by minimumReleaseAge and this is the fallback
+        skippedByReleaseAge?: boolean; // true if a newer in-band version was filtered by the uniform minimumReleaseAge gate and this is the newest eligible fallback. MAY appear on ANY record (root/workspace/catalog) — the age gate is uniform.
+        clampedTo?: {
+            // present ONLY when the @types/node engine-major clamp LOWERED the target to a smaller
+            // in-band version than per-package resolution would have proposed. Absent otherwise —
+            // including when @types/node is omitted entirely (an omitted record carries no fields).
+            rule: "engine-major";
+            from: string; // the higher target that was clamped away (what would have been proposed)
+        };
         catalogSource?: {
             // present on every catalog:* record (catalog:default / catalog:<name>), absent on root/workspace:* records
             sourceFile: string; // catalog source to edit: "pnpm-workspace.yaml" (pnpm) or the root "package.json" (bun)
@@ -36,9 +43,13 @@ interface ScanResult {
             underWorkspaces?: boolean; // bun only: true when the catalog block lives under `workspaces`
         };
     }>;
-    warnings: string[]; // non-fatal: tool stderr, unsupported-catalog notes, parse notes
+    warnings: string[]; // non-fatal: tool stderr, ambiguous-default notes, npm view failures, parse notes, engine-surface notes, version-family skew notes
 }
 ```
+
+- `skippedByReleaseAge` MAY appear on records of **any** `location` (the release-age gate is applied uniformly skill-side — see "Uniform release-age gate"), not only on catalog records.
+- `clampedTo` SHALL be present **only** on an emitted `@types/node` record whose target the engine-major clamp lowered, and absent otherwise. When no eligible target within the Node major exists, the record is omitted entirely (a warning is pushed) — an omitted record has no `clampedTo`. `from` is the higher target that would have been proposed before the clamp.
+- Version-family skew (e.g. `vitest` vs `@vitest/*` on different versions) is surfaced through `warnings`, not through any record field — the scan flags it but does not silently rewrite targets (see "Version-family skew detection").
 
 **Do not** output prose or tables. The caller renders user-facing output. The only output of this skill is the JSON block (fenced or raw, caller decides) plus warnings embedded inside it.
 
@@ -97,7 +108,7 @@ Build the command:
 
 - `<runner-prefix> npm-check-updates@21.0.2 -p <pm> --target <ncu-target> --jsonUpgraded --packageFile <manifest-path>`
 - `<pm>` is the package manager resolved in precondition 2 (one of `pnpm`|`npm`|`yarn`|`bun`|`deno`). Passing `-p` is MANDATORY: ncu 21.0.2 auto-detects `packageManager: 'deno'` when `--packageFile` points to a directory with a sibling `deno.json`, which collapses `--dep` to `['imports']` and drops real bumps in `dependencies`/`devDependencies` (see change `fix-scan-npm-updates-pm-detection`).
-- Add `--cooldown <period>` only when the detected PM is **not** `pnpm` (pnpm's `minimumReleaseAge` is read natively by ncu; verified in the spike). The value comes from the lookup below; omit the flag if the resolved period is `0` or unset.
+- Add `--cooldown <period>` only when the detected PM is **not** `pnpm` (pnpm's `minimumReleaseAge` is read natively by ncu). The value comes from the lookup below; omit the flag if the resolved period is `0` or unset. **This ncu-side filtering is only a non-authoritative pre-filter** — the skill re-validates every candidate's publish age itself (see "Uniform release-age gate"), so whether ncu applied `--cooldown` or a native pnpm read does not change the emitted target. The pre-filter just narrows the candidate set cheaply.
 
 ### `level` → `--target` mapping
 
@@ -145,32 +156,36 @@ This table is authoritative. Any PM not listed here SHALL abort (precondition 3)
 
 ncu's `--cooldown` accepts ISO-8601-ish durations such as `1d`, `12h`, `1440m`. Convert pnpm's minute value (`minimumReleaseAge: 1440`) to `1440m` when passing explicitly.
 
+The resolved threshold (in whatever unit) is the **single authoritative value** the "Uniform release-age gate" applies skill-side to every record. The `Native-read by ncu?` / `Skill action` columns above only govern the cheap ncu **pre-filter**; regardless of what ncu does, the skill re-validates each candidate's publish age against this threshold. So the pnpm "do not pass `--cooldown`" row does not mean pnpm records are gated only by ncu — they are re-gated skill-side like every other PM.
+
 ## Catalog post-processing
 
 After running ncu on every manifest, the raw updates set misses any dep declared as a `catalog:` reference in a consumer `package.json` (`"<pkg>": "catalog:"` for pnpm; `"<pkg>": "catalog:"` or `"catalog:<name>"` for bun). ncu skips those entries syntactically because they carry no version (verified for both PMs — see `research/ncu-bun-catalog-spike.md`). The scan therefore reads the catalog **source** directly, branching on the detected package manager. Both branches reuse the same `npm view` + `level` + `minimumReleaseAge` candidate resolution; only the source location and record shape differ.
 
 Each candidate is resolved once via:
 
-- `npm view <name> versions time --json` (single spawn per package; cache in-memory for the scan).
+- `npm view <name> versions time --json` (single spawn per package; cache in-memory for the scan). This is the **same per-scan cache** the "Uniform release-age gate" uses for manifest records — one spawn per distinct package name across the whole scan, shared between catalog and manifest paths.
 - Filter by the current `level` (patch = max version within the current minor band; minor = max within major band; major = max version whose major > current's major) and the resolved `minimumReleaseAge` threshold (a version is acceptable iff `now - publishTime >= threshold`).
 - `skippedByReleaseAge: true` when a higher version was filtered by the age threshold.
 
-### pnpm — `pnpm-workspace.yaml#catalog`
+> The `level` + `minimumReleaseAge` resolution described here is not catalog-specific. It is applied to **every** record (root / workspace / catalog) by the "Uniform release-age gate" below; the catalog path just happens to describe it first because catalog records are resolved entirely from `npm view` (ncu skips them).
 
-When `packageManager === "pnpm"`:
+### pnpm — `pnpm-workspace.yaml` `catalog` / `catalogs`
 
-1. Read `pnpm-workspace.yaml` and parse the top-level `catalog:` map. If absent, skip this branch.
-2. For each `(name, version)` pair under `catalog:`, resolve the candidate as above and emit an update record with:
+When `packageManager === "pnpm"`, pnpm declares catalogs in `pnpm-workspace.yaml`: a top-level `catalog:` map (the **default** catalog) plus a `catalogs:` map whose blocks (`catalogs.<name>`, referenced as `catalog:<name>`) are **named** catalogs.
+
+1. Read `pnpm-workspace.yaml` and parse the top-level `catalog:` map and every block under the `catalogs:` map. If none are present, skip this branch.
+2. For each `(name, version)` entry, resolve the candidate exactly as above (same `npm view` + `level` + `minimumReleaseAge` logic) and emit an update record with:
     - `name`: the catalog key.
-    - `currentVersion`: the value from `pnpm-workspace.yaml#catalog`.
+    - `currentVersion`: the value from the catalog block.
     - `targetVersion`: the resolved candidate.
-    - `location`: `"catalog:default"`.
+    - `location`: `"catalog:default"` for the top-level `catalog:` map; `"catalog:<name>"` for a `catalogs.<name>` block.
     - `sourceFile`: `"pnpm-workspace.yaml"`.
-    - `catalogSource`: `{ sourceFile: "pnpm-workspace.yaml", manager: "pnpm", field: { kind: "default" } }`.
+    - `catalogSource`: `{ sourceFile: "pnpm-workspace.yaml", manager: "pnpm", field }`, where `field = { kind: "default" }` for the top-level `catalog:` map and `field = { kind: "named", name: "<name>" }` for a `catalogs.<name>` block. pnpm has no `underWorkspaces` concept, so `underWorkspaces` SHALL be **absent** on pnpm records.
     - `skippedByReleaseAge` as resolved above.
-3. If a consumer `package.json` has `"<pkg>": "catalog:"` AND ncu separately reported `<pkg>` from that manifest (shouldn't happen because `catalog:` is not a version, but defensive), drop the manifest-level record and keep the catalog record.
-
-**pnpm named catalogs (`catalogs.<name>`, etc.):** detect by scanning `pnpm-workspace.yaml` for top-level keys matching `/^catalogs?\./` or a `catalogs:` map. For each named catalog found, push one warning: `named catalog "<name>" detected but not yet supported in this iteration`. Do not emit update records for pnpm named-catalog entries (unchanged this iteration).
+3. **pnpm named catalogs ARE supported (Full scope)** — emit records for `catalogs.<name>` entries and push **NO** `named catalog … not yet supported` warning.
+4. **Ambiguous default:** if the repo declares both a top-level `catalog:` map AND a `catalogs.default` block, push the warning `ambiguous default catalog: both 'catalog' and 'catalogs.default' present; treating as distinct sources` and emit both as distinct records. They share `location: "catalog:default"` but stay unambiguous downstream via `catalogSource.field` (the top-level `catalog:` entries are `{ kind: "default" }`; the `catalogs.default` entries are `{ kind: "named", name: "default" }`).
+5. If a consumer `package.json` has `"<pkg>": "catalog:"` / `"catalog:<name>"` AND ncu separately reported `<pkg>` from that manifest (shouldn't happen because a `catalog:` specifier carries no version, but defensive), drop the manifest-level record and keep the catalog record.
 
 ### bun — root `package.json` `catalog` / `catalogs`
 
@@ -192,6 +207,57 @@ When `packageManager === "bun"`, bun declares catalogs in the root `package.json
 4. **Bun named catalogs ARE supported (Full scope)** — emit records for them and push **NO** `named catalog … not yet supported` warning.
 5. **Ambiguous default:** if the repo declares both a bare `catalog` (top-level or `workspaces.catalog`) AND a `catalogs.default`, push the warning `ambiguous default catalog: both 'catalog' and 'catalogs.default' present; treating as distinct sources` and emit both as distinct records. They share `location: "catalog:default"` but stay unambiguous downstream via `catalogSource.field` (the bare default is `{ kind: "default" }`; the named one is `{ kind: "named", name: "default" }`).
 
+## Post-resolution pipeline (clamps & skew detection)
+
+After ncu parsing and catalog post-processing produce the raw candidate set, run these stages **in order** over the assembled records, before emitting. The first two clamp targets (they may lower or remove a target; never raise one) so the emitted set is policy-coherent with no command-side wiring; the third only detects and warns. `@types/node` engine-major clamping (#251) and the uniform release-age gate (#247) are the load-bearing fixes.
+
+### Uniform release-age gate
+
+Apply the resolved `minimumReleaseAge` threshold (see the lookup table above) to **every** record regardless of `location` (`root`, `workspace:*`, `catalog:default`, `catalog:<name>`) — not only catalog records. Use the same `npm view <name> versions time --json` lookup (the shared per-scan in-memory cache; one spawn per distinct package name). **This skill-side gate is authoritative**; ncu's `--cooldown` flag / pnpm's native `minimumReleaseAge` read act only as a cheap pre-filter.
+
+For each record:
+
+- Let the candidate set be every published version within the record's `level` band relative to its `currentVersion` (patch = same minor; minor = same major; major = higher major). ncu's reported candidate is a member but not the authority.
+- The emitted `targetVersion` is the **newest** candidate whose publish time satisfies `now - publishTime >= threshold`.
+- If a newer in-band version exists but is younger than the threshold, clamp to the newest eligible version and set `skippedByReleaseAge: true`. Because this runs on manifest records too, `skippedByReleaseAge` is now settable on `root` / `workspace:*` records, not only catalog records.
+- If the resolved threshold is `0` or unset, do not age-gate and do not set `skippedByReleaseAge`.
+
+This is the primary fix for #247: a root-pinned `@vitest/browser` is gated identically to its catalog `vitest` sibling, instead of escaping through ncu's native read while the catalog stayed held. With one gate over all records, the family stays in sync without any explicit coherence machinery.
+
+### Engine-major clamp for `@types/node`
+
+Clamp the `@types/node` candidate so its major never exceeds the Node major the repo targets. This clamp applies **only to `@types/node`** in this iteration.
+
+Resolve the target Node major:
+
+- If `devEngines.runtime.node` is present (an entry named `node` in the `devEngines.runtime` array/object), use its major.
+- Otherwise use the major of the **lower bound** of `engines.node` (e.g. `>=24.12.0` → `24`, `^24.1.0` → `24`, `24.x` → `24`).
+- If `devEngines.runtime.node` and `engines.node` **disagree** on the major, use the **lower** major and push a warning naming both loci (types must not outrun the lowest runtime the repo claims to support).
+- If **neither** source is present, do **not** clamp `@types/node` and push a warning that no Node engine surface was found.
+
+Then, for each `@types/node` record:
+
+- A candidate whose major is `<=` the target Node major passes unchanged (no `clampedTo`).
+- A candidate whose major **exceeds** the target Node major is **not** emitted as that bump. If an age-eligible target exists within the allowed major and above current, emit the record at that newest eligible target and set `clampedTo: { rule: "engine-major", from: <the-dropped-higher-target> }`. If there is **no** eligible version above current inside the allowed major, **omit** the record entirely (no bump) and push a warning naming `@types/node` and the blocked higher major — the omitted record carries no `clampedTo` (there is no record to attach it to).
+
+This is what fixes #251 at the dependency level: `@types/node` never crosses the Node major, so Node-N-only typings can't typecheck code that runs on an older Node.
+
+### Version-family skew detection (advisory)
+
+The uniform release-age gate above already keeps a lockstep family in sync in the normal case: family members publish the same version at the same time, so one gate applied to all records resolves them to the same version. #247 happened because the gate was **split** (catalog vs manifest), not because `vitest` published inconsistently — and the uniform gate closes that. This stage is a cheap safety net for the rare residual cases (members that start from different versions/bands in the manifests, or minutes-wide publish jitter).
+
+The skill SHALL NOT enforce coherence (no holds, no clamps, no target rewrites — that path over-holds mixed-version families like `react` + `@types/react` and needs a hand-maintained registry). Instead it **detects and warns**, using a narrow, low-false-positive heuristic that needs no registry:
+
+- Group the emitted `updates` by the umbrella-package shape: a bare package name `X` together with any `@X/*` scoped siblings present in the same scan (e.g. `vitest` + `@vitest/browser` + `@vitest/ui`; `jest` + `@jest/*`; `storybook` + `@storybook/*`).
+- This shape only fires for genuine umbrella tools. It does **not** group independently-versioned scopes that have no bare root (`@types/*`, `@radix-ui/*`, `@aws-sdk/*`), so those never produce false positives.
+- If such a group has **two or more** bumped members whose emitted `targetVersion` (ignoring the `^`/`~` prefix) differ, push one warning:
+
+    `version-family skew: <name>@<v>, <name2>@<v2> resolved to different versions. If these are a lockstep family (e.g. vitest + @vitest/*), align them to one version before installing — mixed family versions cause "Running mixed versions is not supported" (see #247).`
+
+Targets are left untouched; the caller/user decides. Because the uniform gate makes this warning rare, it is signal, not noise.
+
+**Protocol if you hit skew (the #247 failure):** the symptom is a test run that hangs (~minutes) then fails with `Running mixed versions is not supported` / `birpc rpc is closed`. To resolve: pin every member of the family (catalog entries AND manifest deps — check the root `package.json`, which is where a stray manifest pin escaped in #247) to a single version, then reinstall. The scan's skew warning is meant to surface this at scan time, before the bad set is ever applied.
+
 ## Assembling the result
 
 For each manifest in the repo:
@@ -200,7 +266,7 @@ For each manifest in the repo:
     - root `package.json` in `single` → `"root"`.
     - root `package.json` in `workspace` → `"root"` (still valid; it's the workspace root manifest).
     - non-root workspace `package.json` → `workspace:<package-name>` where `<package-name>` is that manifest's `name` field.
-    - default catalog (pnpm `catalog:` or bun `catalog`) → `"catalog:default"`; bun named catalog → `"catalog:<name>"`.
+    - default catalog (pnpm top-level `catalog:` or bun `catalog`) → `"catalog:default"`; pnpm or bun named catalog (`catalogs.<name>`) → `"catalog:<name>"`.
 - `sourceFile`: repo-root-relative path (e.g. `apps/wealth-react/package.json`, `pnpm-workspace.yaml`, or the root `package.json` for bun catalogs).
 - `catalogSource`: present on every `catalog:*` record (describing the exact edit target so apply is unambiguous); absent on `root`/`workspace:*` records.
 
@@ -214,8 +280,11 @@ Concatenate all `warnings` from:
 
 - ncu stderr per invocation.
 - JSON parse failures.
-- pnpm named-catalog notes; the bun ambiguous-default note.
-- Any `npm view` failures during catalog processing.
+- The pnpm / bun ambiguous-default note.
+- Any `npm view` failures during catalog processing or the uniform release-age gate.
+- Engine-surface notes from the `@types/node` clamp: disagreement between `devEngines.runtime.node` and `engines.node` (naming both loci), or no Node engine surface found.
+- `@types/node` omit note: the only higher candidate crosses the Node major and no eligible target within the allowed major exists, so the record is omitted (naming `@types/node` and the blocked major).
+- Version-family skew notes: an umbrella family (`X` + `@X/*`, e.g. `vitest` + `@vitest/*`) resolved to different versions.
 
 Dedupe warnings (same string appearing twice → keep one).
 
@@ -225,22 +294,29 @@ Emit the `ScanResult` JSON object. That's it. Do not print tables, do not ask qu
 
 ## Error paths summary
 
-| Scenario                                               | Behaviour                                                                                                                   |
-| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| Unknown `level`                                        | Abort with precondition-1 error.                                                                                            |
-| No lockfile and no `packageManager` hint               | Abort with precondition-2 error.                                                                                            |
-| PM lacks `minimumReleaseAge` lookup row                | Abort with precondition-3 error.                                                                                            |
-| PM runner missing                                      | Abort with precondition-4 error.                                                                                            |
-| ncu exits non-zero on a manifest                       | Push stderr (or a synthesized `ncu failed on <manifest>`) into `warnings` and continue. `updates` for that manifest = `[]`. |
-| ncu output cannot be parsed as JSON                    | Push raw stdout (truncated) into `warnings`; `updates` for that manifest = `[]`.                                            |
-| `npm view <pkg>` fails during catalog post-process     | Push a warning naming the package; omit catalog record for that entry.                                                      |
-| pnpm named catalog present                             | Push `not yet supported` warning; skip those entries.                                                                       |
-| bun named catalog present                              | Supported — emit records, no warning.                                                                                       |
-| bun ambiguous default (`catalog` + `catalogs.default`) | Push ambiguous-default warning; emit both as distinct records (differentiated by `catalogSource.field`).                    |
+| Scenario                                                | Behaviour                                                                                                                   |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Unknown `level`                                         | Abort with precondition-1 error.                                                                                            |
+| No lockfile and no `packageManager` hint                | Abort with precondition-2 error.                                                                                            |
+| PM lacks `minimumReleaseAge` lookup row                 | Abort with precondition-3 error.                                                                                            |
+| PM runner missing                                       | Abort with precondition-4 error.                                                                                            |
+| ncu exits non-zero on a manifest                        | Push stderr (or a synthesized `ncu failed on <manifest>`) into `warnings` and continue. `updates` for that manifest = `[]`. |
+| ncu output cannot be parsed as JSON                     | Push raw stdout (truncated) into `warnings`; `updates` for that manifest = `[]`.                                            |
+| `npm view <pkg>` fails during catalog post-process      | Push a warning naming the package; omit catalog record for that entry.                                                      |
+| pnpm named catalog present                              | Supported — emit records, no warning.                                                                                       |
+| pnpm ambiguous default (`catalog` + `catalogs.default`) | Push ambiguous-default warning; emit both as distinct records (differentiated by `catalogSource.field`).                    |
+| bun named catalog present                               | Supported — emit records, no warning.                                                                                       |
+| bun ambiguous default (`catalog` + `catalogs.default`)  | Push ambiguous-default warning; emit both as distinct records (differentiated by `catalogSource.field`).                    |
+| `devEngines.runtime.node` vs `engines.node` disagree    | Use the **lower** major for the `@types/node` clamp; push a warning naming both loci.                                       |
+| No Node engine surface present                          | Do **not** clamp `@types/node`; push a warning that no Node engine surface was found.                                       |
+| `@types/node` major blocked, no in-band target          | Omit the record (no bump); push a warning naming `@types/node` + the blocked major. No `clampedTo` (no record).             |
+| Umbrella family resolves to mixed versions              | Push a version-family skew warning; leave targets untouched (advisory — no hold/clamp).                                     |
 
 The only abort paths are the four preconditions. Everything after is resilient: degrade to warnings and keep going.
 
 ## Example output
+
+A `minor` scan illustrating the two clamps, a skew warning, and a pnpm named catalog. `@types/react` is a plain unclamped record; `@types/node` is held to the Node major (#251); the `vitest` family started skewed in the manifests (`4.1.9` catalog vs a stray `4.0.x` root pin), so after the uniform gate they resolve to different versions and the scan emits a `version-family skew` warning rather than rewriting either target; `react` comes from a pnpm named catalog (`catalog:react17`):
 
 ```json
 {
@@ -255,9 +331,17 @@ The only abort paths are the four preconditions. Everything after is resilient: 
             "sourceFile": "apps/wealth-react/package.json"
         },
         {
+            "name": "@types/node",
+            "currentVersion": "24.13.2",
+            "targetVersion": "24.13.5",
+            "location": "root",
+            "sourceFile": "package.json",
+            "clampedTo": { "rule": "engine-major", "from": "26.1.1" }
+        },
+        {
             "name": "vitest",
-            "currentVersion": "4.0.18",
-            "targetVersion": "4.0.24",
+            "currentVersion": "4.1.9",
+            "targetVersion": "4.1.10",
             "location": "catalog:default",
             "sourceFile": "pnpm-workspace.yaml",
             "catalogSource": {
@@ -265,11 +349,34 @@ The only abort paths are the four preconditions. Everything after is resilient: 
                 "manager": "pnpm",
                 "field": { "kind": "default" }
             }
+        },
+        {
+            "name": "@vitest/browser",
+            "currentVersion": "4.0.5",
+            "targetVersion": "4.0.9",
+            "location": "root",
+            "sourceFile": "package.json"
+        },
+        {
+            "name": "react",
+            "currentVersion": "18.2.0",
+            "targetVersion": "18.3.1",
+            "location": "catalog:react17",
+            "sourceFile": "pnpm-workspace.yaml",
+            "catalogSource": {
+                "sourceFile": "pnpm-workspace.yaml",
+                "manager": "pnpm",
+                "field": { "kind": "named", "name": "react17" }
+            }
         }
     ],
-    "warnings": ["named catalog \"test\" detected but not yet supported in this iteration"]
+    "warnings": [
+        "version-family skew: vitest@4.1.10, @vitest/browser@4.0.9 resolved to different versions. If these are a lockstep family (e.g. vitest + @vitest/*), align them to one version before installing — mixed family versions cause \"Running mixed versions is not supported\" (see #247)."
+    ]
 }
 ```
+
+In the normal case — where the family shares one current version and publishes in lockstep — the uniform release-age gate resolves every member to the same version and **no** skew warning is emitted. The warning above only appears because the root `@vitest/browser` pin (`4.0.5`) was already on a different minor than the catalog (`4.1.9`); the scan surfaces that at scan time instead of letting it blow up at test time.
 
 A bun catalog record (named catalog under `workspaces`) looks like:
 

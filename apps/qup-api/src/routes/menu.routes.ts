@@ -6,7 +6,7 @@ import {
     TOKENS,
     type UpdateMenuItemUseCase,
 } from "@m0n0lab/qup-domain";
-import { toApiError } from "../errors/error-mapping.ts";
+import { errorJson } from "../errors/error-mapping.ts";
 import { adminOnly } from "../middleware/admin-only.ts";
 import { toMenuItemDto } from "../serializers/dto-serializers.ts";
 import type { Category } from "@m0n0lab/qup-domain";
@@ -24,10 +24,7 @@ export function menuRoutes(container: Container) {
 
         return result.match(
             (items) => c.json(items.map(toMenuItemDto)),
-            (error) => {
-                const dto = toApiError(error);
-                return c.json(dto, dto.statusCode as 500);
-            },
+            (error) => errorJson(c, error),
         );
     });
 
@@ -45,10 +42,7 @@ export function menuRoutes(container: Container) {
 
         return result.match(
             (item) => c.json(toMenuItemDto(item), 201),
-            (error) => {
-                const dto = toApiError(error);
-                return c.json(dto, dto.statusCode as 422);
-            },
+            (error) => errorJson(c, error),
         );
     });
 
@@ -65,14 +59,12 @@ export function menuRoutes(container: Container) {
         if (body.available != null) updates.available = body.available;
         if (body.sortOrder != null) updates.sortOrder = body.sortOrder;
 
+        // fallow-ignore-next-line code-duplication -- uniform use-case handler shell after errorJson extraction, handler factory not warranted
         const result = await uc.execute(id, updates);
 
         return result.match(
             () => c.json({ ok: true }),
-            (error) => {
-                const dto = toApiError(error);
-                return c.json(dto, dto.statusCode as 404);
-            },
+            (error) => errorJson(c, error),
         );
     });
 
@@ -85,10 +77,7 @@ export function menuRoutes(container: Container) {
 
         return result.match(
             () => c.body(null, 204),
-            (error) => {
-                const dto = toApiError(error);
-                return c.json(dto, dto.statusCode as 404);
-            },
+            (error) => errorJson(c, error),
         );
     });
 

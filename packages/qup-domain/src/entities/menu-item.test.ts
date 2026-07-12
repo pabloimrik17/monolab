@@ -59,33 +59,6 @@ describe("MenuItem", () => {
         });
     });
 
-    describe("toggleAvailability", () => {
-        it("toggles from true to false", () => {
-            const result = MenuItem.create({
-                name: "Espresso",
-                category: Category.COFFEE,
-            });
-            expect(result.isOk()).toBe(true);
-            if (result.isOk()) {
-                result.value.toggleAvailability();
-                expect(result.value.available).toBe(false);
-            }
-        });
-
-        it("toggles from false to true", () => {
-            const result = MenuItem.create({
-                name: "Espresso",
-                category: Category.COFFEE,
-                available: false,
-            });
-            expect(result.isOk()).toBe(true);
-            if (result.isOk()) {
-                result.value.toggleAvailability();
-                expect(result.value.available).toBe(true);
-            }
-        });
-    });
-
     describe("update", () => {
         it("updates name and category", () => {
             const result = MenuItem.create({

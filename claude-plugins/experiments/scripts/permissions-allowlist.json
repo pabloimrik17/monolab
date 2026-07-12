@@ -1,0 +1,7 @@
+{
+    "//": "Permission allowlist for the deep-update plugin scripts. Merge the `permissions.allow` entries into ~/.claude/settings.json (user scope — the commander flows run across projects) or a project's .claude/settings.json. Bash rules are prefix matches; tighten `Bash(node:*)` to an absolute plugin path prefix on your machine if you prefer (e.g. `Bash(node /Users/<you>/.claude/plugins/cache/:*)`).",
+    "permissions": {
+        "allow": ["Bash(node:*)"]
+    },
+    "//network": "The scripts perform their own network/tooling calls in-process (npm view, gh api or api.github.com, raw.githubusercontent.com, unpkg.com, nodejs.org). If your environment sandboxes network egress, allow these domains: registry.npmjs.org, api.github.com, raw.githubusercontent.com, unpkg.com, nodejs.org, github.com."
+}

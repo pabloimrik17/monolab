@@ -62,7 +62,10 @@
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "0.18.3",
+        "@stryker-mutator/api": "9.6.1",
         "@types/react": "19.2.17",
+        "@vitejs/plugin-react-swc": "4.3.1",
+        "@vitest/browser-playwright": "4.1.9",
         "react": "19.2.7",
         "react-dom": "19.2.7",
         "tsdown": "0.22.2",

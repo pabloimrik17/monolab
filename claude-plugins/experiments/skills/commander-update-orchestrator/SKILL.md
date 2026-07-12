@@ -1,6 +1,6 @@
 ---
 name: commander-update-orchestrator
-description: Use when a Commander update command (`/experiments:commander-update-{patch,minor,major,engines}` and their deep variants) needs to apply npm dependency or toolchain-engine updates across every project registered in the user-scoped Commander registry. Owns the cross-project pipeline — list+filter projects, parallel scan dispatch, deduplicate updates, version-align (max-wins with per-project fallback; engine-version alignment at `level=engines`), render unified plan, sequential apply with stop-on-fail, aggregated summary. Read-only against the registry; dependency-level writes go to each project's own manifests via `ncu --upgrade` + one `<pm> install`, engines-level writes via `apply-engine-bumps` (runtime surfaces, no ncu). Never runs tests, lint, build, or commits.
+description: Use when a Commander update command (`/experiments:commander-update-{patch,minor,major,engines}` and their deep variants) needs to apply npm dependency or toolchain-engine updates across every project registered in the user-scoped Commander registry. Owns the cross-project pipeline — list+filter projects, parallel scan dispatch, deduplicate updates, version-align (max-wins with per-project fallback; engine-version alignment at `level=engines`), dossier gate rendering (path + bounded digest in deep mode), sequential apply with stop-on-fail, per-project changeset gate with an apply teammate (deep mode), aggregated summary. Read-only against the registry; dependency-level writes go to each project's own manifests via `ncu --upgrade` + one `<pm> install` (output to on-disk logs, digest to the conversation), engines-level writes via `apply-engine-bumps` (runtime surfaces, no ncu). Never commits/pushes/opens PRs autonomously.
 ---
 
 # commander-update-orchestrator
@@ -16,15 +16,17 @@ Cross-project npm-update orchestration. Parameterized by `level` / `target`, so 
 
 Never invoke directly from the user side. The skill is meant for command-layer composition.
 
+**Artifact glossary + main-window context diet.** `dossier.md` is the global research document (formerly `plan.md`; no artifact is named `plan.md`), `changeset.md` is the per-project concrete apply plan written by an apply teammate, and Claude Code **plan mode** is the harness feature (used only as the changeset gate's review UI — see Step 10b). The orchestrator's main conversation holds only paths and small status digests (target ≤ ~30 lines each; structured tables such as the bump set may exceed the target but stay bounded digests, never full artifact bodies). It SHALL NOT load changelog bodies, per-group research files, or the dossier body into its own context, and `ncu`/install output SHALL NOT stream verbatim into the conversation (on-disk logs + digest + bounded tail-on-failure only, per `apply-npm-updates`).
+
 ## Inputs
 
-| Field                  | Type       | Required | Notes                                                                                                                                                                                                                                                                                                                     |
-| ---------------------- | ---------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `level`                | `string`   | yes      | One of `patch`, `minor`, `major`, `engines`. Passed verbatim to `experiments:scan-npm-updates`.                                                                                                                                                                                                                           |
-| `target`               | `string`   | yes      | One of `patch`, `minor`, `major`, `engines`. Passed verbatim to `ncu --target`. Matches `level` for the four shipped shallow commands and four future deep commands.                                                                                                                                                      |
-| `mode`                 | `string`   | no       | One of `shallow`, `deep`. Default `shallow`. Selects the deep-research path (cross-project changelog research inserted at Step 6.5 + unified plan-mode improvements round at apply time). The shallow path is byte-equivalent across `mode: "shallow"` and an absent `mode` input. See "Mode-conditional behavior" below. |
-| `overrideRegistryPath` | `string`   | no       | Repo-relative path to a `pkg-upgrade-overrides.yaml` file. Default: `claude-plugins/experiments/skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml`. Identical default in both modes.                                                                                                                                |
-| `projectsFilter`       | `string[]` | no       | Project `name`s to operate on. When set, the project picker is skipped. When unset, the multi-select picker is raised (Step 3).                                                                                                                                                                                           |
+| Field                  | Type       | Required | Notes                                                                                                                                                                                                                                                                                                                 |
+| ---------------------- | ---------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `level`                | `string`   | yes      | One of `patch`, `minor`, `major`, `engines`. Passed verbatim to `experiments:scan-npm-updates`.                                                                                                                                                                                                                       |
+| `target`               | `string`   | yes      | One of `patch`, `minor`, `major`, `engines`. Passed verbatim to `ncu --target`. Matches `level` for the four shipped shallow commands and four future deep commands.                                                                                                                                                  |
+| `mode`                 | `string`   | no       | One of `shallow`, `deep`. Default `shallow`. Selects the deep-research path (cross-project changelog research inserted at Step 6.5 + per-project changeset gate round at apply time). The shallow path is byte-equivalent across `mode: "shallow"` and an absent `mode` input. See "Mode-conditional behavior" below. |
+| `overrideRegistryPath` | `string`   | no       | Repo-relative path to a `pkg-upgrade-overrides.yaml` file. Default: `claude-plugins/experiments/skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml`. Identical default in both modes.                                                                                                                            |
+| `projectsFilter`       | `string[]` | no       | Project `name`s to operate on. When set, the project picker is skipped. When unset, the multi-select picker is raised (Step 3).                                                                                                                                                                                       |
 
 ### Input validation
 
@@ -36,19 +38,19 @@ Reject before any side effect:
 
 ### Mode-conditional behavior
 
-This skill ships two execution paths selected by the `mode` input. The shallow path is byte-equivalent to MON-194's shipped contract; the deep path layers research + a unified plan-mode round on top.
+This skill ships two execution paths selected by the `mode` input. The shallow path is byte-equivalent to MON-194's shipped contract; the deep path layers research + a per-project changeset gate round on top.
 
-| Step / Concern                    | `mode === "shallow"` (default)                                                                     | `mode === "deep"`                                                                                                                                                                |
-| --------------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Steps 1, 2, 3, 4, 5, 6, 8         | Identical (shared plumbing).                                                                       | Identical (shared plumbing).                                                                                                                                                     |
-| Step 6.5 (cross-project research) | SHALL NOT execute. No plan-dir is created.                                                         | Fires. Composes `group-packages-for-research` + `parallel-research-workflow` (cross-project mode). Produces `<plan-dir>/plan.md`.                                                |
-| Step 7 (plan rendering)           | Generates the bump-set table inline from `CrossProjectPlan`.                                       | Reads `<plan-dir>/plan.md` verbatim; appends orchestrator-owned drift sections (Warnings, scan-failed, path-missing).                                                            |
-| Step 9 (gate)                     | Three options: `apply-all`, `pick-subset`, `cancel`.                                               | Four options: `apply-all`, `apply-bumps-only`, `pick-subset`, `cancel`. `pick-subset` accepts both package names AND improvement-bullet titles.                                  |
-| Step 10 (apply)                   | Single per-project bumps loop (10.1–10.6).                                                         | Splits into Step 10a (bumps loop, identical to shallow), Step 10b (cross-project plan-mode round for improvements), Step 10c (end-of-flow cleanup invocation).                   |
-| Step 11 (summary) H1              | `## commander-update-<level> summary`                                                              | `## commander-update-deep-<level> summary`                                                                                                                                       |
-| Step 11 (summary) sections        | Shallow set (Applied / Failed / Pending / Skipped-by-{path,scan,user,policy,override} / Warnings). | Shallow set PLUS `Applied improvements`, `Skipped improvements`, `Inapplicable improvements`, `Skipped or unavailable groups`. Conditional `Review plan.md` bullet on keep-plan. |
+| Step / Concern                    | `mode === "shallow"` (default)                                                                     | `mode === "deep"`                                                                                                                                                                      |
+| --------------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Steps 1, 2, 3, 4, 5, 6, 8         | Identical (shared plumbing).                                                                       | Identical (shared plumbing).                                                                                                                                                           |
+| Step 6.5 (cross-project research) | SHALL NOT execute. No plan-dir is created.                                                         | Fires. Composes `group-packages-for-research` + `parallel-research-workflow` (cross-project mode). Produces `<plan-dir>/dossier.md` (synthesized by the workflow's teammate + checks). |
+| Step 7 (gate rendering)           | Generates the bump-set table inline from `CrossProjectPlan`.                                       | Dossier gate rendering: references `<plan-dir>/dossier.md` by path + a bounded digest; appends orchestrator-owned drift sections (Warnings, scan-failed, path-missing).                |
+| Step 9 (gate)                     | Three options: `apply-all`, `pick-subset`, `cancel`.                                               | Four options: `apply-all`, `apply-bumps-only`, `pick-subset`, `cancel`. `pick-subset` accepts both package names AND improvement-bullet titles.                                        |
+| Step 10 (apply)                   | Single per-project bumps loop (10.1–10.6).                                                         | Splits into Step 10a (bumps loop, identical mechanics; failure pauses for a stop/continue decision), Step 10b (per-project changeset gate round), Step 10c (end-of-flow cleanup).      |
+| Step 11 (summary) H1              | `## commander-update-<level> summary`                                                              | `## commander-update-deep-<level> summary`                                                                                                                                             |
+| Step 11 (summary) sections        | Shallow set (Applied / Failed / Pending / Skipped-by-{path,scan,user,policy,override} / Warnings). | Shallow set PLUS `Applied improvements`, `Skipped improvements`, `Inapplicable improvements`, `Skipped or unavailable groups`. Conditional `Review dossier.md` bullet on keep-plan.    |
 
-The shallow path SHALL NOT execute Step 6.5, SHALL NOT enter plan mode at apply time, SHALL NOT invoke the workflow's end-of-flow cleanup, and SHALL NOT render deep-mode summary sections. The deep-mode insertions are local to Steps 6.5, 7, 9, 10a/10b/10c, and 11 — Steps 1, 2, 3, 4, 5, 6, and 8 behave identically across modes (in particular, Step 8 override registry consultation is shared verbatim — Decision 5 in `design.md`).
+The shallow path SHALL NOT execute Step 6.5, SHALL NOT run any changeset gate round at apply time, SHALL NOT invoke the workflow's end-of-flow cleanup, and SHALL NOT render deep-mode summary sections. The deep-mode insertions are local to Steps 6.5, 7, 9, 10a/10b/10c, and 11 — Steps 1, 2, 3, 4, 5, 6, and 8 behave identically across modes (in particular, Step 8 override registry consultation is shared verbatim — Decision 5 in `design.md`).
 
 ## Level-conditional routing: `level=engines` (toolchain bump)
 
@@ -60,7 +62,7 @@ The engines branch overrides exactly these surfaces:
 - **Steps 5–6 — aggregation + alignment.** Aggregate per-engine across projects instead of per-package. **Cross-project alignment is on the resolved engine version**: resolve one target per engine **once** (Node → latest LTS; pnpm/npm/yarn/bun/deno → latest — via `apply-engine-bumps`'s resolution) and reuse it for every project. There is no per-package max-wins computation and no range-admission conflict prompt. A project already pinned **above** the resolved target is surfaced and **left higher** unless the user opts to converge. Intra-repo misalignment reported by `detect-toolchain-surfaces` is surfaced and converged to the resolved target (runtime loci only).
 - **Step 8 — override registry consultation is SKIPPED.** Package-name overrides (Storybook-style families) have no meaning for runtime/PM surfaces. `OVERRIDE_RUN` / `OVERRIDE_SKIP` are empty; every eligible runtime surface is in the generic apply set.
 - **Step 10.3 — apply.** The per-project apply invokes **`apply-engine-bumps`** (capability `engine-update-apply`) instead of `apply-npm-updates`. No `ncu` is invoked at engines level. The orchestrator passes the project's inventory + the resolved per-engine targets (with `confirmed: true` — the user already gated at Step 9, and any `ambiguous` loci were resolved by the command/orchestrator before apply) and folds the returned `{ resolvedTargets, applied, skipped, droppedHashes, failure? }` fragment into the project's summary entry. `support` and `unknownSurfaces` loci are never touched; publishable-lib `engines.<engine>` support ranges are preserved across every project.
-- **Step 6.5 / 7.D — deep mode.** When `mode === "deep"`, Step 6.5 invokes `parallel-research-workflow` with `level=engines` (research targets **engine release notes**, deduplicated once per engine/version) and Step 7.D surfaces the resulting `plan.md` `## Breaking changes & migration` + `## Changelogs` sections. **No `## PR plan` / `partition-breaking-changes`** applies (Step 7.D point 3 runs only for `level === "major"`): an engine bump is a single coordinated co-upgrade (Node + its PM, moved together), so the PR-partition is meaningless — one bucket. Isolation, when chosen (Step 9.5), wraps the whole engine bump as one workspace per project.
+- **Step 6.5 / 7.D — deep mode.** When `mode === "deep"`, Step 6.5 invokes `parallel-research-workflow` with `level=engines` (research targets **engine release notes**, deduplicated once per engine/version) and Step 7.D surfaces the resulting `dossier.md` — including the presence of its `## Breaking changes & migration` + `## Changelogs` sections — by path + bounded digest (never verbatim bodies). **No `## PR plan` / `partition-breaking-changes`** applies (Step 7.D point 3 runs only for `level === "major"`): an engine bump is a single coordinated co-upgrade (Node + its PM, moved together), so the PR-partition is meaningless — one bucket. Isolation, when chosen (Step 9.5), wraps the whole engine bump as one workspace per project.
 
 Everything else (the project picker, the gate's `apply-all`/`pick-subset`/`cancel` shape, stop-on-fail, the summary skeleton, the hard rules, registry read-only) is reused verbatim. Where the steps below describe ncu/package mechanics, read them through this section's overrides when `level === "engines"`.
 
@@ -154,13 +156,15 @@ If `RESOLVED` is empty after Step 2.2 (every retained record has a missing path)
 
 When `projectsFilter` is provided, skip this step entirely — the resolved set is already final.
 
-When `projectsFilter` is unset and `RESOLVED` is non-empty, raise exactly **one** `AskUserQuestion` call configured as:
+When `projectsFilter` is unset and `RESOLVED` is non-empty, the interface depends on `N = RESOLVED.length` — `AskUserQuestion` caps a question at **4 options**, so the project options + `all` only fit when `N ≤ 3`:
 
-- `multiSelect: true`
-- One option per project, label = `<name> — <path>`, description = a short hint (e.g., `repoType: <value>` when present, else `legacy v1 record`).
-- A final `all` option, label = `All registered projects (<N>)` where `<N>` = `RESOLVED.length`.
+- **`N ≤ 3`** — raise exactly **one** `AskUserQuestion` call configured as:
+    - `multiSelect: true`
+    - One option per project, label = `<name> — <path>`, description = a short hint (e.g., `repoType: <value>` when present, else `legacy v1 record`).
+    - A final `all` option, label = `All registered projects (<N>)`.
+- **`N ≥ 4`** — SHALL NOT attempt the `AskUserQuestion` (its option count would exceed the tool cap and the call fails with invalid parameters). Instead, use a free-form selection message: print the selectable projects as a numbered `<name> — <path>` list and ask for a comma-separated list of names, or `all`. Unknown names → print the valid list and re-prompt. Empty response → treat as zero selection.
 
-### Selection handling
+### Selection handling (both interfaces)
 
 - Selecting `all` is equivalent to selecting every individual project.
 - Selecting zero options → print `No projects selected. Cancelled.` and exit `0` with no scan or apply.
@@ -172,7 +176,7 @@ When `projectsFilter` is unset and `RESOLVED` is non-empty, raise exactly **one*
 
 For the resolved project set, send a **single message** containing N `Agent` tool-uses (one per project). Each agent call:
 
-- `model: "haiku"` — latency-optimized; the agent only produces a small JSON blob.
+- **No model override** — the agent inherits the session model. Do NOT force a latency-optimized tier: the agent executes the full `scan-npm-updates` skill (not a JSON echo); a weaker tier returned a fabricated empty `ScanResult` in dry-run 2026-07-12, silently dropping every update for a project.
 - `subagent_type: "general-purpose"`.
 - `description`: short, e.g. `commander scan: <name>`.
 - `prompt` (verbatim, substituting `<level>` and `<path>`):
@@ -206,6 +210,7 @@ The `Agent` tool-call MUST configure the agent's working directory at `<record.p
 Collect each agent's response and parse it as JSON:
 
 - If parse succeeds and the JSON has shape `{ packageManager, repoType, updates, warnings }`: this is a `ScanResult`. Tag with the originating project's `name`/`path`.
+    - **Empty-scan cross-check** (`level ∈ {patch, minor, major}` only; not `engines`): when `updates` is empty, cross-check with one direct read-only `ncu` invocation (`--jsonUpgraded`, no `--upgrade`, no file writes) in that project before accepting the empty result. On mismatch, re-dispatch that project's scan agent once; if it still mismatches, mark the project `scan-failed` with reason `scan disagreed with ncu cross-check`. An empty result the cross-check confirms is accepted normally.
 - If parse succeeds and the JSON has shape `{ "_error": "<string>" }`: mark the project as `scan-failed`, store the error string for the summary, and exclude the project from aggregation and apply.
 - If parse fails (non-JSON or invalid JSON): same as `_error` above, with a synthesized error string `Agent response was not valid JSON`.
 
@@ -284,9 +289,9 @@ Non-conflicting packages always set `effectiveTarget = proposedTarget` for every
 
 ## Step 6.5 — Cross-project research (deep mode only)
 
-Fires only when `mode === "deep"`. Inserted between Step 6 (version alignment) and Step 7 (plan rendering). The shallow path SHALL skip this entire section.
+Fires only when `mode === "deep"`. Inserted between Step 6 (version alignment) and Step 7 (dossier gate rendering). The shallow path SHALL skip this entire section.
 
-This step composes three already-shipped skills: `experiments:group-packages-for-research`, `experiments:parallel-research-workflow` (in cross-project mode), and — indirectly through the workflow — `experiments:npm-changelog`. The orchestrator SHALL NOT advance the workflow's phases on its behalf; the workflow owns its own phase machine (0 → init → 1 → 2 → 3 → 4).
+This step composes three already-shipped pieces: `experiments:group-packages-for-research`, `experiments:parallel-research-workflow` (in cross-project mode), and — through the workflow's subagents — the `fetch-changelog` plugin executable. The orchestrator SHALL NOT advance the workflow's phases on its behalf; the workflow owns its own phase machine (0 → init → 1 → 2 → 3 → 4, through dossier synthesis).
 
 ### 6.5.1 Build the deduplicated package set
 
@@ -348,23 +353,23 @@ Call `experiments:parallel-research-workflow` with:
 }
 ```
 
-Capture the absolute `<plan-dir>` path the workflow returns. Inside this single invocation the workflow runs:
+Capture the absolute `<plan-dir>` path the workflow returns. Inside this single invocation the workflow runs (the orchestrator does not advance any phase on the workflow's behalf):
 
 1. Phase 0 — stale-plan cleanup (pattern `^[a-z0-9-]+-(patch|minor|major|engines)-\d+(-\d+)?$` matches cross-project plan-dirs, e.g. `commander-deep-patch-1715693231`).
 2. Phase init — plan-dir creation under `~/.claude/experiments/plans/commander-deep-<level>-<unix-ts>[-N]/`.
-3. Phase 1 — batched parallel changelog fetch (sequential batches of `maxConcurrent`, parallel within a batch; hard-wall fallback prompt on dispatch denial).
-4. Phase 2 — parallel codebase research with the cross-project subagent prompt template (universal findings only, no codebase cross-reference).
+3. Phase 1 — batched parallel changelog fetch via the `fetch-changelog` executable (sequential batches of `maxConcurrent`, parallel within a batch; hard-wall fallback prompt on dispatch denial).
+4. Phase 2 — parallel research with the cross-project subagent prompt template (universal findings only, no codebase cross-reference).
 5. Phase 3 — mandatory integrity gate (`retry-failed` / `continue-without` / `abort` if any group is non-healthy).
-6. Phase 4 — plan-mode synthesis writes `<plan-dir>/plan.md` with the cross-project template.
+6. Phase 4 — dossier synthesis: the workflow's named synthesizer teammate writes `<plan-dir>/dossier.md` with the cross-project template (chronology assembled by script) and the two-layer compliance check runs before the dossier is surfaced.
 
 ### 6.5.5 Persist per-project scans alongside the cross-project plan
 
-After Step 6.5.4 returns (i.e. `plan.md` exists at `<plan-dir>/plan.md`), the orchestrator SHALL write two additional artifacts under the plan-dir (the workflow's contract delegates these two files to the cross-project caller):
+After Step 6.5.4 returns (i.e. `dossier.md` exists at `<plan-dir>/dossier.md`), the orchestrator SHALL write two additional artifacts under the plan-dir (the workflow's contract delegates these two files to the cross-project caller):
 
 - `<plan-dir>/scan-by-project.json` — JSON object mapping `projectName` → the verbatim per-project `ScanResult` from Step 4 (`ScanResultByProject`).
 - `<plan-dir>/cross-project-plan.json` — JSON object capturing the post-Step-6 `CrossProjectPlan` (deduplicated package list with per-occurrence projection — `projectName`, `currentVersion`, `targetVersion`, `location`, `sourceFile`, plus `proposedTarget`, `effectiveTarget` per occurrence, and the resolved conflict-policy outcome).
 
-Both files are pretty-printed (2-space indent). The workflow itself does NOT require these files for plan-mode synthesis (it consumes `groups[]` and the synthesized `scanResult` directly through its inputs); they exist for the user's post-hoc inspection and as the data source for `plan.md`'s `affects projects:` rendering. The orchestrator MAY write them before invoking the workflow (Step 6.5.4) or after — implementations SHALL write them by end of Step 6.5 regardless. Writing before the workflow runs is preferred because the workflow's phase 4 synthesis can read `<plan-dir>/cross-project-plan.json` for the bump-set table's `projects (locations)` cell.
+Both files are pretty-printed (2-space indent). The workflow itself does NOT require these files for dossier synthesis (it consumes `groups[]` and the synthesized `scanResult` directly through its inputs); they exist for the user's post-hoc inspection and as the data source for `dossier.md`'s `affects projects:` rendering plus the chronology script's cross-project representative versions. The orchestrator MAY write them before invoking the workflow (Step 6.5.4) or after — implementations SHALL write them by end of Step 6.5 regardless. Writing before the workflow runs is preferred because the workflow's phase 4 synthesis reads `<plan-dir>/cross-project-plan.json` for the bump-set table's `projects (locations)` cell and the chronology headers. When aligning versions deterministically, the orchestrator MAY use the plugin script `node ${CLAUDE_PLUGIN_ROOT}/scripts/semver-max-wins.mjs --scan-by-project <plan-dir>/scan-by-project.json` (max-wins `effectiveTarget` + most-common representative `currentVersion` per package).
 
 ### 6.5.6 Workflow early-exit handling
 
@@ -374,11 +379,11 @@ The workflow can return one of three abort signals. The orchestrator SHALL handl
 - **Phase 1 hard-wall `abort`**: surface the workflow's abort message verbatim. Skip Steps 7–11 (no override prompts, no gate, no apply, no Step 10c cleanup invocation). The plan-dir IS preserved on disk per the workflow's contract; the orchestrator SHALL NOT re-invoke the workflow for cleanup on this path.
 - **Phase 3 integrity-gate `abort`**: same as Phase 1 hard-wall — surface message verbatim, skip Steps 7–11, plan-dir preserved on disk.
 
-For Phase 1 `degrade-to-main-agent` (a non-abort outcome of the hard-wall prompt), the workflow proceeds to phase 4 and emits `plan.md` with the degraded banner. The orchestrator continues normally to Step 7 — the degraded path is NOT an early exit.
+For Phase 1 `degrade-to-direct-synthesis` (a non-abort outcome of the hard-wall prompt), the workflow proceeds to phase 4 and emits `dossier.md` with the degraded banner (research consolidated from the changelog cache). The orchestrator continues normally to Step 7 — the degraded path is NOT an early exit.
 
-## Step 7 — Render the cross-project plan
+## Step 7 — Render the cross-project bump set / dossier gate
 
-Rendering branches on `mode`. Shallow mode generates the plan table inline from `CrossProjectPlan`. Deep mode reads the workflow-produced `plan.md` from Step 6.5 and appends the orchestrator-owned drift sections.
+Rendering branches on `mode`. Shallow mode generates the bump-set table inline from `CrossProjectPlan`. Deep mode references the workflow-produced `dossier.md` by path plus a bounded digest and appends the orchestrator-owned drift sections — it does NOT ingest the full dossier.
 
 ### 7.S — Shallow mode (`mode === "shallow"` or absent)
 
@@ -399,27 +404,26 @@ Render a single markdown table:
 - Append `Skipped (scan-failed) (<N>):` heading listing project names + error, when `scanFailed[]` is non-empty.
 - Append `Skipped (path missing) (<N>):` heading listing `<name> — <path>` bullets, when `pathMissing[]` is non-empty.
 
-### 7.D — Deep mode (`mode === "deep"`)
+### 7.D — Deep mode (`mode === "deep"`): dossier gate rendering
 
-When the workflow returned successfully in Step 6.5 (i.e. `<plan-dir>/plan.md` exists at the plan-dir root):
+When the workflow returned successfully in Step 6.5 (i.e. `<plan-dir>/dossier.md` exists at the plan-dir root):
 
-1. **Read** `<plan-dir>/plan.md` and surface its content verbatim. The workflow's cross-project plan template emits these five H2 sections, in this exact order:
-    - `## Improvements (universal — applicability checked per project at apply time)`
-    - `## Workarounds resolved`
-    - `## Skipped or unavailable`
-    - `## Cross-project bump set`
-    - `## Changelogs`
+1. **Reference `<plan-dir>/dossier.md` by absolute path** (so the user can open it) and surface a **bounded digest** of the dossier — NOT its full content. The digest comprises:
+    - the `Cross-project bump set` table (a bounded structured table; the workflow produced it from `<plan-dir>/cross-project-plan.json` — the orchestrator SHALL NOT regenerate it inline),
+    - the improvement / workaround bullet **titles** with their `affects projects:` tags,
+    - the `## Skipped or unavailable` entries,
+    - section presence counts (e.g. `Breaking changes & migration: 4 items; Changelogs: 12 package blocks`), plus any residual violations escalated by the workflow's two-layer compliance check.
 
-    The `Cross-project bump set` table uses three columns: `package`, `proposed target`, `projects (locations)`. The third column merges per-project + per-location data: e.g., a row for `react` bumped to `^19.0.14` across `proj-A` (root) and `proj-B` (root) renders `proj-A (root); proj-B (root)` (`;` separates projects, `,` separates multiple locations within the same project). The orchestrator SHALL NOT regenerate this table inline — the workflow already produced it from the `<plan-dir>/cross-project-plan.json` artifact persisted in Step 6.5.5. The `## Changelogs` section is workflow-produced (per the `parallel-research-workflow` changelog requirement) and is surfaced verbatim along with the rest of `plan.md`; the orchestrator SHALL NOT regenerate or summarize it.
+    The digest SHALL NOT include the `## Changelogs` bodies or any full research content; the main conversation SHALL NOT ingest the full dossier (main-window context diet). The dossier's five H2 sections (in order: `Improvements (universal — applicability checked per project at apply time)`, `Workarounds resolved`, `Skipped or unavailable`, `Cross-project bump set`, `Changelogs`; `## Breaking changes & migration` first at `level ∈ {major, engines}`) live on disk for the user to open.
 
-2. **Append** the orchestrator-owned drift sections after the workflow's content, in this exact order. Each section is omitted when its count is zero:
+2. **Append** the orchestrator-owned drift sections after the digest, in this exact order. Each section is omitted when its count is zero:
     - `**Warnings:**` heading with each warning as a `-` bullet, when the orchestrator's `warnings[]` list (the running list across Step 5, Step 6.5.2 grouping-skill warnings, Step 6.5.3 mixed-pm warning, and any later source) is non-empty.
     - `**Skipped (scan-failed) (<N>):**` heading with `<name>: <error>` bullets, when `scanFailed[]` is non-empty.
     - `**Skipped (path missing) (<N>):**` heading with `<name> — <path>` bullets, when `pathMissing[]` is non-empty.
 
-    These three sections are orchestrator-owned (they originate at Steps 2.2, 4.2, 5, and 6.5.3) — the workflow does NOT know about per-project scan failures or path-missing drift, so it cannot emit them in `plan.md`. The orchestrator MUST append them at Step 7 rendering time.
+    These three sections are orchestrator-owned (they originate at Steps 2.2, 4.2, 5, and 6.5.3) — the workflow does NOT know about per-project scan failures or path-missing drift, so it cannot emit them in `dossier.md`. The orchestrator MUST append them at Step 7 rendering time.
 
-3. **(level=major only) Append the `## PR plan`.** When `level === "major"`, after reading `plan.md`, invoke the `partition-breaking-changes` skill and append its `## PR plan` section (ordered buckets + count-by-policy summary) after the drift sections. Build its inputs from already-available data: `bumpSet` = the rows of `plan.md`'s `## Cross-project bump set`; `breakingFindings` = the per-package items under `plan.md`'s `## Breaking changes & migration`; `depGraph` = a per-project `peerDependencies` + import-site read (reuse `ScanResultByProject`); `overrideFamilies` = the shipped registry families. The `## PR plan` is **advisory** cross-project — v1 isolation is one worktree per project (Step 9.5), NOT per bucket. For `level ∈ {patch, minor, engines}` this step SHALL NOT run (no `## PR plan` is appended — output unchanged).
+3. **(level=major only) Append the `## PR plan`.** When `level === "major"`, invoke the `partition-breaking-changes` skill and append its `## PR plan` section (ordered buckets + count-by-policy summary; the section name `## PR plan` is a retained legacy name — see the deep-update artifact glossary carve-outs) after the drift sections. Build its inputs from already-available data: `bumpSet` = the rows of the dossier's `## Cross-project bump set`; `breakingFindings` = the per-package items under the dossier's `## Breaking changes & migration`; `depGraph` = a per-project `peerDependencies` + import-site read (reuse `ScanResultByProject`); `overrideFamilies` = the shipped registry families. The `## PR plan` is **advisory** cross-project — v1 isolation is one worktree per project (Step 9.5), NOT per bucket. For `level ∈ {patch, minor, engines}` this step SHALL NOT run (no `## PR plan` is appended — output unchanged).
 
 ### 7.1 Empty-plan early exit
 
@@ -432,7 +436,7 @@ If the post-policy plan has no apply-able packages (every package was scan-faile
 
 #### 7.1.D — Deep mode
 
-If the workflow's `plan.md` reports zero bumps (the `Cross-project bump set` table has no data rows) AND zero improvements (`Improvements (...)` section body is the `_no improvements identified_` sentinel) AND zero workarounds (`Workarounds resolved` section body is the `_no workarounds resolved_` sentinel):
+If the workflow's `dossier.md` reports zero bumps (the `Cross-project bump set` table has no data rows) AND zero improvements (`Improvements (...)` section body is the `_no improvements identified_` sentinel) AND zero workarounds (`Workarounds resolved` section body is the `_no workarounds resolved_` sentinel):
 
 - Print any orchestrator warnings (per the rules in Step 7.D, point 2 above).
 - Print exactly `No <level> updates available across selected projects.`
@@ -507,9 +511,9 @@ Raise exactly **one** `AskUserQuestion`. The option set depends on `mode`.
 - **Question copy**: `Apply <level> updates across <N> project(s)?` (same as shallow)
 - `multiSelect: false`
 - **Options** (in this exact order):
-    - `apply-all` — Proceed with the entire (post-policy, post-override) plan, INCLUDING the post-bumps plan-mode improvements round (Step 10b).
-    - `apply-bumps-only` — Apply bumps + overrides + installs sequentially per project (Step 10a), but SKIP the plan-mode improvements round (Step 10b) entirely. The Step 11 summary's `Applied improvements` section is omitted (zero items). All `run-override` decisions resolved in Step 8 still execute on this path because they were resolved before the gate.
-    - `pick-subset` — Accept a free-form selection combining improvement-bullet titles AND package names. Substring match (case-insensitive) for improvements; exact match for bumps. Excluded improvements skip Step 10b for those bullets; excluded packages skip Step 10a for those names.
+    - `apply-all` — Proceed with the entire (post-policy, post-override) plan, INCLUDING the post-bumps per-project changeset gate round (Step 10b).
+    - `apply-bumps-only` — Apply bumps + overrides + installs sequentially per project (Step 10a), but SKIP the changeset gate round (Step 10b) entirely. The Step 11 summary's `Applied improvements` section is omitted (zero items). All `run-override` decisions resolved in Step 8 still execute on this path because they were resolved before the gate.
+    - `pick-subset` — Accept a free-form selection of the items to APPLY, combining improvement-bullet titles AND package names. Substring match (case-insensitive) for improvements; exact match for bumps. Selected improvements are the only bullets in scope for the changeset gate round (Step 10b); selected packages are the only bumps applied in Step 10a; unlisted items are skipped (9.2.D).
     - `cancel` — Exit without modifying any file. In deep mode the plan-dir IS preserved on disk and the orchestrator invokes Step 10c (end-of-flow cleanup) before exiting; in shallow mode there is no plan-dir.
 
 ### 9.1 `apply-all`
@@ -542,7 +546,7 @@ Let `ACCEPTED = post-policy ∖ OVERRIDE_SKIP`. Proceed to Step 10 (shallow) or 
 Free-form selection over both improvement bullets and package bump names (mirrors single-project `npm-update-deep-patch.md` Step 6c).
 
 1. Compute `VALID_BUMP_NAMES` = unique names in the post-policy plan (post Step 6 conflict policy), then remove names in `OVERRIDE_SKIP` — same as shallow `VALID_NAMES`.
-2. Compute `VALID_IMPROVEMENT_TITLES` = the leading title text of each `-` bullet under the `## Improvements (universal — applicability checked per project at apply time)` heading in the workflow's `plan.md`. The title is the prefix before the `(group: ...; affects projects: ...)` parenthetical — typically formatted as `{package}: {opportunity description}` or `[{priority}] {package} — {opportunity}`.
+2. Compute `VALID_IMPROVEMENT_TITLES` = the leading title text of each `-` bullet under the `## Improvements (universal — applicability checked per project at apply time)` heading in the workflow's `dossier.md` (a bounded titles-only read — no research bodies). The title is the prefix before the `(group: ...; affects projects: ...)` parenthetical — typically formatted as `{package}: {opportunity description}` or `[{priority}] {package} — {opportunity}`.
 3. Ask the user (free-form message, no AskUserQuestion):
 
     ```text
@@ -558,6 +562,9 @@ Free-form selection over both improvement bullets and package bump names (mirror
     - An **improvement** if it matches an entry in `VALID_IMPROVEMENT_TITLES` via case-insensitive substring (the token is a substring of a valid title).
     - A **bump** if it matches an entry in `VALID_BUMP_NAMES` exactly (case-sensitive).
     - **Unknown** if it matches neither.
+
+    Classification MAY be delegated to the deterministic plugin script `node ${CLAUDE_PLUGIN_ROOT}/scripts/validate-subset.mjs` (input `{ selection, bumpNames, improvementTitles }`; output `{ bumpMatches, improvementMatches, unmatched }` — matched tokens are the items to APPLY) — same semantics, no prose drift.
+
 7. On any unknown tokens:
     - Print `Unknown selection(s): {invalid items}. Valid improvements: {VALID_IMPROVEMENT_TITLES}. Valid bumps: {VALID_BUMP_NAMES}.`
     - Re-prompt step 9.2.D.3.
@@ -603,13 +610,13 @@ Build `ISOLATION_BY_PROJECT` (consumed by Step 10.2/10.3):
 
 The apply step splits by mode.
 
-- **Shallow mode** (`mode === "shallow"` or absent): a single per-project bumps loop with no plan-mode round and no end-of-flow cleanup invocation. The existing 10.1–10.6 sub-steps apply unchanged. The orchestrator returns after Step 10.6 (or on stop-on-fail) and renders Step 11.
+- **Shallow mode** (`mode === "shallow"` or absent): a single per-project bumps loop with no changeset gate round and no end-of-flow cleanup invocation. The existing 10.1–10.6 sub-steps apply unchanged. The orchestrator returns after Step 10.6 (or on stop-on-fail) and renders Step 11.
 - **Deep mode** (`mode === "deep"`): split into three phases:
-    1. **Step 10a — Bumps loop** (identical to shallow Step 10.1–10.6).
-    2. **Step 10b — Cross-project plan-mode round** for improvements (NEW; conditional — see 10b's gating below).
-    3. **Step 10c — End-of-flow cleanup invocation** (NEW; runs on every deep path except workflow-abort paths).
+    1. **Step 10a — Bumps loop** (identical to shallow Step 10.1–10.6, except failure handling: a per-project failure pauses the run at the per-project failure gate — see 10.6.D).
+    2. **Step 10b — Per-project changeset gate round** for improvements (conditional — see 10b's gating below).
+    3. **Step 10c — End-of-flow cleanup invocation** (runs on every deep path except workflow-abort paths).
 
-    Stop-on-fail in Step 10a aborts BOTH Step 10a and Step 10b. Step 10c still runs (the plan-dir exists and the user deserves a cleanup decision).
+    A Step 10a failure removes the failed and unattempted (`pending`) projects from Step 10b; projects that DID apply bumps successfully still get their changeset gate round (see 10b's gating). Step 10c always runs (the plan-dir exists and the user deserves a cleanup decision).
 
 ### Step 10a — Bumps loop (both modes; renamed from "Step 10" for shallow)
 
@@ -643,11 +650,11 @@ Build the spec from this project's subset (Step 10.1):
 - `overrideCommands` — the `OVERRIDE_RUN` entries that touch this project, as `{ id, command: <interpolated command> }`, in declaration order (run once per affected project).
 - `skipInstall` — `true` when every accepted package for this project went through `run-override` AND no generic ncu bump ran AND no catalog edit happened for this project (every override handles its own install); also `true` when Step 9.5's `update-isolation` reported `installAlreadyRan` for this project's worktree (a worktrunk hook already installed); otherwise `false`.
 
-Invoke `apply-npm-updates` once with this spec and `cwd: <record.path>`. The skill streams `ncu` / install / override stdout/stderr verbatim and returns `{ appliedGeneric, appliedOverrides, installRan, failure }`. Fold the returned fragment into this project's entry of the cross-project summary (Step 11).
+Invoke `apply-npm-updates` once with this spec and `cwd: <record.path>`, passing `runDir: <plan-dir>` in deep mode (shallow mode omits it; the skill logs to a temporary path). The skill redirects `ncu` / install / override stdout/stderr to an on-disk run log — one-line digests to the conversation, a bounded tail (≤ ~40 lines) on failure only, never verbatim streaming — and returns `{ appliedGeneric, appliedOverrides, installRan, logPath, failure }`. Fold the returned fragment into this project's entry of the cross-project summary (Step 11).
 
-### 10.4 On structured failure — format the cross-project abort copy
+### 10.4 On structured failure — format the cross-project failure copy
 
-If `apply-npm-updates` returns a non-null `failure`, **stop the entire run** (Step 10.6) and print the orchestrator-owned cross-project abort copy for the failing `step` (the skill never prints this copy):
+If `apply-npm-updates` returns a non-null `failure`, print the orchestrator-owned cross-project failure copy for the failing `step` (the skill never prints this copy — it only surfaces the bounded log tail), then apply the mode's failure handling (Step 10.6). In **deep mode**, replace each template's closing line `Stopping the run. Subsequent projects not attempted.` with the per-project failure gate (10.6.D) — whether subsequent projects are attempted is the user's stop/continue decision:
 
 - `step: "ncu"` →
 
@@ -677,100 +684,99 @@ If `apply-npm-updates` returns a non-null `failure`, **stop the entire run** (St
     Stopping the run. Subsequent projects not attempted.
     ```
 
-Then jump to Step 11 (summary) with the run partition (applied / failed / pending).
+In shallow mode, then jump to Step 11 (summary) with the run partition (applied / failed / pending). In deep mode, the run partition is settled by the 10.6.D gate.
 
-### 10.6 Stop-on-fail
+### 10.6 Failure handling
 
-On any failure (ncu, override, install) in any project:
+#### 10.6.S — Shallow mode: unconditional stop-on-fail
+
+On any failure (ncu, catalog, override, install) in any project:
 
 - Stop iteration immediately.
 - Do NOT attempt apply for subsequent projects.
 - Mark the failed project with the failing step + exit code.
 - Mark all unattempted projects as `pending`.
-- In **shallow mode**: proceed directly to Step 11 (summary).
-- In **deep mode**: SKIP Step 10b entirely (stop-on-fail in 10a aborts the plan-mode round), then proceed to Step 10c (end-of-flow cleanup invocation), then Step 11.
+- Proceed directly to Step 11 (summary).
 
-### Step 10b — Cross-project plan-mode round (deep mode only)
+#### 10.6.D — Deep mode: per-project failure gate (stop vs continue)
+
+On any failure (ncu, catalog, override, install — or `apply-engine-bumps` at `level=engines`) in any project, the run SHALL pause and raise exactly **one** `AskUserQuestion` per failure. It SHALL NOT silently continue and SHALL NOT abort the whole run without asking:
+
+- **Question copy**: `Applying to <projectName> failed at <step> (exit <code>). Continue with the remaining <N> project(s)?`
+- `multiSelect: false`
+- **Options** (in this exact order):
+    - `stop` — Stop the bumps loop. Mark the failed project with the failing step + exit code; mark all unattempted projects as `pending`. Failed and pending projects are excluded from Step 10b; projects that already applied bumps successfully still get their changeset gate round when 10b's gating holds. Proceed to Step 10b (if gated in), then Step 10c, then Step 11.
+    - `continue-remaining` — Resume the bumps loop with the next project. The failed project is marked failed (excluded from Step 10b); a later failure raises this gate again.
+
+### Step 10b — Per-project changeset gate round (deep mode only)
 
 Fires only when ALL of:
 
 - (a) `mode === "deep"`.
 - (b) The Step 9 gate option was `apply-all` (NOT `apply-bumps-only`, NOT `cancel`). For `pick-subset` see 10b.0 below.
-- (c) Step 10a completed for every applied project without stop-on-fail (i.e. `failedProject` is unset and `pendingProjects` is empty).
-- (d) The workflow's `plan.md` contains at least one improvement bullet (`Improvements (...)` section body is NOT the `_no improvements identified_` sentinel).
+- (c) Step 10a completed without failure for **at least one** project. The round covers exactly the projects that successfully applied bumps; failed and `pending` projects are excluded.
+- (d) The workflow's `dossier.md` contains at least one improvement bullet (`Improvements (...)` section body is NOT the `_no improvements identified_` sentinel).
 
 If any of (a)–(d) is false, Step 10b SHALL NOT execute. The Step 11 summary's `Applied improvements` section is omitted (zero items).
 
+The round runs **sequentially** — one project at a time, in registry insertion order, one apply teammate per project. The orchestrator owns the human gate: it SHALL NOT apply improvement edits itself, SHALL NOT ingest research bodies or the full dossier (main-window context diet), and SHALL NOT trust a teammate completion message without verifying the result on disk.
+
 #### 10b.0 Determine in-scope improvements
 
-When the gate was `apply-all`, every improvement bullet in `plan.md` is in scope.
+When the gate was `apply-all`, every improvement bullet in `dossier.md` is in scope.
 
 When the gate was `pick-subset` (deep path 9.2.D), only improvement bullets whose titles matched the user's selection (case-insensitive substring) are in scope — i.e., `ACCEPTED_IMPROVEMENTS` computed in 9.2.D step 8. If `ACCEPTED_IMPROVEMENTS` is empty (the user selected only bumps), Step 10b SHALL NOT execute and the Step 11 summary's `Applied improvements` section is omitted. Improvement bullets the user excluded are recorded for the Step 11 `Skipped improvements` section with the parenthetical `(excluded via pick-subset)`.
 
-#### 10b.1 Reconnaissance pass
+Per project, the in-scope set is further restricted by each bullet's `affects projects:` tag (set by the workflow's phase 4 synthesis from `<plan-dir>/cross-project-plan.json`): `BULLETS_FOR_PROJECT = in-scope bullets whose affects-projects list contains this project` — a bounded titles-only read of `dossier.md`, the same read 9.2.D validation used; no research bodies. If `BULLETS_FOR_PROJECT` is empty, skip this project's round silently.
 
-For each in-scope improvement bullet:
+#### 10b.1 Pre-spawn snapshot + apply teammate (turn 1 = recon + changeset, no source edit)
 
-1. Read the bullet's `affects projects: <comma-separated names>` tag from `<plan-dir>/plan.md` (set by the workflow's phase 4 synthesis from `<plan-dir>/cross-project-plan.json`).
-2. Compute `APPLIED_FOR_BULLET = affects-projects-list ∩ <projects that successfully applied bumps in Step 10a>`.
-3. For each `projectName` in `APPLIED_FOR_BULLET`:
-    - The main agent reads the project's hinted areas — file globs, directory hints, framework names from the bullet's `Hint:` line and any adjacent context in the bullet body.
-    - Classifies the (bullet, project) pair as:
-        - **applicable**: a concrete edit lands here. Capture the absolute file path + a short imperative description + (for non-trivial edits) a before/after snippet.
-        - **inapplicable**: a one-sentence reason explaining why (e.g. `Project uses Solid, not React; useTransition has no equivalent here.`).
+For each successfully-applied project with a non-empty `BULLETS_FOR_PROJECT`:
 
-Reconnaissance SHALL NOT execute tests, lint, or build. SHALL NOT modify any file. SHALL NOT run any package-manager command. Pure read.
+1. **Snapshot** the project tree before spawning: `node ${CLAUDE_PLUGIN_ROOT}/scripts/check-source-untouched.mjs snapshot --dir "<WORKDIR>" --out "<plan-dir>/changesets/<projectName>/baseline.json"`.
+2. **Spawn a single apply teammate** for the project. The spawn prompt SHALL instruct, at minimum:
+    - **Turn-1 task**: read the `BULLETS_FOR_PROJECT` bullets from `<plan-dir>/dossier.md` (titles, `Hint:` lines, bullet bodies), reconnoiter the project at `<WORKDIR>` (pure read — `Read`/`Glob`/`Grep`), classify each (bullet, project) pair as **applicable** (with the concrete edit: absolute file path, short imperative description, before/after snippet for non-trivial edits) or **inapplicable** (with a one-sentence reason, e.g. `Project uses Solid, not React; useTransition has no equivalent here.`), and write `<plan-dir>/changesets/<projectName>/changeset.md`.
+    - **`changeset.md` structure**: H1 `# Changeset: <projectName> (deep-<level>)`; `## Applicable (<N>)` — per (bullet, project) pair an H3 `### {bullet title}` with `- **File**:`, `- **Description**:`, and optional **Before**/**After** fenced snippets; `## Inapplicable (<M>)` — one `- {bullet title} — {one-sentence reason}` line each; `## Summary` — `applicable: <N>` / `inapplicable: <M>`.
+    - **Turn-1 constraints**: SHALL NOT modify any project file, SHALL NOT run tests/lint/build, SHALL NOT run any package-manager command. The only file written in turn 1 is `changeset.md` (which lives under the plan-dir, outside the project tree).
+    - **Turn boundary**: after writing `changeset.md`, END THE TURN and wait. A later turn arrives as `proceed` (apply exactly the approved `changeset.md` edits via `Edit`/`Write`, then report the list of files touched) or `revise: <feedback>` (update `changeset.md` accordingly, end the turn again).
+3. The teammate stays alive across the gate — its reconnaissance context is reused at apply time, so the run never pays reconnaissance twice.
 
-#### 10b.2 Plan-mode entry (mandatory)
+#### 10b.2 Pre-gate check (deterministic, before the human gate)
 
-The main agent invokes the `EnterPlanMode` tool exactly **once**, with a unified markdown document structured as:
+When the teammate's turn 1 ends, run `node ${CLAUDE_PLUGIN_ROOT}/scripts/check-source-untouched.mjs check --dir "<WORKDIR>" --baseline "<plan-dir>/changesets/<projectName>/baseline.json"`:
 
-````markdown
-# Cross-project improvements (deep-<level>): <slug>
+- Exit `0` (untouched) AND `changeset.md` exists → open the human gate (10b.3).
+- Exit `1` (modified) → **abort this project's round without opening the gate**: print `Apply teammate modified <projectName> before approval. Aborting the changeset round for this project.` (append the script's `changed[]` paths), tear the teammate down via `TaskStop`, record the project's in-scope bullets under Step 11 `Skipped improvements` with `(aborted: early edit)`, and continue to the next project. Applied bumps are NOT reverted.
+- `changeset.md` missing after turn 1 → same abort path with the parenthetical `(aborted: no changeset written)`.
 
-## Applicable (<N>)
+#### 10b.3 Human gate (orchestrator-owned)
 
-### {bullet title} → {projectName}
+**Primary — orchestrator plan mode as the review/iteration UI.** The orchestrator enters plan mode, reads `<plan-dir>/changesets/<projectName>/changeset.md` (a bounded, digest-sized document — reading it does not violate the context diet), and presents it through the plan-approval flow (`ExitPlanMode`). The orchestrator's OWN plan approval blocks for the human (verified under `defaultMode: "auto"`, spike 2026-07-11); teammate-native plan approval is decided by the lead autonomously, never reaches the human, and SHALL NOT be used as the gate.
 
-- **File**: <absolute path>
-- **Description**: <short imperative sentence>
-- **Before** (optional for non-trivial edits):
-    ```
-    <before snippet>
-    ```
-- **After** (optional for non-trivial edits):
-    ```
-    <after snippet>
-    ```
+- **Approved**: leave plan mode WITHOUT implementing anything in the main; go to 10b.4.
+- **Rejected with feedback**: relay it to the still-alive teammate as `revise: <feedback>` via `SendMessage`; the teammate updates `changeset.md`; re-run the pre-gate check (10b.2) and re-present. The human drives this loop — no fixed round cap.
+- **Rejected outright**: print exactly `Improvements rejected at the changeset gate. No improvement edits applied; bumps are preserved.`, tear the teammate down via `TaskStop`, record the project's in-scope bullets under `Skipped improvements` with `(rejected at the changeset gate)`, and continue to the next project. Applied bumps from Step 10a are NOT reverted.
 
-...
+**Fallback — `AskUserQuestion`.** Used ONLY when the orchestrator's plan-mode approval is unavailable or non-blocking in the active runtime (e.g. non-interactive/headless execution): present the changeset **digest** (the `## Summary` counts plus each applicable entry's file + description line) with options `approve` / `reject`; reject-with-feedback arrives through the built-in `Other` free-text. Same proceed/revise relay semantics as the primary gate.
 
-## Inapplicable (<M>)
+In either interface the gate SHALL block for the human; the flow SHALL NOT continue to apply until the human responds.
 
-- {bullet title} → {projectName} — {one-sentence reason}
-- ...
+#### 10b.4 Apply, verify on disk, teardown
 
-## Summary
+On approval:
 
-- applicable: <N>
-- inapplicable: <M>
-````
+1. Send `proceed` to the still-alive teammate via `SendMessage`. The teammate applies exactly the approved `changeset.md` edits with its reconnaissance context intact and reports the files it touched.
+2. **Verify on disk** — the teammate's completion message SHALL NOT be trusted: re-run the pre-gate script's `check` against the pre-approval baseline and confirm the `changed[]` set matches the approved changeset — one change per applicable entry, all within the changeset's target files (equivalently: `git diff --name-only` + spot-`Read` of the edits); when the approved changeset has zero applicable entries, an EMPTY changed set is the expected match, not a failure. Run the check only after the teammate's turn has completed; if an applicable edit appears missing, re-run the check once after a short wait before concluding — the teammate's writes can land between reads (observed twice in dry-runs). On a confirmed mismatch (an applicable edit missing on the re-check, or files outside the changeset changed), print `Apply verification failed for <projectName>: <detail>.`, record the project's bullets under `Skipped improvements` with `(apply verification failed)`, and do NOT retry silently.
+3. Record the verified `(bullet, project)` pairs into `APPLIED_IMPROVEMENTS` (Step 11 `Applied improvements`) and the teammate's inapplicable classifications (from `changeset.md`'s `## Inapplicable` section) into the Step 11 `Inapplicable improvements` buffer.
+4. **Teardown via `TaskStop`** — structured shutdown requests are unreliable for idle teammates. `TaskStop` is the mandated teardown on every path out of the round (applied, rejected, aborted).
 
-The `applicable` and `inapplicable` counts at the bottom mirror the per-(bullet, project) entries above. The plan-mode document includes every (bullet, applied project) pair from 10b.1 — applicable entries with their concrete edits, inapplicable entries with their reasons.
+#### 10b.5 Changeset-round hard rules
 
-#### 10b.3 User review
-
-Plan mode pauses until the user accepts or rejects.
-
-- **Approved**: exit plan-mode, execute the listed edits across projects via `Edit` / `Write`. Edits run sequentially per (project, file). Record the applied `(bullet, project)` pairs into `APPLIED_IMPROVEMENTS` for the Step 11 `Applied improvements` section. Continue to Step 10c.
-- **Rejected**: print exactly `Improvements rejected at plan-mode review. No improvement edits applied; bumps are preserved.` and continue to Step 10c. The Step 11 `Skipped improvements` section lists every in-scope bullet with the parenthetical `(rejected at plan-mode review)`. Applied bumps from Step 10a are NOT reverted.
-
-#### 10b.4 Plan-mode hard rules
-
-- The plan-mode round SHALL NOT expand scope beyond bullets present in `plan.md`. Adjacent opportunities the main agent discovers during reconnaissance SHALL be surfaced in the Step 11 `Suggested next steps` list, NEVER silently added to the plan-mode document.
-- The plan-mode round SHALL NOT execute tests, lint, or build.
-- The plan-mode round SHALL NOT create commits or pull requests (or push). Branch/worktree isolation is a separate pre-apply step (Step 9.5); the plan-mode round itself creates no branch.
-- The plan-mode round SHALL NOT touch any file outside the bullet's `affects projects:` set.
+- The changeset SHALL NOT expand scope beyond bullets present in `dossier.md`. Adjacent opportunities the teammate discovers during reconnaissance SHALL be surfaced in the Step 11 `Suggested next steps` list, NEVER silently added to `changeset.md`.
+- After the approved edits are applied and verified, the round may run read-only verification over those edits and surface the result in the summary (read-only, no `--fix`).
+- The round SHALL NOT create commits or pull requests (or push); it stops for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation is a separate pre-apply step (Step 9.5); the changeset round itself creates no branch.
+- Neither the teammate nor the orchestrator SHALL touch any file outside the bullet's `affects projects:` project set.
+- The orchestrator SHALL NOT apply improvement edits itself — approval always delegates the apply to the teammate.
 
 ### Step 10c — End-of-flow cleanup invocation (deep mode only)
 
@@ -784,11 +790,11 @@ The workflow prompts the user via `AskUserQuestion`:
     - `delete-plan` — recursively `rm -rf <plan-dir>`.
     - `keep-plan` — leave it on disk; the next deep invocation's phase 0 stale-cleanup catches it after 10 days.
 
-Capture the user's choice into `cleanupOutcome ∈ { "delete-plan", "keep-plan" }`. The Step 11 summary's `Suggested next steps` uses `cleanupOutcome` to decide whether to include the `Review <plan-dir>/plan.md before re-running.` bullet.
+Capture the user's choice into `cleanupOutcome ∈ { "delete-plan", "keep-plan" }`. The Step 11 summary's `Suggested next steps` uses `cleanupOutcome` to decide whether to include the `Review <plan-dir>/dossier.md before re-running.` bullet.
 
 **Skip Step 10c when** the workflow returned an abort signal in Step 6.5.6 (phase 1 hard-wall abort or phase 3 integrity-gate abort). On abort paths the orchestrator has already exited before reaching this point — Step 10c is not reached. On Step 9 `cancel` (deep), on Step 10a stop-on-fail (deep), on Step 10b rejection, and on the happy path, Step 10c DOES fire — the plan-dir exists and the user deserves a single cleanup decision per run.
 
-The orchestrator SHALL NOT prompt for cleanup itself — the workflow owns the prompt. If the user picks `delete-plan`, the workflow removes the plan-dir before returning; the orchestrator's Step 11 summary still references `<plan-dir>` by its captured path but the `Review <plan-dir>/plan.md` bullet is omitted (no plan to review).
+The orchestrator SHALL NOT prompt for cleanup itself — the workflow owns the prompt. If the user picks `delete-plan`, the workflow removes the plan-dir before returning; the orchestrator's Step 11 summary still references `<plan-dir>` by its captured path but the `Review <plan-dir>/dossier.md` bullet is omitted (no dossier to review).
 
 ## Step 11 — Cross-project summary
 
@@ -830,7 +836,7 @@ Print a markdown summary. The H1 varies by mode. Render sections conditionally; 
 **Skipped improvements (<N>):** # deep mode only
 
 - {bullet title} (excluded via pick-subset)
-- {bullet title} → {projectName} (rejected at plan-mode review)
+- {bullet title} → {projectName} (rejected at the changeset gate)
 - ...
 
 **Inapplicable improvements (<N>):** # deep mode only
@@ -838,7 +844,7 @@ Print a markdown summary. The H1 varies by mode. Render sections conditionally; 
 - {bullet title} → {projectName} ({one-sentence reason})
 - ...
 
-**Skipped or unavailable groups (<N>):** # deep mode only — copied verbatim from plan.md
+**Skipped or unavailable groups (<N>):** # deep mode only — copied verbatim from dossier.md
 
 - {groupId} — {reason}.
 - ...
@@ -879,45 +885,47 @@ Print a markdown summary. The H1 varies by mode. Render sections conditionally; 
 
 - Run your test suite in each modified project.
 - Run lint / typecheck in each modified project.
-- Review changes (`git diff`) and commit per project.
-- Review <plan-dir>/plan.md before re-running. # deep mode only, when cleanupOutcome === "keep-plan"
+- Review changes (`git diff`) and commit per project — any isolation branch may not pass repo commit hooks, so run lint/build before committing.
+- Review <plan-dir>/dossier.md before re-running. # deep mode only, when cleanupOutcome === "keep-plan"
 ```
 
 ### 11.1 Section gating
 
-| Section                       | Mode(s)   | Render when                                                                                     |
-| ----------------------------- | --------- | ----------------------------------------------------------------------------------------------- |
-| Applied projects              | both      | At least one project applied successfully (full or empty).                                      |
-| Failed project                | both      | Stop-on-fail triggered.                                                                         |
-| Pending projects              | both      | Stop-on-fail triggered AND at least one project unattempted.                                    |
-| Applied improvements          | deep only | Step 10b executed AND at least one (bullet, project) edit was approved and applied.             |
-| Skipped improvements          | deep only | At least one improvement bullet was excluded via `pick-subset` OR rejected at plan-mode review. |
-| Inapplicable improvements     | deep only | At least one (bullet, project) pair was marked inapplicable during 10b.1 reconnaissance.        |
-| Skipped or unavailable groups | deep only | `plan.md`'s `## Skipped or unavailable` section has at least one non-sentinel bullet.           |
-| Skipped (path missing)        | both      | `pathMissing[]` non-empty.                                                                      |
-| Skipped (scan-failed)         | both      | `scanFailed[]` non-empty.                                                                       |
-| Skipped by user               | both      | `pick-subset` excluded at least one package.                                                    |
-| Skipped by conflict policy    | both      | `skip-package` policy chosen with at least one match.                                           |
-| Skipped by override           | both      | At least one override entry got `skip-matched`.                                                 |
-| Warnings                      | both      | `warnings[]` non-empty.                                                                         |
-| Isolation                     | both      | Always (reflects the Step 9.5 choice; `none` when not isolated).                                |
-| Suggested next steps          | both      | Always.                                                                                         |
+| Section                       | Mode(s)   | Render when                                                                                                                                                     |
+| ----------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Applied projects              | both      | At least one project applied successfully (full or empty).                                                                                                      |
+| Failed project                | both      | Stop-on-fail triggered.                                                                                                                                         |
+| Pending projects              | both      | Stop-on-fail triggered AND at least one project unattempted.                                                                                                    |
+| Applied improvements          | deep only | Step 10b executed AND at least one (bullet, project) edit was approved, applied, and verified on disk.                                                          |
+| Skipped improvements          | deep only | At least one improvement bullet was excluded via `pick-subset`, rejected at the changeset gate, or dropped on an abort/verification-failure path (10b.2/10b.4). |
+| Inapplicable improvements     | deep only | At least one (bullet, project) pair was marked inapplicable in a project's `changeset.md`.                                                                      |
+| Skipped or unavailable groups | deep only | `dossier.md`'s `## Skipped or unavailable` section has at least one non-sentinel bullet.                                                                        |
+| Skipped (path missing)        | both      | `pathMissing[]` non-empty.                                                                                                                                      |
+| Skipped (scan-failed)         | both      | `scanFailed[]` non-empty.                                                                                                                                       |
+| Skipped by user               | both      | `pick-subset` excluded at least one package.                                                                                                                    |
+| Skipped by conflict policy    | both      | `skip-package` policy chosen with at least one match.                                                                                                           |
+| Skipped by override           | both      | At least one override entry got `skip-matched`.                                                                                                                 |
+| Warnings                      | both      | `warnings[]` non-empty.                                                                                                                                         |
+| Isolation                     | both      | Always (reflects the Step 9.5 choice; `none` when not isolated).                                                                                                |
+| Suggested next steps          | both      | Always.                                                                                                                                                         |
 
 ### 11.1.D Deep-mode section formats
 
-- **Applied improvements**: one line per applied (bullet, project) pair. Format `- {bullet title} → {projectName} ({sourceFile or general path hint})`. The `sourceFile or hint` cell is the absolute path of the primary file edited under that pair when a single file is dominant; otherwise a generic hint like `multiple files under apps/<workspace>/src/`.
-- **Skipped improvements**: distinguish the two skip reasons with the parenthetical:
+- **Applied improvements**: one line per applied-and-verified (bullet, project) pair. Format `- {bullet title} → {projectName} ({sourceFile or general path hint})`. The `sourceFile or hint` cell is the absolute path of the primary file edited under that pair when a single file is dominant; otherwise a generic hint like `multiple files under apps/<workspace>/src/`.
+- **Skipped improvements**: distinguish the skip reasons with the parenthetical:
     - `(excluded via pick-subset)` — when the user excluded the bullet at the gate (9.2.D).
-    - `(rejected at plan-mode review)` — when the user rejected the whole plan-mode round at 10b.3.
-- **Inapplicable improvements**: one line per (bullet, project) pair marked inapplicable during 10b.1. Format `- {bullet title} → {projectName} ({one-sentence reason captured during reconnaissance})`.
-- **Skipped or unavailable groups**: copied verbatim from `<plan-dir>/plan.md`'s `## Skipped or unavailable` section (workflow-owned). Heading count `<N>` is the bullet count under that section in `plan.md`.
+    - `(rejected at the changeset gate)` — when the user rejected the project's changeset at 10b.3.
+    - `(aborted: early edit)` / `(aborted: no changeset written)` — pre-gate check abort (10b.2).
+    - `(apply verification failed)` — the on-disk verification after `proceed` did not match the changeset (10b.4).
+- **Inapplicable improvements**: one line per (bullet, project) pair the apply teammate marked inapplicable in `changeset.md`'s `## Inapplicable` section. Format `- {bullet title} → {projectName} ({one-sentence reason captured during reconnaissance})`.
+- **Skipped or unavailable groups**: copied verbatim from `<plan-dir>/dossier.md`'s `## Skipped or unavailable` section (workflow-owned). Heading count `<N>` is the bullet count under that section in `dossier.md`.
 
 ### 11.1.D.1 Suggested next steps in deep mode
 
 Deep mode includes the same three baseline bullets (test, lint/typecheck, git diff + commit) AND adds a fourth bullet conditionally:
 
-- When `cleanupOutcome === "keep-plan"` (recorded by Step 10c — see the workflow's global `_meta.json` end-of-flow cleanup state): include `- Review <plan-dir>/plan.md before re-running.` as the fourth bullet, substituting `<plan-dir>` with the absolute plan-dir path captured in Step 6.5.4.
-- When `cleanupOutcome === "delete-plan"`: omit the fourth bullet (the plan-dir was deleted; there is no `plan.md` to review).
+- When `cleanupOutcome === "keep-plan"` (recorded by Step 10c — see the workflow's global `_meta.json` end-of-flow cleanup state): include `- Review <plan-dir>/dossier.md before re-running.` as the fourth bullet, substituting `<plan-dir>` with the absolute plan-dir path captured in Step 6.5.4.
+- When `cleanupOutcome === "delete-plan"`: omit the fourth bullet (the plan-dir was deleted; there is no `dossier.md` to review).
 - When Step 10c was skipped (workflow abort paths): the orchestrator already exited before Step 11 — this branch is not reached.
 
 ### 11.2 Registry-byte-identity verification (manual check)
@@ -928,8 +936,7 @@ After the run completes (success, partial, cancel), the user-scoped registry `<H
 
 ## Hard rules
 
-- The skill SHALL NOT run tests, lint, or build at any point in any project.
-- The skill SHALL NOT create git commits or pull requests (or push) in any project. Branch/worktree isolation via the `update-isolation` skill (Step 9.5) is permitted (opt-in; default `none` = apply in place); creating an isolation branch/worktree is allowed, committing/pushing/PR-ing is not.
+- The skill SHALL NOT create commits, push, or open pull requests autonomously in any project; it stops for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation via the `update-isolation` skill (Step 9.5) is permitted (opt-in; default `none` = apply in place); creating an isolation branch/worktree is allowed, committing/pushing/PR-ing is not.
 - The skill SHALL NOT modify any file outside the per-project manifests it bumps. In particular, `<HOME>/.claude/commander/projects.json` SHALL remain byte-identical before and after every run.
 - The skill SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).
 - The skill SHALL NOT auto-execute an override command without the user selecting `run-override` for that entry.
@@ -959,7 +966,10 @@ After the run completes (success, partial, cancel), the user-scoped registry `<H
 - `Failed to bump {name} in {catalogSource.sourceFile} ({projectName}): {reason}. Stopping the run. Subsequent projects not attempted.` — Step 10.4 `apply-npm-updates` `catalog` failure.
 - `Override command failed ({entry.id}, {projectName}, exit {code}): {interpolated command}. Stopping the run. Subsequent projects not attempted.` — Step 10.4 `apply-npm-updates` `override` failure.
 - `Install failed ({pm}, {projectName}, exit {code}). Manifests already bumped; review changes before retrying. Stopping the run. Subsequent projects not attempted.` — Step 10.4 `apply-npm-updates` `install` failure.
-- `Improvements rejected at plan-mode review. No improvement edits applied; bumps are preserved.` — Step 10b.3 plan-mode rejection (deep mode).
+- `Applying to <projectName> failed at <step> (exit <code>). Continue with the remaining <N> project(s)?` — Step 10.6.D per-project failure gate (deep mode).
+- `Apply teammate modified <projectName> before approval. Aborting the changeset round for this project.` — Step 10b.2 pre-gate check violation (deep mode).
+- `Improvements rejected at the changeset gate. No improvement edits applied; bumps are preserved.` — Step 10b.3 gate rejection (deep mode).
+- `Apply verification failed for <projectName>: <detail>.` — Step 10b.4 on-disk verification mismatch (deep mode).
 
 ## Non-goals (deferred)
 
