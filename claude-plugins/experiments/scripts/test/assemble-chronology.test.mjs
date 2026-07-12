@@ -134,6 +134,27 @@ test("cross-project mode uses representative current and effectiveTarget", () =>
     assert.match(out, /### zod \(3\.23\.0 → 3\.24\.1\)/);
 });
 
+test("tampered cached body is not rendered", () => {
+    const root = mkdtempSync(join(tmpdir(), "chrono-tamper-"));
+    seedCache(root);
+    const zod = packageCacheDir("zod", root);
+    writeFileSync(join(zod, "3.24.1.md"), "## 3.24.1\n- tampered body");
+    const scanPath = join(root, "scan.json");
+    writeFileSync(
+        scanPath,
+        JSON.stringify({
+            updates: [
+                { name: "zod", currentVersion: "3.23.0", targetVersion: "3.24.1" },
+            ],
+        }),
+    );
+    const out = run(["--scan", scanPath, "--cache-dir", root]);
+    assert.ok(!out.includes("tampered body"));
+    assert.ok(!out.includes("<summary>3.24.1</summary>"));
+    // intact sibling version still renders
+    assert.match(out, /<summary>3\.23\.5<\/summary>/);
+});
+
 test("--out writes the section to a file", () => {
     const root = mkdtempSync(join(tmpdir(), "chrono-out-"));
     seedCache(root);

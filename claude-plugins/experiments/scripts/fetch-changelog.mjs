@@ -425,8 +425,10 @@ async function main() {
     if (fetchVersions.length > 0) {
         const ctx = { cacheDir, meta, owner, repo, pkg: args.pkg, http };
         let resolvedA = new Map();
+        let fetchErroredA = false;
         if (!engineMode) {
-            ({ resolved: resolvedA } = await strategyA(ctx, fetchVersions));
+            ({ resolved: resolvedA, fetchErrored: fetchErroredA } =
+                await strategyA(ctx, fetchVersions));
         }
         const unresolvedAfterA = fetchVersions.filter(
             (v) => !resolvedA.has(v),
@@ -462,7 +464,7 @@ async function main() {
             } else {
                 let failReason;
                 let retryable;
-                if (errored.has(v)) {
+                if (fetchErroredA || errored.has(v)) {
                     failReason = "fetch_error";
                     retryable = true;
                 } else if (failedC.has(v)) {

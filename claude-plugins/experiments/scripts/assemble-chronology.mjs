@@ -32,6 +32,7 @@ import {
     readPackageMeta,
     readVersionBody,
     readVersionMeta,
+    sha256,
 } from "./lib/cache.mjs";
 import {
     mostCommon,
@@ -152,9 +153,12 @@ function packageBlock(pkg, cacheRoot) {
     } else if (pkg.from === pkg.to && pkg.to) {
         covered = []; // empty half-open span
     }
-    const withBodies = covered.filter(
-        (v) => readVersionBody(cacheDir, v) !== null,
-    );
+    const withBodies = covered.filter((v) => {
+        const vMeta = readVersionMeta(cacheDir, v);
+        if (vMeta?.status !== "verified") return false;
+        const body = readVersionBody(cacheDir, v);
+        return body !== null && sha256(body) === vMeta.sha256;
+    });
     const links = linksLine(cacheDir, withBodies);
     if (links) lines.push(links, "");
     if (withBodies.length === 0) {

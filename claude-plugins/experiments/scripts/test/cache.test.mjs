@@ -11,6 +11,7 @@ import {
     rawSourceCacheKey,
     rawSourceFresh,
     readPackageMeta,
+    readVersionBody,
     readVersionMeta,
     updatePackageMeta,
     versionCovered,
@@ -67,6 +68,19 @@ test("hash mismatch forces refetch and drops coverage", () => {
     writeFileSync(join(dir, "2.0.0.md"), "tampered body");
     assert.ok(versionNeedsFetch(dir, "2.0.0"));
     assert.ok(!versionCovered(dir, "2.0.0"));
+});
+
+test("tampered body followed by failed refetch leaves no stale body", () => {
+    const dir = packageCacheDir("demo-pkg", tempRoot());
+    ensurePackageMeta(dir, { package: "demo-pkg" });
+    writeVerifiedVersion(dir, "2.1.0", "original body", {
+        source: "cdn",
+        sourceUrl: "u",
+    });
+    writeFileSync(join(dir, "2.1.0.md"), "tampered body");
+    writeFailedVersion(dir, "2.1.0", "fetch_error", true);
+    assert.equal(readVersionBody(dir, "2.1.0"), null);
+    assert.ok(versionCovered(dir, "2.1.0"));
 });
 
 test("listCachedVersions returns only semver metas", () => {

@@ -2,7 +2,7 @@
 
 ### Requirement: Single invocation of the orchestrator with the deep engines input set
 
-The command SHALL invoke `commander-update-orchestrator` exactly **once**, via the `Skill` tool, with `level: "engines"`, `target: "engines"`, `mode: "deep"`, `overrideRegistryPath` omitted, and `projectsFilter` omitted (interactive picker). The command SHALL NOT override `level`/`target` to anything other than `engines`, SHALL NOT override `mode` to anything other than `"deep"`, SHALL NOT pass a `projectsFilter`, and SHALL NOT invoke `detect-toolchain-surfaces`, `apply-engine-bumps`, `parallel-research-workflow`, `group-packages-for-research`, `scan-npm-updates`, `ncu`, or any package-manager command directly.
+The command SHALL invoke `commander-update-orchestrator` exactly **once**, via the `Skill` tool, with `level: "engines"`, `target: "engines"`, `mode: "deep"`, `overrideRegistryPath` omitted, and `projectsFilter` omitted (project selection is orchestrator-owned: `AskUserQuestion` multi-select when ≤3 projects are selectable, free-form selection when ≥4). The command SHALL NOT override `level`/`target` to anything other than `engines`, SHALL NOT override `mode` to anything other than `"deep"`, SHALL NOT pass a `projectsFilter`, and SHALL NOT invoke `detect-toolchain-surfaces`, `apply-engine-bumps`, `parallel-research-workflow`, `group-packages-for-research`, `scan-npm-updates`, `ncu`, or any package-manager command directly.
 
 #### Scenario: Dossier includes the engines-specific sections
 

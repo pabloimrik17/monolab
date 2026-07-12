@@ -59,15 +59,23 @@ function hashFile(path) {
 /** { head, porcelain: [{ status, path }], dirtyHashes: { path: sha } } */
 export function captureState(dir) {
     const head = git(dir, ["rev-parse", "HEAD"]).trim();
-    const porcelainRaw = git(dir, ["status", "--porcelain=v1"]);
-    const porcelain = porcelainRaw
-        .split("\n")
-        .filter(Boolean)
-        .map((line) => ({
-            status: line.slice(0, 2),
-            path: line.slice(3).replace(/^"|"$/g, ""),
-        }))
-        .sort((a, b) => a.path.localeCompare(b.path));
+    const porcelainRaw = git(dir, [
+        "status",
+        "--porcelain=v1",
+        "-z",
+        "--untracked-files=all",
+    ]);
+    const porcelain = [];
+    const tokens = porcelainRaw.split("\0");
+    for (let i = 0; i < tokens.length; i++) {
+        const token = tokens[i];
+        if (!token) continue;
+        const status = token.slice(0, 2);
+        // R/C records carry the rename source as an extra NUL field
+        if (status[0] === "R" || status[0] === "C") i++;
+        porcelain.push({ status, path: token.slice(3) });
+    }
+    porcelain.sort((a, b) => a.path.localeCompare(b.path));
     const dirtyHashes = {};
     for (const entry of porcelain) {
         const abs = join(dir, entry.path);

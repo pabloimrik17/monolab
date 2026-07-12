@@ -16,6 +16,7 @@ import {
     readdirSync,
     readFileSync,
     statSync,
+    unlinkSync,
     writeFileSync,
 } from "node:fs";
 import { homedir } from "node:os";
@@ -155,6 +156,7 @@ export function writeVerifiedVersion(cacheDir, version, content, meta) {
         writeFileSync(bodyPath, content);
         verified = sha256(readFileSync(bodyPath, "utf8")) === remoteSha;
     }
+    if (!verified && existsSync(bodyPath)) unlinkSync(bodyPath);
     const now = new Date().toISOString();
     const versionMeta = {
         version,
@@ -179,6 +181,8 @@ export function writeVerifiedVersion(cacheDir, version, content, meta) {
 
 export function writeFailedVersion(cacheDir, version, failReason, retryable) {
     mkdirSync(cacheDir, { recursive: true });
+    const bodyPath = join(cacheDir, `${version}.md`);
+    if (existsSync(bodyPath)) unlinkSync(bodyPath);
     const now = new Date().toISOString();
     const versionMeta = {
         version,

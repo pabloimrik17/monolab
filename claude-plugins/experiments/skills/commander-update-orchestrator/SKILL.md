@@ -513,7 +513,7 @@ Raise exactly **one** `AskUserQuestion`. The option set depends on `mode`.
 - **Options** (in this exact order):
     - `apply-all` — Proceed with the entire (post-policy, post-override) plan, INCLUDING the post-bumps per-project changeset gate round (Step 10b).
     - `apply-bumps-only` — Apply bumps + overrides + installs sequentially per project (Step 10a), but SKIP the changeset gate round (Step 10b) entirely. The Step 11 summary's `Applied improvements` section is omitted (zero items). All `run-override` decisions resolved in Step 8 still execute on this path because they were resolved before the gate.
-    - `pick-subset` — Accept a free-form selection combining improvement-bullet titles AND package names. Substring match (case-insensitive) for improvements; exact match for bumps. Excluded improvements are excluded from the changeset gate round (Step 10b); excluded packages skip Step 10a for those names.
+    - `pick-subset` — Accept a free-form selection of the items to APPLY, combining improvement-bullet titles AND package names. Substring match (case-insensitive) for improvements; exact match for bumps. Selected improvements are the only bullets in scope for the changeset gate round (Step 10b); selected packages are the only bumps applied in Step 10a; unlisted items are skipped (9.2.D).
     - `cancel` — Exit without modifying any file. In deep mode the plan-dir IS preserved on disk and the orchestrator invokes Step 10c (end-of-flow cleanup) before exiting; in shallow mode there is no plan-dir.
 
 ### 9.1 `apply-all`
@@ -563,7 +563,7 @@ Free-form selection over both improvement bullets and package bump names (mirror
     - A **bump** if it matches an entry in `VALID_BUMP_NAMES` exactly (case-sensitive).
     - **Unknown** if it matches neither.
 
-    Classification MAY be delegated to the deterministic plugin script `node ${CLAUDE_PLUGIN_ROOT}/scripts/validate-subset.mjs` (input `{ selection, bumpNames, improvementTitles }`; output `{ bumpExclusions, improvementExclusions, unmatched }`) — same semantics, no prose drift.
+    Classification MAY be delegated to the deterministic plugin script `node ${CLAUDE_PLUGIN_ROOT}/scripts/validate-subset.mjs` (input `{ selection, bumpNames, improvementTitles }`; output `{ bumpMatches, improvementMatches, unmatched }` — matched tokens are the items to APPLY) — same semantics, no prose drift.
 
 7. On any unknown tokens:
     - Print `Unknown selection(s): {invalid items}. Valid improvements: {VALID_IMPROVEMENT_TITLES}. Valid bumps: {VALID_BUMP_NAMES}.`

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -71,4 +71,14 @@ test("removing a previously-dirty file is detected", () => {
     rmSync(join(dir, "wip.txt"));
     const changed = diffStates(baseline, captureState(dir));
     assert.ok(changed.some((c) => c.path === "wip.txt"));
+});
+
+test("new file inside an already-untracked directory is detected", () => {
+    const dir = initRepo();
+    mkdirSync(join(dir, "untracked-dir"));
+    writeFileSync(join(dir, "untracked-dir", "a.txt"), "a\n");
+    const baseline = captureState(dir);
+    writeFileSync(join(dir, "untracked-dir", "b.txt"), "b\n");
+    const changed = diffStates(baseline, captureState(dir));
+    assert.ok(changed.some((c) => c.path === "untracked-dir/b.txt"));
 });

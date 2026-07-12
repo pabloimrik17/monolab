@@ -8,7 +8,7 @@ The command SHALL invoke the `commander-update-orchestrator` skill exactly **onc
 - `target: "minor"`
 - `mode: "deep"`
 - `overrideRegistryPath`: omitted (the skill defaults to the shared `pkg-upgrade-overrides.yaml`)
-- `projectsFilter`: omitted (the skill's interactive multi-select picker is the only project-selection surface in v1)
+- `projectsFilter`: omitted (project selection is orchestrator-owned: `AskUserQuestion` multi-select when ≤3 projects are selectable, free-form selection when ≥4 — the only project-selection surface in v1)
 
 The command SHALL NOT override `level`/`target` to anything other than `minor`, SHALL NOT override `mode` to anything other than `"deep"`, SHALL NOT override `overrideRegistryPath`, SHALL NOT pass a `projectsFilter`, and SHALL NOT invoke any other skill or package-manager command directly. Every action goes through the orchestrator.
 

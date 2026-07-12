@@ -91,7 +91,7 @@ When `mode === "deep"`, the skill's confirmation gate (Step 9) SHALL raise an `A
 - **Options** (in this exact order):
     - `apply-all` — proceed with the entire (post-policy, post-override) plan, INCLUDING the post-bumps per-project changeset gate round.
     - `apply-bumps-only` — apply bumps + overrides + installs sequentially per project, but SKIP the changeset gate round entirely.
-    - `pick-subset` — accept a free-form list combining improvement-bullet titles and package names (substring match for improvements, exact match for bumps). Excluded improvements are excluded from the changeset gate round; excluded packages skip the bumps for those names.
+    - `pick-subset` — accept a free-form list of the items **to apply**, combining improvement-bullet titles and package names (substring match for improvements, exact match for bumps). Listed improvements are the only bullets in scope for the changeset gate round; listed packages are the only bumps applied; unlisted items are skipped and recorded in the summary.
     - `cancel` — exit without modifying any file.
 
 Shallow mode (`mode === "shallow"` or absent) preserves its three-option gate (`apply-all` / `pick-subset` / `cancel`) unchanged.
@@ -106,9 +106,9 @@ Shallow mode (`mode === "shallow"` or absent) preserves its three-option gate (`
 #### Scenario: pick-subset accepts both bullets and package names
 
 - **WHEN** the user picks `pick-subset` and submits `react, "react: useTransition for non-urgent work"`
-- **THEN** the skill parses `react` as a bump exclusion (exact match against the bump-set names)
-- **AND** parses `react: useTransition for non-urgent work` as an improvement exclusion (substring match against the dossier's improvement bullet titles)
-- **AND** applies both exclusions to Step 10a (bumps) and Step 10b (improvements) respectively
+- **THEN** the skill parses `react` as an accepted bump (exact match against the bump-set names)
+- **AND** parses `react: useTransition for non-urgent work` as an accepted improvement (substring match against the dossier's improvement bullet titles)
+- **AND** restricts Step 10a to the accepted packages and Step 10b to the accepted improvement bullets, recording unlisted items as skipped
 
 ### Requirement: Deep-mode Step 11 summary additions
 

@@ -1,8 +1,9 @@
 /**
  * Validation against the real `~/.claude/changelogs` cache written by the
  * prose `experiments:npm-changelog` flow. Proves the script-side readers
- * consume the pre-existing cache contract byte-for-byte. Skips when the
- * machine has no cache (e.g. CI).
+ * consume the pre-existing cache contract byte-for-byte. Opt-in: runs only
+ * with CLAUDE_VERIFY_EXISTING_CHANGELOG_CACHE=1 and a non-empty cache
+ * (real cache contents vary per machine).
  */
 import assert from "node:assert/strict";
 import { existsSync, readdirSync } from "node:fs";
@@ -18,11 +19,12 @@ import {
 } from "../lib/cache.mjs";
 
 const root = defaultCacheRoot();
-const hasCache =
+const shouldVerifyExistingCache =
+    process.env.CLAUDE_VERIFY_EXISTING_CHANGELOG_CACHE === "1" &&
     existsSync(root) &&
     readdirSync(root).some((d) => !d.startsWith("."));
 
-test("real cache entries parse under the script readers", { skip: !hasCache }, () => {
+test("real cache entries parse under the script readers", { skip: !shouldVerifyExistingCache }, () => {
     const packages = readdirSync(root).filter((d) => !d.startsWith("."));
     let verifiedSeen = 0;
     for (const dirName of packages.slice(0, 10)) {

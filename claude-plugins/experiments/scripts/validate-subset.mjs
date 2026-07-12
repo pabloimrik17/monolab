@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
  * validate-subset — deterministic pick-subset parsing for the deep gates.
- * Partitions the user's free-form selection into bump exclusions (exact
- * match against bump-set package names) and improvement exclusions
+ * Partitions the user's free-form selection into bump matches (exact
+ * match against bump-set package names) and improvement matches
  * (substring match against dossier improvement bullet titles), flagging
  * tokens that match neither so the caller can re-prompt instead of
- * silently dropping input.
+ * silently dropping input. The caller owns the semantics of a match
+ * (the deep gates treat matched tokens as the items to APPLY).
  *
  * Usage:
  *   validate-subset.mjs --input <file.json>
@@ -18,7 +19,7 @@
  *   tokens keep embedded commas.
  *
  * Output JSON:
- *   { ok, bumpExclusions: string[], improvementExclusions:
+ *   { ok, bumpMatches: string[], improvementMatches:
  *       [{ token, matchedTitles: string[] }], unmatched: string[] }
  * `ok` is false when any token is unmatched.
  * Exit codes: 0 = every token matched; 1 = unmatched tokens; 2 = usage.
@@ -52,27 +53,27 @@ export function tokenizeSelection(selection) {
 
 export function validateSubset({ selection, bumpNames, improvementTitles }) {
     const tokens = tokenizeSelection(selection ?? []);
-    const bumpExclusions = [];
-    const improvementExclusions = [];
+    const bumpMatches = [];
+    const improvementMatches = [];
     const unmatched = [];
     for (const token of tokens) {
         if ((bumpNames ?? []).includes(token)) {
-            bumpExclusions.push(token);
+            bumpMatches.push(token);
             continue;
         }
         const matchedTitles = (improvementTitles ?? []).filter((title) =>
             title.toLowerCase().includes(token.toLowerCase()),
         );
         if (matchedTitles.length > 0) {
-            improvementExclusions.push({ token, matchedTitles });
+            improvementMatches.push({ token, matchedTitles });
         } else {
             unmatched.push(token);
         }
     }
     return {
         ok: unmatched.length === 0,
-        bumpExclusions,
-        improvementExclusions,
+        bumpMatches,
+        improvementMatches,
         unmatched,
     };
 }

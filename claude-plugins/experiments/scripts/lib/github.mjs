@@ -51,7 +51,7 @@ export async function githubApi(path, { http = defaultHttp, useGh } = {}) {
             if (/HTTP 404|Not Found/i.test(stderr)) {
                 return { status: 404, json: null };
             }
-            return { status: 0, json: null };
+            // gh errored (auth, rate limit, network) → try plain HTTP below
         }
     }
     const headers = { accept: "application/vnd.github+json" };

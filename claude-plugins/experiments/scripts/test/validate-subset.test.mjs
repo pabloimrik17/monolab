@@ -17,8 +17,8 @@ test("exact bump match beats improvement substring match", () => {
         bumpNames: ["react", "zod"],
         improvementTitles: ["react: useTransition for non-urgent work"],
     });
-    assert.deepEqual(result.bumpExclusions, ["react"]);
-    assert.deepEqual(result.improvementExclusions, []);
+    assert.deepEqual(result.bumpMatches, ["react"]);
+    assert.deepEqual(result.improvementMatches, []);
     assert.ok(result.ok);
 });
 
@@ -28,9 +28,9 @@ test("improvement tokens match by case-insensitive substring", () => {
         bumpNames: ["react"],
         improvementTitles: ["react: useTransition for non-urgent work"],
     });
-    assert.equal(result.improvementExclusions.length, 2);
+    assert.equal(result.improvementMatches.length, 2);
     assert.deepEqual(
-        result.improvementExclusions[0].matchedTitles,
+        result.improvementMatches[0].matchedTitles,
         ["react: useTransition for non-urgent work"],
     );
 });

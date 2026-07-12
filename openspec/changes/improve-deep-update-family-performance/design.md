@@ -21,7 +21,7 @@ Constraints: single launch end-to-end with no manual context-hygiene interventio
 
 **Non-Goals**
 - Cross-project homogenization of shared configs (eslint/prettier/vitest parity across projects). Parked for a later change / a possible `commander:harmonize`.
-- Changing the shallow `npm-update-*` commands, the override registry, or the `npm-changelog` cache contract.
+- Changing the shallow `npm-update-*` command files, the override registry, or the `npm-changelog` cache contract. (One deliberate behavioral exception: the shared `apply-npm-updates` streaming repeal — D8 — also reaches the shallow flows at runtime, as stated in the proposal; the shallow command files themselves are not edited.)
 - Optimizing wall-clock time.
 
 ## Decisions

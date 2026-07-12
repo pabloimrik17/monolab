@@ -2,7 +2,7 @@
 
 ### Requirement: Single invocation of the orchestrator with the deep-major input set
 
-The command SHALL invoke `commander-update-orchestrator` exactly **once** per execution, via the `Skill` tool, with `level: "major"`, `target: "major"`, `mode: "deep"`, `overrideRegistryPath` omitted (shared default), and `projectsFilter` omitted (interactive picker). The command SHALL NOT override `level`/`target` to anything other than `major`, SHALL NOT override `mode` to anything other than `"deep"`, SHALL NOT override `overrideRegistryPath`, SHALL NOT pass a `projectsFilter`, and SHALL NOT invoke `scan-npm-updates`, `group-packages-for-research`, `parallel-research-workflow`, `npm-check-updates`, or any package-manager command directly.
+The command SHALL invoke `commander-update-orchestrator` exactly **once** per execution, via the `Skill` tool, with `level: "major"`, `target: "major"`, `mode: "deep"`, `overrideRegistryPath` omitted (shared default), and `projectsFilter` omitted (project selection is orchestrator-owned: `AskUserQuestion` multi-select when ≤3 projects are selectable, free-form selection when ≥4). The command SHALL NOT override `level`/`target` to anything other than `major`, SHALL NOT override `mode` to anything other than `"deep"`, SHALL NOT override `overrideRegistryPath`, SHALL NOT pass a `projectsFilter`, and SHALL NOT invoke `scan-npm-updates`, `group-packages-for-research`, `parallel-research-workflow`, `npm-check-updates`, or any package-manager command directly.
 
 #### Scenario: Output surfaced verbatim
 
@@ -31,7 +31,7 @@ The command SHALL inherit and preserve every hard rule from `commander-update-or
 
 ### Requirement: Cross-project PR plan surfaced; per-project isolation in v1
 
-The orchestrator's dossier SHALL include the `## PR plan` section (from `partition-breaking-changes`; the section name `## PR plan` is a retained legacy name — see the deep-update artifact glossary carve-outs) so the user sees the proposed buckets and the count-by-policy summary in the surfaced digest. When isolation is opted into, v1 SHALL create at most **one worktree per project** (the per-(project,bucket) matrix is deferred). The command SHALL NOT commit, push, or open PRs in any case.
+The orchestrator's surfaced digest SHALL include the `## PR plan` section (appended from `partition-breaking-changes` output; the section name `## PR plan` is a retained legacy name — see the deep-update artifact glossary carve-outs) so the user sees the proposed buckets and the count-by-policy summary at the dossier gate. When isolation is opted into, v1 SHALL create at most **one worktree per project** (the per-(project,bucket) matrix is deferred). The command SHALL NOT commit, push, or open PRs in any case.
 
 #### Scenario: PR plan visible cross-project
 

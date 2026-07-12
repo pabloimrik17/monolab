@@ -8,7 +8,7 @@ The command SHALL invoke the `commander-update-orchestrator` skill exactly **onc
 - `target: "patch"`
 - `mode: "deep"`
 - `overrideRegistryPath`: omitted (the skill defaults to `claude-plugins/experiments/skills/scan-npm-updates/data/pkg-upgrade-overrides.yaml`)
-- `projectsFilter`: omitted (the skill's interactive multi-select picker is the only project-selection surface in v1)
+- `projectsFilter`: omitted (project selection is orchestrator-owned: `AskUserQuestion` multi-select when ≤3 projects are selectable, free-form selection when ≥4 — the only project-selection surface in v1)
 
 The command SHALL NOT:
 
@@ -29,7 +29,8 @@ The command SHALL NOT:
 The command SHALL inherit and preserve every hard rule from `commander-update-orchestrator` (deep mode) and `npm-update-deep-patch`. The command SHALL NOT:
 
 - Create commits, push, or open pull requests autonomously (branch/worktree isolation via `update-isolation` is permitted); it stops for human-in-the-loop review before any such outward/VCS action.
-- Modify any file when the user selects `cancel` at the orchestrator's confirmation gate or rejects a changeset at the gate at apply time.
+- Modify any file when the user selects `cancel` at the orchestrator's confirmation gate.
+- Apply any improvement edit after the user rejects a project's changeset at the gate at apply time (bumps already applied in Step 10a are preserved — no rollback).
 - Mutate `<HOME>/.claude/commander/projects.json` — the registry is read-only on this path. The on-disk file SHALL be byte-identical before and after every run (verifiable via `shasum`).
 - Mutate any consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
 - Auto-execute an override command without the user selecting `run-override` explicitly for that entry.

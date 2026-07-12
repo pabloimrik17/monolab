@@ -108,7 +108,7 @@ The buckets render as a `## PR plan` section:
 | one-per-package          | 6       | 1              |
 ```
 
-The **count-by-policy** summary reports the bucket count (and largest bucket) under at least two policies (e.g. `isolate-high + batch-low` vs `one-per-package`) so the user can choose granularity **before** any worktree is created.
+The **count-by-policy** summary reports the bucket count (and largest bucket) under at least two policies, in deterministic order: the active-knobs policy first (identifier `isolate-high + batch-low` under default knobs), then the `one-per-package` baseline — so the user can choose granularity **before** any worktree is created.
 
 ## Hard rules
 
