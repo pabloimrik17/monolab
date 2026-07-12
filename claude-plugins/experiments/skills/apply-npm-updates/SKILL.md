@@ -1,6 +1,6 @@
 ---
 name: apply-npm-updates
-description: Use when a single-project npm update command (`/experiments:npm-update-patch`, `/experiments:npm-update-minor`, `/experiments:npm-update-major`, and their deep variants) or the `commander-update-orchestrator` (once per project) needs to perform the mechanical apply of a fully-resolved update set — generic `package.json` bumps via `npm-check-updates`, catalog source edits (`pnpm-workspace.yaml` for pnpm, root `package.json` for Bun), override commands, and one install. Level-agnostic (parameterized by `target`). Also documents the caller-invoked override-resolution procedure (registry load → first-win glob match → `{version}` resolution → GENERIC/OVERRIDE_RUN/OVERRIDE_SKIP partition). Performs writes only; streams ncu/install verbatim; returns a structured result fragment and NEVER prints a consumer summary or abort message. Never commits/pushes/opens PRs autonomously.
+description: Use when a single-project npm update command (`/experiments:npm-update-patch`, `/experiments:npm-update-minor`, `/experiments:npm-update-major`, and their deep variants) or the `commander-update-orchestrator` (once per project) needs to perform the mechanical apply of a fully-resolved update set — generic `package.json` bumps via `npm-check-updates`, catalog source edits (`pnpm-workspace.yaml` for pnpm, root `package.json` for Bun), override commands, and one install. Level-agnostic (parameterized by `target`). Also documents the caller-invoked override-resolution procedure (registry load → first-win glob match → `{version}` resolution → GENERIC/OVERRIDE_RUN/OVERRIDE_SKIP partition). Performs writes only; redirects ncu/install/override output to an on-disk log (digest to the conversation, bounded tail on failure only); returns a structured result fragment (with `logPath`) and NEVER prints a consumer summary or abort message. Never commits/pushes/opens PRs autonomously.
 ---
 
 # apply-npm-updates
@@ -9,7 +9,7 @@ The single source of truth for the **single-project npm apply mechanism**. The c
 
 Two things live here:
 
-- **(a) A mechanical apply contract** — Steps A1–A6 below. Caller passes a fully-resolved per-project apply spec; the skill writes manifests, runs overrides, runs one install, and streams `ncu`/install/override stdout/stderr verbatim.
+- **(a) A mechanical apply contract** — Steps A0–A5 below. Caller passes a fully-resolved per-project apply spec; the skill writes manifests, runs overrides, runs one install, and redirects `ncu`/install/override stdout/stderr to an on-disk run log (one-line digests to the conversation; a bounded tail only on failure). Verbatim streaming into the conversation is repealed.
 - **(b) A reusable override-resolution procedure** — the "Override-resolution procedure" section below. Callers that opt into overrides invoke it to turn a candidate package set into matched entries + interpolated commands + a `GENERIC`/`OVERRIDE_RUN`/`OVERRIDE_SKIP` partition. The interactive prompt and the resolution _scope_ stay caller-owned.
 
 ## When to use
@@ -40,6 +40,7 @@ The caller passes a fully-resolved, single-project apply spec with exactly these
 | `catalogEdits`     | `Array<{ name, targetVersion, catalogSource? }>`              | no       | In-place catalog source edits. `catalogSource = { sourceFile, manager: "pnpm" \| "bun", field: { kind: "default" } \| { kind: "named", name }, underWorkspaces? }`. When omitted, defaults to the legacy pnpm target `{ sourceFile: "pnpm-workspace.yaml", manager: "pnpm", field: { kind: "default" } }` — byte-identical for existing pnpm callers. |
 | `overrideCommands` | `Array<{ id, command }>`                                      | no       | Already-interpolated override commands, in declaration order.                                                                                                                                                                                                                                                                                         |
 | `skipInstall`      | `boolean` (default `false`)                                   | no       | When `true`, skip the final install (every accepted package was handled by an override that runs its own install).                                                                                                                                                                                                                                    |
+| `runDir`           | `string` (absolute)                                           | no       | Caller-provided run directory. When supplied, the run log is written under `<runDir>/logs/`; otherwise the skill uses a temporary path. The resolved log file is returned as `logPath`.                                                                                                                                                               |
 
 The spec is consumed **as-is**: the skill performs no override matching, no conflict resolution, and no `pick-subset` parsing of its own. The caller already partitioned `manifestBumps` / `catalogEdits` / `overrideCommands`.
 
@@ -59,6 +60,8 @@ Resolve the runner prefix from `packageManager`:
 | `deno`           | `deno run --allow-read --allow-net npm:` | `deno install`  |
 
 Maintain an `appliedSoFar: string[]` buffer (manifest paths / catalog file already written, plus override ids executed) for failure reporting. Maintain the result accumulators `appliedGeneric: [{ name, location }]`, `appliedOverrides: [{ id, command, matchedNames }]`, `installRan: boolean`.
+
+**Resolve the run log (output handling — replaces verbatim streaming).** Resolve `logPath` once: `<runDir>/logs/apply-<unix-ts>.log` when `runDir` is supplied (create `logs/` if needed), else a temporary path. Every `ncu` / override / install invocation below appends its full stdout+stderr to this log (`>> "<logPath>" 2>&1`). The conversation receives **one-line digests only**; on a failing step, surface a bounded tail of the log (**at most ~40 lines**). Verbatim streaming of `ncu`/override/install output into the conversation SHALL NOT occur.
 
 ### Step A1 — Generic `package.json` bumps (one ncu per `manifestBumps` element)
 
@@ -96,7 +99,7 @@ Rules:
     - When `<ncuTarget> === latest` (i.e. `target` is `major`), `--filter "<names>"` is **ALWAYS** included regardless of the element's `includeFilter` value — the caller's `names` list is authoritative. Required because `scan-npm-updates` builds the `latest`-level candidate set by running `ncu --target latest` and then post-filtering (e.g. major-only); re-running `ncu --target latest` without `--filter` would bump every dependency with any newer version, exceeding the accepted set.
     - Otherwise (`patch`/`minor`), `--filter` is included **only** when the element's `includeFilter === true`; when `false` it is omitted (ncu's own detected set equals the target set for this file).
 - **Catalog-reference guard (package-manager-agnostic, defense-in-depth).** Never add to `--filter` any package whose declared value in `<sourceFile>` matches `/^catalog:/`, and never write a pinned version over any consumer value matching `/^catalog:/`. A `catalog:*` specifier is a reference, not a version — its source is bumped via `catalogEdits` (Step A2), never here. At the pinned `ncu@21.0.2` this is a no-op (ncu already skips `catalog:*` for both pnpm and bun — see `scan-npm-updates`/the issue spike); the guard prevents a silent regression should a future ncu stop skipping them.
-- Stream `ncu` stdout/stderr to the user verbatim so diffs are observable.
+- Redirect `ncu` stdout/stderr to the run log (`logPath`) and surface a one-line digest per manifest (e.g. `ncu <sourceFile>: <N> package(s) bumped — log: <logPath>`). Do NOT stream the output verbatim into the conversation; diffs remain observable in the log and via `git diff`.
 
 #### Exact version pinning (`--removeRange`, family-wide)
 
@@ -104,7 +107,7 @@ Rules:
 
 On success, append each bumped package to `appliedGeneric` (with its `location` from the caller's spec context) and push `<sourceFile>` to `appliedSoFar`.
 
-If `ncu` exits non-zero on a manifest, **stop immediately** and return the structured failure:
+If `ncu` exits non-zero on a manifest, **stop immediately**, surface a bounded tail of the run log (at most ~40 lines), and return the structured failure:
 
 ```ts
 { step: "ncu", sourceFile: "<sourceFile>", exitCode: <code>, appliedSoFar: [...] }
@@ -139,11 +142,11 @@ Do NOT run any override command or install. Do NOT print a consumer abort messag
 
 ### Step A3 — Override commands (declaration order)
 
-After every generic manifest write (A1) and catalog edit (A2) for the project has succeeded, execute each `overrideCommands` element's `command` **exactly once, in declaration order**, streaming stdout/stderr.
+After every generic manifest write (A1) and catalog edit (A2) for the project has succeeded, execute each `overrideCommands` element's `command` **exactly once, in declaration order**, redirecting stdout/stderr to the run log and surfacing a one-line digest per command (no verbatim streaming).
 
 On success, append `{ id, command, matchedNames }` to `appliedOverrides` (the caller supplies `matchedNames` context, or the skill records the command's id) and push the entry id to `appliedSoFar`.
 
-If any override exits non-zero, **stop immediately** and return:
+If any override exits non-zero, **stop immediately**, surface a bounded tail of the run log (at most ~40 lines), and return:
 
 ```ts
 { step: "override", entryId: "<id>", exitCode: <code>, appliedSoFar: [...] }
@@ -156,9 +159,9 @@ Do NOT run `ncu --upgrade` as a fallback for the matched packages (leaves the tr
 After all generic bumps, catalog edits, and override commands land successfully:
 
 - If `skipInstall === true`, run **no** install command; set `installRan = false`; record that the install was delegated to the override command(s). (This is set by the caller when every accepted package was handled by an override that runs its own install and nothing was written outside the override.)
-- Otherwise run **exactly one** install command for `packageManager` (per the Step A0 table). Stream the output. On success set `installRan = true`.
+- Otherwise run **exactly one** install command for `packageManager` (per the Step A0 table), redirecting its stdout/stderr to the run log and surfacing a one-line digest (e.g. `<pm> install: ok — log: <logPath>`). On success set `installRan = true`.
 
-If the install exits non-zero, return:
+If the install exits non-zero, surface a bounded tail of the run log (at most ~40 lines) and return:
 
 ```ts
 { step: "install", exitCode: <code>, appliedSoFar: [...] }
@@ -175,13 +178,14 @@ On success return:
   appliedGeneric:   [{ name, location }, ...],   // every generically-bumped package (A1 + A2)
   appliedOverrides: [{ id, command, matchedNames }, ...],   // every override that ran (A3)
   installRan:       boolean,                      // A4
+  logPath:          "<string>",                   // the on-disk run log holding ncu/override/install output
   failure:          null
 }
 ```
 
 On failure return the same shape with `failure` populated per the failing step (A1/A2/A3/A4) and the partial accumulators reflecting what landed before the failure.
 
-The skill streams `ncu` / install / override stdout/stderr verbatim (observability) but prints **NO** consumer-facing summary block (`## …-<level> summary`) and **NO** consumer-specific abort copy. The caller composes those so single-project and cross-project consumers each preserve their own wording and exit semantics.
+The skill writes `ncu` / install / override stdout/stderr to the on-disk log referenced by `logPath` (observability moves to disk; verbatim streaming into the conversation SHALL NOT occur) and prints **NO** consumer-facing summary block (`## …-<level> summary`) and **NO** consumer-specific abort copy. The caller composes those so single-project and cross-project consumers each preserve their own wording and exit semantics.
 
 ---
 
@@ -244,6 +248,7 @@ The skill contains **no** level-specific branching logic. Behavior is parameteri
 - SHALL NOT run `ncu --upgrade` as a fallback after an override command fails.
 - SHALL NOT read or write the override registry data file except via the read-only resolution procedure (R1).
 - SHALL NOT print a consumer-facing summary heading or a consumer-specific abort message — those are caller-owned.
+- SHALL NOT stream `ncu`/override/install output verbatim into the conversation — output goes to the on-disk run log (`logPath`); the conversation gets one-line digests and, on failure only, a bounded tail (≤ ~40 lines).
 
 ## See also
 

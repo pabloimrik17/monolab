@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The `/experiments:npm-update-deep-minor` command is the deep single-project sibling of `/experiments:npm-update-deep-patch`, operating exclusively at **minor** level. It scans, groups, runs the parallel-research workflow, gates execution, delegates bumps to the `npm-update-apply` skill (generic-only, no override registry), and applies improvements via plan mode — identical in flow to the deep-patch command except for the level.
+The `/experiments:npm-update-deep-minor` command is the deep single-project sibling of `/experiments:npm-update-deep-patch`, operating exclusively at **minor** level. It scans, groups, runs the parallel-research workflow, gates execution, delegates bumps to the `apply-npm-updates` skill (generic-only, no override registry), and applies improvements via the changeset gate — identical in flow to the deep-patch command except for the level.
 
 ## Requirements
 
@@ -40,40 +40,27 @@ The command SHALL invoke `experiments:scan-npm-updates` with `level=minor`, surf
 
 ### Requirement: Execution prompt, bump delegation, and improvements
 
-When the workflow finishes phase 4 successfully, the command SHALL raise a single `AskUserQuestion` with `apply-all`, `apply-bumps-only`, `pick-subset`, `cancel` (same order as `npm-update-deep-patch`). For any path that applies bumps, the command SHALL delegate the bump mechanism to the `npm-update-apply` skill (`target: "minor"`, generic-only — the deep path consults NO override registry, preserving the single-project deep divergence). Improvements SHALL be applied via Claude Code plan mode (reconnaissance → mandatory `EnterPlanMode` → user approval/rejection), scoped strictly to bullets present in `plan.md`. On rejection, the command SHALL print `Improvements rejected at plan-mode review. No improvement edits applied; bumps are preserved.` and preserve applied bumps.
+When the workflow finishes phase 4 (dossier synthesis) successfully, the command SHALL surface the dossier by path plus a bounded digest, then raise a single `AskUserQuestion` with `apply-all`, `apply-bumps-only`, `pick-subset`, `cancel` (same order as `npm-update-deep-patch`). For any path that applies bumps, the command SHALL delegate the bump mechanism to the `apply-npm-updates` skill (`target: "minor"`, generic-only — the deep path consults NO override registry, preserving the single-project deep divergence), with output redirected to on-disk logs per that skill's contract. Improvements SHALL be applied through the per-project changeset gate (apply-teammate reconnaissance → `changeset.md` → pre-gate check → orchestrator-owned human gate → teammate applies on approval, per the experiments-plugin gate requirements), scoped strictly to bullets present in `dossier.md`. On rejection, the command SHALL print `Improvements rejected at the changeset gate. No improvement edits applied; bumps are preserved.` and preserve applied bumps.
 
-#### Scenario: Bumps delegated to npm-update-apply, generic-only
-
-- **WHEN** the user selects `apply-bumps-only`
-- **THEN** the command invokes `npm-update-apply` with `target: "minor"` and an empty `overrideCommands` set (the deep single-project path does not consult the override registry)
-
-#### Scenario: Improvements require plan mode
+#### Scenario: Improvements go through the changeset gate
 
 - **WHEN** the user selects `apply-all` after bumps land
-- **THEN** the command invokes `EnterPlanMode` with the proposed edits before any improvement `Edit`/`Write`
+- **THEN** the apply teammate writes `changeset.md` before any improvement `Edit`/`Write`
+- **AND** on approval the teammate (not the main agent) applies the edits
 
-#### Scenario: Plan-mode rejection preserves bumps
+#### Scenario: Gate rejection preserves bumps
 
-- **WHEN** the user rejects the plan-mode round
+- **WHEN** the user rejects the changeset at the gate
 - **THEN** the command prints the rejection line and the already-applied bumps are NOT reverted
 
 ---
 
 ### Requirement: Final summary, changelog plan section, and hard rules
 
-The command SHALL print a summary headed `## npm-update-deep-minor summary` with the same conditional sections as `npm-update-deep-patch` (applied bumps, applied improvements, skipped improvements, skipped-or-unavailable groups, install line, always-present `Suggested next steps`). The `plan.md` the command surfaces SHALL include the `## Changelogs` chronology section produced by `parallel-research-workflow`. The command SHALL delegate end-of-flow cleanup to the workflow (one `delete-plan` / `keep-plan` prompt). The command SHALL NOT create commits, push, or open PRs autonomously — it stops for human-in-the-loop review before any such outward/VCS action; SHALL NOT consult the override registry; and SHALL NOT mutate `catalog:` consumer `package.json` entries.
+The command SHALL print a summary headed `## npm-update-deep-minor summary` with the same conditional sections as `npm-update-deep-patch` (applied bumps, applied improvements, skipped improvements, skipped-or-unavailable groups, install line, always-present `Suggested next steps`). The `dossier.md` produced by `parallel-research-workflow` SHALL include the script-assembled `## Changelogs` chronology section; the command references the dossier by path and SHALL NOT reproduce the chronology bodies in the conversation. The command SHALL delegate end-of-flow cleanup to the workflow (one `delete-plan` / `keep-plan` prompt). The command SHALL NOT create commits, push, or open PRs autonomously — it stops for human-in-the-loop review before any such outward/VCS action; SHALL NOT consult the override registry; and SHALL NOT mutate `catalog:` consumer `package.json` entries.
 
-#### Scenario: Summary heading is deep-minor-namespaced
+#### Scenario: Dossier includes the changelog section
 
-- **WHEN** a run completes
-- **THEN** the summary starts with `## npm-update-deep-minor summary`
-
-#### Scenario: Plan includes the changelog section
-
-- **WHEN** the workflow produces `plan.md` for a minor run
-- **THEN** `plan.md` includes a `## Changelogs` section (per the `parallel-research-workflow` spec)
-
-#### Scenario: Override registry not consulted on the deep path
-
-- **WHEN** the command applies bumps
-- **THEN** it does NOT load or match the override registry (the override flow remains the shallow `/experiments:npm-update-minor` path's responsibility)
+- **WHEN** the workflow produces `dossier.md` for a minor run
+- **THEN** `dossier.md` includes a `## Changelogs` section (per the `parallel-research-workflow` spec)
+- **AND** the command references it by path rather than reproducing its bodies in the conversation

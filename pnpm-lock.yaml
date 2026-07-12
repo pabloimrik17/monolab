@@ -385,7 +385,11 @@ importers:
 
   claude-plugins/commander: {}
 
-  claude-plugins/experiments: {}
+  claude-plugins/experiments:
+    devDependencies:
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.9(@types/node@26.0.1)(@vitest/browser-playwright@4.1.9)(@vitest/coverage-v8@4.1.9)(@vitest/ui@4.1.9)(jsdom@25.0.1)(msw@2.12.7(@types/node@26.0.1)(typescript@6.0.3))(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.46.0)(tsx@4.22.4)(yaml@2.9.0))
 
   claude-plugins/expo-developer: {}
 

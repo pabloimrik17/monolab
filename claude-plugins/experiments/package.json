@@ -2,5 +2,11 @@
     "name": "@m0n0lab/plugin-experiments",
     "version": "1.4.0",
     "private": true,
-    "description": "Beta skills and commands staging area for monolab"
+    "description": "Beta skills and commands staging area for monolab",
+    "scripts": {
+        "test:unit": "vitest run"
+    },
+    "devDependencies": {
+        "vitest": "catalog:"
+    }
 }

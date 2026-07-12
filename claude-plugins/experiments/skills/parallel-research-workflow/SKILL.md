@@ -1,22 +1,30 @@
 ---
 name: parallel-research-workflow
-description: Use when a command needs to dispatch a two-phase parallel-subagent research workflow (changelog fetch → codebase research → integrity check → plan-mode synthesis) over a pre-grouped package set — for example `/experiments:npm-update-deep-patch` (and future deep-* siblings) after invoking `group-packages-for-research`. Inputs `{ groups, level, scanResult }`; produces `<plan-dir>/plan.md` plus per-group `_meta.json`, `changelogs/`, and `research.md`. Never edits workspace files; bump/apply are the caller's responsibility.
+description: Use when a command needs to dispatch a two-phase parallel-subagent research workflow (changelog fetch → codebase research → integrity check → dossier synthesis) over a pre-grouped package set — for example `/experiments:npm-update-deep-patch` (and future deep-* siblings) after invoking `group-packages-for-research`. Inputs `{ groups, level, scanResult }`; produces `<plan-dir>/dossier.md` plus per-group `_meta.json`, `changelogs/`, and `research.md`. Never edits workspace files; bump/apply are the caller's responsibility.
 ---
 
 # parallel-research-workflow
 
-Generic two-phase parallel-subagent research workflow. Given a pre-grouped set of package updates (the output of `group-packages-for-research`), dispatch one subagent per group to (1) fetch every changelog with `experiments:npm-changelog` and (2) cross-reference the changelogs against this codebase. Then verify integrity, prompt the main agent into plan mode, and emit a single integrated `plan.md`.
+Generic two-phase parallel-subagent research workflow. Given a pre-grouped set of package updates (the output of `group-packages-for-research`), dispatch one subagent per group to (1) fetch every changelog with the `fetch-changelog` plugin executable and (2) cross-reference the changelogs against this codebase. Then verify integrity, dispatch a named synthesizer teammate, and emit a single integrated `dossier.md` validated by a two-layer compliance check before any user gate opens.
 
-This skill is reusable by every `/experiments:npm-update-deep-*` command (and, eventually, `commander:update-deep-*`). It is the orchestration layer; consumers wire scan → grouping → this skill → user-driven execution.
+This skill is reusable by every `/experiments:npm-update-deep-*` command (and the `commander-update-deep-*` siblings). It is the orchestration layer; consumers wire scan → grouping → this skill → user-driven execution.
 
 The skill writes only under `~/.claude/experiments/plans/<slug>-<level>-<unix-ts>[-N]/` (where `[-N]` is the optional collision suffix described in "Slug derivation"; omitted on the common no-collision path). It does NOT modify any workspace file. Bumping manifests / running installs / applying improvements are the caller's responsibility (see `/experiments:npm-update-deep-patch`).
+
+**Artifact glossary (mandatory vocabulary).** Three distinct names, never interchanged:
+
+- `dossier.md` — the single global, deduplicated research document this workflow produces (formerly `plan.md`; no artifact named `plan.md` is ever written).
+- `changeset.md` — the per-project concrete apply plan written later by the consumer's apply teammate (not by this workflow).
+- Claude Code **plan mode** — the harness feature only. This workflow does not use plan mode; the words "plan"/"planning" below refer exclusively to that harness feature or to the carved-out legacy storage terms (`~/.claude/experiments/plans/`, "plan directory", "plan-dir", `planDirName` — retained for on-disk compatibility; they are not artifact names).
+
+**Main-window context diet.** The main conversation orchestrating this workflow holds only paths and small status digests (≤ ~30 lines each). It SHALL NOT load changelog bodies, per-group `research.md` files, or `dossier.md` into its own context — heavy content lives on disk and is authored/validated by subagents and teammates.
 
 ## Inputs
 
 - **`groups`** (required): array of group records as emitted by `group-packages-for-research` — `[{ groupId, bucketKey, packages: [...] }]`.
-- **`level`** (required): one of `patch` | `minor` | `major` | `engines`. Embedded into the plan-dir slug and into `_meta.json.level`. Determines the title of `plan.md` (e.g. `Deep-patch plan: <slug>` for single-project, `Deep-patch plan (cross-project): <slug>` for cross-project).
+- **`level`** (required): one of `patch` | `minor` | `major` | `engines`. Embedded into the plan-dir slug and into `_meta.json.level`. Determines the title of `dossier.md` (e.g. `Deep-patch dossier: <slug>` for single-project, `Deep-patch dossier (cross-project): <slug>` for cross-project).
 - **`scanResult`** (required): the verbatim `ScanResult` JSON for single-project callers, or a synthesized `ScanResult`-shaped value (from the cross-project orchestrator) for cross-project callers. Persisted as `scan.json` in single-project mode; cross-project mode persists per-project scans in `scan-by-project.json` and the aggregated plan in `cross-project-plan.json` (both written by the orchestrator, NOT by this workflow — see "Cross-project plan-dir layout" below).
-- **`mode`** (optional): one of `single-project` | `cross-project`. Default `single-project`. Selects the cross-project research contract when `cross-project`: universal-only findings, no codebase cross-reference, cross-project plan-mode synthesis template. Single-project mode (default) is byte-equivalent to today — no behavior changes for `/experiments:npm-update-deep-patch`.
+- **`mode`** (optional): one of `single-project` | `cross-project`. Default `single-project`. Selects the cross-project research contract when `cross-project`: universal-only findings, no codebase cross-reference, cross-project `dossier.md` template. Single-project mode (default) is byte-equivalent to today — no behavior changes for `/experiments:npm-update-deep-patch`.
 - **`slugOverride`** (optional in single-project mode, REQUIRED in cross-project mode): string used as the plan-dir basename slug instead of the CWD/`package.json#name`-derived slug. Sanitized identically to derived slugs (lowercase, replace `[^a-z0-9]+` with `-`, trim leading/trailing `-`, truncate to 40 chars). In cross-project mode the caller MUST supply this; in single-project mode it MAY be supplied to bypass CWD/`package.json` derivation.
 - **`maxConcurrent`** (optional, integer, default `5`): per-batch concurrency cap for phase-1+2 subagent dispatch. Inclusive valid range `[1, 10]`. A value outside this range aborts with `Error: maxConcurrent must be between 1 and 10, got <value>.` See "Phase 1" for batching semantics.
 
@@ -32,44 +40,53 @@ Reject before any side effect (no plan-dir, no scan, no research):
 
 ### Mode-conditional behavior
 
-The workflow ships two research contracts selected by the `mode` input. Phases 0, 1 (batching + hard-wall fallback), 3 (integrity gate + retry-failed), end-of-flow cleanup, per-group `_meta.json` schema, and field naming conventions are identical across both modes. Mode affects exactly five surfaces: the slug source (`slugOverride` required in cross-project, optional in single-project), the on-disk plan-dir scan artifact (`scan.json` vs `scan-by-project.json` + `cross-project-plan.json`), the global `_meta.json.mode` field, the subagent prompt template (phase 1+2 wording), and the phase 4 `plan.md` template (H1, Improvements heading, per-bullet `affects projects:` tag, and bump-set table shape).
+The workflow ships two research contracts selected by the `mode` input. Phases 0, 1 (batching + hard-wall fallback), 3 (integrity gate + retry-failed), end-of-flow cleanup, per-group `_meta.json` schema, and field naming conventions are identical across both modes. Mode affects exactly five surfaces: the slug source (`slugOverride` required in cross-project, optional in single-project), the on-disk plan-dir scan artifact (`scan.json` vs `scan-by-project.json` + `cross-project-plan.json`), the global `_meta.json.mode` field, the subagent prompt template (phase 1+2 wording), and the phase 4 `dossier.md` template (H1, Improvements heading, per-bullet `affects projects:` tag, and bump-set table shape).
 
-| Concern                                           | `mode: "single-project"` (default)                                                                                                            | `mode: "cross-project"`                                                                                                                                                                                                                  |
-| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Slug source                                       | `slugOverride` if set, else `package.json#name` if non-empty, else `basename(CWD)`. Sanitized.                                                | `slugOverride` (REQUIRED). Sanitized identically.                                                                                                                                                                                        |
-| Plan-dir scan artifact                            | `scan.json` (written by this workflow at phase init).                                                                                         | `scan-by-project.json` + `cross-project-plan.json` (written by the orchestrator caller; this workflow does NOT create them).                                                                                                             |
-| `_meta.json.mode` field                           | `"single-project"`                                                                                                                            | `"cross-project"`                                                                                                                                                                                                                        |
-| Subagent prompt (phase 1+2)                       | Includes `Codebase root: <CWD>`. Phase 2 cross-references the codebase. Headings: `### Workarounds resolved` / `### Improvements applicable`. | OMITS `Codebase root:`. Phase 2 produces universal findings only — subagent SHALL NOT use `Read`/`Glob`/`Grep` on any project source file. Headings: `### Workarounds resolved (universal)` / `### Improvements applicable (universal)`. |
-| Effort allocation                                 | ~80% on improvements, ~20% on workarounds.                                                                                                    | Identical: ~80% on improvements, ~20% on workarounds.                                                                                                                                                                                    |
-| Hint allowed in `research.md`                     | File globs, directory hints, component names, brief justification sentences (codebase-grounded).                                              | File globs by CONVENTION (no specific project paths), framework names, idiomatic patterns. SHALL NOT name specific project paths.                                                                                                        |
-| `_no findings_` sentinel                          | Same.                                                                                                                                         | Same.                                                                                                                                                                                                                                    |
-| Phase 4 `plan.md` H1                              | `Deep-<level> plan: <slug>`                                                                                                                   | `Deep-<level> plan (cross-project): <slug>`                                                                                                                                                                                              |
-| Phase 4 `plan.md` Improvements heading            | `## Improvements (applicable to this codebase)`                                                                                               | `## Improvements (universal — applicability checked per project at apply time)`                                                                                                                                                          |
-| Phase 4 `plan.md` improvement / workaround bullet | `... (group: <groupId>)`                                                                                                                      | `... (group: <groupId>; affects projects: <comma-separated names>)`                                                                                                                                                                      |
-| Phase 4 `plan.md` bump-set table H2               | `## <Level> bump set` — title-cased level (`Patch`/`Minor`/`Major`/`Engines`), level-derived (never hardcoded `Patch`)                        | `## Cross-project bump set`                                                                                                                                                                                                              |
-| Phase 4 `plan.md` bump-set table columns          | `package`, `current → target`, `location`                                                                                                     | `package`, `proposed target`, `projects (locations)`                                                                                                                                                                                     |
-| Phases 0, 1, 3, end-of-flow cleanup               | Identical machinery.                                                                                                                          | Identical machinery. No new phases introduced; no phase transition order changed.                                                                                                                                                        |
+| Concern                                              | `mode: "single-project"` (default)                                                                                                            | `mode: "cross-project"`                                                                                                                                                                                                                  |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Slug source                                          | `slugOverride` if set, else `package.json#name` if non-empty, else `basename(CWD)`. Sanitized.                                                | `slugOverride` (REQUIRED). Sanitized identically.                                                                                                                                                                                        |
+| Plan-dir scan artifact                               | `scan.json` (written by this workflow at phase init).                                                                                         | `scan-by-project.json` + `cross-project-plan.json` (written by the orchestrator caller; this workflow does NOT create them).                                                                                                             |
+| `_meta.json.mode` field                              | `"single-project"`                                                                                                                            | `"cross-project"`                                                                                                                                                                                                                        |
+| Subagent prompt (phase 1+2)                          | Includes `Codebase root: <CWD>`. Phase 2 cross-references the codebase. Headings: `### Workarounds resolved` / `### Improvements applicable`. | OMITS `Codebase root:`. Phase 2 produces universal findings only — subagent SHALL NOT use `Read`/`Glob`/`Grep` on any project source file. Headings: `### Workarounds resolved (universal)` / `### Improvements applicable (universal)`. |
+| Effort allocation                                    | ~80% on improvements, ~20% on workarounds.                                                                                                    | Identical: ~80% on improvements, ~20% on workarounds.                                                                                                                                                                                    |
+| Hint allowed in `research.md`                        | File globs, directory hints, component names, brief justification sentences (codebase-grounded).                                              | File globs by CONVENTION (no specific project paths), framework names, idiomatic patterns. SHALL NOT name specific project paths.                                                                                                        |
+| `_no findings_` sentinel                             | Same.                                                                                                                                         | Same.                                                                                                                                                                                                                                    |
+| Phase 4 `dossier.md` H1                              | `Deep-<level> dossier: <slug>`                                                                                                                | `Deep-<level> dossier (cross-project): <slug>`                                                                                                                                                                                           |
+| Phase 4 `dossier.md` Improvements heading            | `## Improvements (applicable to this codebase)`                                                                                               | `## Improvements (universal — applicability checked per project at apply time)`                                                                                                                                                          |
+| Phase 4 `dossier.md` improvement / workaround bullet | `... (group: <groupId>)`                                                                                                                      | `... (group: <groupId>; affects projects: <comma-separated names>)`                                                                                                                                                                      |
+| Phase 4 `dossier.md` bump-set table H2               | `## <Level> bump set` — title-cased level (`Patch`/`Minor`/`Major`/`Engines`), level-derived (never hardcoded `Patch`)                        | `## Cross-project bump set`                                                                                                                                                                                                              |
+| Phase 4 `dossier.md` bump-set table columns          | `package`, `current → target`, `location`                                                                                                     | `package`, `proposed target`, `projects (locations)`                                                                                                                                                                                     |
+| Phases 0, 1, 3, end-of-flow cleanup                  | Identical machinery.                                                                                                                          | Identical machinery. No new phases introduced; no phase transition order changed.                                                                                                                                                        |
 
-The cross-project mode SHALL NOT introduce new phases or change phase transition order. The mode-conditional surfaces are exactly the five listed above (slug source, plan-dir scan artifact, `_meta.json.mode` field, subagent prompt template, phase 4 `plan.md` template) — the remaining rows (effort allocation, `_no findings_` sentinel, phases 0/1/3/cleanup) are mode-independent and appear in the table only for symmetry / completeness.
+The cross-project mode SHALL NOT introduce new phases or change phase transition order. The mode-conditional surfaces are exactly the five listed above (slug source, plan-dir scan artifact, `_meta.json.mode` field, subagent prompt template, phase 4 `dossier.md` template) — the remaining rows (effort allocation, `_no findings_` sentinel, phases 0/1/3/cleanup) are mode-independent and appear in the table only for symmetry / completeness.
+
+## Fan-out orchestration and gate placement
+
+The research fan-out (phases 1–3, and the phase-4 synthesis dispatch) is orchestrated one of two ways:
+
+- **Main-driven batched dispatch (shipped default).** The main conversation dispatches subagent batches per "Phase 1" below and tracks progress via the on-disk `_meta.json` files. `_meta.json` is the resume state in this mode.
+- **Resumable background workflow (when the runtime's Workflow tool is available and mature).** The fan-out MAY run as a journaled background workflow with schema-forced outputs. In this mode the **workflow journal is the single resume source of truth** — `_meta.json.phase` remains an informational status record and SHALL NOT be used as resume state. There is no parallel phase-state machine.
+
+**Gates at the boundary.** A background workflow cannot prompt the user mid-flight, so under workflow orchestration every user gate (hard-wall fallback, integrity prompt) SHALL be raised at the post-fan-out boundary, before synthesis — never mid-fan-out. The conditions are recorded when detected and re-raised at the boundary. In main-driven batched dispatch the prompts fire at the points documented below (between batches / after the integrity walk); either way, no prompt interrupts an in-flight batch.
 
 ## Level-gated behavior: breaking-change research (`level ∈ {major, engines}`)
 
-A single concern is gated by the `level` input rather than `mode`: **breaking changes & migration**. It fires when `level === "major"` **or** `level === "engines"`, in BOTH `single-project` and `cross-project` modes. For `level ∈ {patch, minor}` it is completely inert — no heading is added to `research.md` and no section is added to `plan.md`, so those flows are byte-equivalent to the minor cascade.
+A single concern is gated by the `level` input rather than `mode`: **breaking changes & migration**. It fires when `level === "major"` **or** `level === "engines"`, in BOTH `single-project` and `cross-project` modes. For `level ∈ {patch, minor}` it is completely inert — no heading is added to `research.md` and no section is added to `dossier.md`, so those flows are byte-equivalent to the minor cascade.
 
 When `level === "major"` (or `level === "engines"` — see "engine release-note research" below for the source substitution):
 
 - **Phase 2 (research contract).** Each subagent adds a third per-package heading — `### Breaking changes & migration` — to `research.md`, alongside `### Workarounds resolved` and `### Improvements applicable`. It captures: required code/config changes to keep the project building, removed/renamed/changed APIs, available codemods, and deprecations to act on. The `_no findings_` sentinel is written under the heading when the upgrade introduces none. In `cross-project` mode the findings are phrased universally (framework names, convention globs, idiomatic patterns) and SHALL NOT name any specific project path, identical to the constraints on the other cross-project finding categories.
-- **Phase 4 (plan synthesis).** `plan.md` gains a `## Breaking changes & migration` H2 placed **before** `## Improvements` (breaking changes gate the upgrade, so they are read first), with a `_no breaking changes_` sentinel when no package reports one.
+- **Phase 4 (dossier synthesis).** `dossier.md` gains a `## Breaking changes & migration` H2 placed **before** `## Improvements` (breaking changes gate the upgrade, so they are read first), with a `_no breaking changes_` sentinel when no package reports one.
 
-The breaking-change items are reference + actionable material consumed by the deep-major / deep-engines commands' plan-mode apply round (presented as candidate edits alongside improvements, applied only on user approval — never silently).
+The breaking-change items are reference + actionable material consumed by the deep-major / deep-engines commands' changeset gate round (presented as candidate edits alongside improvements in `changeset.md`, applied by the apply teammate only on user approval — never silently).
 
 ## Level-gated behavior: engine release-note research (`level=engines`)
 
-`level === "engines"` reuses the breaking-change contract above (same `### Breaking changes & migration` research heading and same `## Breaking changes & migration` plan section), with three substitutions reflecting that the unit of research is a **toolchain engine** (Node, pnpm, npm, yarn, Deno, Bun), not an npm package. For `level ∈ {patch, minor, major}` this section is inert (no engine-note sourcing).
+`level === "engines"` reuses the breaking-change contract above (same `### Breaking changes & migration` research heading and same `## Breaking changes & migration` dossier section), with three substitutions reflecting that the unit of research is a **toolchain engine** (Node, pnpm, npm, yarn, Deno, Bun), not an npm package. For `level ∈ {patch, minor, major}` this section is inert (no engine-note sourcing).
 
-- **Phase 1 (fetch) — engine release notes.** The `groups[].packages[]` records carry **engine names** (`node`, `pnpm`, `npm`, `yarn`, `deno`, `bun`) with `from`/`to`. The subagent invokes `experiments:npm-changelog` per engine exactly as for a package; `npm-changelog` recognizes the engine and routes to its **engine release-note retrieval** path (Node release notes, pnpm/npm/yarn GitHub releases/CHANGELOG, Deno/Bun GitHub releases) over `from → to`. Engine notes are **deduplicated once per engine/version** (a cross-project run researches `node 24.12.0 → 26.0.0` exactly once regardless of how many projects pin Node). The plan-dir slug and `_meta.json.level` record `engines` (already the case — the slug is `<slug>-engines-<unix-ts>`).
+- **Phase 1 (fetch) — engine release notes.** The `groups[].packages[]` records carry **engine names** (`node`, `pnpm`, `npm`, `yarn`, `deno`, `bun`) with `from`/`to`. The subagent invokes the `fetch-changelog` executable per engine with the `--engine` flag; the executable routes to its **engine release-note retrieval** path (Node release notes, pnpm/npm/yarn GitHub releases/CHANGELOG, Deno/Bun GitHub releases) over `from → to`, preserving the same cache layout. Engine notes are **deduplicated once per engine/version** (a cross-project run researches `node 24.12.0 → 26.0.0` exactly once regardless of how many projects pin Node). The plan-dir slug and `_meta.json.level` record `engines` (already the case — the slug is `<slug>-engines-<unix-ts>`).
 - **Phase 2 (research) — runtime/PM impact.** Each subagent assesses the engine upgrade's impact on the codebase under the `### Breaking changes & migration` heading: required config/script/CI changes, removed runtime flags/APIs, package-manager lockfile-format or settings changes, and deprecations to act on. `_no findings_` sentinel when none. Improvements / Workarounds categories are produced as for any level. In `cross-project` mode findings stay universal (no specific project path).
-- **Phase 4 (synthesis).** `plan.md` carries the `## Breaking changes & migration` section (populated from engine release notes) and a `## Changelogs` section that **links engine release notes** rather than npm package changelogs. The bump-set H2 is the level-derived `## Engines bump set` (single-project) / `## Cross-project bump set` (cross-project). No `## PR plan` is added at engines level (the deep-engines caller does not run `partition-breaking-changes` — one coordinated co-upgrade).
+- **Phase 4 (synthesis).** `dossier.md` carries the `## Breaking changes & migration` section (populated from engine release notes) and a `## Changelogs` section that **links engine release notes** rather than npm package changelogs. The bump-set H2 is the level-derived `## Engines bump set` (single-project) / `## Cross-project bump set` (cross-project). No `## PR plan` is added at engines level (the deep-engines caller does not run `partition-breaking-changes` — one coordinated co-upgrade; the section name `## PR plan` is itself a retained legacy name).
 
 ## Field naming conventions (canonical vocabulary)
 
@@ -95,33 +112,37 @@ If a writer encounters a record with the wrong field name (e.g., `manifest` inst
 
 ```text
 ~/.claude/experiments/plans/<slug>-<level>-<unix-ts>[-N]/   # [-N] appended only on same-second collisions (-2, -3, ...)
-├── _meta.json          # global plan metadata (mode: "single-project", phase, level, group ids)
+├── _meta.json          # global plan-dir metadata (mode: "single-project", phase, level, group ids)
 ├── scan.json           # raw ScanResult captured at invocation
-├── plan.md             # final integrated plan written by the main agent in phase 4
+├── chronology.md       # ## Changelogs section emitted by the chronology script (phase 4)
+├── dossier.md          # final integrated dossier written by the synthesizer teammate in phase 4
 └── groups/
     └── <group-id>/
         ├── _meta.json  # per-group: phase, status, packages, timing, errorReason?
-        ├── changelogs/ # raw outputs of npm-changelog, one subdir per package
+        ├── changelogs/ # fetch-changelog outputs, one subdir per package
         │   └── <package-basename>/
-        │       ├── ...npm-changelog cache layout...
+        │       ├── result.json # structured fetch-changelog summary for the package
         │       └── error.txt   # only on per-package fetch failure
         └── research.md # phase-2 findings written by the research subagent
 ```
+
+No artifact named `plan.md` is ever written at the root — `dossier.md` arrives in phase 4.
 
 ### Cross-project mode (`mode: "cross-project"`)
 
 ```text
 ~/.claude/experiments/plans/<slug>-<level>-<unix-ts>[-N]/      # slug from slugOverride (e.g. "commander-deep-patch")
-├── _meta.json              # global plan metadata (mode: "cross-project", phase, level, group ids)
+├── _meta.json              # global plan-dir metadata (mode: "cross-project", phase, level, group ids)
 ├── scan-by-project.json    # { [projectName]: ScanResult } — per-project scans, written by the orchestrator caller
 ├── cross-project-plan.json # post-version-alignment aggregated CrossProjectPlan, written by the orchestrator caller
-├── plan.md                 # cross-project plan synthesized in phase 4
+├── chronology.md           # ## Changelogs section emitted by the chronology script (phase 4)
+├── dossier.md              # cross-project dossier synthesized in phase 4
 └── groups/
     └── <group-id>/
         ├── _meta.json
         ├── changelogs/
         │   └── <package-basename>/
-        │       ├── ...npm-changelog cache layout...
+        │       ├── result.json
         │       └── error.txt
         └── research.md
 ```
@@ -130,10 +151,10 @@ If a writer encounters a record with the wrong field name (e.g., `manifest` inst
 
 - `scan-by-project.json` replaces `scan.json`. JSON object mapping `projectName` → the verbatim per-project `ScanResult`. **Written by the cross-project orchestrator caller**, NOT by this workflow.
 - `cross-project-plan.json` is new. JSON object capturing the orchestrator's post-version-alignment `CrossProjectPlan` (deduplicated package list with per-occurrence projection plus resolved conflict-policy outcome). **Written by the cross-project orchestrator caller**, NOT by this workflow.
-- `plan.md`'s structure switches to the cross-project template — see "Cross-project plan.md template" below.
-- For backward compatibility, the workflow SHALL NOT require `scan-by-project.json` and `cross-project-plan.json` to be present in single-project mode (those plans continue to write only `scan.json`).
+- `dossier.md`'s structure switches to the cross-project template — see "Cross-project dossier.md template" below.
+- For backward compatibility, the workflow SHALL NOT require `scan-by-project.json` and `cross-project-plan.json` to be present in single-project mode (those runs continue to write only `scan.json`).
 
-The same diagram applies for `level=minor`, `level=major`, `level=engines` — only the slug suffix and the title of `plan.md` change. The per-group sub-tree (`groups/<group-id>/`) is identical across modes; only the subagent prompt template (phase 1+2) and the plan.md template (phase 4) differ.
+The same diagram applies for `level=minor`, `level=major`, `level=engines` — only the slug suffix and the title of `dossier.md` change. The per-group sub-tree (`groups/<group-id>/`) is identical across modes; only the subagent prompt template (phase 1+2) and the dossier template (phase 4) differ.
 
 ## Slug derivation
 
@@ -189,11 +210,11 @@ After phase 0, create the new plan directory:
    **Cross-project mode (`mode: "cross-project"`)**: the workflow itself does NOT write `scan.json`. The cross-project caller (the `commander-update-orchestrator` skill in deep mode) writes `scan-by-project.json` and `cross-project-plan.json` separately — either before invoking the workflow or after it returns, as long as both files exist by end of the orchestrator's Step 6.5. The workflow MAY read these artifacts during phase 4 synthesis but does NOT create them.
 4. Write the global `_meta.json` (see schema below) with `phase: "scanning"` and `mode` set from the workflow input (default `"single-project"`).
 
-After this step, the global phase advances monotonically up to and including `planning` (workflow-owned phases):
+After this step, the global phase advances monotonically up to and including `synthesis` (workflow-owned phases):
 
-`scanning` → `grouping` → `changelogs` → `research` → `integrity` → `planning`
+`scanning` → `grouping` → `changelogs` → `research` → `integrity` → `synthesis`
 
-The skill SHALL NOT skip phases or move backwards. The skill SHALL NOT advance the phase past `planning` — `executing` and `done` are consumer-owned (the calling command sets them in its own `_meta.json` updates). Each transition writes the new phase to `_meta.json` atomically (write to `_meta.json.tmp`, rename).
+The skill SHALL NOT skip phases or move backwards. The skill SHALL NOT advance the phase past `synthesis` — `executing` and `done` are consumer-owned (the calling command sets them in its own `_meta.json` updates). Each transition writes the new phase to `_meta.json` atomically (write to `_meta.json.tmp`, rename).
 
 ### Global `_meta.json` schema
 
@@ -204,16 +225,18 @@ The skill SHALL NOT skip phases or move backwards. The skill SHALL NOT advance t
     "level": "patch" | "minor" | "major" | "engines",
     "mode": "single-project" | "cross-project",
     "createdAt": "<ISO 8601>",
-    "phase": "scanning" | "grouping" | "changelogs" | "research" | "integrity" | "planning" | "executing" | "done",
+    "phase": "scanning" | "grouping" | "changelogs" | "research" | "integrity" | "synthesis" | "executing" | "done",
     "groupIds": ["<string>", ...]
 }
 ```
 
 `planDirName` is the chosen final directory name (just the basename — not the absolute path), including any deterministic collision suffix (`-2`, `-3`, …) appended for same-second collisions. Consumers reconstruct the absolute path as `~/.claude/experiments/plans/<planDirName>/`. Distinct from `slug`, which is the project identifier without level/timestamp/collision-suffix.
 
-`mode` is set from the workflow's `mode` input (default `"single-project"`). It identifies the plan-dir's research contract and its layout (see "Cross-project plan-dir layout" below for the layout differences).
+`mode` is set from the workflow's `mode` input (default `"single-project"`). It identifies the plan-dir's research contract and its layout (see "Cross-project plan-dir layout" above for the layout differences).
 
-**Backward compatibility**: existing `_meta.json` files written before this change lack the `mode` field. Phase 0 stale-cleanup SHALL treat such files as `mode: "single-project"` (the only mode that existed before this change). The 10-day stale threshold is mode-independent. The basename regex `^[a-z0-9-]+-(patch|minor|major|engines)-\d+(-\d+)?$` matches both single-project plan-dirs (e.g. `monolab-source-patch-1715693231`) and cross-project plan-dirs (e.g. `commander-deep-patch-1715693231`) — the slug prefix differs but the structure is identical.
+**Backward compatibility**: existing `_meta.json` files written before this change lack the `mode` field. Phase 0 stale-cleanup SHALL treat such files as `mode: "single-project"` (the only mode that existed before this change). When a reader encounters the legacy phase value `"planning"`, it SHALL interpret it as `"synthesis"`. The 10-day stale threshold is mode-independent. The basename regex `^[a-z0-9-]+-(patch|minor|major|engines)-\d+(-\d+)?$` matches both single-project plan-dirs (e.g. `monolab-source-patch-1715693231`) and cross-project plan-dirs (e.g. `commander-deep-patch-1715693231`) — the slug prefix differs but the structure is identical.
+
+**Resume ownership**: when the fan-out is orchestrated as a resumable background workflow (see "Fan-out orchestration and gate placement"), the workflow journal is the single resume source of truth and `_meta.json.phase` SHALL NOT be used as resume state (it remains an informational status record). In the main-driven batched-dispatch default, `_meta.json` remains the resume state.
 
 `groupIds` is populated when the workflow advances to the `grouping` phase, with the deterministic order from the grouping skill's output.
 
@@ -256,25 +279,25 @@ The skill SHALL NOT skip ahead to the next batch while subagents from the curren
 
 ### Degraded-mode prompt (hard-wall fallback)
 
-If a batch hard-walls (all subagents stalled at `pending/pending`), prompt the user once via `AskUserQuestion` before continuing:
+If a batch hard-walls (all subagents stalled at `pending/pending`), prompt the user once via `AskUserQuestion` before continuing. In main-driven batched dispatch the prompt fires before the next batch starts; when the fan-out runs as a background workflow (which cannot prompt mid-flight), the hard-wall condition SHALL be recorded and the same prompt SHALL be raised at the post-fan-out boundary, before synthesis.
 
 - **Question**: `Subagent dispatch was denied or rate-limited for batch <n>/<total> (<groupIds>). How do you want to proceed?`
 - **Multi-select**: `false`
 - **Options**:
     - `retry-current-batch` — re-dispatch this batch only (no backoff sleep — the user has already paused the flow). Repeats the same batch with the same `maxConcurrent`.
-    - `degrade-to-main-agent` — abandon subagent dispatch for the remaining groups; the main agent synthesizes `plan.md` directly using already-cached changelogs under `~/.claude/changelogs/`. The main agent SHALL prepend a one-line banner to `plan.md`: `> Research consolidated in main agent due to subagent dispatch limits. Per-group research.md files were not produced for: <comma-separated groupIds of un-dispatched batches>.`
+    - `degrade-to-direct-synthesis` — abandon subagent dispatch for the remaining un-dispatched batches; the synthesizer teammate builds `dossier.md` from the changelog cache under `~/.claude/changelogs/` alone (the main conversation still does not ingest changelog or research bodies). The resulting `dossier.md` SHALL include a one-line banner identifying which `groupIds` were not dispatched and noting that research was consolidated from the cache: `> Research consolidated from the changelog cache due to subagent dispatch limits. Per-group research.md files were not produced for: <comma-separated groupIds of un-dispatched batches>.`
     - `abort` — exit cleanly. Plan dir is preserved on disk.
 
-If the user picks `retry-current-batch` and the same batch hard-walls again, the prompt re-fires with the question text prefixed `Retried and still hard-walled.` — same three options, no automatic escalation. If the user picks `degrade-to-main-agent`, the workflow skips directly to a modified phase 3 (see "Degraded phase 3" below) and then phase 4 with the banner.
+If the user picks `retry-current-batch` and the same batch hard-walls again, the prompt re-fires with the question text prefixed `Retried and still hard-walled.` — same three options, no automatic escalation. If the user picks `degrade-to-direct-synthesis`, the workflow skips directly to a modified phase 3 (see "Degraded phase 3" below) and then phase 4 with the banner. The skill SHALL NOT auto-retry a hard-walled batch.
 
-### Per-subagent contract (unchanged)
+### Per-subagent contract
 
 Each phase-1 subagent SHALL:
 
 1. Read its group's `_meta.json` to determine the package set.
-2. For each package in the group, invoke the `experiments:npm-changelog` skill once with the package name and the version range `<from>..<to>` (e.g., `@tanstack/react-query 5.90.18..5.90.20`).
-3. Write the raw output of `npm-changelog` under `groups/<groupId>/changelogs/<package-basename>/`, preserving the cache structure produced by `npm-changelog`. The `<package-basename>` is the part after the last `/` in scoped names (`@tanstack/react-query` → `react-query`); for unscoped names use the full name (`vitest` → `vitest`). On collision (same basename across distinct scopes within the same group, theoretically possible), suffix the second one with the scope (e.g. `react-query` and `react-query.@otherscope`).
-4. On per-package failure (network error, missing changelog, parse error from `npm-changelog`), record the error inline as `groups/<groupId>/changelogs/<package-basename>/error.txt` with the failure message and continue to the next package. Do NOT abort the group on per-package failure.
+2. For each package in the group, invoke the `fetch-changelog` plugin executable once with the package name and the version range `<from>..<to>`: `node ${CLAUDE_PLUGIN_ROOT}/scripts/fetch-changelog.mjs "<name>" "<from>..<to>"` (append `--engine` when this run's level is `engines`). The executable preserves the `experiments:npm-changelog` cache contract (writes verified bodies or structured per-version errors under `~/.claude/changelogs/`) and either completes or returns a structured error — it SHALL NOT be replaced by a prose fetch procedure.
+3. Write the executable's JSON output to `groups/<groupId>/changelogs/<package-basename>/result.json` (the cache bodies stay under `~/.claude/changelogs/`, preserving the cache structure). The `<package-basename>` is the part after the last `/` in scoped names (`@tanstack/react-query` → `react-query`); for unscoped names use the full name (`vitest` → `vitest`). On collision (same basename across distinct scopes within the same group, theoretically possible), suffix the second one with the scope (e.g. `react-query` and `react-query.@otherscope`).
+4. On per-package failure (the executable exits non-zero: network error, missing changelog source, unresolvable package), record the error inline as `groups/<groupId>/changelogs/<package-basename>/error.txt` with the structured failure reasons from the executable's JSON, and continue to the next package. Do NOT abort the group on per-package failure.
 5. After all packages have been attempted, transition the group:
     - **At least one package succeeded** → update `_meta.json` to `phase: "research"`, leave `status` as `pending`, and proceed to phase 2 within the same subagent.
     - **Every package failed** → update `_meta.json` to `phase: "changelogs"`, `status: "error"`, `errorPhase: "changelogs"`, `errorReason: "<aggregated reasons>"`, `completedAt: <now>`. Exit the subagent without running phase 2.
@@ -283,7 +306,7 @@ Within a batch, groups run in parallel. Within a group, phase 1 → phase 2 is s
 
 ### Subagent dispatch prompt template (mandatory)
 
-The wording sent to each subagent is **not optional decoration** — it is the load-bearing contract that prevents premature termination. Earlier dry-runs surfaced a recurring failure: subagents invoked the `experiments:npm-changelog` skill, received its structured summary (e.g. `All N versions cached and verified...`), and treated that summary as their final task answer — exiting without running phase 2 or updating `_meta.json`. Looser prompts also caused subagents to bail on the first per-package failure (notably `no_changelog_source` for `@types/*`) instead of continuing to the rest of the group.
+The wording sent to each subagent is **not optional decoration** — it is the load-bearing contract that prevents premature termination. Earlier dry-runs surfaced a recurring failure: subagents invoked the changelog-fetch step, received its structured summary, and treated that summary as their final task answer — exiting without running phase 2 or updating `_meta.json`. Looser prompts also caused subagents to bail on the first per-package failure (notably `no_changelog_source` for `@types/*`) instead of continuing to the rest of the group.
 
 There are two prompt templates, one per `mode`. The skill SHALL select the template based on the workflow's `mode` input. Substituting a looser prompt is a spec violation in either mode.
 
@@ -305,14 +328,16 @@ Packages in this group:
 Execute these steps IN ORDER. Do not skip. Do not stop early.
 
   1. Read <plan-dir>/groups/<groupId>/_meta.json to confirm the package set.
-  2. For EACH package, invoke the `experiments:npm-changelog` skill once with `<name>` and `<from>..<to>`.
-     - The skill's output (e.g. "All N versions cached and verified...") is INTERMEDIATE DATA, not your final answer.
-     - DO NOT terminate after invoking the skill. You MUST continue.
-     - If the skill returns `no_changelog_source` (common for @types/*, internal-only packages), write `<plan-dir>/groups/<groupId>/changelogs/<package-basename>/error.txt` with the reason. DO NOT terminate. Continue to the next package.
-     - For any other per-package failure, do the same: write `error.txt` and continue.
+  2. For EACH package, run the fetch-changelog executable once:
+     `node ${CLAUDE_PLUGIN_ROOT}/scripts/fetch-changelog.mjs "<name>" "<from>..<to>"`
+     (append `--engine` when this run's level is engines).
+     - The executable's JSON summary is INTERMEDIATE DATA, not your final answer.
+     - DO NOT terminate after invoking it. You MUST continue.
+     - Save the JSON output to <plan-dir>/groups/<groupId>/changelogs/<package-basename>/result.json.
+     - If the executable exits non-zero (e.g. `no_changelog_source` — common for @types/*, internal-only packages), ALSO write `<plan-dir>/groups/<groupId>/changelogs/<package-basename>/error.txt` with the structured reasons. DO NOT terminate. Continue to the next package.
   3. After every package has been processed, list `<plan-dir>/groups/<groupId>/changelogs/` to confirm what is on disk.
-  4. If at least one package's changelog is present (not just `error.txt`), advance to phase 2 (steps 5-7). If every package failed, jump to step 8 (failure exit).
-  5. Read every cached changelog plus the codebase context relevant to each package (file enumeration, framework patterns).
+  4. If at least one package fetched successfully (a result.json with ok:true or any verified versions), advance to phase 2 (steps 5-7). If every package failed, jump to step 8 (failure exit).
+  5. Read every cached changelog (under ~/.claude/changelogs/) plus the codebase context relevant to each package (file enumeration, framework patterns).
   6. Write `<plan-dir>/groups/<groupId>/research.md` with the per-package structure documented in this skill: `## <package> (<from> → <to>)`, `### Workarounds resolved`, `### Improvements applicable` (AND, when this run's level is `major` or `engines`, also `### Breaking changes & migration` — required code/config changes, removed/renamed/changed APIs, codemods, deprecations to act on), with the `_no findings_` sentinel under any heading that has no findings. No code blocks, no line numbers.
   7. Update `<plan-dir>/groups/<groupId>/_meta.json` to `phase: "done"`, `status: "ok"`, `completedAt: <now ISO 8601>`, `errorPhase: null`, `errorReason: null`. Stop.
   8. (Failure exit only) Update `<plan-dir>/groups/<groupId>/_meta.json` to `phase: "changelogs"`, `status: "error"`, `errorPhase: "changelogs"`, `errorReason: "<aggregated reasons>"`, `completedAt: <now>`. Stop.
@@ -325,7 +350,7 @@ If you finished without writing research.md (in the success path) or without upd
 
 #### Cross-project prompt template (`mode: "cross-project"`, mandatory)
 
-The cross-project template differs from the single-project one in exactly two places: (a) it **omits** the `Codebase root: <CWD>` line, and (b) it **replaces** the phase-2 instructions with the universal-findings-only contract. Effort allocation (~80% on improvements, ~20% on workarounds) and the `_no findings_` sentinel rule are identical. Steps 1–4 (changelog fetch, per-package failure handling) and steps 7–8 (phase-transition updates to `_meta.json`) are identical. The final-line response format is identical.
+The cross-project template differs from the single-project one in exactly two places: (a) it **omits** the `Codebase root: <CWD>` line, and (b) it **replaces** the phase-2 instructions with the universal-findings-only contract. Effort allocation (~80% on improvements, ~20% on workarounds) and the `_no findings_` sentinel rule are identical. Steps 1–4 (changelog fetch via the executable, per-package failure handling) and steps 7–8 (phase-transition updates to `_meta.json`) are identical. The final-line response format is identical.
 
 The skill SHALL dispatch every cross-project subagent with a prompt that includes, verbatim or in equivalent imperative form:
 
@@ -344,14 +369,16 @@ You SHALL NOT use Read/Glob/Grep on any project source file. Findings are derive
 Execute these steps IN ORDER. Do not skip. Do not stop early.
 
   1. Read <plan-dir>/groups/<groupId>/_meta.json to confirm the package set.
-  2. For EACH package, invoke the `experiments:npm-changelog` skill once with `<name>` and `<from>..<to>`.
-     - The skill's output (e.g. "All N versions cached and verified...") is INTERMEDIATE DATA, not your final answer.
-     - DO NOT terminate after invoking the skill. You MUST continue.
-     - If the skill returns `no_changelog_source` (common for @types/*, internal-only packages), write `<plan-dir>/groups/<groupId>/changelogs/<package-basename>/error.txt` with the reason. DO NOT terminate. Continue to the next package.
-     - For any other per-package failure, do the same: write `error.txt` and continue.
+  2. For EACH package, run the fetch-changelog executable once:
+     `node ${CLAUDE_PLUGIN_ROOT}/scripts/fetch-changelog.mjs "<name>" "<from>..<to>"`
+     (append `--engine` when this run's level is engines).
+     - The executable's JSON summary is INTERMEDIATE DATA, not your final answer.
+     - DO NOT terminate after invoking it. You MUST continue.
+     - Save the JSON output to <plan-dir>/groups/<groupId>/changelogs/<package-basename>/result.json.
+     - If the executable exits non-zero (e.g. `no_changelog_source` — common for @types/*, internal-only packages), ALSO write `<plan-dir>/groups/<groupId>/changelogs/<package-basename>/error.txt` with the structured reasons. DO NOT terminate. Continue to the next package.
   3. After every package has been processed, list `<plan-dir>/groups/<groupId>/changelogs/` to confirm what is on disk.
-  4. If at least one package's changelog is present (not just `error.txt`), advance to phase 2 (steps 5-7). If every package failed, jump to step 8 (failure exit).
-  5. Read every cached changelog (NOT the codebase — see hard rule above). For each package, identify universal findings: what the version FIXES (workarounds resolved) and what the version INTRODUCES (improvements applicable). Effort allocation: ~80% on improvements, ~20% on workarounds.
+  4. If at least one package fetched successfully (a result.json with ok:true or any verified versions), advance to phase 2 (steps 5-7). If every package failed, jump to step 8 (failure exit).
+  5. Read every cached changelog under ~/.claude/changelogs/ (NOT the codebase — see hard rule above). For each package, identify universal findings: what the version FIXES (workarounds resolved) and what the version INTRODUCES (improvements applicable). Effort allocation: ~80% on improvements, ~20% on workarounds.
   6. Write `<plan-dir>/groups/<groupId>/research.md` with the per-package structure: `## <package> (<from> → <to>)`, `### Workarounds resolved (universal)`, `### Improvements applicable (universal)` (AND, when this run's level is `major` or `engines`, also `### Breaking changes & migration` — required code/config changes, removed/renamed/changed APIs, codemods, deprecations, phrased UNIVERSALLY: framework names, convention globs, idiomatic patterns; NEVER a specific project path), with the `_no findings_` sentinel under any heading that has no findings. Each finding SHALL contain a universal description of what the version fixes, introduces, or breaks. An optional `Hint:` line MAY carry abstract context — file globs by convention (`apps/**/use*.ts`), framework names (`React`, `Hono server-mode`), idiomatic patterns (`hooks pattern`, `Server Components`). The `Hint:` line SHALL NOT name specific project paths. No code blocks, no line numbers.
   7. Update <plan-dir>/groups/<groupId>/_meta.json to `phase: "done"`, `status: "ok"`, `completedAt: <now ISO 8601>`, `errorPhase: null`, `errorReason: null`. Stop.
   8. (Failure exit only) Update <plan-dir>/groups/<groupId>/_meta.json to `phase: "changelogs"`, `status: "error"`, `errorPhase: "changelogs"`, `errorReason: "<aggregated reasons>"`, `completedAt: <now>`. Stop.
@@ -364,7 +391,7 @@ If you finished without writing research.md (in the success path) or without upd
 
 **Anti-patterns the templates prevent** (each observed in a real dry-run before these templates were enforced):
 
-- Returning the `npm-changelog` skill's "All N versions cached and verified..." summary as the agent's final response without running phase 2.
+- Returning the fetch executable's structured summary as the agent's final response without running phase 2.
 - Returning `no_changelog_source` from the first `@types/*` package as the agent's final response, abandoning the rest of the group.
 - Writing `research.md` but never flipping `_meta.json.status` to `ok`, leaving the group in `pending/pending` and tripping the integrity gate.
 - (Cross-project specific) Subagent reaching for codebase files via Read/Glob/Grep when the cross-project contract forbids it — Hint lines naming concrete paths from an arbitrary project leak per-codebase context into universal findings.
@@ -421,14 +448,14 @@ For each group whose phase advanced to `research`, the same subagent (continuing
     The two heading variants are distinct strings. The `(universal)` suffix is mandatory in cross-project mode; it signals to phase 4 that the bullets carry universal descriptions, NOT codebase-specific edits. Cross-project hints SHALL NOT name specific project paths.
 
 3. Effort allocation guideline for the subagent: **~80% on `Improvements applicable` / `Improvements applicable (universal)`, ~20% on `Workarounds resolved` / `Workarounds resolved (universal)`**. The improvement side is where the leverage is. Identical across modes.
-4. Output is **opportunity-level only**. Subagents SHALL NOT produce code blocks, line numbers, or diff sketches. Plan-mode synthesis (phase 4) decides whether to surface anything as a concrete edit. Identical across modes.
+4. Output is **opportunity-level only**. Subagents SHALL NOT produce code blocks, line numbers, or diff sketches. Dossier synthesis (phase 4) decides whether to surface anything as a candidate edit. Identical across modes.
 5. After writing `research.md`, update the group's `_meta.json` to `phase: "done"`, `status: "ok"`, `completedAt: <now>`, `errorPhase: null`, `errorReason: null`. Exit the subagent.
 
 If the subagent encounters an unrecoverable error during phase 2 (e.g. crashed mid-write, exhausted token budget), update `_meta.json` to `phase: "research"`, `status: "error"`, `errorPhase: "research"`, `errorReason: "<message>"`, `completedAt: <now>`, and exit without writing `research.md`. Phase-1 changelog files are preserved on disk for inspection.
 
 ### `_no findings_` sentinel
 
-If a package has no findings under any heading present for the run, the subagent SHALL still write the heading and a single literal sentinel line `_no findings_` rather than omitting the heading. This keeps the plan-synthesis step (phase 4) able to distinguish "researched, nothing applicable" from "no research happened". Applies identically across `mode: "single-project"` and `mode: "cross-project"` (with the respective heading text including the `(universal)` suffix when cross-project), and to the `### Breaking changes & migration` heading present when `level === "major"`.
+If a package has no findings under any heading present for the run, the subagent SHALL still write the heading and a single literal sentinel line `_no findings_` rather than omitting the heading. This keeps the dossier-synthesis step (phase 4) able to distinguish "researched, nothing applicable" from "no research happened". Applies identically across `mode: "single-project"` and `mode: "cross-project"` (with the respective heading text including the `(universal)` suffix when cross-project), and to the `### Breaking changes & migration` heading present when `level === "major"`.
 
 Example for a package with no improvements found (single-project mode):
 
@@ -469,17 +496,17 @@ The subagent SHALL NOT include in `research.md`, regardless of mode:
 
 **Allowed in single-project mode**: file globs (`apps/**/use*.ts`), directory hints (`apps/wealth-react/src/state/`), component names (`<Suspense>`), brief justification sentences.
 
-**Allowed in cross-project mode** (universal hints only): file globs by convention (`apps/**/use*.ts` — naming convention, not a specific path in any single project), framework names (`React`, `Hono server-mode`), idiomatic patterns (`hooks pattern`, `Server Components`). The cross-project subagent SHALL NOT name any specific project path (a path that exists in exactly one of the N projects under research). Hints are universal templates the main agent uses at apply time to find concrete paths per project.
+**Allowed in cross-project mode** (universal hints only): file globs by convention (`apps/**/use*.ts` — naming convention, not a specific path in any single project), framework names (`React`, `Hono server-mode`), idiomatic patterns (`hooks pattern`, `Server Components`). The cross-project subagent SHALL NOT name any specific project path (a path that exists in exactly one of the N projects under research). Hints are universal templates used at apply time to find concrete paths per project.
 
-This is a deliberate choice (D4 in the design): the main agent has full project context in plan mode and synthesizes line-level changes more reliably than independent subagents. The cross-project tightening preserves the universal-findings contract — per-project applicability is determined by the orchestrator's plan-mode reconnaissance pass at apply time (Step 10b.1 of `commander-update-orchestrator`), not by the research subagents.
+This is a deliberate choice: research output stays opportunity-level; concrete line-level edits are synthesized later with full project context — per project, by the apply teammate's reconnaissance behind the changeset gate (Step 10b.1 of `commander-update-orchestrator`), not by the research subagents.
 
 ## Phase 3 — Integrity verification (mandatory gate)
 
-Phase 3 is a **mandatory gate**: the global `_meta.json.phase` SHALL NOT advance to `"planning"` without phase 3 completing first. Skipping phase 3 — even when the workflow "knows" all groups succeeded — is a spec violation. The gate exists because parallel writers can leave per-group meta in inconsistent states (stuck `pending`, missing dirs, schema drift) that only a fresh on-disk read can detect.
+Phase 3 is a **mandatory gate**: the global `_meta.json.phase` SHALL NOT advance to `"synthesis"` without phase 3 completing first. Skipping phase 3 — even when the workflow "knows" all groups succeeded — is a spec violation. The gate exists because parallel writers can leave per-group meta in inconsistent states (stuck `pending`, missing dirs, schema drift) that only a fresh on-disk read can detect.
 
 ### Mandatory walk
 
-After every batch of phase 1+2 has returned (or after `degrade-to-main-agent` was selected), the main agent SHALL:
+After every batch of phase 1+2 has returned (or after `degrade-to-direct-synthesis` was selected), the orchestrating agent SHALL:
 
 1. Set the global `_meta.json.phase` to `"integrity"`.
 2. Enumerate every `groupId` in the global `_meta.json.groupIds`.
@@ -489,15 +516,15 @@ After every batch of phase 1+2 has returned (or after `degrade-to-main-agent` wa
     - **missing**: file does not exist on disk (the directory was never created or was wiped).
 4. The classification MUST be done by reading from disk, NOT from in-memory state — disk is the source of truth.
 
-If every group is healthy → set the global `_meta.json.phase` to `"planning"` and advance to phase 4.
+If every group is healthy → set the global `_meta.json.phase` to `"synthesis"` and advance to phase 4 silently.
 
-If at least one group is `failed` or `missing` (excluding `expected-missing` in degraded mode — see "Degraded phase 3"), prompt the main agent's user via `AskUserQuestion` (the prompt is mandatory — DO NOT silently continue):
+If at least one group is `failed` or `missing` (excluding `expected-missing` in degraded mode — see "Degraded phase 3"), prompt the user via `AskUserQuestion` (the prompt is mandatory — DO NOT silently continue; under background-workflow orchestration it is raised at the post-fan-out boundary):
 
 - **Question**: `Research integrity check: <healthy>/<total> groups healthy. Non-healthy: <comma-separated groupIds>. How do you want to proceed?`
 - **Multi-select**: `false`
 - **Options**:
     - `retry-failed` — re-dispatch phase 1 + phase 2 from scratch only for the non-healthy groups. Healthy groups are NOT touched and their `research.md` files are preserved.
-    - `continue-without` — proceed to phase 4 using only the healthy groups. Non-healthy groups will be documented in `plan.md`'s `## Skipped or unavailable` section with their `errorReason`.
+    - `continue-without` — proceed to phase 4 using only the healthy groups. Non-healthy groups will be documented in `dossier.md`'s `## Skipped or unavailable` section with their `errorReason`.
     - `abort` — exit cleanly. The plan dir is preserved on disk for manual inspection.
 
 The skill SHALL NOT auto-retry. There is no default option — the user must explicitly pick.
@@ -513,28 +540,44 @@ When the user selects `retry-failed`:
 
 Healthy groups are immutable across retries — never re-dispatched, never re-written.
 
-### Degraded phase 3 (after `degrade-to-main-agent`)
+### Degraded phase 3 (after `degrade-to-direct-synthesis`)
 
-If the user selected `degrade-to-main-agent` from the phase-1 hard-wall prompt, phase 3 still runs but with relaxed semantics:
+If the user selected `degrade-to-direct-synthesis` from the phase-1 hard-wall prompt, phase 3 still runs but with relaxed semantics:
 
 - Groups that DID complete cleanly before the hard wall → classified `healthy` as usual; their `research.md` feeds phase 4 normally.
-- Groups in batches that were never dispatched → classified `expected-missing` (a fourth class introduced only for the degraded path). These are NOT errors and SHALL NOT trigger the integrity prompt. They are recorded in `plan.md`'s `## Skipped or unavailable` section with the constant reason string `research consolidated in main agent (subagent dispatch limited)` — phase 4 SHALL use this constant directly and SHALL NOT attempt to read `groups/<id>/_meta.json.errorReason` for `expected-missing` groups (the per-group `_meta.json` may not exist).
+- Groups in batches that were never dispatched → classified `expected-missing` (a fourth class introduced only for the degraded path). These are NOT errors and SHALL NOT trigger the integrity prompt. They are recorded in `dossier.md`'s `## Skipped or unavailable` section with the constant reason string `research consolidated from cache (subagent dispatch limited)` — phase 4 SHALL use this constant directly and SHALL NOT attempt to read `groups/<id>/_meta.json.errorReason` for `expected-missing` groups (the per-group `_meta.json` may not exist).
 - Groups that started but failed normally → classified `failed` and surfaced via the integrity prompt as usual (the user may still retry the few that legitimately failed even though others were dropped to degraded mode).
 
 The mandatory walk and the disk-truth rule still apply. The only thing the degraded path skips is the integrity prompt for the deliberately-undispatched batches.
 
-## Phase 4 — Plan-mode synthesis
+## Phase 4 — Dossier synthesis by teammate
 
 When all groups are healthy or the user chose `continue-without`:
 
-1. Update the global `_meta.json.phase` to `"planning"`.
-2. The main agent enters Claude Code plan mode.
-3. The main agent reads every healthy `groups/<id>/research.md` plus the original `scan.json` (single-project mode) or both `scan-by-project.json` and `cross-project-plan.json` (cross-project mode), and — for the `## Changelogs` section — the on-disk `experiments:npm-changelog` cache under `~/.claude/changelogs/` (no network), then writes `<plan-dir>/plan.md`. The template depends on `mode`.
+1. Update the global `_meta.json.phase` to `"synthesis"` **before** dispatching the synthesizer.
+2. Run the deterministic chronology script to assemble the `## Changelogs` section from the on-disk cache (no network): `node ${CLAUDE_PLUGIN_ROOT}/scripts/assemble-chronology.mjs --scan <plan-dir>/scan.json --out <plan-dir>/chronology.md` (cross-project: `--cross-project-plan <plan-dir>/cross-project-plan.json --scan-by-project <plan-dir>/scan-by-project.json`). See "4.C — Changelog chronology section".
+3. Dispatch a **named synthesizer teammate** (e.g. `synthesizer`) to author `<plan-dir>/dossier.md`. The teammate reads every healthy `groups/<id>/research.md` plus the original `scan.json` (single-project mode) or both `scan-by-project.json` and `cross-project-plan.json` (cross-project mode), populates the non-chronology sections, and appends the script-produced `<plan-dir>/chronology.md` mechanically (e.g. `cat chronology.md >> dossier.md`) as the final `## Changelogs` section. The teammate SHALL NOT re-type or re-author changelog bodies.
+4. The **main conversation SHALL NOT read** the groups' `research.md` files, changelog bodies, or the dossier body to produce or review the dossier — it handles paths and status digests only. The single documented exception is the synthesizer terminal-failure fallback below.
+5. Run the **two-layer compliance check** (below) before any user gate opens.
 
-### 4.S — Single-project `plan.md` template (`mode: "single-project"`, default)
+**Synthesizer terminal-failure fallback.** If the synthesizer teammate terminates abnormally (e.g., an API failure) before completing `dossier.md`, tear it down (`TaskStop`) and re-dispatch a fresh synthesizer exactly **once**. On a second consecutive terminal failure, degrade to **direct synthesis**: the main agent authors the dossier from the healthy groups' `research.md` files and appends the script-produced `chronology.md` mechanically (never re-typing changelog bodies). Both compliance layers remain mandatory on this path — layer 2 (fresh-eyes) is the independence backstop once author independence is lost — and the degraded dossier SHALL carry a one-line banner noting the fallback. Every recovery input already lives on disk (`research.md`, `chronology.md`, scan artifacts); no earlier phase is re-run. This is the bounded, documented exception to the main-context diet rule: on this path the main agent MAY read only the healthy groups' `research.md` files, SHALL append `chronology.md` via a mechanical file-level append (never loading changelog bodies into context), and SHALL NOT read `changelogs/` or the `~/.claude/changelogs/` cache; the digest surfaced to the user keeps its bounded size.
+
+The skill SHALL NOT set `_meta.json.phase` to `"executing"` or `"done"`; advancing past `"synthesis"` is consumer-owned (the calling command sets these phases when applying begins or completes).
+
+### Two-layer compliance check (mandatory before the user gate)
+
+The user only ever sees a validated dossier. After the synthesizer reports completion:
+
+1. **Layer 1 — deterministic.** Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/check-dossier.mjs --dossier <plan-dir>/dossier.md --scan <plan-dir>/scan.json --level <level> --mode <mode>` (cross-project: `--cross-project-plan <plan-dir>/cross-project-plan.json` instead of `--scan`). It asserts, against the changelog cache and the bump set: the cache contains an entry or a recorded error for every bump-set package; every bump-set package has a chronology block; required headings are present in order; empty sections carry sentinels. Exit non-zero = violations (JSON list).
+2. **Layer 2 — fresh-eyes subagent.** Dispatch a fresh subagent (no prior context) to check semantic fidelity: findings are grounded in the cached changelogs (spot-check bullets against `<ver>.md` bodies), hints reference real areas / plausible conventions, priorities are coherent. It returns a violations list (empty when clean).
+3. **Repair loop.** If either layer reports violations, relay them via `SendMessage` to the **still-alive synthesizer** to repair `dossier.md`, then re-run both layers. The loop is capped at **3 rounds**. Residual violations after round 3 SHALL NOT loop further — they are escalated into the consumer's user gate (surfaced alongside the dossier digest so the user decides with eyes open).
+
+The gate SHALL NOT open until the dossier passes both layers or the repair cap is reached (with residuals surfaced).
+
+### 4.S — Single-project `dossier.md` template (`mode: "single-project"`, default)
 
 ```markdown
-# Deep-<level> plan: <slug>
+# Deep-<level> dossier: <slug>
 
 ## Breaking changes & migration <!-- level=major OR level=engines; omit this entire H2 for patch/minor -->
 
@@ -564,7 +607,7 @@ When all groups are healthy or the user chose `continue-without`:
 
 ## Changelogs
 
-<one block per package — see "4.C — Changelog chronology section">
+<one block per package, emitted by the chronology script — see "4.C — Changelog chronology section">
 ```
 
 Rules:
@@ -573,14 +616,14 @@ Rules:
 - For `level === "major"` **or** `level === "engines"` a sixth H2 — `## Breaking changes & migration` — is emitted **first**, before `## Improvements` (breaking changes gate the upgrade, read first), making the order: `Breaking changes & migration`, `Improvements (applicable to this codebase)`, `Workarounds resolved`, `Skipped or unavailable`, `<Level> bump set`, `Changelogs`. It aggregates the per-package `### Breaking changes & migration` findings from each healthy `research.md` (sourced from npm package changelogs at `level=major`, from engine release notes at `level=engines`); when no package/engine reports a breaking change it renders a single `_no breaking changes_` sentinel line rather than being omitted.
 - The bump-set heading is **level-derived**: the title-cased `level` input followed by `bump set` — `Patch bump set`, `Minor bump set`, `Major bump set`, or `Engines bump set`. It SHALL NOT be hardcoded to `Patch`.
 - Sections with zero items still render with a single sentinel line (e.g. `_no improvements identified_`) — never omit the heading. The `Changelogs` section uses the per-package `_no changelog available_` sentinel defined in 4.C.
-- The `<reason>` cell in `Skipped or unavailable` rows: for `failed`/`missing` groups, copy `groups/<id>/_meta.json.errorReason` verbatim; for `expected-missing` groups (degraded path), use the constant string `research consolidated in main agent (subagent dispatch limited)` without reading per-group meta.
+- The `<reason>` cell in `Skipped or unavailable` rows: for `failed`/`missing` groups, copy `groups/<id>/_meta.json.errorReason` verbatim; for `expected-missing` groups (degraded path), use the constant string `research consolidated from cache (subagent dispatch limited)` without reading per-group meta.
 - The `<Level> bump set` table SHALL list every update from `scan.json` regardless of group health. Columns are exactly `package`, `current → target`, `location`. Rows sorted by `location` then `name` for stability.
 - The `Changelogs` section is the final section and is assembled per "4.C — Changelog chronology section (both modes)". In single-project mode `<from>`/`<to>` per package are the `currentVersion`/`targetVersion` from `scan.json`.
 
-### 4.D — Cross-project `plan.md` template (`mode: "cross-project"`)
+### 4.D — Cross-project `dossier.md` template (`mode: "cross-project"`)
 
 ```markdown
-# Deep-<level> plan (cross-project): <slug>
+# Deep-<level> dossier (cross-project): <slug>
 
 Projects covered: <comma-separated project names from scan-by-project.json keys, alphabetical>
 
@@ -613,12 +656,12 @@ Projects covered: <comma-separated project names from scan-by-project.json keys,
 
 ## Changelogs
 
-<one block per package — see "4.C — Changelog chronology section"; cross-project variant uses representative from → to>
+<one block per package, emitted by the chronology script — see "4.C — Changelog chronology section"; cross-project variant uses representative from → to>
 ```
 
 Rules:
 
-- H1 form: `# Deep-<level> plan (cross-project): <slug>`. The H1 SHALL include the `(cross-project)` parenthetical and SHALL use the `slugOverride`-derived `<slug>` (NOT the CWD/`package.json`-derived slug).
+- H1 form: `# Deep-<level> dossier (cross-project): <slug>`. The H1 SHALL include the `(cross-project)` parenthetical and SHALL use the `slugOverride`-derived `<slug>` (NOT the CWD/`package.json`-derived slug).
 - A single descriptive line `Projects covered: <comma-separated project names from scan-by-project.json keys, alphabetical>` SHALL appear directly under the H1.
 - For `level ∈ {patch, minor}` the five H2 sections SHALL appear in this exact order: `Improvements (universal — applicability checked per project at apply time)`, `Workarounds resolved`, `Skipped or unavailable`, `Cross-project bump set`, `Changelogs`. The `## Breaking changes & migration` H2 is **absent** at these levels.
 - For `level === "major"` **or** `level === "engines"` a sixth H2 — `## Breaking changes & migration` — is emitted **first**, before `## Improvements`, making the order: `Breaking changes & migration`, `Improvements (universal — applicability checked per project at apply time)`, `Workarounds resolved`, `Skipped or unavailable`, `Cross-project bump set`, `Changelogs`. Its bullets carry the same `(group: <groupId>; affects projects: <…>)` parenthetical as the other categories and stay universal (no specific project path). At `level=engines` the bullets are sourced from engine release notes and there is no `## PR plan` section (no partition).
@@ -629,50 +672,52 @@ Rules:
     - `_no skipped groups_` under the Skipped or unavailable heading.
     - The `Changelogs` section uses the per-package `_no changelog available_` sentinel defined in 4.C.
 - Each improvement / workaround bullet SHALL end with the parenthetical `(group: <groupId>; affects projects: <comma-separated project names>)`. The `affects projects:` list is derived from the cross-project scan artifacts: for each package in the bullet, list every project whose `ScanResult.updates[]` includes the package (sourced from `<plan-dir>/scan-by-project.json` and `<plan-dir>/cross-project-plan.json`, which the orchestrator caller wrote before / during Step 6.5.5). Names are alphabetical within the parenthetical, comma-separated.
-- The `<reason>` cell in `Skipped or unavailable` rows follows the same rule as single-project: for `failed`/`missing` groups, copy `groups/<id>/_meta.json.errorReason` verbatim; for `expected-missing` groups (degraded path), use the constant string `research consolidated in main agent (subagent dispatch limited)`.
+- The `<reason>` cell in `Skipped or unavailable` rows follows the same rule as single-project: for `failed`/`missing` groups, copy `groups/<id>/_meta.json.errorReason` verbatim; for `expected-missing` groups (degraded path), use the constant string `research consolidated from cache (subagent dispatch limited)`.
 - The `Cross-project bump set` table columns are exactly `package`, `proposed target`, `projects (locations)`.
 - The `projects (locations)` cell merges per-project + per-location data. Format: `<projectName> (<location>)`, with `;` separating projects and `,` separating multiple locations within the same project. Example: a `react` bump applied at root in `proj-A` and `proj-B` renders as `proj-A (root); proj-B (root)`. Example with multi-workspace: `proj-A (root, workspace:@scope/foo); proj-B (root)`.
 - Table rows sorted by `package` name (alphabetical, stable).
 - The table SHALL list every package in the cross-project bump set regardless of group health (even if its research group is `failed`/`missing`/`expected-missing`, the bump row appears so the orchestrator's apply step still considers it).
-- Hint lines on improvement / workaround bullets carry abstract context only (file globs by convention, framework names, idiomatic patterns) — same restriction as the cross-project subagent prompt template. The main agent SHALL NOT promote a single-project path discovered during phase 4 into a Hint line; if no universal hint exists, write `Hint: none`.
+- Hint lines on improvement / workaround bullets carry abstract context only (file globs by convention, framework names, idiomatic patterns) — same restriction as the cross-project subagent prompt template. The synthesizer SHALL NOT promote a single-project path discovered during phase 4 into a Hint line; if no universal hint exists, write `Hint: none`.
 - The `Changelogs` section is the final section and is assembled per "4.C — Changelog chronology section (both modes)". The cross-project variant uses a **representative** `<from>` (the most-common `currentVersion` across occurrences) → `<to>` (the package's `effectiveTarget` from `cross-project-plan.json`), deduped to **one block per package** — it SHALL NOT enumerate per-project version variations (the `Cross-project bump set` table is the source for those).
 
 ### 4.C — Changelog chronology section (both modes)
 
-Phase 4 synthesis SHALL append a final `## Changelogs` section to `plan.md` in **both** modes, assembled entirely from changelog data **already on disk** — the per-group `changelogs/<package-basename>/` outputs written in phase 1 and the `experiments:npm-changelog` cache under `~/.claude/changelogs/<normalized-name>/`. Synthesis SHALL NOT issue any network call (`npm view`, `gh api`, `curl`, …) to build this section.
+The final `## Changelogs` section of `dossier.md` is assembled **by the deterministic chronology plugin executable** (`assemble-chronology.mjs`) in **both** modes, entirely from changelog data **already on disk** — the per-group `changelogs/<package-basename>/` outputs written in phase 1 and the `experiments:npm-changelog` cache under `~/.claude/changelogs/<normalized-name>/`. No agent SHALL re-type or re-author changelog bodies into the section, and assembly SHALL NOT issue any network call (`npm view`, `gh api`, `curl`, …).
 
 The section contains **one block per package in the bump set**, ordered **alphabetically** by package name. Each block:
 
-1. **Header** `### <package> (<from> → <to>)`. Single-project: `<from>`/`<to>` = the package's `currentVersion`/`targetVersion` from `scan.json`. Cross-project: the representative `currentVersion` (most-common across occurrences; ties broken by first-occurrence order) → the `effectiveTarget` from `cross-project-plan.json`.
-2. **Links line first**, reused from the npm-changelog cache metadata — no network. Read the repository URL from `~/.claude/changelogs/<normalized-name>/_meta.json.repository` (and `changelogFiles` when useful), plus the per-version source/release URLs from each `<ver>.meta.json.sourceUrl` for the covered versions. Emit these as the first line of the block.
+1. **Header** `### <package> (<from> → <to>)`. Single-project: `<from>`/`<to>` = the package's `currentVersion`/`targetVersion` from `scan.json`. Cross-project: the representative `currentVersion` (most-common across occurrences; ties broken semver-highest) → the `effectiveTarget` from `cross-project-plan.json`.
+2. **Links line first**, reused from the changelog cache metadata — no network. The script reads the repository URL from `~/.claude/changelogs/<normalized-name>/_meta.json.repository`, plus the per-version source/release URLs from each `<ver>.meta.json.sourceUrl` for the covered versions, and emits them as the first line of the block.
 3. **Bodies** — the full verbatim changelog body for each **stable version in `(from, to]`** (every version newer than the installed `from`, up to and including `to`; the installed `from` is **excluded** — its changelog is not "new"), in **ascending** order (oldest→newest). Each version's body is the cached `~/.claude/changelogs/<normalized-name>/<ver>.md` content verbatim, wrapped in a collapsible `<details><summary>{ver}</summary>` … `</details>` block.
 
 Reading the section top-to-bottom therefore advances through versions chronologically (oldest first) — the reverse of repository changelog ordering.
 
-**Missing / empty:** if no changelog body is available for a package (every covered version failed, `no_changelog_source`, or `from == to` so the half-open span is empty), render the links line (when a repository is known) followed by the sentinel `_no changelog available_`.
+**Missing / empty:** if no changelog body is available for a package (every covered version failed, `no_changelog_source`, or `from == to` so the half-open span is empty), the block renders the links line (when a repository is known) followed by the sentinel `_no changelog available_`.
 
-**Normalized name:** the `<normalized-name>` is the `npm-changelog` cache key for the package (the same normalization `experiments:npm-changelog` applies). The `<package-basename>` of the per-group `changelogs/` output is the package name's last path segment.
+**Normalized name:** the `<normalized-name>` is the changelog cache key for the package (the same normalization `experiments:npm-changelog` applies: `@scope/name` → `@scope__name`). The `<package-basename>` of the per-group `changelogs/` output is the package name's last path segment.
 
-**`level=engines`:** the bump set is engines (node/pnpm/npm/yarn/deno/bun), so each block is `### <engine> (<from> → <to>)` and the links line + bodies come from the cached **engine release notes** (`npm-changelog`'s engine retrieval path, same on-disk cache layout) rather than npm package changelogs. Everything else (ascending order, `<details>` wrapping, `_no changelog available_` sentinel, no-network rule) is identical.
+**`level=engines`:** the bump set is engines (node/pnpm/npm/yarn/deno/bun), so each block is `### <engine> (<from> → <to>)` and the links line + bodies come from the cached **engine release notes** (the `fetch-changelog` executable's engine retrieval path, same on-disk cache layout) rather than npm package changelogs. Everything else (ascending order, `<details>` wrapping, `_no changelog available_` sentinel, no-network rule) is identical.
 
-**Degraded path:** when `degrade-to-main-agent` was selected at the phase-1 hard wall (no per-group `research.md`), the cached `<ver>.md` files still exist under `~/.claude/changelogs/`; the main agent SHALL build the `## Changelogs` section from that cache anyway.
+**Degraded path:** when `degrade-to-direct-synthesis` was selected at the phase-1 hard wall (no per-group `research.md`), the cached `<ver>.md` files still exist under `~/.claude/changelogs/`; the script SHALL build the section from that cache anyway.
 
-**Always render when there is a bump:** the `## Changelogs` section SHALL render whenever the bump set has ≥1 package, independent of whether any improvements or workarounds were found. Because `plan.md` is a file the user opens deliberately (not chat output), embedding verbatim changelog bodies does not violate the `experiments:npm-changelog` "never paste into chat" rule.
+**Always render when there is a bump:** the `## Changelogs` section SHALL render whenever the bump set has ≥1 package, independent of whether any improvements or workarounds were found. Because `dossier.md` is a file the user opens deliberately (not chat output), embedding verbatim changelog bodies does not violate the `experiments:npm-changelog` "never paste into chat" rule — and per the main-window context diet, the section SHALL NOT be surfaced verbatim into the main conversation.
 
 Example block:
 
 ```markdown
 ### axios (1.7.0 → 1.7.9)
 
-Repo: https://github.com/axios/axios — releases: [1.7.1](…), … [1.7.9](…)
+Sources: [repository](https://github.com/axios/axios) · [1.7.1](…) · … · [1.7.9](…)
 
-<details><summary>1.7.1</summary>
+<details>
+<summary>1.7.1</summary>
 
 <verbatim cached 1.7.1.md body>
 
 </details>
 
-<details><summary>1.7.9</summary>
+<details>
+<summary>1.7.9</summary>
 
 <verbatim cached 1.7.9.md body>
 
@@ -681,9 +726,11 @@ Repo: https://github.com/axios/axios — releases: [1.7.1](…), … [1.7.9](…
 
 ### 4 — Common rules (both modes)
 
-After plan mode ends and the user has reviewed `plan.md` (the user is the gate, not the workflow — the workflow does not auto-advance), the main agent updates `_meta.json.phase` to `"executing"` only when the consumer command (e.g. `/experiments:npm-update-deep-patch` or `/experiments:commander-update-deep-patch`) actually begins applying things. The workflow itself does not apply edits — it hands control back to the caller after writing `plan.md` so the consumer can run its apply step. The end-of-flow cleanup (see below) is a separate, consumer-triggered re-entry into the workflow; the consumer is responsible for invoking it exactly once after its apply / cancel / abort step finishes.
+After the two-layer check passes (or its residuals are attached), the workflow hands control back to the caller with the dossier **referenced by absolute path plus a bounded digest** — never the full body in the main conversation. The user is the gate, not the workflow — the workflow does not auto-advance into any apply step. The consumer command (e.g. `/experiments:npm-update-deep-patch` or `/experiments:commander-update-deep-patch`) updates `_meta.json.phase` to `"executing"` only when it actually begins applying things. The workflow itself does not apply edits. The end-of-flow cleanup (see below) is a separate, consumer-triggered re-entry into the workflow; the consumer is responsible for invoking it exactly once after its apply / cancel / abort step finishes.
 
-The H1 title interpolates `<level>`: `Deep-patch plan: <slug>` (single-project, level=patch), `Deep-minor plan: <slug>` (single-project, level=minor), `Deep-patch plan (cross-project): <slug>` (cross-project, level=patch), etc.
+The H1 title interpolates `<level>`: `Deep-patch dossier: <slug>` (single-project, level=patch), `Deep-minor dossier: <slug>` (single-project, level=minor), `Deep-patch dossier (cross-project): <slug>` (cross-project, level=patch), etc.
+
+Teammate lifecycle: the synthesizer is kept alive through the two-layer check (it receives repair rounds via `SendMessage`). Once the check passes (or the cap is reached) the orchestrating agent tears it down with `TaskStop` — structured shutdown requests are not honored reliably by idle agents.
 
 ## End-of-flow cleanup
 
@@ -699,21 +746,26 @@ Cleanup re-entry is consumer-driven and optional: when phase 1 or phase 3 return
 
 The workflow SHALL NOT delete the plan dir without explicit `delete-plan`. There is no default option. Stale-cleanup (phase 0) is the safety net.
 
-After the cleanup choice, the workflow returns control to the consumer. The consumer is responsible for advancing `_meta.json.phase` to `"executing"` / `"done"` when applicable (only if the dir was kept; otherwise the file is gone with the dir). The workflow itself SHALL NOT set the phase past `"planning"` — see Hard rules.
+After the cleanup choice, the workflow returns control to the consumer. The consumer is responsible for advancing `_meta.json.phase` to `"executing"` / `"done"` when applicable (only if the dir was kept; otherwise the file is gone with the dir). The workflow itself SHALL NOT set the phase past `"synthesis"` — see Hard rules.
 
 ## Hard rules
 
-- The workflow SHALL NOT write outside `~/.claude/experiments/plans/<slug>-<level>-<unix-ts>[-N]/` (where `[-N]` is omitted unless collision resolution appended `-2`, `-3`, …).
+- The workflow SHALL NOT write outside `~/.claude/experiments/plans/<slug>-<level>-<unix-ts>[-N]/` (where `[-N]` is omitted unless collision resolution appended `-2`, `-3`, …) and the shared changelog cache `~/.claude/changelogs/` (written by the `fetch-changelog` executable under its own contract).
 - The workflow SHALL NOT create commits or PRs.
 - The workflow SHALL NOT auto-delete any plan dir without explicit user confirmation.
-- The workflow SHALL NOT advance the global phase past `planning` on its own — the consumer (command) advances `executing` and `done`.
+- The workflow SHALL NOT advance the global phase past `synthesis` on its own — the consumer (command) advances `executing` and `done`.
+- No artifact SHALL be named `plan.md`.
+- The main conversation SHALL NOT ingest changelog bodies, `research.md` files, or the dossier body — paths and digests only.
 
 ## See also
 
 - `group-packages-for-research` — the upstream skill whose output (`groups`) feeds this workflow's `groups` input.
+- `${CLAUDE_PLUGIN_ROOT}/scripts/fetch-changelog.mjs` — the deterministic changelog-fetch executable invoked once per package by phase-1 subagents (preserves the `experiments:npm-changelog` cache contract).
+- `${CLAUDE_PLUGIN_ROOT}/scripts/assemble-chronology.mjs` — the deterministic chronology script that emits the `## Changelogs` section in phase 4.
+- `${CLAUDE_PLUGIN_ROOT}/scripts/check-dossier.mjs` — layer 1 of the dossier compliance check.
 - `/experiments:npm-update-deep-patch` — the first command that wires `scan-npm-updates` (level=patch) → `group-packages-for-research` → this workflow (in single-project mode) → user-driven execution.
 - `/experiments:commander-update-deep-patch` — cross-project sibling. Invokes `commander-update-orchestrator` in deep mode, which inserts this workflow (in cross-project mode) at its Step 6.5.
 - `commander-update-orchestrator` — the cross-project caller. In deep mode it composes this workflow with `group-packages-for-research` and writes the per-project / cross-project scan artifacts under the plan-dir.
-- `experiments:npm-changelog` — invoked once per package by phase-1 subagents.
+- `experiments:npm-changelog` — the interactive command sharing the same cache contract as `fetch-changelog.mjs`.
 - `openspec/changes/add-npm-update-deep-patch/design.md` — original single-project design document (decisions D1-D10).
 - `openspec/changes/add-commander-update-deep-patch/design.md` — cross-project design document (decisions 1-8, MON-199).
