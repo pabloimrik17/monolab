@@ -11,7 +11,7 @@ The command SHALL invoke `parallel-research-workflow` with `{ groups, level: "ma
 
 ### Requirement: User-gated apply, bumps via npm-update-apply (generic-only)
 
-The command SHALL raise the `apply-all` / `apply-bumps-only` / `pick-subset` / `cancel` gate exactly once, after surfacing the dossier by path plus a bounded digest. For `apply-all`/`apply-bumps-only`/`pick-subset`(with bumps) it SHALL apply bumps by invoking `npm-update-apply` exactly once per bucket-or-set — one invocation over the whole accepted set when isolation is `none`, or one invocation per bucket into that bucket's workdir (in `suggestedMergeOrder`) under `per-bucket-worktree` isolation — each with `target: "major"` and an **empty** `overrideCommands` set (the deep path consults NO override registry), with output redirected to on-disk logs per that skill's contract. For `apply-all`, applicable improvements **and** breaking-change/migration items from `dossier.md` SHALL be applied through the per-project changeset gate (apply-teammate reconnaissance → `changeset.md` → pre-gate check → orchestrator-owned human gate → teammate applies on approval, per the experiments-plugin gate requirements). On gate rejection, already-applied bumps are preserved (no rollback). The summary heading SHALL be `## npm-update-deep-major summary`.
+The command SHALL raise the `apply-all` / `apply-bumps-only` / `pick-subset` / `cancel` gate exactly once, after surfacing the dossier by path plus a bounded digest. For `apply-all`/`apply-bumps-only`/`pick-subset`(with bumps) it SHALL apply bumps by invoking `apply-npm-updates` exactly once per bucket-or-set — one invocation over the whole accepted set when isolation is `none`, or one invocation per bucket into that bucket's workdir (in `suggestedMergeOrder`) under `per-bucket-worktree` isolation — each with `target: "major"` and an **empty** `overrideCommands` set (the deep path consults NO override registry), with output redirected to on-disk logs per that skill's contract. For `apply-all`, applicable improvements **and** breaking-change/migration items from `dossier.md` SHALL be applied through the per-project changeset gate (apply-teammate reconnaissance → `changeset.md` → pre-gate check → orchestrator-owned human gate → teammate applies on approval, per the experiments-plugin gate requirements). On gate rejection, already-applied bumps are preserved (no rollback). The summary heading SHALL be `## npm-update-deep-major summary`.
 
 #### Scenario: Breaking-change items flow through the gated changeset
 
@@ -40,3 +40,13 @@ After research, the command SHALL invoke `partition-breaking-changes` to group t
 
 - **WHEN** research yields ≥1 breaking-change set
 - **THEN** the surfaced dossier digest includes the `## PR plan` section with ordered buckets and a count-by-policy summary
+
+#### Scenario: High-risk package isolated to its own worktree
+
+- **WHEN** isolation is chosen and a HIGH-risk set (e.g. the React major + peer set) is one of the buckets
+- **THEN** that bucket is applied into its own worktree containing only that bucket's diff, and no commit/push/PR is performed
+
+#### Scenario: Isolation none keeps current behavior
+
+- **WHEN** the user leaves isolation at `none`
+- **THEN** all accepted buckets apply in the current working tree and the `## PR plan` is advisory only

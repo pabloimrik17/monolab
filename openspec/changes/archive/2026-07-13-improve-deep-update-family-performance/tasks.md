@@ -48,4 +48,4 @@
 - [x] 7.1 Dry-run each level (patch/minor/major/engines) single-project; confirm changelogs fetched, chronology present, main stays context-clean
 - [x] 7.2 Dry-run the cross-project `commander-update-deep-patch` path end-to-end (dossier → per-project gate → apply → verify-on-disk)
 - [x] 7.3 Confirm the shipped gate wiring matches the resolved spike (plan-mode primary blocks under `auto`; `AskUserQuestion` fallback for non-interactive runtimes) — the open question itself is RESOLVED (design.md, 2026-07-11)
-- [ ] 7.4 Run `openspec validate --strict`; at archive-sync apply every capability delta (12 capabilities) and sweep capability overview/Purpose prose (not covered by deltas) for `plan.md`/`planning`/plan-mode leftovers
+- [x] 7.4 Run `openspec validate --strict`; at archive-sync apply every capability delta (12 capabilities) and sweep capability overview/Purpose prose (not covered by deltas) for `plan.md`/`planning`/plan-mode leftovers
