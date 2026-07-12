@@ -4,8 +4,7 @@
  * range prefixes (^ ~ >= =) stripping, and max-wins aggregation.
  */
 
-const SEMVER_RE =
-    /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-.]+))?(?:\+[0-9A-Za-z-.]+)?$/;
+const SEMVER_RE = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-.]+))?(?:\+[0-9A-Za-z-.]+)?$/;
 
 export function stripRangePrefix(version) {
     if (typeof version !== "string") return version;
@@ -74,22 +73,14 @@ export function sortAscending(versions) {
 /** Inclusive from..to filter over stable versions. */
 export function stableInRange(versions, from, to) {
     return sortAscending(
-        versions.filter(
-            (v) =>
-                isStable(v) &&
-                compare(v, from) >= 0 &&
-                compare(v, to) <= 0,
-        ),
+        versions.filter((v) => isStable(v) && compare(v, from) >= 0 && compare(v, to) <= 0),
     );
 }
 
 /** Half-open span (from, to]: newer than `from`, up to and including `to`. */
 export function stableInHalfOpenSpan(versions, from, to) {
     return sortAscending(
-        versions.filter(
-            (v) =>
-                isStable(v) && compare(v, from) > 0 && compare(v, to) <= 0,
-        ),
+        versions.filter((v) => isStable(v) && compare(v, from) > 0 && compare(v, to) <= 0),
     );
 }
 
@@ -109,10 +100,7 @@ export function mostCommon(versions) {
         if (
             best === null ||
             n > best.n ||
-            (n === best.n &&
-                isValid(v) &&
-                isValid(best.v) &&
-                compare(v, best.v) > 0)
+            (n === best.n && isValid(v) && isValid(best.v) && compare(v, best.v) > 0)
         ) {
             best = { v, n };
         }
@@ -127,12 +115,8 @@ export function mostCommon(versions) {
  * Range prefixes are stripped for comparison; effectiveTarget is returned bare.
  */
 export function maxWins(occurrences) {
-    const targets = occurrences
-        .map((o) => stripRangePrefix(o.targetVersion))
-        .filter(isValid);
-    const currents = occurrences
-        .map((o) => stripRangePrefix(o.currentVersion))
-        .filter(isValid);
+    const targets = occurrences.map((o) => stripRangePrefix(o.targetVersion)).filter(isValid);
+    const currents = occurrences.map((o) => stripRangePrefix(o.currentVersion)).filter(isValid);
     return {
         effectiveTarget: maxVersion(targets),
         mostCommonCurrent: mostCommon(currents),

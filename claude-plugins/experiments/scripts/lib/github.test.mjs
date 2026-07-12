@@ -19,28 +19,17 @@ test("parseGithubRepository handles url object, git+, scp, non-github", () => {
         owner: "owner",
         repo: "repo",
     });
-    assert.equal(
-        parseGithubRepository("https://gitlab.com/owner/repo"),
-        null,
-    );
+    assert.equal(parseGithubRepository("https://gitlab.com/owner/repo"), null);
     assert.equal(parseGithubRepository(null), null);
 });
 
 test("resolveTagTemplate substitutes package, basename, version", () => {
     assert.equal(
-        resolveTagTemplate(
-            "{package}@{version}",
-            "@tanstack/query-core",
-            "5.90.20",
-        ),
+        resolveTagTemplate("{package}@{version}", "@tanstack/query-core", "5.90.20"),
         "@tanstack/query-core@5.90.20",
     );
     assert.equal(
-        resolveTagTemplate(
-            "{packageBasename}-v{version}",
-            "@tanstack/query-core",
-            "5.90.20",
-        ),
+        resolveTagTemplate("{packageBasename}-v{version}", "@tanstack/query-core", "5.90.20"),
         "query-core-v5.90.20",
     );
     assert.equal(packageBasename("plain"), "plain");
@@ -54,10 +43,7 @@ test("probeTemplates: cached format first, monorepo variants, unscoped skips", (
     assert.equal(scoped[0], "{package}@{version}");
     assert.ok(scoped.includes("{packageBasename}@{version}"));
     // no duplicate of the cached entry
-    assert.equal(
-        scoped.filter((t) => t === "{package}@{version}").length,
-        1,
-    );
+    assert.equal(scoped.filter((t) => t === "{package}@{version}").length, 1);
     const unscopedMono = probeTemplates("plain", {
         isMonorepo: true,
         cachedFormat: null,
