@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.5.0](https://github.com/pabloimrik17/monolab/compare/experiments--v1.4.0...experiments--v1.5.0) (2026-07-12)
+
+
+### Features
+
+* **experiments:** clamp scan-npm-updates targets to policy invariants ([#247](https://github.com/pabloimrik17/monolab/issues/247), [#251](https://github.com/pabloimrik17/monolab/issues/251)) ([#262](https://github.com/pabloimrik17/monolab/issues/262)) ([2a9ad73](https://github.com/pabloimrik17/monolab/commit/2a9ad7366711c0217a72ed5d3dc56f3c1ce97291))
+* **experiments:** improve deep update family performance ([#265](https://github.com/pabloimrik17/monolab/issues/265)) ([5dfae1d](https://github.com/pabloimrik17/monolab/commit/5dfae1db8208dc8dba73ba726185c4ba18d26f6c))
+* **experiments:** recognize .dvmrc Deno runtime surface in engines tooling ([#260](https://github.com/pabloimrik17/monolab/issues/260)) ([c56f1f5](https://github.com/pabloimrik17/monolab/commit/c56f1f5bb562e0164dd300c19e07aded3229def8))
+* support pnpm named catalogs in npm-update scan/apply ([a567925](https://github.com/pabloimrik17/monolab/commit/a567925da1271394c60a69eb7f3b0324bbcb039c))
+
+
+### Bug Fixes
+
+* **experiments:** relax update hard-rule tests/lint/build ban ([#263](https://github.com/pabloimrik17/monolab/issues/263)) ([c2135e9](https://github.com/pabloimrik17/monolab/commit/c2135e9ac9e5faf1e4024bdb5653cd4abb3e09f8))
+
 ## [1.4.0](https://github.com/pabloimrik17/monolab/compare/experiments--v1.3.0...experiments--v1.4.0) (2026-07-06)
 
 
