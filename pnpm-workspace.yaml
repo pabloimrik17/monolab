@@ -23,9 +23,9 @@ strictPeerDependencies: false
 autoInstallPeers: true
 
 catalog:
-    "@vitest/coverage-v8": 4.1.9
-    "@vitest/ui": 4.1.9
-    vitest: 4.1.9
+    "@vitest/coverage-v8": 4.1.10
+    "@vitest/ui": 4.1.10
+    vitest: 4.1.10
 
 minimumReleaseAge: 1440
 

@@ -12,22 +12,22 @@
         "test:unit:coverage": "vitest run --coverage"
     },
     "dependencies": {
-        "@kobalte/core": "0.13.11",
+        "@kobalte/core": "0.13.12",
         "@m0n0lab/qup-shared": "workspace:*",
         "@m0n0lab/solid-clean": "workspace:*",
-        "@solidjs/router": "0.16.1",
+        "@solidjs/router": "0.16.2",
         "@solidjs/start": "1.3.2",
-        "inversify": "8.1.1",
-        "solid-js": "1.9.13",
+        "inversify": "8.1.3",
+        "solid-js": "1.9.14",
         "vinxi": "0.5.11"
     },
     "devDependencies": {
         "@codecov/vite-plugin": "2.0.1",
-        "@tailwindcss/postcss": "4.3.1",
-        "@types/node": "24.13.2",
+        "@tailwindcss/postcss": "4.3.3",
+        "@types/node": "24.13.3",
         "@vitest/coverage-v8": "catalog:",
-        "postcss": "8.5.15",
-        "tailwindcss": "4.3.1",
+        "postcss": "8.5.19",
+        "tailwindcss": "4.3.3",
         "typescript": "6.0.3",
         "vitest": "catalog:"
     },
