@@ -19,11 +19,7 @@
             "cache": true,
             "dependsOn": ["^build"],
             "inputs": ["default"],
-            "outputs": [
-                "{projectRoot}/dist",
-                "{projectRoot}/tsconfig.lib.tsbuildinfo",
-                "{projectRoot}/tsconfig.tsbuildinfo"
-            ]
+            "outputs": ["{projectRoot}/dist"]
         },
         "build:check-exports": {
             "dependsOn": ["^build", "build", "^build:check-exports"]
