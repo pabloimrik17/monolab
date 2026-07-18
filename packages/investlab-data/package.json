@@ -26,13 +26,13 @@
     "dependencies": {
         "@m0n0lab/investlab-domain": "workspace:*",
         "drizzle-orm": "0.45.2",
-        "inversify": "8.1.1",
+        "inversify": "8.1.3",
         "neverthrow": "8.2.0",
         "pg": "8.21.0"
     },
     "devDependencies": {
         "drizzle-kit": "0.31.10",
-        "tsdown": "0.22.2",
+        "tsdown": "0.22.9",
         "typescript": "6.0.3",
         "vitest": "catalog:"
     },
