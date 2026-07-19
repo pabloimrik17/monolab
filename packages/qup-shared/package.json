@@ -42,15 +42,15 @@
         "test:unit:coverage": "vitest run --coverage"
     },
     "devDependencies": {
-        "@arethetypeswrong/cli": "0.18.5",
+        "@arethetypeswrong/cli": "catalog:",
         "@vitest/coverage-v8": "catalog:",
-        "tsdown": "0.22.9",
-        "typescript": "6.0.3",
+        "tsdown": "catalog:",
+        "typescript": "catalog:",
         "vitest": "catalog:"
     },
     "engines": {
         "node": ">=22.0.0",
-        "pnpm": "11.9.0"
+        "pnpm": "11.15.0"
     },
-    "packageManager": "pnpm@11.9.0"
+    "packageManager": "pnpm@11.15.0"
 }

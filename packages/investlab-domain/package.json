@@ -22,17 +22,17 @@
         "test:unit:coverage": "vitest run --coverage"
     },
     "dependencies": {
-        "inversify": "8.2.1",
-        "neverthrow": "8.2.0"
+        "inversify": "catalog:",
+        "neverthrow": "catalog:"
     },
     "devDependencies": {
-        "tsdown": "0.22.9",
-        "typescript": "6.0.3",
+        "tsdown": "catalog:",
+        "typescript": "catalog:",
         "vitest": "catalog:"
     },
     "engines": {
         "node": ">=22.0.0",
-        "pnpm": "11.9.0"
+        "pnpm": "11.15.0"
     },
-    "packageManager": "pnpm@11.9.0"
+    "packageManager": "pnpm@11.15.0"
 }

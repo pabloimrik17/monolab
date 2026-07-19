@@ -25,20 +25,20 @@
     },
     "dependencies": {
         "@m0n0lab/qup-domain": "workspace:*",
-        "drizzle-orm": "0.45.2",
-        "inversify": "8.2.1",
-        "neverthrow": "8.2.0",
-        "pg": "8.22.0"
+        "drizzle-orm": "catalog:",
+        "inversify": "catalog:",
+        "neverthrow": "catalog:",
+        "pg": "catalog:"
     },
     "devDependencies": {
-        "drizzle-kit": "0.31.10",
-        "tsdown": "0.22.9",
-        "typescript": "6.0.3",
+        "drizzle-kit": "catalog:",
+        "tsdown": "catalog:",
+        "typescript": "catalog:",
         "vitest": "catalog:"
     },
     "engines": {
         "node": ">=22.0.0",
-        "pnpm": "11.9.0"
+        "pnpm": "11.15.0"
     },
-    "packageManager": "pnpm@11.9.0"
+    "packageManager": "pnpm@11.15.0"
 }
