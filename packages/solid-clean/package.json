@@ -44,14 +44,14 @@
         "test:mutation:report": "open reports/mutation/index.html"
     },
     "devDependencies": {
-        "@arethetypeswrong/cli": "0.18.5",
-        "@stryker-mutator/core": "9.6.1",
-        "@stryker-mutator/typescript-checker": "9.6.1",
-        "@stryker-mutator/vitest-runner": "9.6.1",
-        "solid-js": "1.9.14",
-        "tsdown": "0.22.9",
-        "typescript": "6.0.3",
-        "vite-plugin-solid": "2.11.12",
+        "@arethetypeswrong/cli": "catalog:",
+        "@stryker-mutator/core": "catalog:",
+        "@stryker-mutator/typescript-checker": "catalog:",
+        "@stryker-mutator/vitest-runner": "catalog:",
+        "solid-js": "catalog:",
+        "tsdown": "catalog:",
+        "typescript": "catalog:",
+        "vite-plugin-solid": "catalog:",
         "vitest": "catalog:"
     },
     "peerDependencies": {
@@ -59,7 +59,7 @@
     },
     "engines": {
         "node": ">=22.0.0",
-        "pnpm": "11.9.0"
+        "pnpm": "11.15.0"
     },
-    "packageManager": "pnpm@11.9.0"
+    "packageManager": "pnpm@11.15.0"
 }
