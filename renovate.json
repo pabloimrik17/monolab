@@ -42,20 +42,20 @@
             "matchPackageNames": ["/^expo($|-)/", "/^@expo//"]
         },
         {
-            "description": "Keep node engine ranges in libraries instead of pinning",
+            "description": "Keep node engine ranges in libraries instead of pinning. Only node: engines.pnpm is a dev constraint and stays pinned.",
             "matchFileNames": ["packages/**"],
             "matchDepNames": ["node"],
             "rangeStrategy": "replace"
         },
         {
+            "description": "Never pin peerDependencies: pinning a peer range leaves consumers a single installable version.",
+            "matchDepTypes": ["peerDependencies"],
+            "rangeStrategy": "widen"
+        },
+        {
             "description": "Re-assert 14-day minimum release age for npm; config:best-practices brings security:minimumReleaseAgeNpm with a shorter window",
             "matchDatasources": ["npm"],
             "minimumReleaseAge": "14 days"
-        },
-        {
-            "description": "Cap renovate-config-validator to pnpm-10-compatible releases; renovate >= 43.221.0 requires pnpm 11 and this repo uses pnpm 10",
-            "matchDepNames": ["renovate"],
-            "allowedVersions": "<43.221.0"
         }
     ],
     "customManagers": [
