@@ -42,20 +42,13 @@
             "matchPackageNames": ["/^expo($|-)/", "/^@expo//"]
         },
         {
-            "description": [
-                "Keep node engine ranges in libraries instead of pinning.",
-                "engines.node is validated when our package is installed as a dependency, so it has to stay a range a consumer can satisfy.",
-                "Do not broaden this to matchDepTypes engines: engines.pnpm is only enforced by pnpm on our own workspace projects, so it is a dev constraint that stays pinned and Renovate-maintained."
-            ],
+            "description": "Keep node engine ranges in libraries instead of pinning. Only node: engines.pnpm is a dev constraint and stays pinned.",
             "matchFileNames": ["packages/**"],
             "matchDepNames": ["node"],
             "rangeStrategy": "replace"
         },
         {
-            "description": [
-                "Never pin peerDependencies: a peer range states what a consumer must already have, so pinning it leaves them a single installable version.",
-                "widen only acts when the new version falls outside the range, and then ORs the new constraint in instead of replacing it, which preserves hand-written multi-major ranges."
-            ],
+            "description": "Never pin peerDependencies: pinning a peer range leaves consumers a single installable version.",
             "matchDepTypes": ["peerDependencies"],
             "rangeStrategy": "widen"
         },
