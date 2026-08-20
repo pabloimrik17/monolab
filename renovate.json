@@ -42,9 +42,9 @@
             "matchPackageNames": ["/^expo($|-)/", "/^@expo//"]
         },
         {
-            "description": "Keep engine ranges in libraries instead of pinning. Covers the whole engines block (node AND pnpm): in packages/** it states what a CONSUMER must have, not what we develop with.",
+            "description": "Keep node engine ranges in libraries instead of pinning. Only node: it is the sole engines key a consumer tool validates for an installed dependency. engines.pnpm is enforced by pnpm on OUR workspace projects only, so it stays a pinned dev constraint.",
             "matchFileNames": ["packages/**"],
-            "matchDepTypes": ["engines"],
+            "matchDepNames": ["node"],
             "rangeStrategy": "replace"
         },
         {
