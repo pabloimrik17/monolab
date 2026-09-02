@@ -23,7 +23,7 @@
         "playwright": {
             "type": "stdio",
             "command": "npx",
-            "args": ["-y", "@playwright/mcp@0.0.68"]
+            "args": ["-y", "@playwright/mcp@0.0.79"]
         },
         "chrome-devtools": {
             "type": "stdio",
