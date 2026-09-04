@@ -186,6 +186,16 @@ Monorepo-aware: when `repository.directory` is present in npm metadata, the comm
 
 Authoritative spec: `openspec/specs/npm-changelog-retrieval/spec.md`.
 
+### `/experiments:purge-comments`
+
+Explicit entry point to the comment purge. Delegates to the `purge-comment-noise` skill and bypasses its autonomous trigger threshold, so it runs at any change size. Accepts an optional git ref (`HEAD~3`, a tag, a branch) or one or more paths as a scope override; with no argument the skill's default scope applies.
+
+```bash
+/experiments:purge-comments
+/experiments:purge-comments HEAD~3
+/experiments:purge-comments packages/react-hooks/src
+```
+
 ## Skills
 
 ### `skills-update-check`
@@ -227,6 +237,14 @@ Resolves and creates an isolated branch/worktree for an update **before** manife
 ### `partition-breaking-changes`
 
 Pure (no network / no write / no VCS) partition of a major breaking-change set into PR-sized buckets. Builds HARD co-upgrade sets first (peer/lockstep + override-registry families + a `peerDependencies` read — never split across buckets), scores risk per set (blast radius, breaking-change weight, centrality, codemod count), applies tunable policy knobs (`isolateHighRisk`, `batchLowRisk`, `maxPackagesPerBucket`, `maxRiskPerBucket`), and returns ordered buckets `{ title, packages, riskTier, rationale, suggestedBranch, suggestedMergeOrder }` plus a count-by-policy summary. Rendered as the `## PR plan` section by `/experiments:npm-update-deep-major` and the cross-project deep-major flow.
+
+### `writing-comments`
+
+Prevention half of the comment-discipline pair, and owner of the canonical comment policy at `skills/writing-comments/reference/policy.md`. Applies from invocation onward, including to files already touched earlier in the session; it performs no retroactive sweep. On invocation it checks `~/.claude/CLAUDE.md` for a one-line pointer to itself and _proposes_ adding one when absent — it never writes user configuration without explicit confirmation.
+
+### `purge-comment-noise`
+
+Post-hoc half of the pair. Reads the same `policy.md` through `${CLAUDE_PLUGIN_ROOT}` rather than carrying its own copy of the rules, scopes to the branch's changes against its base branch plus the uncommitted working tree (overridable by git ref or path), and applies the policy to comments on the lines that diff added or modified — pre-existing comments in a touched file are left alone. Above its fan-out threshold the work is distributed, split by whole file, with agents editing in place and returning counts rather than file contents. Reports a compact per-file table of deleted/edited counts plus any unreferenced `TODO`/`FIXME` it removed, runs no typecheck/lint/test/build, and recommends the repository's gates before committing. Processed file types, exclusions and both threshold pairs live in `SKILL.md` §2/§3 — the numbers are deliberately not repeated here.
 
 ## Testing
 
