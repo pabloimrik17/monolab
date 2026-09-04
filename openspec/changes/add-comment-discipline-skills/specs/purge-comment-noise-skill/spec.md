@@ -95,7 +95,7 @@ Test files SHALL be included. Within tests, a comment explaining *why* a case ex
 
 The skill's `description` SHALL express a measurable trigger condition: the scope contains at least 5 changed files **or** at least 150 added lines relative to the base branch.
 
-An agent evaluating the trigger SHALL measure the scope (for example with `git diff --stat`) rather than judge "extensive" qualitatively.
+An agent evaluating the trigger SHALL measure the scope (for example with `git diff --stat`, plus the untracked files it does not report) rather than judge "extensive" qualitatively.
 
 Explicit invocation SHALL bypass the threshold entirely.
 

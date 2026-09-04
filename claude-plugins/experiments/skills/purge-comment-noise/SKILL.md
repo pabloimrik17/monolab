@@ -1,6 +1,6 @@
 ---
 name: purge-comment-noise
-description: Delete narrative comment noise from a branch's changed lines and tighten the comments worth keeping. Use whenever a user asks to strip, purge, remove, or clean up comments, comment noise, over-commenting, or redundant comments, or objects to comment noise or narration in a diff — and autonomously once an implementation is finished and `git diff --stat` against the base branch reports 5 or more changed files or 150 or more added lines. Measure the scope with `git diff --stat` rather than judging "extensive" by feel.
+description: Delete narrative comment noise from a branch's changed lines and tighten the comments worth keeping. Use whenever a user asks to strip, purge, remove, or clean up comments, comment noise, over-commenting, or redundant comments, or objects to comment noise or narration in a diff — and autonomously once an implementation is finished and the branch's changes against its base, untracked files included, reach 5 or more files or 150 or more added lines. Measure the scope with `git diff --stat` plus the untracked files rather than judging "extensive" by feel.
 ---
 
 # purge-comment-noise
@@ -25,19 +25,22 @@ for ref in origin/develop develop origin/main main origin/master master; do
   git rev-parse --verify -q "$ref" >/dev/null && BASE=$(git merge-base "$ref" HEAD) && break
 done
 git diff --numstat "$BASE"
-git ls-files --others --exclude-standard -z | xargs -0 -r wc -l
+git ls-files --others --exclude-standard -z |
+  while IFS= read -r -d '' f; do
+    printf '%s\t%s\n' "$(awk 'END { print NR }' "$f")" "$f"
+  done
 ```
 
 Under a path override, append `-- path1 path2` to the `git diff` and `git ls-files` commands; with no override, leave the clause off entirely.
 
-Diffing against that base with no `HEAD` on the right covers the branch's commits **and** the uncommitted working tree in one pass. Untracked files count as wholly added — `wc -l` gives each one its added-line count, so it weighs the same as a diffed file at every threshold below.
+Diffing against that base with no `HEAD` on the right covers the branch's commits **and** the uncommitted working tree in one pass. Untracked files count as wholly added — the loop above gives each one its added-line count, so it weighs the same as a diffed file at every threshold below.
 
 Two cases the loop can land in:
 
 - **`$BASE` resolves to `HEAD`** — the checkout _is_ the base branch, so the scope is the uncommitted working tree alone. Proceed, and say so in the report.
 - **No ref resolves** — stop and ask for an explicit ref rather than guessing one.
 
-Keep the per-file **added**-line counts from `--numstat` (its first column). Added lines are the unit for every threshold here. `git diff --stat` answers the description's trigger from its summary line, but its per-file column merges insertions with deletions — hence `--numstat` for the routing in step 3, once step 2 has cut the list down.
+Keep the per-file **added**-line counts from `--numstat` (its first column). Added lines are the unit for every threshold here. `git diff --stat` answers the description's trigger from its summary line — add the untracked files and their counts to it, since the diff cannot see them — but its per-file column merges insertions with deletions; hence `--numstat` for the routing in step 3, once step 2 has cut the list down.
 
 ## 2. Filter the file list
 
