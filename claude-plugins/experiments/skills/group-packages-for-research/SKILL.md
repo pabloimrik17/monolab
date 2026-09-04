@@ -1,6 +1,6 @@
 ---
 name: group-packages-for-research
-description: Use when a command needs to partition a `ScanResult.updates[]` array (from `experiments:scan-npm-updates`) into deterministic, bounded subagent groups before dispatching parallel research — for example `/experiments:npm-update-deep-patch` (and future deep-* siblings) before invoking `parallel-research-workflow`. Trigger phrases include "group these updates", "partition this scan result", or any flow handing a `ScanResult` to a fan-out workflow. Pure: same input → same output, no network, no filesystem reads. Returns `{ groups: [{ groupId, bucketKey, packages }], warnings }` JSON.
+description: 'Use when a command needs to partition a `ScanResult.updates[]` array (from `experiments:scan-npm-updates`) into deterministic, bounded subagent groups before dispatching parallel research — for example `/experiments:npm-update-deep-patch` (and future deep-* siblings) before invoking `parallel-research-workflow`. Trigger phrases include "group these updates", "partition this scan result", or any flow handing a `ScanResult` to a fan-out workflow. Pure: same input → same output, no network, no filesystem reads. Returns `{ groups: [{ groupId, bucketKey, packages }], warnings }` JSON.'
 ---
 
 # group-packages-for-research
