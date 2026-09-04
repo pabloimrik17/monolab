@@ -25,12 +25,12 @@ for ref in origin/develop develop origin/main main origin/master master; do
   git rev-parse --verify -q "$ref" >/dev/null && BASE=$(git merge-base "$ref" HEAD) && break
 done
 git diff --numstat "$BASE"
-git ls-files --others --exclude-standard
+git ls-files --others --exclude-standard -z | xargs -0 -r wc -l
 ```
 
-Under a path override, append `-- path1 path2` to both commands; with no override, leave the clause off entirely.
+Under a path override, append `-- path1 path2` to the `git diff` and `git ls-files` commands; with no override, leave the clause off entirely.
 
-Diffing against that base with no `HEAD` on the right covers the branch's commits **and** the uncommitted working tree in one pass. Untracked files count as wholly added — include them.
+Diffing against that base with no `HEAD` on the right covers the branch's commits **and** the uncommitted working tree in one pass. Untracked files count as wholly added — `wc -l` gives each one its added-line count, so it weighs the same as a diffed file at every threshold below.
 
 Two cases the loop can land in:
 
@@ -69,10 +69,11 @@ Resolve `${CLAUDE_PLUGIN_ROOT}` to an absolute path before briefing anyone; a su
 
 Each agent then runs step 4 and returns:
 
-- a per-file count of deletions and edits, and
+- a per-file count of deletions and edits,
+- every `TODO` or `FIXME` it deleted for carrying no issue reference — file, line, and a short paraphrase of what it asked for, never the comment verbatim, and
 - at most 5 cases it judged doubtful, named by file and line.
 
-Counts and doubtful cases are the whole return. No comment bodies, no file contents — routing file contents back through the orchestrator is exactly what the fan-out exists to avoid.
+Counts, deleted-`TODO` metadata and doubtful cases are the whole return. No comment bodies, no file contents — routing file contents back through the orchestrator is exactly what the fan-out exists to avoid.
 
 ## 4. Per-file procedure
 

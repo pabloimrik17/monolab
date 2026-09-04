@@ -4,16 +4,16 @@ The single source of truth for which code comments are worth writing. `writing-c
 
 ## Scope is drawn by comment kind
 
-**In scope:** free-form prose — `//` line comments and `/* */` block comments written as narration. Every rule below governs these and only these.
+**In scope:** free-form prose written as narration, in whichever comment form the language uses — `//`, `#`, `--`, `;` line comments and `/* */`, `<!-- -->`, `=begin … =end` block comments among them. Every rule below governs these and only these.
 
 **Out of scope by construction.** Left exactly as found, whatever their length:
 
-| Kind                          | Examples                                                                                                         |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| JSDoc / TSDoc                 | `/** … */` blocks, including on non-exported symbols                                                             |
-| Tool pragmas and suppressions | `eslint-disable*`, `@ts-expect-error`, `@ts-ignore`, `biome-ignore`, `prettier-ignore`, `istanbul ignore`        |
-| Licence headers               | SPDX identifiers, copyright blocks                                                                               |
-| Tool directives               | shebangs, `@vitest-environment`, `/// <reference … />`, `@jsx`, `@vite-ignore`, `webpackChunkName`, `@generated` |
+| Kind                          | Examples                                                                                                                                                   |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| API doc blocks                | JSDoc/TSDoc `/** … */`, Python docstrings and their equivalents, including on non-exported symbols                                                         |
+| Tool pragmas and suppressions | `eslint-disable*`, `@ts-expect-error`, `@ts-ignore`, `biome-ignore`, `prettier-ignore`, `istanbul ignore`, `# noqa`, `# type: ignore`, `# pylint: disable` |
+| Licence headers               | SPDX identifiers, copyright blocks                                                                                                                         |
+| Tool directives               | shebangs, `@vitest-environment`, `/// <reference … />`, `@jsx`, `@vite-ignore`, `webpackChunkName`, `@generated`                                           |
 
 The kind settles the question. Whether an out-of-scope comment earns its place is not this policy's business.
 

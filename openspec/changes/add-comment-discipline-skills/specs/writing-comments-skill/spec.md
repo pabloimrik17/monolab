@@ -34,18 +34,23 @@ The comment policy SHALL live at `claude-plugins/experiments/skills/writing-comm
 
 ### Requirement: Policy scope is drawn by comment kind
 
-The policy SHALL apply only to free-form prose comments (`//` line comments and `/* */` block comments written as narration).
+The policy SHALL apply only to free-form prose comments written as narration, in whichever comment form the source language uses (for example `//`, `#`, `--` line comments and `/* */`, `<!-- -->` block comments).
 
 The following SHALL be out of scope by construction and SHALL NOT be deleted or edited:
 
-- JSDoc/TSDoc comments (`/** */`), including those on non-exported symbols
-- Tool pragmas and suppressions (for example `eslint-disable`, `@ts-expect-error`, `biome-ignore`)
+- API doc blocks (JSDoc/TSDoc `/** */`, Python docstrings and equivalents), including those on non-exported symbols
+- Tool pragmas and suppressions (for example `eslint-disable`, `@ts-expect-error`, `biome-ignore`, `# noqa`, `# type: ignore`)
 - Licence headers
 - Tool directives (for example shebangs, `@vitest-environment`, bundler or codegen markers)
 
 #### Scenario: Prose comment is in scope
 
 - **WHEN** the policy is applied to a `//` comment narrating what the next line does
+- **THEN** the comment SHALL be treated as in scope
+
+#### Scenario: Non-brace-language comment is in scope
+
+- **WHEN** the policy is applied to a Python `#` comment restating the line below it
 - **THEN** the comment SHALL be treated as in scope
 
 #### Scenario: TSDoc on an internal symbol is out of scope

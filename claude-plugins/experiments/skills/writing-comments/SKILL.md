@@ -20,7 +20,7 @@ An explicit user request for a specific comment overrides the policy for that co
 The policy is worth reaching before the first comment of a task, not after the hundredth. A line in the user's global instructions gets it there. Check once per session whether one already exists:
 
 ```bash
-grep -c 'writing-comments' ~/.claude/CLAUDE.md 2>/dev/null
+grep -cxF -- '- Before writing or editing code comments, use the `experiments:writing-comments` skill.' ~/.claude/CLAUDE.md 2>/dev/null
 ```
 
 **A count of 1 or more** — the pointer is in place. Say nothing and carry on.

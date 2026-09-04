@@ -118,17 +118,17 @@ Explicit invocation SHALL bypass the threshold entirely.
 
 ### Requirement: Fan-out threshold and contract
 
-When the scope exceeds 8 changed files **or** 400 changed lines, the skill SHALL distribute the work; at or below that, it SHALL process in line without spawning agents.
+When the scope exceeds 8 changed files **or** 400 added lines, the skill SHALL distribute the work; at or below that, it SHALL process in line without spawning agents.
 
 Distribution SHALL prefer teammates and SHALL fall back to subagents when teammates are unavailable.
 
 Work SHALL be split by whole file. A file SHALL NOT be split across agents by hunk.
 
-Each agent SHALL apply its edits directly to its assigned files and SHALL return only a count of deletions and edits plus at most 5 cases it judged doubtful. Agents SHALL NOT return comment bodies or file contents.
+Each agent SHALL apply its edits directly to its assigned files and SHALL return only a count of deletions and edits, structured metadata for each unreferenced `TODO` or `FIXME` it deleted (file, line, and a short paraphrase, never the comment body), plus at most 5 cases it judged doubtful. Agents SHALL NOT return comment bodies or file contents.
 
 #### Scenario: Below fan-out threshold
 
-- **WHEN** the scope is 6 files and 200 lines
+- **WHEN** the scope is 6 files and 200 added lines
 - **THEN** the skill SHALL process in line without spawning agents
 
 #### Scenario: Above fan-out threshold
@@ -149,7 +149,7 @@ Each agent SHALL apply its edits directly to its assigned files and SHALL return
 #### Scenario: Agent return payload
 
 - **WHEN** an agent finishes its assignment
-- **THEN** it SHALL return counts and at most 5 doubtful cases
+- **THEN** it SHALL return counts, metadata for each unreferenced `TODO` or `FIXME` it deleted, and at most 5 doubtful cases
 - **AND** SHALL NOT return comment bodies or file contents
 
 ---
@@ -178,6 +178,8 @@ On completion the skill SHALL report a compact table mapping each processed file
 
 The report SHALL NOT include the bodies of deleted or edited comments.
 
+When nothing was deleted or edited, the report SHALL be a single line stating that, and SHALL omit the table, the `TODO` list, and the gate recommendation.
+
 The report SHALL list any `TODO` or `FIXME` deleted for lacking an issue reference, and SHALL note that these could be filed as tracker issues. The skill SHALL NOT create tracker issues itself.
 
 #### Scenario: Compact report
@@ -185,6 +187,12 @@ The report SHALL list any `TODO` or `FIXME` deleted for lacking an issue referen
 - **WHEN** the purge completes across 12 files
 - **THEN** the report SHALL be a table of file to deleted and edited counts
 - **AND** SHALL NOT quote the removed comments
+
+#### Scenario: Nothing to purge
+
+- **WHEN** the purge deletes and edits nothing
+- **THEN** the report SHALL be a single line stating that
+- **AND** SHALL omit the table and the gate recommendation
 
 #### Scenario: Unreferenced TODO removed
 
@@ -198,7 +206,7 @@ The report SHALL list any `TODO` or `FIXME` deleted for lacking an issue referen
 
 The skill SHALL NOT run the repository's typecheck, lint, test, or build targets, and SHALL NOT block on them.
 
-The report SHALL recommend running the repository's gates before committing, covering both the purge's edits and any source changes that were already uncommitted.
+When the purge deleted or edited at least one comment, the report SHALL recommend running the repository's gates before committing, covering both the purge's edits and any source changes that were already uncommitted.
 
 #### Scenario: Gates not run
 
@@ -207,5 +215,5 @@ The report SHALL recommend running the repository's gates before committing, cov
 
 #### Scenario: Recommendation emitted
 
-- **WHEN** the purge completes
+- **WHEN** the purge completes having deleted or edited at least one comment
 - **THEN** the report SHALL recommend running the repository's gates before committing, including pre-existing uncommitted source changes
