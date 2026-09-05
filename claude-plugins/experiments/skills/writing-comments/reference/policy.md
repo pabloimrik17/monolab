@@ -35,7 +35,9 @@ Within scope, a comment earns its place by carrying information **not deducible 
 - **Section announcement** — `// Step 1:`, `// --- helpers ---`, `// Main logic`.
 - **Reasoning** — the author's thinking during the implementation, preserved after the implementation ends.
 
-A justified comment fits in a line or two. Length is a symptom: prose that runs long has started narrating.
+Length is a symptom: prose that runs long has started narrating.
+
+A comment the user explicitly asked for is written whatever these lists say, and the purge retains it.
 
 ## TODO and FIXME
 

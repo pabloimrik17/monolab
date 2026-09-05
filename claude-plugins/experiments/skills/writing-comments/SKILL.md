@@ -1,11 +1,11 @@
 ---
 name: writing-comments
-description: Decide which code comments are worth writing, and write only those. Use before and while writing or editing comments in source code — implementing a feature, fixing a bug, refactoring — and whenever a user asks what deserves a comment or which comments are worth keeping. Use it even when comments are only implied by the task, in any programming language.
+description: Decide which code comments are worth writing, and write only those. Use before and while writing or editing comments in source code — implementing a feature, fixing a bug, refactoring — and whenever a user asks what deserves a comment. Use it even when comments are only implied by the task, in any programming language.
 ---
 
 # writing-comments
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/writing-comments/reference/policy.md` before writing the next comment — if the variable does not resolve, the file is `reference/policy.md` beside this one. That file carries the policy in full; this one says only when and how to apply it.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/writing-comments/reference/policy.md` before writing the next comment — if the variable does not resolve, the file is `reference/policy.md`, in the subdirectory beside this one. That file carries the policy in full; this one says only when and how to apply it.
 
 ## Forward only
 
@@ -13,17 +13,15 @@ The policy governs every comment written from this invocation onward and stays i
 
 It reaches forward and no further. Comments already written stay as they are, this session's own included. Cleaning those up is `purge-comment-noise`, invoked separately.
 
-An explicit user request for a specific comment overrides the policy for that comment. They asked; write it.
-
 ## Discovery pointer
 
-The policy is worth reaching before the first comment of a task, not after the hundredth. A line in the user's global instructions gets it there. Check once per session whether one already exists:
+The policy is worth reaching before the first comment of a task, not after the hundredth. A line in the user's global instructions gets it there. Check once per session whether one already exists — any line naming this skill counts, in whatever words:
 
 ```bash
-grep -cxF -- '- Before writing or editing code comments, use the `experiments:writing-comments` skill.' ~/.claude/CLAUDE.md 2>/dev/null
+grep -c 'writing-comments' ~/.claude/CLAUDE.md 2>/dev/null
 ```
 
-**A count of 1 or more** — the pointer is in place. Say nothing and carry on.
+**A count of 1 or more** — a pointer is in place. Say nothing and carry on.
 
 **A count of 0, or no such file** — propose appending exactly this line:
 

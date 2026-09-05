@@ -28,7 +28,8 @@ The comment policy SHALL live at `claude-plugins/experiments/skills/writing-comm
 
 - **WHEN** examining `purge-comment-noise/SKILL.md` and `commands/purge-comments.md`
 - **THEN** neither SHALL contain a restatement of the policy rules
-- **AND** each SHALL reference `reference/policy.md` instead
+- **AND** `purge-comment-noise/SKILL.md` SHALL reference `reference/policy.md` instead
+- **AND** `commands/purge-comments.md` SHALL delegate to the `purge-comment-noise` skill, which references it
 
 ---
 
@@ -69,9 +70,11 @@ The following SHALL be out of scope by construction and SHALL NOT be deleted or 
 
 Within the in-scope set, a comment SHALL be written only when it carries information that is not deducible from the code it accompanies. The burden SHALL rest on justifying the comment's existence, not on justifying its removal.
 
-Justified categories SHALL include: a workaround with a link to its issue or upstream report; an invariant or precondition not expressible in the code; a non-obvious reason for a choice that looks wrong at first reading.
+Justified categories SHALL include: a workaround with a link to its issue or upstream report; an invariant or precondition not expressible in the code; a non-obvious reason for a choice that looks wrong at first reading; why a test case exists — the bug it guards, the regression it pins, or the reported issue it reproduces.
 
 Comments that restate the code, narrate the change being made, announce sections (for example `// Step 1:`), or record the author's reasoning SHALL NOT be written.
+
+A comment the user explicitly asked for SHALL be written, and SHALL be retained by the purge, overriding this requirement.
 
 #### Scenario: Restating the code
 
@@ -83,10 +86,21 @@ Comments that restate the code, narrate the change being made, announce sections
 - **WHEN** code works around an upstream bug and the comment links the upstream issue
 - **THEN** the comment SHALL be written
 
+#### Scenario: Why a test case exists
+
+- **WHEN** a comment on a test case records the bug it guards against and names the reported issue it reproduces
+- **THEN** the comment SHALL be written
+
 #### Scenario: Reasoning narration
 
 - **WHEN** an agent is about to write a comment explaining why it chose an approach during this implementation
 - **THEN** the comment SHALL NOT be written
+
+#### Scenario: Explicitly requested comment
+
+- **WHEN** the user explicitly asks for a comment this requirement would otherwise reject
+- **THEN** the comment SHALL be written
+- **AND** the purge SHALL retain it
 
 ---
 
@@ -137,19 +151,19 @@ The skill SHALL NOT translate comments. Language normalisation is out of scope.
 
 ### Requirement: Discovery pointer is proposed, never written
 
-On invocation, the skill SHALL check whether a one-line pointer to itself exists in `~/.claude/CLAUDE.md`. When absent, the skill SHALL propose adding it and SHALL wait for explicit user confirmation before any write.
+Once per session, the skill SHALL check whether a one-line pointer to itself exists in `~/.claude/CLAUDE.md`. When absent, the skill SHALL propose adding it and SHALL wait for explicit user confirmation before any write. The check SHALL NOT be repeated on later invocations within the same session, and a declined proposal SHALL NOT be offered again.
 
 The skill SHALL NOT modify `~/.claude/CLAUDE.md`, any repository `CLAUDE.md`, or any `AGENTS.md` without that confirmation.
 
 #### Scenario: Pointer missing
 
-- **WHEN** the skill is invoked and `~/.claude/CLAUDE.md` contains no pointer to `writing-comments`
+- **WHEN** the check runs for the first time in a session and `~/.claude/CLAUDE.md` contains no pointer to `writing-comments`
 - **THEN** the skill SHALL propose adding a one-line pointer
 - **AND** SHALL NOT write the file until the user confirms
 
 #### Scenario: Pointer already present
 
-- **WHEN** the pointer already exists
+- **WHEN** the check runs and the pointer already exists
 - **THEN** the skill SHALL make no proposal and SHALL proceed silently
 
 #### Scenario: User declines
@@ -157,3 +171,9 @@ The skill SHALL NOT modify `~/.claude/CLAUDE.md`, any repository `CLAUDE.md`, or
 - **WHEN** the user declines the proposal
 - **THEN** no configuration file SHALL be modified
 - **AND** the skill SHALL continue to apply the policy for the rest of the session
+- **AND** the proposal SHALL NOT be repeated in that session
+
+#### Scenario: Later invocation in the same session
+
+- **WHEN** the skill is invoked again after the check has already run in this session
+- **THEN** it SHALL NOT re-check `~/.claude/CLAUDE.md` and SHALL make no further proposal
