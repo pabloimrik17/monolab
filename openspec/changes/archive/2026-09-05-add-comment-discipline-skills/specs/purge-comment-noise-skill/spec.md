@@ -1,0 +1,314 @@
+## Purpose
+
+Removes prose comment noise from a branch's changes after an implementation is finished, applying the same policy that governs writing them, without pulling every touched file through the main context window.
+
+## ADDED Requirements
+
+### Requirement: Skill file exists
+
+The skill SHALL exist at `claude-plugins/experiments/skills/purge-comment-noise/SKILL.md` with YAML frontmatter containing `name: purge-comment-noise` and a `description` that triggers on explicit invocation, and autonomously once an implementation is finished and the scope reaches at least 5 changed files **or** at least 150 added lines.
+
+#### Scenario: Skill file location
+
+- **WHEN** examining the experiments plugin structure
+- **THEN** `skills/purge-comment-noise/SKILL.md` SHALL exist with frontmatter `name: purge-comment-noise`
+
+---
+
+### Requirement: Policy is sourced, not restated
+
+The skill SHALL read the comment policy from `${CLAUDE_PLUGIN_ROOT}/skills/writing-comments/reference/policy.md`. It SHALL NOT carry its own copy of the rules.
+
+#### Scenario: Policy resolved at runtime
+
+- **WHEN** the skill runs
+- **THEN** it SHALL read the policy from the `writing-comments` skill via `${CLAUDE_PLUGIN_ROOT}`
+
+#### Scenario: Policy changes propagate
+
+- **WHEN** `reference/policy.md` is edited
+- **THEN** the purge behaviour SHALL follow the edited policy with no change to the purge skill
+
+---
+
+### Requirement: Diff scope
+
+By default the skill SHALL consider the branch's changes against its base branch plus uncommitted working-tree changes.
+
+The scope SHALL also include untracked files that git's ignore rules do not exclude (`git ls-files --others --exclude-standard`), in every scope mode: under the default and under a ref override alike, since a ref override moves only the scope base; and under a path override, narrowed by the same pathspec. Each such file SHALL be treated as wholly added: it SHALL be read whole, every one of its lines SHALL be a candidate line, and its added-line count SHALL weigh the same as a diffed file's at every threshold in this capability.
+
+Only comments on lines added or modified by that diff SHALL be candidates. Pre-existing comments in a touched file SHALL NOT be modified.
+
+The skill SHALL resolve the scope base from the first of its candidate base refs that resolves. When no candidate base ref resolves, the skill SHALL stop and ask for an explicit ref rather than guessing one. When the resolved base is `HEAD` — the checkout is itself the base branch — the skill SHALL proceed with the uncommitted working tree alone as the scope, and SHALL say so in its report.
+
+The skill SHALL accept an override argument naming either a git ref or one or more paths, and SHALL restrict the scope to it when given. Override paths SHALL be interpreted relative to the repository root, and a path given relative to the invocation directory SHALL be normalised to a root-relative path before it is used.
+
+#### Scenario: Default scope
+
+- **WHEN** the skill runs with no argument on a branch based on `develop`
+- **THEN** the candidate set SHALL be the comments on lines added or modified in `develop...HEAD` plus the uncommitted working tree
+- **AND** SHALL include the untracked files git's ignore rules do not exclude
+
+#### Scenario: Untracked file is wholly in scope
+
+- **WHEN** an untracked, non-ignored source file is in scope
+- **THEN** the file SHALL be read whole and every line of it SHALL be a candidate line
+- **AND** its added-line count SHALL weigh the same as a diffed file's at every threshold
+
+#### Scenario: Pre-existing comment left alone
+
+- **WHEN** a touched file contains a prose comment on a line the diff did not add or modify
+- **THEN** that comment SHALL NOT be deleted or edited
+
+#### Scenario: Ref override
+
+- **WHEN** the skill is invoked with `HEAD~3`
+- **THEN** the scope SHALL be the changes since that ref
+
+#### Scenario: Untracked files in scope under a ref override
+
+- **WHEN** the skill is invoked with a ref override and untracked, non-ignored files are present
+- **THEN** the override SHALL move only the scope base
+- **AND** those untracked files SHALL still be in scope, each wholly added
+
+#### Scenario: Path override
+
+- **WHEN** the skill is invoked with one or more paths
+- **THEN** only those paths SHALL be considered
+- **AND** the untracked files in scope SHALL be narrowed by the same pathspec
+
+#### Scenario: Relative path override normalised
+
+- **WHEN** the skill is invoked from a subdirectory with a path relative to that directory
+- **THEN** the path SHALL be normalised to root-relative before it is used
+- **AND** the files it names SHALL be in scope
+
+#### Scenario: No base ref resolves
+
+- **WHEN** none of the candidate base refs resolves
+- **THEN** the skill SHALL stop and ask for an explicit ref
+- **AND** SHALL NOT guess a base
+
+#### Scenario: Base resolves to HEAD
+
+- **WHEN** the checkout is itself the base branch and the resolved base is `HEAD`
+- **THEN** the scope SHALL be the uncommitted working tree alone
+- **AND** the skill SHALL proceed rather than stop
+
+---
+
+### Requirement: File coverage and exclusions
+
+The skill SHALL consider source files with the extensions `.ts`, `.tsx`, `.mts`, `.cts`, `.js`, `.jsx`, `.mjs`, `.cjs`, and `.vue` or `.svelte` where present.
+
+The skill SHALL exclude generated files, database migrations, test snapshots, `node_modules`, and every non-code file including Markdown, YAML, JSON, and shell scripts.
+
+Test files SHALL be included. Within tests, a comment explaining _why_ a case exists — a regression, a specific reported bug — SHALL be retained as a justified category.
+
+#### Scenario: Test file included
+
+- **WHEN** a `.spec.ts` file in scope contains a prose comment restating an assertion
+- **THEN** the comment SHALL be deleted
+
+#### Scenario: Regression rationale retained
+
+- **WHEN** a test comment records the bug a case guards against
+- **THEN** the comment SHALL be retained
+
+#### Scenario: Markdown untouched
+
+- **WHEN** the diff includes a `.md` file
+- **THEN** it SHALL NOT be processed
+
+#### Scenario: Generated file untouched
+
+- **WHEN** the diff includes a generated or migration file
+- **THEN** it SHALL NOT be processed
+
+---
+
+### Requirement: Autonomous trigger threshold
+
+The skill's `description` SHALL express a measurable trigger condition: the scope contains at least 5 changed files **or** at least 150 added lines relative to the base branch.
+
+An agent evaluating the trigger SHALL measure the scope (for example with `git diff --stat`, plus the untracked files it does not report) rather than judge "extensive" qualitatively.
+
+Explicit invocation SHALL bypass the threshold entirely.
+
+When the run fired autonomously, the skill SHALL emit a one-line scope pre-announcement before its first edit, naming the number of files and added lines in the filtered scope — the file list that remains after the exclusions above (for example `Purging comment noise across N files / M added lines`) — so an unrequested run announces itself instead of surprising the user with a table at the end.
+
+The pre-announcement SHALL follow the exclusion filter, never precede it. When the filtered list is empty, the skill SHALL announce nothing.
+
+#### Scenario: Below threshold
+
+- **WHEN** a refinement changes 2 files and 30 lines
+- **THEN** the skill SHALL NOT trigger autonomously
+
+#### Scenario: At threshold
+
+- **WHEN** an implementation changes 7 files
+- **THEN** the skill SHALL be eligible to trigger autonomously
+
+#### Scenario: Manual invocation below threshold
+
+- **WHEN** the user invokes the skill explicitly on a 1-file change
+- **THEN** the skill SHALL run
+
+#### Scenario: Autonomous run announces its filtered scope
+
+- **WHEN** the skill triggers autonomously and the filtered scope is 9 files and 300 added lines
+- **THEN** it SHALL emit a one-line scope pre-announcement naming those filtered counts before its first edit
+
+#### Scenario: Autonomous run with an empty filtered scope announces nothing
+
+- **WHEN** the skill triggers autonomously on a raw diff above the threshold and the exclusion filter leaves no files
+- **THEN** no pre-announcement SHALL be emitted
+
+---
+
+### Requirement: Fan-out threshold and contract
+
+When the filtered scope — the file list that remains after the exclusions above — exceeds 8 changed files **or** 400 added lines, the skill SHALL distribute the work; at or below that, it SHALL process in line without spawning agents. The threshold SHALL be measured on the filtered list, never on the raw diff.
+
+Distribution SHALL prefer teammates and SHALL fall back to subagents when teammates are unavailable.
+
+Work SHALL be split by whole file. A file SHALL NOT be split across agents by hunk.
+
+Above the threshold, every file in the filtered scope SHALL be assigned to an agent, dispatched in successive waves under a concurrency cap; the orchestrator SHALL hold no files of its own.
+
+Each agent SHALL receive its file list and the scope base, the scope base being the commit the skill already resolved rather than a shell variable, since each agent runs in its own shell and process.
+
+Each agent SHALL apply its edits directly to its assigned files and SHALL return only a count of deletions and edits, structured metadata for each unreferenced `TODO` or `FIXME` it deleted (file, line, and a short paraphrase, never the comment body), plus at most 5 cases it judged doubtful. Agents SHALL NOT return comment bodies or file contents.
+
+#### Scenario: Below fan-out threshold
+
+- **WHEN** the filtered scope is 6 files and 200 added lines
+- **THEN** the skill SHALL process in line without spawning agents
+
+#### Scenario: Excluded files do not count toward the threshold
+
+- **WHEN** the raw diff is 200 Markdown files and 2 TypeScript files
+- **THEN** the filtered scope SHALL be 2 files
+- **AND** the skill SHALL process in line without spawning agents
+
+#### Scenario: Above fan-out threshold
+
+- **WHEN** the filtered scope is 20 files
+- **THEN** the work SHALL be distributed, preferring teammates
+- **AND** all 20 files SHALL be assigned to agents, none retained by the orchestrator
+
+#### Scenario: Teammates unavailable
+
+- **WHEN** the scope exceeds the threshold and teammates are unavailable
+- **THEN** subagents SHALL be used
+
+#### Scenario: Whole-file assignment
+
+- **WHEN** work is distributed
+- **THEN** every file SHALL be assigned in full to exactly one agent
+
+#### Scenario: Agent return payload
+
+- **WHEN** an agent finishes its assignment
+- **THEN** it SHALL return counts, metadata for each unreferenced `TODO` or `FIXME` it deleted, and at most 5 doubtful cases
+- **AND** SHALL NOT return comment bodies or file contents
+
+---
+
+### Requirement: Edits are applied directly
+
+The skill SHALL apply deletions and edits to the files directly. It SHALL NOT request per-comment approval and SHALL NOT stage a diff for review before applying.
+
+Retained comments SHALL be tightened to be short and specific where they are verbose.
+
+#### Scenario: Direct application
+
+- **WHEN** the skill identifies a comment to delete
+- **THEN** it SHALL delete it without asking for approval
+
+#### Scenario: Retained but verbose
+
+- **WHEN** a retained comment carries a justified reason across several verbose sentences
+- **THEN** it SHALL be tightened while preserving the information
+
+---
+
+### Requirement: Report format
+
+On completion the skill SHALL report a compact table mapping each processed file to its count of deleted and edited comments.
+
+The report SHALL NOT include the bodies of deleted or edited comments.
+
+When the resolved scope base was `HEAD`, the report SHALL state that the scope was the uncommitted working tree alone.
+
+When nothing was deleted or edited, the report SHALL be a single line stating that, and SHALL omit the table, the `TODO` list, and the gate recommendation. The `Doubtful — left as-is` section and the working-tree-only statement SHALL be exempt from that omission: when doubtful cases exist, the report SHALL still carry that section, and when the resolved scope base was `HEAD`, the report SHALL still state that the scope was the uncommitted working tree alone.
+
+When the run fired autonomously and the filtered file list is empty, the skill SHALL report nothing at all — not even the single line — since nobody asked and there was nothing to process.
+
+The report SHALL list any `TODO` or `FIXME` deleted for lacking an issue reference, and SHALL note that these could be filed as tracker issues. The skill SHALL NOT create tracker issues itself.
+
+The report SHALL carry a `Doubtful — left as-is` section listing each case judged doubtful, with its file, its line, and a one-line reason. When there are no doubtful cases, the section SHALL be omitted.
+
+#### Scenario: Compact report
+
+- **WHEN** the purge completes across 12 files
+- **THEN** the report SHALL be a table of file to deleted and edited counts
+- **AND** SHALL NOT quote the removed comments
+
+#### Scenario: Working-tree-only scope stated
+
+- **WHEN** the resolved scope base was `HEAD`
+- **THEN** the report SHALL state that the scope was the uncommitted working tree alone
+
+#### Scenario: Nothing to purge
+
+- **WHEN** the skill is invoked explicitly and the purge deletes and edits nothing, with no doubtful cases
+- **THEN** the report SHALL be a single line stating that
+- **AND** SHALL omit the table and the gate recommendation
+
+#### Scenario: Nothing purged but doubtful cases flagged
+
+- **WHEN** the purge deletes and edits nothing and has judged at least one case doubtful
+- **THEN** the report SHALL be the single line stating that nothing was deleted or edited
+- **AND** SHALL carry the `Doubtful — left as-is` section listing each case
+- **AND** SHALL omit the table, the `TODO` list, and the gate recommendation
+
+#### Scenario: Working-tree-only scope stated when nothing was purged
+
+- **WHEN** the resolved scope base was `HEAD` and the purge deletes and edits nothing
+- **THEN** the report SHALL be the single line stating that nothing was deleted or edited
+- **AND** SHALL still state that the scope was the uncommitted working tree alone
+
+#### Scenario: Autonomous run with an empty filtered list
+
+- **WHEN** the run fired autonomously and the filtered file list is empty
+- **THEN** the skill SHALL report nothing at all
+
+#### Scenario: Doubtful case reported
+
+- **WHEN** a comment is judged doubtful and left as-is
+- **THEN** the report SHALL list it under `Doubtful — left as-is` with its file, its line, and a one-line reason
+
+#### Scenario: Unreferenced TODO removed
+
+- **WHEN** an unreferenced `TODO` is deleted
+- **THEN** the report SHALL list it and suggest filing it
+- **AND** no tracker issue SHALL be created
+
+---
+
+### Requirement: No forced verification gate
+
+The skill SHALL NOT run the repository's typecheck, lint, test, or build targets, and SHALL NOT block on them.
+
+When the purge deleted or edited at least one comment, the report SHALL recommend running the repository's gates before committing, covering both the purge's edits and any source changes that were already uncommitted.
+
+#### Scenario: Gates not run
+
+- **WHEN** the purge completes
+- **THEN** no verification target SHALL have been executed by the skill
+
+#### Scenario: Recommendation emitted
+
+- **WHEN** the purge completes having deleted or edited at least one comment
+- **THEN** the report SHALL recommend running the repository's gates before committing, including pre-existing uncommitted source changes
