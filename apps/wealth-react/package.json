@@ -17,25 +17,25 @@
     },
     "dependencies": {
         "@m0n0lab/wealth-tracker-core": "workspace:*",
-        "react": "19.2.7",
-        "react-dom": "19.2.7",
-        "react-router": "8.0.1"
+        "react": "catalog:",
+        "react-dom": "catalog:",
+        "react-router": "8.2.0"
     },
     "devDependencies": {
-        "@codecov/vite-plugin": "2.0.1",
-        "@react-router/dev": "8.0.1",
-        "@react-router/node": "8.0.1",
-        "@react-router/serve": "8.0.1",
-        "@types/react": "19.2.17",
+        "@codecov/vite-plugin": "catalog:",
+        "@react-router/dev": "8.2.0",
+        "@react-router/node": "8.2.0",
+        "@react-router/serve": "8.2.0",
+        "@types/react": "catalog:",
         "@types/react-dom": "19.2.3",
         "@vitest/coverage-v8": "catalog:",
-        "typescript": "6.0.3",
-        "vite": "8.1.0",
+        "typescript": "catalog:",
+        "vite": "catalog:",
         "vitest": "catalog:"
     },
     "engines": {
         "node": "24.18.0",
-        "pnpm": "11.9.0"
+        "pnpm": "11.15.0"
     },
-    "packageManager": "pnpm@11.9.0"
+    "packageManager": "pnpm@11.15.0"
 }

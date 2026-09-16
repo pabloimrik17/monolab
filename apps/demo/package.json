@@ -4,7 +4,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "tsc -b && vite build",
+        "build": "tsc -b --clean && tsc -b && vite build",
         "dev": "vite",
         "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 60 .",
         "lint:eslint:config-check": "eslint-config-prettier src/index.tsx",
@@ -16,17 +16,17 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "solid-js": "1.9.13"
+        "solid-js": "catalog:"
     },
     "devDependencies": {
-        "@codecov/vite-plugin": "2.0.1",
-        "typescript": "6.0.3",
-        "vite": "8.1.0",
-        "vite-plugin-solid": "2.11.12"
+        "@codecov/vite-plugin": "catalog:",
+        "typescript": "catalog:",
+        "vite": "catalog:",
+        "vite-plugin-solid": "catalog:"
     },
     "engines": {
         "node": "24.18.0",
-        "pnpm": "11.9.0"
+        "pnpm": "11.15.0"
     },
-    "packageManager": "pnpm@11.9.0"
+    "packageManager": "pnpm@11.15.0"
 }

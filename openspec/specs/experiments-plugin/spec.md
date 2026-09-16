@@ -3,12 +3,15 @@
 ## Purpose
 
 Beta skills and commands staging area for the monolab Claude Code marketplace.
+
 ## Requirements
+
 ### Requirement: Experiments Plugin Structure
 
 The `experiments` plugin SHALL exist at `claude-plugins/experiments/` and follow standard Claude Code plugin structure.
 
 The plugin directory SHALL contain:
+
 - `.claude-plugin/plugin.json` manifest
 - `commands/` directory for slash commands
 - `package.json` with `"private": true`
@@ -44,6 +47,7 @@ The plugin directory SHALL contain:
 ### Requirement: Plugin Manifest Content
 
 The plugin manifest SHALL include:
+
 - `name`: "experiments"
 - `version`: Starting at "0.1.0"
 - `description`: "Beta skills and commands staging area for monolab"
@@ -61,6 +65,7 @@ The plugin manifest SHALL include:
 The plugin SHALL provide `/experiments:hello-experiments` command.
 
 When invoked, the command SHALL:
+
 - Explain the plugin's purpose as a staging area for beta features
 - List any experimental skills/commands currently available (or state none if empty)
 - Mention that features here may graduate to production plugins
@@ -137,6 +142,7 @@ The command SHALL be invocable as `/experiments:npm-changelog`.
 ### Requirement: Version Bump
 
 When adding the npm-changelog command, the plugin version SHALL be bumped in both:
+
 - `claude-plugins/experiments/.claude-plugin/plugin.json`
 - `claude-plugins/experiments/package.json`
 
@@ -174,17 +180,17 @@ The skill SHALL:
 
     ```ts
     interface ScanResult {
-      packageManager: "pnpm" | "npm" | "yarn" | "bun" | "deno";
-      repoType: "single" | "workspace";
-      updates: Array<{
-        name: string;                   // npm package name
-        currentVersion: string;         // semver declared in the manifest
-        targetVersion: string;          // semver proposed by the tool
-        location: string;               // see enumeration below
-        sourceFile: string;             // path relative to repo root of the manifest that would be edited
-        skippedByReleaseAge?: boolean;  // true if a lower version was chosen due to minimumReleaseAge
-      }>;
-      warnings: string[];               // non-fatal messages (tool stderr, unsupported catalogs, etc.)
+        packageManager: "pnpm" | "npm" | "yarn" | "bun" | "deno";
+        repoType: "single" | "workspace";
+        updates: Array<{
+            name: string; // npm package name
+            currentVersion: string; // semver declared in the manifest
+            targetVersion: string; // semver proposed by the tool
+            location: string; // see enumeration below
+            sourceFile: string; // path relative to repo root of the manifest that would be edited
+            skippedByReleaseAge?: boolean; // true if a lower version was chosen due to minimumReleaseAge
+        }>;
+        warnings: string[]; // non-fatal messages (tool stderr, unsupported catalogs, etc.)
     }
     ```
 
@@ -193,6 +199,7 @@ The skill SHALL:
     - `"workspace:<package-name>"` — dependency in the `package.json` of a workspace package (e.g. `"workspace:@m0n0lab/react-hooks"`). `sourceFile` points to that package's `package.json`.
     - `"catalog:default"` — entry in pnpm's default catalog (declared in `pnpm-workspace.yaml`). `sourceFile` is `pnpm-workspace.yaml`.
     - `"catalog:<name>"` — reserved for future iterations; MUST NOT be emitted in `updates` in this iteration (named catalogs surface only via `warnings`).
+
 - Emit a warning and continue (do not abort) if non-default named catalogs are detected (`catalog:test`, etc.); list them as unsupported and exclude them from `updates` in this iteration.
 - Abort with a clear message if the detected PM runner is not available on PATH.
 
@@ -767,3 +774,59 @@ The deep-update commands SHALL share a single parameterized contract plus a per-
 - **THEN** that difference SHALL be captured in the per-level delta table
 - **AND** the shared contract SHALL remain the single source for common behavior
 
+---
+
+### Requirement: Comment discipline registration
+
+The `experiments` plugin SHALL provide the two comment-discipline skills and the one command, auto-discovered from the plugin's `skills/` and `commands/` directories with no manifest hand-edit. The skills are `writing-comments` and `purge-comment-noise`; the command is `/experiments:purge-comments`.
+
+The plugin `README.md` SHALL list the two new skills and the new command alongside the existing entries.
+
+No manual version edits SHALL be made to `claude-plugins/experiments/.claude-plugin/plugin.json`, `claude-plugins/experiments/package.json`, or the repo-root marketplace manifest at `/.claude-plugin/marketplace.json` as part of this change — the version bump is release-please's responsibility.
+
+#### Scenario: Skills auto-discovered
+
+- **WHEN** examining the plugin structure
+- **THEN** `skills/writing-comments/SKILL.md` and `skills/purge-comment-noise/SKILL.md` SHALL exist
+- **AND** neither SHALL be registered by hand in `plugin.json`
+
+#### Scenario: Command auto-discovered
+
+- **WHEN** examining the plugin structure
+- **THEN** `commands/purge-comments.md` SHALL exist
+- **AND** SHALL NOT be registered by hand in `plugin.json`
+
+#### Scenario: README listing updated
+
+- **WHEN** examining `claude-plugins/experiments/README.md`
+- **THEN** it SHALL list `writing-comments`, `purge-comment-noise`, and `/experiments:purge-comments`
+
+#### Scenario: No manual version edits
+
+- **WHEN** examining the diff for this change
+- **THEN** `claude-plugins/experiments/.claude-plugin/plugin.json`, `claude-plugins/experiments/package.json`, and the repo-root `/.claude-plugin/marketplace.json` SHALL NOT have manual version edits
+
+---
+
+### Requirement: Marketplace registration is repo-root only
+
+The `experiments` plugin SHALL be registered for distribution solely in the repo-root marketplace manifest at `/.claude-plugin/marketplace.json`, which `release-please-config.json` names as the extra-file target for the plugin's version. That manifest SHALL be the authoritative registration.
+
+No plugin-local marketplace manifest SHALL exist at `claude-plugins/experiments/.claude-plugin/marketplace.json`. The orphan copy carrying only a stale version field SHALL be deleted by this change, which is a removal of an unread file rather than a manual version edit: nothing resolves that path, and release-please never wrote it. Its removal SHALL leave `experiments` consistent with its sibling plugins, whose `.claude-plugin/` directories hold `plugin.json` alone.
+
+#### Scenario: Orphan plugin-local manifest removed
+
+- **WHEN** examining `claude-plugins/experiments/.claude-plugin/` after this change
+- **THEN** it SHALL contain `plugin.json` only
+- **AND** `marketplace.json` SHALL NOT be present
+
+#### Scenario: Sibling plugins carry no plugin-local manifest
+
+- **WHEN** examining every `.claude-plugin/` directory under `claude-plugins/`
+- **THEN** none SHALL contain a `marketplace.json`
+
+#### Scenario: Root registration is authoritative
+
+- **WHEN** release-please bumps the `experiments` plugin version
+- **THEN** it SHALL write the repo-root `/.claude-plugin/marketplace.json` named in `release-please-config.json`
+- **AND** the deletion of the plugin-local copy SHALL NOT change what any tool resolves

@@ -88,6 +88,7 @@ export default tseslint.config(
                     caughtErrorsIgnorePattern: "^_",
                 },
             ],
+            "no-constant-binary-expression": ["error", { checkRelationalComparisons: true }],
             "preserve-caught-error": "warn",
         },
     },
