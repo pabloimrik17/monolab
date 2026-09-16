@@ -143,13 +143,19 @@ Staleness SHALL be decided by version comparison only. The skill SHALL NOT disca
 
 ### Requirement: Output contract
 
-The skill SHALL produce one JSON object with three top-level keys.
+The skill SHALL produce one JSON object with five top-level keys: the three below plus the two the matcher sets, `root` and `baseAbsent`.
 
 `hits[]` — one entry per classified package, each carrying `name`, `from`, `to`, `groupId`, `class`, `runId`, `priorFrom`, `priorTo`, `delta`, `hubPath`, `anchor`, `notePath`, `level`, `mode` and `createdAt`. `hubPath` and `notePath` SHALL be relative to the knowledge root; `anchor` SHALL be the hub section heading text, e.g. `23.0.2 → 23.1.0`.
 
 `related[]` — one entry per context-only package, each carrying `name`, `groupId`, `bucketKey` and `hubs[]`.
 
 `summary` — the counts `exact`, `overlap`, `prior`, `related` and `packages`, where `packages` is the number of scanned packages considered.
+
+`root` — the resolved absolute knowledge root. It SHALL be present on every output, including the absent-base and failure shapes, because `hubPath` and `notePath` are relative to it and the dispatch prompt's `Knowledge root:` line is what makes them openable.
+
+`baseAbsent` — `true` when the root is missing or holds no `index.json`, `false` otherwise. A base that exists but cannot be rebuilt SHALL NOT set it; that case SHALL carry `baseAbsent: false` and an additional `error` key naming the reason, so the caller reports `recall failed` rather than asserting a base that is not there.
+
+This is the object the workflow receives as `priorKnowledge`, so it SHALL match the shape the `parallel-research-workflow` delta fixes for that input.
 
 The skill SHALL pass this object unchanged to `parallel-research-workflow` as its optional `priorKnowledge` input. It SHALL NOT reshape, trim or summarise the object on the way, and it SHALL NOT inject prior text into subagent prompts by any route other than that input.
 
@@ -195,21 +201,30 @@ The main SHALL NOT open a package hub, a run note or any raw run artefact under 
 
 Recall SHALL NOT write, move or delete any run artefact, workspace file, registry entry or changelog cache entry.
 
-The single disk write recall MAY cause is the index rebuild performed by `build-knowledge-index.mjs` before matching, and that write SHALL stay inside the knowledge root and touch `index.json` only. A failure of that rebuild SHALL degrade recall to the absent-base no-op rather than abort the run.
+The groups SHALL reach the matcher on stdin (`--groups -`) rather than through a file, so that no scratch file outside the knowledge root is ever created. The single disk write recall MAY cause is the index rebuild performed by `build-knowledge-index.mjs` before matching, and that write SHALL stay inside the knowledge root. It SHALL write `index.json`, and it MAY refresh a `supersededBy` value in a hub's section marker — the one write the store delta requires of the index builder, script-owned in both cases and re-stamping the note's pre-image. No slot content, no frontmatter other than that marker, and no run note SHALL be altered. A failure of that rebuild SHALL NOT abort the run; it SHALL degrade to no `priorKnowledge` and the `recall failed` digest.
 
 #### Scenario: No write outside the knowledge root
 
 - **WHEN** recall runs
 - **THEN** no file outside the knowledge root SHALL be created, modified or deleted
+- **AND** the groups SHALL be passed to the matcher on stdin rather than written to a scratch file
+
+#### Scenario: Recall failure is non-fatal
+
+- **WHEN** the matcher exits non-zero for any reason other than an absent base
+- **THEN** the run SHALL continue with no `priorKnowledge`
+- **AND** the digest SHALL read `Knowledge: recall failed (<reason>)`
 
 #### Scenario: Index rebuild is the only write
 
 - **WHEN** recall rebuilds the index before matching
-- **THEN** the only file written SHALL be `index.json` under the knowledge root
-- **AND** no run note and no package hub SHALL be modified
+- **THEN** every file written SHALL be under the knowledge root
+- **AND** the writes SHALL be limited to `index.json` and, where a later range now covers an earlier one, that hub section marker's `supersededBy` value with the note's pre-image re-stamped
+- **AND** no slot content and no run note SHALL be modified
 
 #### Scenario: Rebuild failure degrades, never aborts
 
 - **WHEN** the index rebuild fails
-- **THEN** recall SHALL return `{ "hits": [] }` with the absent-base digest
+- **THEN** recall SHALL return `{ "hits": [] }` with the digest `Knowledge: recall failed (<reason>)`
 - **AND** the run SHALL continue to the workflow dispatch
+- **AND** it SHALL NOT report the absent-base digest, which asserts a base that is missing rather than one that could not be read

@@ -32,7 +32,7 @@ See `proposal.md` — Why. Constraints that shape the approach:
 
 ### D1. Store location and override
 
-Default root `~/.claude/experiments/knowledge/`; sibling of `plans/`, same user-scoped zone as commander. `userConfig.knowledge_root` (string, default `""`) in the experiments `plugin.json` overrides it; a leading `~` is expanded; a relative value is an error (`Error: knowledge_root must be absolute or ~-prefixed.`). Resolution lives once in `lib/knowledge.mjs` (`resolveKnowledgeRoot(env)`); skills call the scripts, they do not re-implement the rule.
+Default root `~/.claude/experiments/knowledge/`; sibling of `plans/`, same user-scoped zone as commander. `userConfig.knowledge_root` (string, default `""`) in the experiments `plugin.json` overrides it; a leading `~` is expanded; a relative value is an error (`Error: knowledge_root must be absolute or ~-prefixed.`). Resolution lives once in `lib/knowledge.mjs` (`resolveKnowledgeRoot(env)`); skills call the scripts, they do not re-implement the rule. The configured value reaches the scripts as the `KNOWLEDGE_ROOT` environment variable, exported verbatim by the caller — never pre-expanded and never pre-validated, since expansion, defaulting and the relative-path error all belong to `resolveKnowledgeRoot`. `--root` is optional on every knowledge script; omitted, the script resolves it itself.
 
 _Alternatives_: inside `plans/` (rejected: subject to stale cleanup and `delete-plan`); a per-project `.claude/` folder (rejected: the whole point is cross-project reuse).
 
@@ -120,6 +120,8 @@ tags: [package]
 <!-- /slot -->
 ```
 
+A package whose group produced no `research.md` at all is a third case, distinct from the legacy one: its slot carries `<!-- no-research -->`, it is never counted as distilled, and the subagent fills it from what the run directory records about the absence.
+
 Section identity is the `<!-- run:<runId> … -->` marker: re-persisting a run replaces its section in place (idempotent); a new range for the same package appends a new `##` block. Everything outside `<!-- slot -->` pairs is script-owned and never edited by a model.
 
 ### D4. `outcome.json` — the apply result made durable
@@ -135,13 +137,14 @@ The orchestrator assembles this object (every field except `recordedAt`) from th
   "recordedAt": "<ISO 8601>",
   "projects": [
     {
-      "projectName": "monolab", // single-project: the run slug
+      "projectName": "monolab", // single-project: the run slug; one entry per apply invocation,
+      //   so a per-bucket apply yields several entries sharing one projectName
       "mechanism": "apply-npm-updates", // apply-npm-updates | apply-engine-bumps | reconstructed (legacy)
       "bumps": {
         /* verbatim result fragment of the mechanism: appliedGeneric/appliedOverrides/installRan/logPath/failure, or applied/failure for engines */
       },
       "changeset": {
-        "status": "approved", // approved | rejected | skipped | not-run | unknown
+        "status": "approved", // approved | rejected | skipped | not-run | verification-failed | unknown
         "path": "changesets/monolab/changeset.md", // run-dir-relative, or null
         "applicable": 1,
         "inapplicable": 55, // counts parsed from changeset.md headings; null when absent
@@ -151,15 +154,17 @@ The orchestrator assembles this object (every field except `recordedAt`) from th
 }
 ```
 
-`outcome` at run level derives from it: `applied` when every project's `bumps.failure` is `null`, `partial` when at least one is `null`, `failed` otherwise. **Persist only `applied` and `partial`**; `failed` and `cancel` persist nothing — "Cancel touches no files" keeps holding, and a run where nothing landed carries no reusable applicability. `Applicable (0)` is an `applied` run and is persisted (the "nothing to apply at this range" fact is itself reusable).
+`outcome` at run level derives from it, as an ordered three-way: `applied` when every entry's `bumps.failure` is `null`; `partial` when at least one entry is clean **and** at least one is not; `failed` when none is clean. An empty `projects[]` means no apply invocation produced an entry — it is **not** vacuously `applied` and is never persisted (digest `Knowledge: not persisted (nothing applied)`). **Persist only `applied` and `partial`**; `failed` and `cancel` persist nothing — "Cancel touches no files" keeps holding, and a run where nothing landed carries no reusable applicability. `Applicable (0)` is an `applied` run and is persisted (the "nothing to apply at this range" fact is itself reusable).
+
+`changeset.status` is keyed on one axis — what happened at the changeset gate: `approved` (the gate opened and the user approved, zero-applicable included), `rejected` (the gate opened and the user rejected), `skipped` (the gate could not open because nothing was in scope), `not-run` (the round never reached the gate: `apply-bumps-only`, or it aborted before the gate opened), `verification-failed` (the gate was approved and the edits applied, but the orchestrator's on-disk re-check did not match the approved changeset), `unknown` (`/experiments:knowledge-persist` reconstruction only; a live run never emits it). `verification-failed` exists because the hub's `### Applied` section is the per-project applicability record a later run reads: `approved` there would assert edits that never landed and `skipped` would assert nothing was in scope, and a false applicability fact propagates into runs that do not re-check it. `bumps.failure` is not its home — that records the bump mechanism, not the changeset apply.
 
 ### D5. Persist pipeline — scripts copy, one subagent writes, a script validates
 
 `persist-run-knowledge` runs, in order:
 
-1. `node scripts/copy-run-knowledge.mjs --run-dir <dir> --outcome <assembled outcome JSON> [--synthetic]` — stamps `recordedAt` and writes `<runDir>/outcome.json`, bootstraps the vault on first use (D2 skeleton), copies the allowlisted files, writes `runs/<runId>.md` and every `packages/<slug>.md` section with slots empty, prints a JSON digest (`{ runId, notePath, hubs: [...], slots: n, distill: m }`). Deterministic; unit-tested on fixtures cut from the six real runs.
+1. `node scripts/copy-run-knowledge.mjs --run-dir <dir> (--outcome <assembled outcome JSON> | --outcome-file <path>) [--synthetic]` — stamps `recordedAt` and writes `<runDir>/outcome.json`, bootstraps the vault on first use (D2 skeleton), copies the allowlisted files, writes `runs/<runId>.md` and every `packages/<slug>.md` section with slots empty, prints a JSON digest (`{ root, runId, notePath, hubs: [...], packages: p, slots: n, distill: m }`). `root` and `packages` are in the digest because step 5's line needs both and the skill may not re-resolve the root itself (D1). `--outcome-file` is the same object read from disk, for a cross-project payload too large to quote on argv; the file is the skill's own temp write, never the orchestrator's. The script also writes `distilled: true` on the run note whenever it emits a `<!-- distill -->` slot — no model ever sets that key. Deterministic; unit-tested on fixtures cut from the six real runs.
 2. Spawn **one subagent** (default model, not the main) with the digest paths. Its whole job: fill every `<!-- slot -->` in the listed files from the raw copy under `runs/<runId>/`, obeying the per-slot line caps, no code blocks, no line outside a slot. Final line: `<runId>: filled <n>/<n> slots`.
-3. `node scripts/check-knowledge-note.mjs <paths…>` — frontmatter keys and types, every slot filled, caps respected, no edits outside slots (diff against the script's own pre-image hash), no "plan" in headings. Exit 1 lists violations; the skill relays them to the subagent for at most **two** repair rounds; residual violations leave the note at `status: draft` (recall skips it) and the digest says so.
+3. `node scripts/check-knowledge-note.mjs [--mark-draft] <paths…>` — frontmatter keys and types, every slot filled, caps respected, no edits outside slots (diff against the script's own pre-image hash), no "plan" in headings. A slot whose only content is `<!-- distill -->` does not count as filled — the marker is a pre-fill instruction the subagent consumes, not a line that survives. Exit 1 lists violations; the skill relays them to the subagent for at most **two** repair rounds; on the final round it passes `--mark-draft`, and the script (never the skill — frontmatter is script-owned) writes `status: draft` on any note with residual violations and reports the resulting `status` per note for the digest.
 4. `node scripts/build-knowledge-index.mjs --root <root>` — rebuilds `index.json` from frontmatter + markers + `groups/*/_meta.json` (`runs[]`: `runId`, `notePath`, `level`, `mode`, `createdAt`, `outcome`, `status`, `projects`, `tags`; `packages[]`: `name`, `hubPath`, `latest`, `ranges[]` with `from`, `to`, `anchor`, `runId`, `notePath`, `level`, `mode`, `createdAt`, `status`, `groupId`, `bucketKey`, `synthetic`, `supersededBy`); computes `supersededBy` (a later section for the same package whose range covers the older one) and writes it into the older marker.
 5. Return one line to the main: `Knowledge: persisted <runId> → <root> (<p> packages, <h> hubs, <d> distilled, status <ok|draft>)`.
 
@@ -171,8 +176,8 @@ _Alternative_: let the subagent write whole notes from a template (rejected: tem
 
 `recall-run-knowledge` runs, in order:
 
-1. Resolve the root; if `index.json` is missing, return `{ hits: [] }` and the digest `Knowledge: no base at <root>` — nothing else changes.
-2. `node scripts/match-knowledge.mjs --root <root> --groups <groups.json>` (rebuilds the index first; cheap). Output:
+1. `node scripts/match-knowledge.mjs [--root <root>] --groups -` (rebuilds the index first; cheap). `--root` is optional on every knowledge script: omitted, the script calls `resolveKnowledgeRoot(env)` itself, so no skill ever restates D1's rule. Groups arrive on **stdin** (`--groups -`) because they exist only as an in-conversation object and recall may not create a file outside the knowledge root; `--groups <path>` remains for the slash command. The output carries the resolved absolute `root`, and reports a missing `index.json` as data (`baseAbsent: true` with `{ hits: [], related: [] }`) rather than an error — the caller then emits the digest `Knowledge: no base at <root>` and nothing else changes.
+2. Output:
 
    ```jsonc
    {
@@ -227,12 +232,15 @@ _Alternative_: let the subagent write whole notes from a template (rejected: tem
 
 Staleness is a function of versions only; `createdAt` is a tiebreaker, never a filter.
 
+Recall failure is non-fatal, exactly like persist failure: if the matcher errors, the run continues with no `priorKnowledge` and the digest reads `Knowledge: recall failed (<reason>)`. Recall never blocks a run. When the base exists but yields nothing, the digest is the counts line with zeros — `Knowledge: no base at <root>` states one thing only, that there is no base.
+
 ### D7. Prior knowledge reaches the subagents through the workflow's prompt template
 
 `parallel-research-workflow` gains `priorKnowledge` (optional; absent ⇒ today's prompt byte-for-byte). When present, both prompt templates (single- and cross-project) append one block per group:
 
 ```text
 ## Prior knowledge (not verified for this project)
+Knowledge root: <absolute root> — every path below is relative to it.
 - <pkg> <from → to>: EXACT — after fetching its changelog, do not research it. Copy the `### Universal` section of <hubPath> under heading `## <pkg> (<from → to>)` verbatim, first line `source: prior-run <runId>`. [single-project: then write the `(this project)` sections by checking each copied finding against this codebase.]
 - <pkg> <from → to>: OVERLAP with <priorFrom → priorTo> — research only <delta>; read <hubPath> section `<anchor>` first and do not repeat its findings.
 - <pkg> <from → to>: PRIOR run <priorFrom → priorTo> — its findings do not carry over. Read only `### Applied` under <anchor> for how earlier projects handled this package.
@@ -287,7 +295,7 @@ The allocation lives as per-task tags in `tasks.md` (`[wave · teammate · model
 
 - [A wrong `exact` match silently skips research for a package] → equality on `name`, `from` and `to`; the copied section is labelled `source: prior-run`; the dossier lists it under `## Prior runs`; single-project still re-checks applicability.
 - [Subagent-written summaries drift from the template] → slots + `check-knowledge-note.mjs` + two repair rounds; failure degrades to `status: draft`, excluded from recall, visible in the digest.
-- [Legacy distillation invents universality that was never there] → `distilled` tag on the note; hub marker records it; the spike's seed is small enough to review by hand once.
+- [Legacy distillation invents universality that was never there] → `distilled: true` on the run note, written by the copy script; the hub marker keeps its fixed `run/level/mode/synthetic/supersededBy` shape and does not record it; the spike's seed is small enough to review by hand once.
 - [`check-dossier.mjs` becomes stricter or looser than intended by the optional section] → single positional rule, covered by a test with and without the section.
 - [Hub files grow without bound on hot packages] → one section per persisted range, markers make re-persist idempotent; `supersededBy` lets a reader skip covered ranges; pruning stays manual by design.
 - [Persist runs after apply and could mask an apply failure] → persist never alters the summary's apply sections; its own failure prints one `Knowledge: not persisted (<reason>)` line and the run still reaches cleanup.

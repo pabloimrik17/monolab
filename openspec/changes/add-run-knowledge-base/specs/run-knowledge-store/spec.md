@@ -96,7 +96,7 @@ The single carve-out SHALL be the value of `runId`, which is copied verbatim fro
 
 `runs/<runId>.md` SHALL be system-owned and SHALL be regenerated on every re-persist of the same `runId`.
 
-Its frontmatter SHALL carry exactly these keys: `type` (always `run`), `runId`, `level` (`patch` | `minor` | `major` | `engines`), `mode` (`single-project` | `cross-project`), `createdAt` (from `_meta.json`), `persistedAt`, `projects` (list of project slugs; a single-project run carries one entry), `packages` (list of `"<name>@<from>..<to>"` strings), `outcome` (`applied` | `partial` | `legacy`), `gateOption` (`apply-all` | `apply-bumps-only` | `pick-subset` | `unknown`), `status` (`ok` | `draft`), `source` (`run-dir` | `seeded-legacy`), and `tags` (list, always including `run`, plus `synthetic` when the run is flagged).
+Its frontmatter SHALL carry exactly these keys: `type` (always `run`), `runId`, `level` (`patch` | `minor` | `major` | `engines`), `mode` (`single-project` | `cross-project`), `createdAt` (from `_meta.json`), `persistedAt`, `projects` (list of project slugs; a single-project run carries one entry), `packages` (list of `"<name>@<from>..<to>"` strings), `outcome` (`applied` | `partial` | `legacy`), `gateOption` (`apply-all` | `apply-bumps-only` | `pick-subset` | `unknown`), `status` (`ok` | `draft`), `source` (`run-dir` | `seeded-legacy`), and `tags` (list, always including `run`, plus `synthetic` when the run is flagged). A run note distilled from pre-split research SHALL additionally carry `distilled: true` — the one conditional key, written by `copy-run-knowledge.mjs` and never by a model; it does NOT appear in the hub's `<!-- run:… -->` marker, whose shape stays fixed.
 
 Every frontmatter value SHALL be a scalar or a list of strings. Nested mappings and lists of objects SHALL NOT appear in frontmatter; structured data belongs in `index.json` and in the note body.
 
@@ -148,7 +148,11 @@ followed by an `> [!info] Source:` callout linking the run note, and then, in th
 
 For a legacy run whose research carries no universal / this-project split, the `### Universal` slot SHALL be emitted empty with a `<!-- distill -->` marker for the subagent to fill by distillation, and the run note SHALL gain `distilled: true`.
 
+A package whose group produced no `research.md` at all — a changelog phase that failed non-retryably, for instance — SHALL instead have its `### Universal` slot emitted empty with a `<!-- no-research -->` marker. That case SHALL NOT count as a distillation: it SHALL NOT increment the digest's distilled count and SHALL NOT put `distilled: true` on the run note, because nothing was researched and therefore nothing was distilled. The marker SHALL count as an unfilled slot, and the subagent SHALL replace it with what the run directory records about the absence — never with invented findings.
+
 Section identity SHALL be the `<!-- run:<runId> … -->` marker. Re-persisting a run SHALL replace that run's section in place; it SHALL NOT append a duplicate. Persisting a range not yet present for the package SHALL append a new `##` section and extend `ranges` and `runs`. Everything outside a `<!-- slot -->` pair SHALL be script-owned and SHALL NOT be edited by a model.
+
+That last rule SHALL be enforced mechanically, not by convention: every run note and every hub SHALL end with a script-owned marker `<!-- knowledge:preimage <sha256> -->` holding the hash of the file with every slot blanked, and the validator SHALL recompute it to detect any edit to script-owned bytes. Every script that rewrites script-owned content SHALL re-stamp the marker — the index builder when it writes `supersededBy`, and the validator when it writes `status: draft` — so that a legitimate script write is never reported as a model edit. A note whose marker is absent SHALL fail validation.
 
 #### Scenario: Re-persisting replaces the section rather than duplicating it
 
@@ -167,6 +171,13 @@ Section identity SHALL be the `<!-- run:<runId> … -->` marker. Re-persisting a
 - **WHEN** a run whose `research.md` predates the universal / this-project split is persisted
 - **THEN** the hub's `### Universal` slot SHALL be emitted empty carrying `<!-- distill -->`
 - **AND** the run note SHALL carry `distilled: true`
+
+#### Scenario: A package with no research is not a distillation
+
+- **WHEN** a run is persisted in which one group produced no `research.md`
+- **THEN** that package's hub `### Universal` slot SHALL carry `<!-- no-research -->` and not `<!-- distill -->`
+- **AND** the run note SHALL NOT carry `distilled: true` on account of that package
+- **AND** the slot SHALL count as unfilled until the subagent replaces the marker
 
 ---
 
@@ -189,7 +200,7 @@ The persist skill SHALL write `outcome.json` into the run directory — from the
         /* verbatim result fragment of the mechanism: appliedGeneric/appliedOverrides/installRan/logPath/failure, or applied/failure for engines */
       },
       "changeset": {
-        "status": "approved", // approved | rejected | skipped | not-run | unknown
+        "status": "approved", // approved | rejected | skipped | not-run | verification-failed | unknown
         "path": "changesets/monolab/changeset.md", // run-dir-relative, or null
         "applicable": 1,
         "inapplicable": 55, // counts parsed from changeset.md headings; null when absent

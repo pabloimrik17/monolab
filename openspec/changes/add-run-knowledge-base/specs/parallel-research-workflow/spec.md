@@ -10,7 +10,7 @@ The workflow SHALL accept exactly these inputs:
 - `mode` (optional) — one of `single-project`, `cross-project`. Default `single-project`. Selects the cross-project research contract (universal-only findings, no codebase cross-reference) when `cross-project`.
 - `slugOverride` (optional in single-project mode, REQUIRED in cross-project mode) — string used as the plan-dir basename slug instead of the CWD/`package.json#name`-derived slug. Sanitized identically to derived slugs (lowercase, replace `[^a-z0-9]+` with `-`, trim leading/trailing `-`, truncate to 40 chars).
 - `maxConcurrent` (optional, integer, default `5`) — per-batch concurrency cap; identical to today's contract.
-- `priorKnowledge` (optional) — the recall output object emitted by `recall-run-knowledge`, passed through verbatim: `{ hits, related, summary }`, where each `hits[]` entry carries `name`, `from`, `to`, `groupId`, `class` (one of `exact`, `overlap`, `prior`), `runId`, `priorFrom`, `priorTo`, `delta`, `hubPath`, `anchor`, `notePath`, `level`, `mode`, `createdAt`; each `related[]` entry carries `name`, `groupId`, `bucketKey`, `hubs`; and `summary` carries the per-class counts. Default absent.
+- `priorKnowledge` (optional) — the recall output object emitted by `recall-run-knowledge`, passed through verbatim: `{ root, baseAbsent, hits, related, summary }`, where `root` is the resolved absolute knowledge root (rendered once at the top of the prior-knowledge block, since every `hubPath` and `notePath` below it is root-relative), `baseAbsent` is `true` when the matcher found no `index.json`, and each `hits[]` entry carries `name`, `from`, `to`, `groupId`, `class` (one of `exact`, `overlap`, `prior`), `runId`, `priorFrom`, `priorTo`, `delta`, `hubPath`, `anchor`, `notePath`, `level`, `mode`, `createdAt`; each `related[]` entry carries `name`, `groupId`, `bucketKey`, `hubs`; and `summary` carries the per-class counts. Default absent.
 
 The workflow SHALL reject invocations with:
 
@@ -311,3 +311,28 @@ Rules:
 - **WHEN** phase 4 completes in single-project mode
 - **THEN** `dossier.md` follows the single-project template (H1 `Deep-<level> dossier: <slug>`, sections `Improvements (applicable to this codebase)`, `Workarounds resolved`, `Skipped or unavailable`, `<Level> bump set`, `Changelogs`)
 - **AND** improvement bullets carry `(group: <groupId>)` without the `affects projects:` tag
+
+### Requirement: Breaking-change research category for level `major`
+
+When the workflow's `level` input is `major`, the research contract and dossier synthesis SHALL surface breaking changes as a first-class category, in BOTH `single-project` and `cross-project` modes. For `level ∈ {patch, minor, engines}` this requirement is inert (no change to those flows).
+
+**Phase 2 — research contract.** For `level=major`, each research subagent's `research.md` SHALL include, per package, a `### Breaking changes & migration` heading in addition to the finding-category headings fixed by the `Phase 2 — parallel codebase research` requirement — the four split headings in `single-project` mode, the two `(universal)` headings in `cross-project` mode — and placed after them. It SHALL capture: required code/config changes to keep the project building, removed/renamed/changed APIs, available codemods, and deprecations to act on. The `_no findings_` sentinel SHALL be written under the heading when the upgrade introduces none. In `cross-project` mode the findings SHALL be phrased universally (framework names, convention globs, idiomatic patterns) and SHALL NOT name any specific project path, identical to the constraints on the other cross-project finding categories.
+
+**Phase 4 — synthesis.** For `level=major`, `dossier.md` SHALL include a `## Breaking changes & migration` H2 placed **before** `## Improvements`, aggregating the per-package breaking-change findings (single-project: concrete; cross-project: universal with per-bullet `affects projects:` tagging, consistent with the Improvements section). When no package reports a breaking change, the section SHALL render a single `_no breaking changes_` sentinel line rather than being omitted. The dossier section ordering for `level=major` is therefore: title → `## Breaking changes & migration` → `## Improvements` → `## Workarounds resolved` → `## Skipped or unavailable` → optional `## Prior runs` → (mode-specific bump-set table: `## Major bump set` single-project or `## Cross-project bump set` cross-project) → `## Changelogs`.
+
+The breaking-change items are reference + actionable material consumed by the deep-major commands' changeset gate round (presented as candidate edits, applied by the apply teammate only on user approval).
+
+#### Scenario: Section placement and ordering
+
+- **WHEN** `dossier.md` is synthesized for `level: "major"`
+- **THEN** `## Breaking changes & migration` appears before `## Improvements`, the bump-set heading is `## Major bump set` (single-project) or `## Cross-project bump set` (cross-project), and `## Changelogs` is last
+
+#### Scenario: Major research carries the split headings plus breaking changes
+
+- **WHEN** a `single-project` research subagent writes `research.md` for `level: "major"`
+- **THEN** each package carries the four split finding headings in their fixed order, followed by `### Breaking changes & migration`
+
+#### Scenario: Major dossier places prior runs before the bump set
+
+- **WHEN** `dossier.md` is synthesized for `level: "major"` and `priorKnowledge` carried at least one `exact`, `overlap` or `prior` hit
+- **THEN** `## Prior runs` appears after `## Skipped or unavailable` and before `## Major bump set` or `## Cross-project bump set`

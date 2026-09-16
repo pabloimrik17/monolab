@@ -60,6 +60,8 @@ The skill SHALL NOT be invoked on the `cancel` path, on any `abort` path, or whe
 
 A run whose run-level `outcome` is `applied` or `partial` SHALL be persisted. A run whose run-level `outcome` is `failed` SHALL persist nothing — neither a run note, nor a hub section, nor a raw copy.
 
+A run whose `outcome.projects[]` is empty SHALL persist nothing: no apply invocation produced an entry, so the run is not vacuously `applied`, and the skill SHALL return `Knowledge: not persisted (nothing applied)`.
+
 A run that applied its bumps and found no applicable improvements — `Applicable (0)` — is an `applied` run and SHALL be persisted with both a run note and its package hub sections, because "nothing to apply at this range" is itself a reusable conclusion.
 
 The skill SHALL write only under the resolved knowledge root and to `<runDir>/outcome.json`. It SHALL NOT write to project files, to the Commander registry, to the changelog cache, or to any other path.
@@ -171,6 +173,8 @@ A run directory without an `outcome.json` SHALL be persisted with a reconstructe
 
 A run whose single-project `research.md` predates the universal / this-project split SHALL have its hub `### Universal` slot emitted empty with a `<!-- distill -->` marker, so the subagent distils the universal findings out of the mixed sections; the resulting run note SHALL carry `distilled: true` and the count SHALL appear as `<d> distilled` in the digest.
 
+A package whose group produced no `research.md` SHALL be treated separately: its slot SHALL carry `<!-- no-research -->`, it SHALL NOT be counted as distilled, and the subagent SHALL fill the slot from what the run directory records about the absence rather than inventing findings.
+
 #### Scenario: Missing outcome.json reconstructed
 
 - **WHEN** a selected run directory has no `outcome.json`
@@ -181,6 +185,12 @@ A run whose single-project `research.md` predates the universal / this-project s
 - **WHEN** a run's single-project `research.md` has no universal / this-project split
 - **THEN** the hub's `### Universal` slot SHALL be emitted empty with `<!-- distill -->`
 - **AND** the run note SHALL carry `distilled: true`
+
+#### Scenario: Unresearched package is not reported as distilled
+
+- **WHEN** a run whose changelog phase failed non-retryably for one group is persisted
+- **THEN** that package's slot SHALL carry `<!-- no-research -->`
+- **AND** the digest's distilled count SHALL NOT include it
 
 ---
 
