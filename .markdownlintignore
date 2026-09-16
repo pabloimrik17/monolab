@@ -16,3 +16,6 @@ CLAUDE.md
 
 # Ignore auto-generated changelog files
 **/CHANGELOG.md
+
+# Ignore captured run artefacts kept as test fixtures
+claude-plugins/experiments/scripts/fixtures/

@@ -1,0 +1,32 @@
+{
+    "groupId": "commitlint-1",
+    "packages": [
+        {
+            "name": "@commitlint/cli",
+            "from": "21.1.0",
+            "to": "21.2.1",
+            "location": "cross-project",
+            "sourceFile": "cross-project"
+        },
+        {
+            "name": "@commitlint/config-conventional",
+            "from": "21.1.0",
+            "to": "21.2.0",
+            "location": "cross-project",
+            "sourceFile": "cross-project"
+        },
+        {
+            "name": "@commitlint/types",
+            "from": "21.1.0",
+            "to": "21.2.0",
+            "location": "cross-project",
+            "sourceFile": "cross-project"
+        }
+    ],
+    "phase": "done",
+    "status": "ok",
+    "startedAt": "2026-07-18T15:11:03Z",
+    "completedAt": "2026-07-18T15:14:00Z",
+    "errorPhase": null,
+    "errorReason": null
+}

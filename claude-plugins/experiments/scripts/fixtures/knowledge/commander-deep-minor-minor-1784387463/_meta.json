@@ -1,0 +1,9 @@
+{
+    "slug": "commander-deep-minor",
+    "planDirName": "commander-deep-minor-minor-1784387463",
+    "level": "minor",
+    "mode": "cross-project",
+    "createdAt": "2026-07-18T15:11:03Z",
+    "phase": "done",
+    "groupIds": ["commitlint-1", "nx-1"]
+}
