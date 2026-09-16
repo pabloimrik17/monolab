@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/pabloimrik17/monolab/compare/experiments--v1.5.0...experiments--v1.6.0) (2026-09-16)
+
+
+### Features
+
+* **experiments:** comment discipline skills and purge command ([#288](https://github.com/pabloimrik17/monolab/issues/288)) ([0145297](https://github.com/pabloimrik17/monolab/commit/0145297bd1f6b1dc2833d8e357e17b4d46f9351b))
+
 ## [1.5.0](https://github.com/pabloimrik17/monolab/compare/experiments--v1.4.0...experiments--v1.5.0) (2026-07-12)
 
 
