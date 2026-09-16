@@ -9,5 +9,13 @@
     "license": "MIT",
     "repository": "https://github.com/pabloimrik17/monolab",
     "homepage": "https://github.com/pabloimrik17/monolab/tree/main/claude-plugins/experiments",
-    "keywords": ["experiments", "beta", "staging", "skills"]
+    "keywords": ["experiments", "beta", "staging", "skills"],
+    "userConfig": {
+        "knowledge_root": {
+            "type": "string",
+            "title": "Knowledge root",
+            "description": "Overrides the run knowledge base location (default: ~/.claude/experiments/knowledge/). Accepted values: an absolute path, or a `~`-prefixed path; a relative value is rejected. Reaches the knowledge scripts verbatim as the KNOWLEDGE_ROOT environment variable — scripts/lib/knowledge.mjs's resolveKnowledgeRoot() is the only place that expands `~`, applies the default and validates the value. Leave empty to use the built-in default.",
+            "default": ""
+        }
+    }
 }
