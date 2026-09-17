@@ -7,6 +7,6 @@
     "packages/ts-types": "1.1.0",
     "packages/solid-clean": "0.2.1",
     "claude-plugins/commander": "0.2.0",
-    "claude-plugins/experiments": "1.5.0",
+    "claude-plugins/experiments": "1.6.0",
     "claude-plugins/expo-developer": "1.0.0"
 }
