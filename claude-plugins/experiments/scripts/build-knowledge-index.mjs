@@ -211,16 +211,21 @@ function writeBackSupersededBy(hub) {
     return content;
 }
 
-export function buildKnowledgeIndex(root = resolveKnowledgeRoot()) {
+export function buildKnowledgeIndex(
+    root = resolveKnowledgeRoot(),
+    { persistSupersession = true } = {},
+) {
     if (!existsSync(root)) {
         throw new Error(`knowledge root does not exist: ${root}`);
     }
     const runs = readRuns(root);
     const hubs = readHubs(root, runs);
     for (const hub of hubs) computeSupersededBy(hub);
-    for (const hub of hubs) {
-        hub.dir = join(root, "packages");
-        writeBackSupersededBy(hub);
+    if (persistSupersession) {
+        for (const hub of hubs) {
+            hub.dir = join(root, "packages");
+            writeBackSupersededBy(hub);
+        }
     }
 
     const index = {

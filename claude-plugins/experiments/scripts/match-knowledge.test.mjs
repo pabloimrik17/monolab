@@ -1,11 +1,20 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+    cpSync,
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    rmSync,
+    writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "vitest";
 import { copyRunKnowledge } from "./copy-run-knowledge.mjs";
+import { appendPreimageMarker, stripPreimageMarker } from "./lib/knowledge.mjs";
 import { matchKnowledge, recallAgainstRoot } from "./match-knowledge.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -295,6 +304,14 @@ test("recallAgainstRoot: rebuilds a missing index before matching a persisted va
         root,
     });
     const indexPath = join(root, "index.json");
+    const hubPath = join(root, "packages", "@nx__js.md");
+    const staleHub = appendPreimageMarker(
+        stripPreimageMarker(readFileSync(hubPath, "utf8")).replace(
+            "supersededBy: -->",
+            "supersededBy:stale-run -->",
+        ),
+    );
+    writeFileSync(hubPath, staleHub);
     rmSync(indexPath);
     assert.equal(existsSync(indexPath), false);
 
@@ -306,6 +323,12 @@ test("recallAgainstRoot: rebuilds a missing index before matching a persisted va
     assert.equal(result.hits.length, 1);
     assert.equal(result.hits[0].class, "exact");
     assert.equal(result.hits[0].hubPath, "packages/@nx__js.md");
+    assert.equal(readFileSync(hubPath, "utf8"), staleHub);
+    const rebuiltIndex = JSON.parse(readFileSync(indexPath, "utf8"));
+    const rebuiltRange = rebuiltIndex.packages
+        .find((pkg) => pkg.name === "@nx/js")
+        .ranges.find((range) => range.runId === result.hits[0].runId);
+    assert.equal(rebuiltRange.supersededBy, null);
 
     // A scanned version the comparer cannot read — `catalog:`, a dist-tag, a
     // workspace protocol — must cost that one package its hit and nothing

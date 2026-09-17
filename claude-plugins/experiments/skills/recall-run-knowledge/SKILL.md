@@ -43,7 +43,7 @@ printf '%s' '<the emitted groups object, as one-line JSON>' \
 
 Substitute the `groups[]` the run already holds, verbatim. `KNOWLEDGE_ROOT` carries the configured `knowledge_root` unexpanded and unvalidated — `lib/knowledge.mjs` owns the default, the `~` expansion and the relative-path error. If `${CLAUDE_PLUGIN_ROOT}` does not resolve, the script is `scripts/match-knowledge.mjs` at the plugin root.
 
-`--groups -` reads the groups from stdin, so recall creates no file anywhere. Leave `--root` unset: the matcher resolves the knowledge root itself through `lib/knowledge.mjs`, the one definition of that rule, and returns the resolved absolute `root` in its output. Then it rebuilds `index.json` (cheap), restoring a missing cache from durable notes and hubs, and classifies.
+`--groups -` reads the groups from stdin, so recall creates no file anywhere. Leave `--root` unset: the matcher resolves the knowledge root itself through `lib/knowledge.mjs`, the one definition of that rule, and returns the resolved absolute `root` in its output. Then it rebuilds `index.json` through the index-only path (cheap), restoring a missing cache from durable notes and hubs without writing computed `supersededBy` values back to hubs, and classifies.
 
 The matcher owns every rule in `reference/match-classes.md`, so its hits are the verdict: take them as they come, in the order they come.
 

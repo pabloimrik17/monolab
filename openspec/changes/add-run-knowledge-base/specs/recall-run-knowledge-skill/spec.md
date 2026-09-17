@@ -209,7 +209,7 @@ The main SHALL NOT open a package hub, a run note or any raw run artefact under 
 
 Recall SHALL NOT write, move or delete any run artefact, workspace file, registry entry or changelog cache entry.
 
-The groups SHALL reach the matcher on stdin (`--groups -`) rather than through a file, so that no scratch file outside the knowledge root is ever created. The single disk write recall MAY cause is the index rebuild performed by `build-knowledge-index.mjs` before matching, and that write SHALL stay inside the knowledge root. It SHALL write `index.json`, and it MAY refresh a `supersededBy` value in a hub's section marker — the one write the store delta requires of the index builder, script-owned in both cases and re-stamping the note's pre-image. No slot content, no frontmatter other than that marker, and no run note SHALL be altered. A failure of that rebuild SHALL NOT abort the run; it SHALL degrade to no `priorKnowledge` and the `recall failed` digest.
+The groups SHALL reach the matcher on stdin (`--groups -`) rather than through a file, so that no scratch file outside the knowledge root is ever created. The single disk write recall MAY cause is the index-only rebuild performed by `build-knowledge-index.mjs` before matching, and that write SHALL stay inside the knowledge root. It SHALL write `index.json` only. Computed `supersededBy` values SHALL NOT be written back to hub section markers during recall; marker updates are exclusive to persistence. No hub, run note, slot content or frontmatter SHALL be altered. A failure of that rebuild SHALL NOT abort the run; it SHALL degrade to no `priorKnowledge` and the `recall failed` digest.
 
 #### Scenario: No write outside the knowledge root
 
@@ -226,9 +226,9 @@ The groups SHALL reach the matcher on stdin (`--groups -`) rather than through a
 #### Scenario: Index rebuild is the only write
 
 - **WHEN** recall rebuilds the index before matching
-- **THEN** every file written SHALL be under the knowledge root
-- **AND** the writes SHALL be limited to `index.json` and, where a later range now covers an earlier one, that hub section marker's `supersededBy` value with the note's pre-image re-stamped
-- **AND** no slot content and no run note SHALL be modified
+- **THEN** `index.json` SHALL be the only file written
+- **AND** computed `supersededBy` values SHALL remain index-only
+- **AND** no hub, slot content or run note SHALL be modified
 
 #### Scenario: Rebuild failure degrades, never aborts
 

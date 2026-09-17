@@ -188,7 +188,7 @@ export function recallAgainstRoot(root, groupsInput) {
     if (!existsSync(resolvedRoot)) return emptyResult(resolvedRoot, packageCount);
     let index;
     try {
-        index = buildKnowledgeIndex(resolvedRoot);
+        index = buildKnowledgeIndex(resolvedRoot, { persistSupersession: false });
     } catch (err) {
         return {
             ...emptyResult(resolvedRoot, packageCount),
