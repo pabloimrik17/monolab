@@ -50,7 +50,7 @@ Its input SHALL be the emitted `groups[]` — each group carrying its `groupId`,
 
 ### Requirement: No-op when the base is absent
 
-When the resolved knowledge root does not exist, or exists without an `index.json`, the skill SHALL return `{ "hits": [] }` and SHALL emit the digest `Knowledge: no base at <root>`.
+When the resolved knowledge root does not exist, the skill SHALL return `{ "hits": [] }` and SHALL emit the digest `Knowledge: no base at <root>`.
 
 In that case the run SHALL be byte-for-byte today's run plus that one digest line: no `priorKnowledge` SHALL be passed to the workflow, no prompt block SHALL be appended, and no `## Prior runs` section SHALL appear in the dossier.
 
@@ -63,10 +63,11 @@ The same no-op SHALL apply when the base exists but yields no hit and no related
 - **AND** SHALL print `Knowledge: no base at <root>`
 - **AND** SHALL NOT pass `priorKnowledge` to the workflow
 
-#### Scenario: Root without an index
+#### Scenario: Missing index is rebuilt
 
 - **WHEN** the knowledge root exists but contains no `index.json`
-- **THEN** the skill SHALL behave exactly as for a missing root
+- **THEN** the skill SHALL rebuild `index.json` from the durable notes and hubs before matching
+- **AND** the output SHALL carry `baseAbsent: false`
 
 #### Scenario: Run otherwise unchanged
 
@@ -81,7 +82,7 @@ The same no-op SHALL apply when the base exists but yields no hit and no related
 For every scanned package the skill SHALL classify the current `(from → to)` range against the base via `match-knowledge.mjs` into exactly one of four classes. Unless stated otherwise a class requires the candidate to carry the same `name` as the scanned package.
 
 - `exact` — `prior.from == cur.from && prior.to == cur.to`. The hit SHALL carry `delta: null` and SHALL direct the research subagent to copy the hub's `### Universal` section instead of researching the package.
-- `overlap` — the ranges intersect and are not equal. The hit SHALL carry a `delta` naming the sub-range or sub-ranges of the current range that the prior range does not cover, and SHALL restrict fresh research to that delta.
+- `overlap` — the ranges intersect and are not equal. The hit SHALL carry a `delta` naming the sub-range or sub-ranges of the current range that the prior range does not cover, or `null` when the prior range covers the current range. A non-null `delta` SHALL restrict fresh research to that delta; a null `delta` SHALL direct the subagent to read the prior section and research nothing beyond it.
 - `prior` — `prior.to <= cur.from`. The hit SHALL contribute applicability only, from the hub's `### Applied`, and SHALL NOT contribute findings.
 - `related` — no same-name hit exists for the package and another package in the same `bucketKey` has a hub. The entry SHALL contribute context paths only and SHALL appear in `related[]`, never in `hits[]`.
 
@@ -104,6 +105,13 @@ A package SHALL receive at most one same-name hit. When several candidates match
 - **WHEN** the base holds `@nx/js 23.0.2 → 23.1.0` and the current scan bumps `@nx/js` from `23.0.5` to `23.3.0`
 - **THEN** the hit SHALL carry `"class": "overlap"`
 - **AND** `delta` SHALL be `(23.1.0, 23.3.0]`
+
+#### Scenario: Covering range classifies as overlap with no delta
+
+- **WHEN** the base holds `@nx/js 23.0.0 → 23.2.0` and the current scan bumps `@nx/js` from `23.0.5` to `23.1.0`
+- **THEN** the hit SHALL carry `"class": "overlap"`
+- **AND** `delta` SHALL be `null`
+- **AND** the prompt SHALL direct the subagent to read the prior section and research nothing beyond it
 
 #### Scenario: Sibling in the same bucket is related
 
@@ -153,7 +161,7 @@ The skill SHALL produce one JSON object with five top-level keys: the three belo
 
 `root` — the resolved absolute knowledge root. It SHALL be present on every output, including the absent-base and failure shapes, because `hubPath` and `notePath` are relative to it and the dispatch prompt's `Knowledge root:` line is what makes them openable.
 
-`baseAbsent` — `true` when the root is missing or holds no `index.json`, `false` otherwise. A base that exists but cannot be rebuilt SHALL NOT set it; that case SHALL carry `baseAbsent: false` and an additional `error` key naming the reason, so the caller reports `recall failed` rather than asserting a base that is not there.
+`baseAbsent` — `true` when the root is missing, `false` otherwise. A base that exists but cannot be rebuilt SHALL carry `baseAbsent: false` and an additional `error` key naming the reason, so the caller reports `recall failed` rather than asserting a base that is not there.
 
 This is the object the workflow receives as `priorKnowledge`, so it SHALL match the shape the `parallel-research-workflow` delta fixes for that input.
 

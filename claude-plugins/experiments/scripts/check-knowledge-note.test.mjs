@@ -51,8 +51,8 @@ function runNoteBody(summary = "Did the thing.") {
     ].join("\n");
 }
 
-function compliantRunNote() {
-    return appendPreimageMarker(serializeFrontmatter(runNoteData(), runNoteBody()));
+function compliantRunNote(overrides = {}) {
+    return appendPreimageMarker(serializeFrontmatter(runNoteData(overrides), runNoteBody()));
 }
 
 function hubData(overrides = {}) {
@@ -266,6 +266,20 @@ test("--mark-draft: a compliant note reports status ok and writes nothing", () =
     assert.equal(result.ok, true);
     assert.equal(result.status, "ok");
     assert.equal(readFileSync(notePath, "utf8"), original);
+});
+
+test("--mark-draft: clean revalidation restores a draft run note to ok", () => {
+    const dir = mkdtempSync(join(tmpdir(), "check-knowledge-restore-ok-"));
+    const notePath = join(dir, "run-a.md");
+    writeFileSync(notePath, compliantRunNote({ status: "draft" }));
+
+    const result = checkKnowledgeNotes([notePath], { markDraft: true });
+    assert.equal(result.ok, true);
+    assert.equal(result.status, "ok");
+
+    const restored = readFileSync(notePath, "utf8");
+    assert.equal(parseFrontmatter(restored).data.status, "ok");
+    assert.deepEqual(checkKnowledgeNotes([notePath]), { ok: true, violations: [] });
 });
 
 test("--mark-draft: marks the run note even when a hub file in the same batch is what failed", () => {

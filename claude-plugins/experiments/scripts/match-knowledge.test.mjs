@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { cpSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -209,7 +209,7 @@ test("no candidate and no related bucket sibling: package is neither a hit nor r
 });
 
 test("recallAgainstRoot: no-op with the absent-base shape when the root does not exist", () => {
-    const root = join(tmpdir(), "no-such-knowledge-root");
+    const root = join(mkdtempSync(join(tmpdir(), "match-absent-root-")), "vault");
     const result = recallAgainstRoot(
         root,
         groupsWith([{ name: "@nx/js", from: "1.0.0", to: "1.0.1" }]),
@@ -243,7 +243,7 @@ test("recallAgainstRoot: a base that exists but cannot be rebuilt is not an abse
 
 test("recallAgainstRoot: resolves the root itself when omitted, absent-base shape names it", () => {
     const prevEnv = process.env.KNOWLEDGE_ROOT;
-    const root = join(tmpdir(), "no-such-knowledge-root-2");
+    const root = join(mkdtempSync(join(tmpdir(), "match-env-absent-root-")), "vault");
     process.env.KNOWLEDGE_ROOT = root;
     try {
         const result = recallAgainstRoot(
@@ -258,7 +258,7 @@ test("recallAgainstRoot: resolves the root itself when omitted, absent-base shap
     }
 });
 
-test("recallAgainstRoot: end-to-end against a real persisted vault", () => {
+test("recallAgainstRoot: rebuilds a missing index before matching a persisted vault", () => {
     const dest = join(
         mkdtempSync(join(tmpdir(), "match-run-")),
         "commander-deep-minor-minor-1784387463",
@@ -294,8 +294,13 @@ test("recallAgainstRoot: end-to-end against a real persisted vault", () => {
         },
         root,
     });
+    const indexPath = join(root, "index.json");
+    rmSync(indexPath);
+    assert.equal(existsSync(indexPath), false);
+
     const groups = groupsWith([{ name: "@nx/js", from: "23.0.2", to: "23.1.0" }]);
     const result = recallAgainstRoot(root, groups);
+    assert.equal(existsSync(indexPath), true);
     assert.equal(result.root, root);
     assert.equal(result.baseAbsent, false);
     assert.equal(result.hits.length, 1);

@@ -37,8 +37,11 @@ function parseArgs(argv) {
     const args = {};
     for (let i = 0; i < argv.length; i++) {
         const a = argv[i];
-        if (a === "--root") args.root = argv[++i];
-        else fail(`unknown argument "${a}"`);
+        if (a === "--root") {
+            const root = argv[++i];
+            if (!root || root.startsWith("--")) fail("--root requires a directory");
+            args.root = root;
+        } else fail(`unknown argument "${a}"`);
     }
     return args;
 }
@@ -82,18 +85,36 @@ function findGroupInfo(root, runId, packageName) {
 }
 
 /** `## <from> → <to>` headings and their marker, a blank line apart per the note templates. */
+export function parseRangeHeading(line) {
+    if (!line.startsWith("## ")) return null;
+
+    const heading = line.slice(3).trim();
+    const unicodeIndex = heading.indexOf("→");
+    const asciiIndex = heading.indexOf("->");
+    if (unicodeIndex === -1 && asciiIndex === -1) return null;
+
+    const useAscii = asciiIndex !== -1 && (unicodeIndex === -1 || asciiIndex < unicodeIndex);
+    const separatorIndex = useAscii ? asciiIndex : unicodeIndex;
+    const separatorWidth = useAscii ? 2 : 1;
+    const from = heading.slice(0, separatorIndex).trim();
+    const to = heading.slice(separatorIndex + separatorWidth).trim();
+    if (!from || !to) return null;
+
+    return { from, to };
+}
+
 function extractSections(body) {
     const lines = body.split("\n");
     const sections = [];
     for (let i = 0; i < lines.length; i++) {
-        const h = /^## (.+?)\s*(?:→|->)\s*(.+?)\s*$/.exec(lines[i]);
-        if (!h) continue;
+        const range = parseRangeHeading(lines[i]);
+        if (!range) continue;
         const found = findSectionMarker(lines, i);
         if (!found) continue;
         sections.push({
-            from: h[1].trim(),
-            to: h[2].trim(),
-            anchor: `${h[1].trim()} → ${h[2].trim()}`,
+            from: range.from,
+            to: range.to,
+            anchor: `${range.from} → ${range.to}`,
             marker: found.marker,
             rawLine: lines[found.index],
         });
@@ -156,7 +177,12 @@ function computeSupersededBy(hub) {
         let bestRunId = null;
         let bestCreatedAt = null;
         for (const newer of hub.ranges) {
-            if (newer === older || !covers(newer, older)) continue;
+            if (
+                newer === older ||
+                !covers(newer, older) ||
+                !(new Date(newer.createdAt) > new Date(older.createdAt))
+            )
+                continue;
             if (bestRunId === null || new Date(newer.createdAt) > new Date(bestCreatedAt)) {
                 bestRunId = newer.runId;
                 bestCreatedAt = newer.createdAt;

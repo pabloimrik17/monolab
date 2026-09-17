@@ -29,7 +29,7 @@ The workflow's phase 0 (stale-cleanup), phase 1 (changelogs), phase 2 (research)
 
 #### Scenario: Absent knowledge base leaves the deep run unchanged
 
-- **WHEN** the resolved knowledge root has no `index.json`
+- **WHEN** the resolved knowledge root does not exist
 - **THEN** the skill emits `Knowledge: no base at <root>` and invokes the workflow with no `priorKnowledge` input
 - **AND** every group is dispatched for fresh research exactly as it would be with Step 6.5.3b absent
 
@@ -50,10 +50,10 @@ When `mode === "deep"` and the gate option is `apply-all` or `apply-bumps-only`,
 - **Step 10b.5 — Run knowledge persistence** (fires whenever Step 10a ran: after the last project's Step 10b round, or directly after Step 10a when no changeset round applied, and always before Step 10c end-of-flow cleanup): the skill SHALL
 
   1. Write `_meta.json.phase` as `"done"` atomically (temp sibling, then rename); `"executing"` SHALL have been written the same way when Step 10a began, before the first project's manifests were touched.
-  2. Assemble the outcome object (the store's `outcome.json` shape, without `recordedAt`) carrying `runId`, `level`, `mode`, the selected `gateOption`, and **one `projects[]` entry per project** that reached apply — `projectName`, `mechanism` `apply-npm-updates` (dependency levels) or `apply-engine-bumps` (`level=engines`), `bumps` set to that project's returned result fragment verbatim, and `changeset` recording that project's gate `status` (`approved`, `rejected`, `skipped`, `not-run`, `unknown`), its run-dir-relative `path` (or `null`), and its applicable and inapplicable counts (`null` when the project has no changeset).
+  2. Assemble the outcome object (the store's `outcome.json` shape, without `recordedAt`) carrying `runId`, `level`, `mode`, the selected `gateOption`, and **one `projects[]` entry per project** that reached apply — `projectName`, `mechanism` `apply-npm-updates` (dependency levels) or `apply-engine-bumps` (`level=engines`), `bumps` set to that project's returned result fragment verbatim, and `changeset` recording that project's gate `status` (`approved`, `verification-failed`, `rejected`, `skipped`, `not-run`, `unknown`), its run-dir-relative `path` (or `null`), and its applicable and inapplicable counts (`null` when the project has no changeset).
   3. Invoke `persist-run-knowledge` with `{ runDir, outcome }` **exactly once for the whole run** — one run note covering every project, never one invocation per project; the skill stamps `recordedAt` and writes `<plan-dir>/outcome.json`, the orchestrator SHALL NOT write it — and surface its one-line digest for the Step 11 `Knowledge:` line.
 
-  The skill SHALL skip persistence, emitting `Knowledge: not persisted (<reason>)` and nothing else, when the user selected `cancel`, when the run ended in any `abort`, or when the run-level `outcome` derived from the assembled outcome object is `failed` (no project's `bumps.failure` is `null`). A project whose changeset reported `Applicable (0)` SHALL still be persisted. Persistence SHALL NOT alter any apply, changeset, or skip section of the Step 11 summary; a failure inside `persist-run-knowledge` SHALL surface as `Knowledge: not persisted (<reason>)`, SHALL NOT abort the run, and SHALL NOT prevent Step 10c from firing.
+  The skill SHALL skip persistence, emitting `Knowledge: not persisted (<reason>)` and nothing else, when the user selected `cancel`, when the run ended in any `abort`, or when the run-level `outcome` derived from the assembled outcome object is `failed` (no project's `bumps.failure` is absent or `null`). A project whose changeset reported `Applicable (0)` SHALL still be persisted. Persistence SHALL NOT alter any apply, changeset, or skip section of the Step 11 summary; a failure inside `persist-run-knowledge` SHALL surface as `Knowledge: not persisted (<reason>)`, SHALL NOT abort the run, and SHALL NOT prevent Step 10c from firing.
 
 The orchestrator SHALL NOT apply improvement edits itself. When the gate is rejected for a project, the skill SHALL print `Improvements rejected at the changeset gate. No improvement edits applied; bumps are preserved.` for that project and continue to the next.
 

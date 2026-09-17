@@ -80,6 +80,10 @@ test("computeRunOutcome: applied, partial, failed, empty", () => {
         "applied",
     );
     assert.equal(
+        computeRunOutcome({ projects: [{ bumps: { resolvedTargets: {}, applied: [] } }] }),
+        "applied",
+    );
+    assert.equal(
         computeRunOutcome({
             projects: [{ bumps: { failure: null } }, { bumps: { failure: "boom" } }],
         }),
@@ -469,13 +473,15 @@ test("copyRunKnowledge: --synthetic tags the note and every hub marker", () => {
 });
 
 test("copyRunKnowledge: several outcome.projects[] entries for one project (per-bucket apply) render as one project row", () => {
-    // level: major with per-bucket worktrees runs apply once per bucket, so
-    // outcome.projects[] carries several entries sharing one projectName.
+    // Per-bucket worktrees (level: major in the real flow) run apply once per
+    // bucket, so outcome.projects[] carries several entries sharing one
+    // projectName. The fixture's own level is what the outcome has to declare —
+    // the writer rejects an identity that disagrees with `_meta.json`.
     const runDir = cloneFixture("dryrun-alpha-minor-1783854242");
     const root = tempRoot();
     const outcome = {
         runId: "dryrun-alpha-minor-1783854242",
-        level: "major",
+        level: "minor",
         mode: "single-project",
         gateOption: "apply-all",
         projects: [

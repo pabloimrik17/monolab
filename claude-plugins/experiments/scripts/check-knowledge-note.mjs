@@ -235,17 +235,17 @@ export function checkKnowledgeNote(file, content) {
 }
 
 /**
- * `--mark-draft`: on residual violations, writes `status: draft` into the
- * run note among `files` (frontmatter is script-owned; never edited by a
- * model). The hub files, if any, carry no `status` field of their own —
- * recall excludes them transitively, via the range's owning run.
+ * `--mark-draft`: writes the validation result into the run note among
+ * `files` (`draft` on residual violations, `ok` after clean revalidation).
+ * Frontmatter is script-owned; a model never edits it. Hub files carry no
+ * `status` field — recall excludes them through the range's owning run.
  */
-function markRunNoteDraft(contents) {
+function writeRunNoteStatus(contents, status) {
     const runEntry = contents.find(({ content }) => parseFrontmatter(content).data.type === "run");
     if (!runEntry) return;
     const { data, body } = parseFrontmatter(runEntry.content);
-    if (data.status === "draft") return;
-    data.status = "draft";
+    if (data.status === status) return;
+    data.status = status;
     // Frontmatter is script-owned content outside every slot, so this write
     // has to restamp the hash it invalidates — otherwise the note reports an
     // `edited-outside-slot` violation forever after, on top of the real one.
@@ -261,7 +261,7 @@ export function checkKnowledgeNotes(files, { root, markDraft = false } = {}) {
     const result = { ok: violations.length === 0, violations };
     if (markDraft) {
         const status = violations.length === 0 ? "ok" : "draft";
-        if (status === "draft") markRunNoteDraft(contents);
+        writeRunNoteStatus(contents, status);
         result.status = status;
     }
     return result;

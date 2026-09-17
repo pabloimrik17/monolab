@@ -25,7 +25,7 @@ Print `Usage: /experiments:knowledge-recall <pkg> [<from> <to>]` and stop — do
 KNOWLEDGE_ROOT="${user_config.knowledge_root}" node -e "import('${CLAUDE_PLUGIN_ROOT}/scripts/lib/knowledge.mjs').then(m => process.stdout.write(m.resolveKnowledgeRoot()))"
 ```
 
-Check `<root>/index.json`. A missing root or a missing `index.json` is the same outcome: print `Knowledge: no base at <root>` and stop. Neither is an error — no stack trace, no script invocation echoed.
+Check `<root>`. When it is missing, print `Knowledge: no base at <root>` and stop. This is not an error — no stack trace, no script invocation echoed. A missing `index.json` is a cache miss: the ranged form's matcher rebuilds it before matching, while the package-only form reads the durable hub directly.
 
 ## Step 2 — dispatch on argument form
 

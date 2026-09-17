@@ -43,13 +43,13 @@ printf '%s' '<the emitted groups object, as one-line JSON>' \
 
 Substitute the `groups[]` the run already holds, verbatim. `KNOWLEDGE_ROOT` carries the configured `knowledge_root` unexpanded and unvalidated — `lib/knowledge.mjs` owns the default, the `~` expansion and the relative-path error. If `${CLAUDE_PLUGIN_ROOT}` does not resolve, the script is `scripts/match-knowledge.mjs` at the plugin root.
 
-`--groups -` reads the groups from stdin, so recall creates no file anywhere. Leave `--root` unset: the matcher resolves the knowledge root itself through `lib/knowledge.mjs`, the one definition of that rule, and returns the resolved absolute `root` in its output. Then it rebuilds `index.json` (cheap) and classifies.
+`--groups -` reads the groups from stdin, so recall creates no file anywhere. Leave `--root` unset: the matcher resolves the knowledge root itself through `lib/knowledge.mjs`, the one definition of that rule, and returns the resolved absolute `root` in its output. Then it rebuilds `index.json` (cheap), restoring a missing cache from durable notes and hubs, and classifies.
 
 The matcher owns every rule in `reference/match-classes.md`, so its hits are the verdict: take them as they come, in the order they come.
 
 ### 2. No base, no run change
 
-When the output carries `baseAbsent: true` — no root on disk, or a root without an `index.json` — stop:
+When the output carries `baseAbsent: true` — no root on disk — stop:
 
 - Return `{ "hits": [] }`.
 - Emit `Knowledge: no base at <root>`, with the `root` the matcher resolved.
@@ -89,7 +89,7 @@ One JSON object with three top-level keys:
 - `related[]` — one entry per context-only package: `name`, `groupId`, `bucketKey`, `hubs[]`.
 - `summary` — `exact`, `overlap`, `prior`, `related`, and `packages`, the number of scanned packages considered.
 
-Two matcher-set fields travel with it: `root`, the resolved absolute knowledge root, which the prompt block prints so root-relative paths resolve; and `baseAbsent`, the flag step 2 branches on. A third, `error`, appears only when the base exists but could not be rebuilt — step 4's case.
+Two matcher-set fields travel with it: `root`, the resolved absolute knowledge root, which the prompt block prints so root-relative paths resolve; and `baseAbsent`, true only when that root does not exist. A third, `error`, appears only when the base exists but could not be rebuilt — step 4's case.
 
 `hits[]` and `related[]` are disjoint: a package lands in one or the other, never both.
 

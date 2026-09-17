@@ -1,15 +1,17 @@
 import assert from "node:assert/strict";
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "vitest";
-import { buildKnowledgeIndex } from "./build-knowledge-index.mjs";
+import { buildKnowledgeIndex, parseRangeHeading } from "./build-knowledge-index.mjs";
 import { copyRunKnowledge } from "./copy-run-knowledge.mjs";
 import { verifyPreimage } from "./lib/knowledge.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FIXTURES = join(HERE, "fixtures", "knowledge");
+const SCRIPT = join(HERE, "build-knowledge-index.mjs");
 
 function cloneFixture(name) {
     const dest = join(mkdtempSync(join(tmpdir(), "index-run-")), name);
@@ -150,10 +152,39 @@ test("the index survives deletion: a rebuild restores it from notes and hubs alo
 });
 
 test("buildKnowledgeIndex throws for a missing root", () => {
-    assert.throws(() => buildKnowledgeIndex(join(tmpdir(), "does-not-exist-knowledge-root")));
+    const root = join(mkdtempSync(join(tmpdir(), "index-absent-root-")), "vault");
+    assert.throws(() => buildKnowledgeIndex(root));
 });
 
-test("supersededBy: a later covering range is recorded on the older marker, content untouched", () => {
+test("CLI: --root without a directory returns a usage error before writing", () => {
+    const defaultRoot = join(mkdtempSync(join(tmpdir(), "index-missing-root-")), "vault");
+    const result = spawnSync(process.execPath, [SCRIPT, "--root"], {
+        encoding: "utf8",
+        env: { ...process.env, KNOWLEDGE_ROOT: defaultRoot },
+    });
+
+    assert.equal(result.status, 2);
+    assert.equal(result.stdout, "");
+    assert.equal(result.stderr, "build-knowledge-index: --root requires a directory\n");
+    assert.equal(existsSync(defaultRoot), false);
+});
+
+test.each([
+    ["Unicode", "## 1.0.0 → 1.1.0"],
+    ["ASCII", "## 1.0.0 -> 1.1.0"],
+])("parseRangeHeading accepts the %s separator", (_separator, heading) => {
+    assert.deepEqual(parseRangeHeading(heading), { from: "1.0.0", to: "1.1.0" });
+});
+
+test("parseRangeHeading rejects a long malformed heading", () => {
+    assert.equal(parseRangeHeading(`## ${" ".repeat(100_000)}`), null);
+});
+
+test.each([
+    ["later", "2026-08-01T00:00:00Z", true],
+    ["earlier", "2026-07-01T00:00:00Z", false],
+    ["equally dated", "2026-07-18T15:11:03Z", false],
+])("supersededBy: %s covering run respects chronology", (_timing, createdAt, supersedes) => {
     const root = tempRoot();
     seedBothFixtures(root);
 
@@ -161,7 +192,7 @@ test("supersededBy: a later covering range is recorded on the older marker, cont
     const metaPath = join(runDir, "_meta.json");
     const meta = JSON.parse(readFileSync(metaPath, "utf8"));
     meta.planDirName = "commander-deep-minor-minor-1790000000";
-    meta.createdAt = "2026-08-01T00:00:00Z";
+    meta.createdAt = createdAt;
     writeFileSync(metaPath, JSON.stringify(meta, null, 2));
     const groupMetaPath = join(runDir, "groups", "nx-1", "_meta.json");
     const groupMeta = JSON.parse(readFileSync(groupMetaPath, "utf8"));
@@ -174,22 +205,24 @@ test("supersededBy: a later covering range is recorded on the older marker, cont
         readFileSync(researchPath, "utf8").replace("(23.0.2 → 23.1.0)", "(23.0.0 → 23.2.0)"),
     );
 
-    const laterOutcome = {
+    const coveringOutcome = {
         ...CROSS_OUTCOME,
         runId: meta.planDirName,
         projects: CROSS_OUTCOME.projects.map((p) => ({ ...p })),
     };
-    copyRunKnowledge({ runDir, outcome: laterOutcome, root });
+    copyRunKnowledge({ runDir, outcome: coveringOutcome, root });
 
     const index = buildKnowledgeIndex(root);
     const nxHub = index.packages.find((p) => p.name === "@nx/js");
-    const older = nxHub.ranges.find((r) => r.to === "23.1.0");
-    const newer = nxHub.ranges.find((r) => r.to === "23.2.0");
-    assert.equal(older.supersededBy, newer.runId);
-    assert.equal(newer.supersededBy, null);
+    const covered = nxHub.ranges.find((r) => r.to === "23.1.0");
+    const covering = nxHub.ranges.find((r) => r.to === "23.2.0");
+    assert.equal(covered.supersededBy, supersedes ? covering.runId : null);
+    assert.equal(covering.supersededBy, null);
 
     const hubContent = readFileSync(join(root, "packages", "@nx__js.md"), "utf8");
-    assert.match(hubContent, new RegExp(`supersededBy:${newer.runId}`));
+    const supersededMarker = new RegExp(`supersededBy:${covering.runId}`);
+    if (supersedes) assert.match(hubContent, supersededMarker);
+    else assert.doesNotMatch(hubContent, supersededMarker);
     assert.match(hubContent, /## 23\.0\.2 → 23\.1\.0/);
     // The marker is script-owned content outside every slot, so the rewrite has
     // to restamp the pre-image hash the validator checks; without it the next

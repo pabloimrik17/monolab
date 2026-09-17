@@ -362,7 +362,7 @@ Capture the returned object as `priorKnowledge` and pass it into 6.5.4. A hit SH
 Knowledge: <e> exact, <o> overlap, <p> prior, <r> related of <n> packages
 ```
 
-**No base.** When the resolved knowledge root has no `index.json`, `recall-run-knowledge` returns `{ hits: [] }` and the digest `Knowledge: no base at <root>`. Invoke 6.5.4 with **no** `priorKnowledge` input — omit the key entirely. Every group is dispatched for fresh research and the rest of the deep run is byte-for-byte what it was before this step existed.
+**No base.** When the resolved knowledge root does not exist, `recall-run-knowledge` returns `{ hits: [] }` and the digest `Knowledge: no base at <root>`. Invoke 6.5.4 with **no** `priorKnowledge` input — omit the key entirely. Every group is dispatched for fresh research and the rest of the deep run is byte-for-byte what it was before this step existed. A missing `index.json` is rebuilt and does not take this path.
 
 **Recall failure is non-fatal.** When `recall-run-knowledge` errors, continue the run with no prior knowledge — omit the `priorKnowledge` key at 6.5.4 exactly as on the no-base path — and surface `Knowledge: recall failed (<reason>)`. Recall SHALL NOT block a run.
 
@@ -860,7 +860,7 @@ Build **one** object for the whole run from fragments the orchestrator already h
 - `changeset.path` is run-dir-relative (`changesets/<projectName>/changeset.md`), or `null` when the project has no changeset.
 - `changeset.applicable` / `changeset.inapplicable` are the counts from that project's `## Applicable (<N>)` / `## Inapplicable (<M>)` headings — already in hand from the 10b.3 gate read and the 10b.4 recording, no new read — and `null` when the project has no changeset.
 
-The run-level outcome derives from the same object and decides whether the run is persisted at all: **`applied`** when every entry's `bumps.failure` is `null`, **`partial`** when at least one is `null`, **`failed`** otherwise.
+The run-level outcome derives from the same object and decides whether the run is persisted at all: **`applied`** when every entry's `bumps.failure` is absent or `null`, **`partial`** when at least one entry is clean and another is not, **`failed`** otherwise.
 
 #### 10b.5.3 Persist once for the run
 
@@ -891,7 +891,7 @@ Skip the invocation entirely — writing nothing under the knowledge root, not e
     A failure **after** apply started is NOT an abort in this sense — it is an `apply-*` path. A 10b.2 pre-gate abort and a 10b.4 apply-verification failure both leave bumps on disk: `phase: "done"` is written and the run IS persisted.
 
 - **No project reached apply** — `projects[]` is empty (every project hit the 10.1 empty-subset skip), so nothing was applied. Reason `nothing applied`. `copy-run-knowledge.mjs` refuses this case as well; stopping here is belt and braces.
-- **The run-level outcome is `failed`** — no entry's `bumps.failure` is `null`, i.e. every project that reached apply failed. Reason `outcome failed`, the exact string `persist-run-knowledge` returns for this case. Step 10c still fires.
+- **The run-level outcome is `failed`** — no entry's `bumps.failure` is absent or `null`, i.e. every project that reached apply failed. Reason `outcome failed`, the exact string `persist-run-knowledge` returns for this case. Step 10c still fires.
 
 `Applicable (0)` is not a skip condition: "nothing applied at this range" is itself reusable, and the run is persisted normally. An `apply-bumps-only` run IS persisted, with `changeset.status` `not-run` and `path` `null` for every project.
 

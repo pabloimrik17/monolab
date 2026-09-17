@@ -33,13 +33,13 @@ The window matters. The run directory is offered for deletion at the cleanup pro
 
 Derive the run-level outcome from `outcome.projects[]`. The refusals come first — a run with nothing to record is refused before any label is applied:
 
-| Condition                                     | Run-level outcome | Action                                                                |
-| --------------------------------------------- | ----------------- | --------------------------------------------------------------------- |
-| `projects[]` is empty                         | —                 | Persist nothing. Return `Knowledge: not persisted (nothing applied)`. |
-| No project's `bumps.failure` is `null`        | `failed`          | Persist nothing. Return `Knowledge: not persisted (outcome failed)`.  |
-| Every project's `bumps.failure` is `null`     | `applied`         | Persist.                                                              |
-| Some `bumps.failure` are `null`, some are not | `partial`         | Persist. What landed is still reusable.                               |
-| Any project's `mechanism` is `reconstructed`  | `legacy`          | Persist. A reconstruction cannot prove a failure.                     |
+| Condition                                               | Run-level outcome | Action                                                                |
+| ------------------------------------------------------- | ----------------- | --------------------------------------------------------------------- |
+| `projects[]` is empty                                   | —                 | Persist nothing. Return `Knowledge: not persisted (nothing applied)`. |
+| No project's `bumps.failure` is absent or `null`        | `failed`          | Persist nothing. Return `Knowledge: not persisted (outcome failed)`.  |
+| Every project's `bumps.failure` is absent or `null`     | `applied`         | Persist.                                                              |
+| Some `bumps.failure` are absent or `null`, some are not | `partial`         | Persist. What landed is still reusable.                               |
+| Any project's `mechanism` is `reconstructed`            | `legacy`          | Persist. A reconstruction cannot prove a failure.                     |
 
 `legacy` is a label, not a fourth outcome: it replaces `applied` / `partial` on a run whose entries were rebuilt from a run directory rather than reported by an apply mechanism, and it carries `source: seeded-legacy`. An empty `projects[]` derives vacuously to `applied` if you let it — that is the case the first row exists to catch.
 

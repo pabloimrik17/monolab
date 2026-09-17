@@ -45,6 +45,8 @@ import {
     CHANGESET_STATUSES,
     emptySlot,
     findSectionMarker,
+    findSlots,
+    isSlotUnfilled,
     parseFrontmatter,
     parseResearchPackages,
     pkgSlug,
@@ -149,19 +151,30 @@ function readExistingOutcome(runDir) {
     }
 }
 
+/**
+ * A reconstruction carries apply evidence or it carries nothing: a run
+ * directory with neither a changeset nor an apply log has no record that an
+ * apply ever happened, so it emits no project and `computeRunOutcome` refuses
+ * the run as `empty` — the same outcome a cross-project directory with no
+ * changeset already gets, instead of a synthesised clean `bumps.failure: null`.
+ */
+function reconstructedProjects(runDir, meta, changesetFiles) {
+    if (meta.mode !== "single-project") {
+        return changesetFiles.map((cf) => reconstructedProject(cf.project, cf, runDir));
+    }
+    if (changesetFiles.length === 0 && !hasApplyLog(runDir)) return [];
+    return [reconstructedProject(meta.slug, changesetFiles[0] ?? null, runDir)];
+}
+
 /** A run directory with no `outcome.json`: reconstruct one (D5/persist-skill "Legacy run handling"). */
 export function reconstructOutcome(runDir, meta) {
     const changesetFiles = findChangesetFiles(runDir);
-    const projects =
-        meta.mode === "single-project"
-            ? [reconstructedProject(meta.slug, changesetFiles[0] ?? null, runDir)]
-            : changesetFiles.map((cf) => reconstructedProject(cf.project, cf, runDir));
     return {
         runId: meta.planDirName,
         level: meta.level,
         mode: meta.mode,
         gateOption: "unknown",
-        projects,
+        projects: reconstructedProjects(runDir, meta, changesetFiles),
     };
 }
 
@@ -362,6 +375,33 @@ function packageOutcomeWord({ text, anyApplicable }) {
     return anyApplicable ? "applicable" : "no findings";
 }
 
+/**
+ * Slot content is model-owned — the preimage hash blanks slots for exactly
+ * that reason — so regenerating the script-owned text around it must not throw
+ * it away: every slot the subagent already filled is carried across into the
+ * freshly built text, keyed by slot name. Unfilled slots (blank,
+ * `<!-- distill -->`, `<!-- no-research -->`) regenerate normally.
+ */
+function carryFilledSlots(oldContent, newContent) {
+    if (!oldContent) return newContent;
+    const filled = new Map(
+        findSlots(oldContent)
+            .filter((s) => !isSlotUnfilled(s.content))
+            .map((s) => [s.name, s.content]),
+    );
+    if (filled.size === 0) return newContent;
+    let out = "";
+    let cursor = 0;
+    for (const slot of findSlots(newContent)) {
+        const kept = filled.get(slot.name);
+        if (kept === undefined) continue;
+        out += newContent.slice(cursor, slot.start);
+        out += `<!-- slot:${slot.name} -->\n${kept}<!-- /slot -->`;
+        cursor = slot.end;
+    }
+    return out + newContent.slice(cursor);
+}
+
 function replaceOrAppendSection(body, runId, newSection) {
     const lines = body.split("\n");
     const headingIdxs = [];
@@ -373,7 +413,8 @@ function replaceOrAppendSection(body, runId, newSection) {
         const end = h + 1 < headingIdxs.length ? headingIdxs[h + 1] : lines.length;
         const found = findSectionMarker(lines, start);
         if (found && found.marker.runId === runId) {
-            return [...lines.slice(0, start), ...newSection.split("\n"), ...lines.slice(end)].join(
+            const merged = carryFilledSlots(lines.slice(start, end).join("\n"), newSection);
+            return [...lines.slice(0, start), ...merged.split("\n"), ...lines.slice(end)].join(
                 "\n",
             );
         }
@@ -534,14 +575,50 @@ function buildRunNote(m) {
     return serializeFrontmatter(data, body);
 }
 
+/**
+ * `planDirName` is read from the run's own `_meta.json` and becomes a path
+ * segment under the vault. A hand-edited or seeded record carrying `..` or a
+ * separator would make `copyAllowlisted` and the run-note write land outside
+ * `<root>/runs/`; keep it one plain component.
+ */
+function assertSafeRunId(runId) {
+    if (
+        typeof runId !== "string" ||
+        runId === "" ||
+        runId === "." ||
+        runId === ".." ||
+        /[/\\]/.test(runId)
+    ) {
+        throw new Error(
+            `_meta.json planDirName must be a single path component, got ${JSON.stringify(runId)}`,
+        );
+    }
+}
+
 export function copyRunKnowledge({ runDir, outcome = null, synthetic = false, root = null }) {
     const meta = readJson(join(runDir, "_meta.json"));
+    assertSafeRunId(meta.planDirName);
     // Reconstruction is the last resort, not the default: a run directory that
     // already holds an `outcome.json` holds the real apply record, and
     // rebuilding one over it would downgrade a persisted `applied` run to
     // `legacy` and lose the gate option and changeset statuses for good.
     const resolvedOutcome =
         outcome ?? readExistingOutcome(runDir) ?? reconstructOutcome(runDir, meta);
+    // The note and every hub marker are stamped from `_meta.json`, while
+    // `outcome.json` is written from the outcome object. A disagreement would
+    // persist one run's apply record against another run's metadata and
+    // artefacts, so refuse it before bootstrapping the vault.
+    for (const [field, metaValue] of [
+        ["runId", meta.planDirName],
+        ["level", meta.level],
+        ["mode", meta.mode],
+    ]) {
+        if (resolvedOutcome[field] !== metaValue) {
+            throw new Error(
+                `outcome.${field} (${JSON.stringify(resolvedOutcome[field])}) does not match _meta.json (${JSON.stringify(metaValue)})`,
+            );
+        }
+    }
     const isLegacySource = (resolvedOutcome.projects ?? []).some(
         (p) => p.mechanism === "reconstructed",
     );
@@ -638,10 +715,11 @@ export function copyRunKnowledge({ runDir, outcome = null, synthetic = false, ro
         packageRows,
         projectGroups,
     });
-    writeFileSync(
-        join(knowledgeRoot, "runs", `${meta.planDirName}.md`),
-        appendPreimageMarker(noteContent),
-    );
+    const notePath = join(knowledgeRoot, "runs", `${meta.planDirName}.md`);
+    const existingNote = existsSync(notePath)
+        ? stripPreimageMarker(readFileSync(notePath, "utf8"))
+        : null;
+    writeFileSync(notePath, appendPreimageMarker(carryFilledSlots(existingNote, noteContent)));
 
     return {
         root: knowledgeRoot,

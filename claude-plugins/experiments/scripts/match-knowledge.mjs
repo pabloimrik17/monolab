@@ -17,17 +17,15 @@
  * outside the knowledge root.
  *
  * Output: JSON `{ root, baseAbsent, hits, related, summary }`, degrading to
- * `hits: [], related: [], baseAbsent: true` when the root is missing or holds
- * no `index.json` — the caller reads `root` and `baseAbsent` to print
- * `Knowledge: no base at <root>` without probing the filesystem itself. A
- * base that exists but cannot be rebuilt is a different thing and carries
- * `baseAbsent: false` plus `error`, so the caller says `recall failed` rather
- * than asserting a base that is not there. Either way the run continues:
- * recall never aborts it.
+ * `hits: [], related: [], baseAbsent: true` when the root is missing — the
+ * caller reads `root` and `baseAbsent` to print `Knowledge: no base at <root>`
+ * without probing the filesystem itself. A base that exists but cannot be
+ * rebuilt is a different thing and carries `baseAbsent: false` plus `error`,
+ * so the caller says `recall failed` rather than asserting a base that is not
+ * there. Either way the run continues: recall never aborts it.
  */
 
 import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { buildKnowledgeIndex } from "./build-knowledge-index.mjs";
 import { bucketKeyFromGroupId, classifyRange, resolveKnowledgeRoot } from "./lib/knowledge.mjs";
 
@@ -187,9 +185,7 @@ export function matchKnowledge(index, groupsInput) {
 export function recallAgainstRoot(root, groupsInput) {
     const resolvedRoot = root ?? resolveKnowledgeRoot();
     const packageCount = flattenGroups(groupsInput).length;
-    if (!existsSync(resolvedRoot) || !existsSync(join(resolvedRoot, "index.json"))) {
-        return emptyResult(resolvedRoot, packageCount);
-    }
+    if (!existsSync(resolvedRoot)) return emptyResult(resolvedRoot, packageCount);
     let index;
     try {
         index = buildKnowledgeIndex(resolvedRoot);

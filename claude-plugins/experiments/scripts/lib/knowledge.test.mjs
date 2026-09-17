@@ -275,6 +275,11 @@ test("classifyRange: intersecting range is overlap with the correct delta", () =
     assert.equal(hit.delta, "(23.1.0, 23.3.0]");
 });
 
+test("classifyRange: a covering range is overlap with no delta", () => {
+    const hit = classifyRange({ from: "23.0.0", to: "23.2.0" }, { from: "23.0.5", to: "23.1.0" });
+    assert.deepEqual(hit, { class: "overlap", delta: null });
+});
+
 test("classifyRange: no relation returns null", () => {
     const hit = classifyRange({ from: "23.5.0", to: "23.6.0" }, { from: "23.1.0", to: "23.2.0" });
     assert.equal(hit, null);
@@ -294,6 +299,11 @@ test("preimage marker: an edit outside the slot fails verification", () => {
     const tampered = written.replace("## x", "## x (tampered)");
     const result = verifyPreimage(tampered);
     assert.equal(result.ok, false);
+});
+
+test.each([" ", "\n"])("preimage marker: rejects trailing bytes %j", (suffix) => {
+    const written = appendPreimageMarker(`## x\n${emptySlot("summary")}\n`);
+    assert.equal(verifyPreimage(`${written}${suffix}`).ok, false);
 });
 
 test("stripPreimageMarker removes the trailing marker cleanly", () => {

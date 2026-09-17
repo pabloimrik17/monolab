@@ -137,11 +137,11 @@ The orchestrator assembles this object (every field except `recordedAt`) from th
   "recordedAt": "<ISO 8601>",
   "projects": [
     {
-      "projectName": "monolab", // single-project: the run slug; one entry per apply invocation,
+      "projectName": "monolab", // single-project: the run slug; one entry per Step 6 apply round,
       //   so a per-bucket apply yields several entries sharing one projectName
       "mechanism": "apply-npm-updates", // apply-npm-updates | apply-engine-bumps | reconstructed (legacy)
       "bumps": {
-        /* verbatim result fragment of the mechanism: appliedGeneric/appliedOverrides/installRan/logPath/failure, or applied/failure for engines */
+        /* returned mechanism fragment verbatim, or the canonical clean no-bump fragment when only the changeset gate ran */
       },
       "changeset": {
         "status": "approved", // approved | rejected | skipped | not-run | verification-failed | unknown
@@ -154,7 +154,9 @@ The orchestrator assembles this object (every field except `recordedAt`) from th
 }
 ```
 
-`outcome` at run level derives from it, as an ordered three-way: `applied` when every entry's `bumps.failure` is `null`; `partial` when at least one entry is clean **and** at least one is not; `failed` when none is clean. An empty `projects[]` means no apply invocation produced an entry — it is **not** vacuously `applied` and is never persisted (digest `Knowledge: not persisted (nothing applied)`). **Persist only `applied` and `partial`**; `failed` and `cancel` persist nothing — "Cancel touches no files" keeps holding, and a run where nothing landed carries no reusable applicability. `Applicable (0)` is an `applied` run and is persisted (the "nothing to apply at this range" fact is itself reusable).
+When the bump mechanism ran, `bumps` is its returned fragment verbatim. An improvement-only round carries a canonical clean no-bump fragment: `{ appliedGeneric: [], appliedOverrides: [], installRan: false, logPath: null, failure: null }` for dependency levels, or `{ resolvedTargets: {}, applied: [], skipped: [], droppedHashes: [] }` for `engines`.
+
+`outcome` at run level derives from it, as an ordered three-way: `applied` when every entry's `bumps.failure` is absent or `null`; `partial` when at least one entry is clean **and** at least one is not; `failed` when none is clean. An empty `projects[]` means no Step 6 apply round reached either the bump mechanism or the changeset gate — it is **not** vacuously `applied` and is never persisted (digest `Knowledge: not persisted (nothing applied)`). **Persist only `applied` and `partial`**; `failed` and `cancel` persist nothing — "Cancel touches no files" keeps holding, and a run where nothing landed carries no reusable applicability. `Applicable (0)` is an `applied` run and is persisted (the "nothing to apply at this range" fact is itself reusable).
 
 `changeset.status` is keyed on one axis — what happened at the changeset gate: `approved` (the gate opened and the user approved, zero-applicable included), `rejected` (the gate opened and the user rejected), `skipped` (the gate could not open because nothing was in scope), `not-run` (the round never reached the gate: `apply-bumps-only`, or it aborted before the gate opened), `verification-failed` (the gate was approved and the edits applied, but the orchestrator's on-disk re-check did not match the approved changeset), `unknown` (`/experiments:knowledge-persist` reconstruction only; a live run never emits it). `verification-failed` exists because the hub's `### Applied` section is the per-project applicability record a later run reads: `approved` there would assert edits that never landed and `skipped` would assert nothing was in scope, and a false applicability fact propagates into runs that do not re-check it. `bumps.failure` is not its home — that records the bump mechanism, not the changeset apply.
 
@@ -176,7 +178,7 @@ _Alternative_: let the subagent write whole notes from a template (rejected: tem
 
 `recall-run-knowledge` runs, in order:
 
-1. `node scripts/match-knowledge.mjs [--root <root>] --groups -` (rebuilds the index first; cheap). `--root` is optional on every knowledge script: omitted, the script calls `resolveKnowledgeRoot(env)` itself, so no skill ever restates D1's rule. Groups arrive on **stdin** (`--groups -`) because they exist only as an in-conversation object and recall may not create a file outside the knowledge root; `--groups <path>` remains for the slash command. The output carries the resolved absolute `root`, and reports a missing `index.json` as data (`baseAbsent: true` with `{ hits: [], related: [] }`) rather than an error — the caller then emits the digest `Knowledge: no base at <root>` and nothing else changes.
+1. `node scripts/match-knowledge.mjs [--root <root>] --groups -` (rebuilds the index first; cheap). `--root` is optional on every knowledge script: omitted, the script calls `resolveKnowledgeRoot(env)` itself, so no skill ever restates D1's rule. Groups arrive on **stdin** (`--groups -`) because they exist only as an in-conversation object and recall may not create a file outside the knowledge root; `--groups <path>` remains for the slash command. The output carries the resolved absolute `root`. A missing root is data (`baseAbsent: true` with `{ hits: [], related: [] }`), so the caller emits `Knowledge: no base at <root>` and nothing else changes. A missing `index.json` is rebuilt from durable notes and hubs before matching.
 2. Output:
 
    ```jsonc
@@ -243,9 +245,12 @@ Recall failure is non-fatal, exactly like persist failure: if the matcher errors
 Knowledge root: <absolute root> — every path below is relative to it.
 - <pkg> <from → to>: EXACT — after fetching its changelog, do not research it. Copy the `### Universal` section of <hubPath> under heading `## <pkg> (<from → to>)` verbatim, first line `source: prior-run <runId>`. [single-project: then write the `(this project)` sections by checking each copied finding against this codebase.]
 - <pkg> <from → to>: OVERLAP with <priorFrom → priorTo> — research only <delta>; read <hubPath> section `<anchor>` first and do not repeat its findings.
+- <pkg> <from → to>: OVERLAP with <priorFrom → priorTo> — the prior range covers this range; read <hubPath> section `<anchor>` first, research nothing beyond it, and do not repeat its findings.
 - <pkg> <from → to>: PRIOR run <priorFrom → priorTo> — its findings do not carry over. Read only `### Applied` under <anchor> for how earlier projects handled this package.
 - <pkg>: RELATED — sibling hubs in bucket <bucketKey>: <paths>. Context only.
 ```
+
+The two `OVERLAP` lines are mutually exclusive: render the first for a non-null `delta`, and the second when the prior range covers the current range and `delta` is `null`.
 
 Phase 4 gains an optional `## Prior runs` H2 placed after `## Skipped or unavailable` and before the bump set, one bullet per `exact|overlap|prior` hit: `- <pkg> <from → to> — <class> hit from [[runs/<runId>]] (<level>, <mode>, <createdAt>)`. Omitted entirely when there is no hit. `check-dossier.mjs` accepts the section as optional in that position (script + test edit). `synthetic` never reaches this section because the match script never emits synthetic hits.
 

@@ -10,7 +10,7 @@ The workflow SHALL accept exactly these inputs:
 - `mode` (optional) — one of `single-project`, `cross-project`. Default `single-project`. Selects the cross-project research contract (universal-only findings, no codebase cross-reference) when `cross-project`.
 - `slugOverride` (optional in single-project mode, REQUIRED in cross-project mode) — string used as the plan-dir basename slug instead of the CWD/`package.json#name`-derived slug. Sanitized identically to derived slugs (lowercase, replace `[^a-z0-9]+` with `-`, trim leading/trailing `-`, truncate to 40 chars).
 - `maxConcurrent` (optional, integer, default `5`) — per-batch concurrency cap; identical to today's contract.
-- `priorKnowledge` (optional) — the recall output object emitted by `recall-run-knowledge`, passed through verbatim: `{ root, baseAbsent, hits, related, summary }`, where `root` is the resolved absolute knowledge root (rendered once at the top of the prior-knowledge block, since every `hubPath` and `notePath` below it is root-relative), `baseAbsent` is `true` when the matcher found no `index.json`, and each `hits[]` entry carries `name`, `from`, `to`, `groupId`, `class` (one of `exact`, `overlap`, `prior`), `runId`, `priorFrom`, `priorTo`, `delta`, `hubPath`, `anchor`, `notePath`, `level`, `mode`, `createdAt`; each `related[]` entry carries `name`, `groupId`, `bucketKey`, `hubs`; and `summary` carries the per-class counts. Default absent.
+- `priorKnowledge` (optional) — the recall output object emitted by `recall-run-knowledge`, passed through verbatim: `{ root, baseAbsent, hits, related, summary }`, where `root` is the resolved absolute knowledge root (rendered once at the top of the prior-knowledge block, since every `hubPath` and `notePath` below it is root-relative), `baseAbsent` is `true` when the resolved root does not exist, and each `hits[]` entry carries `name`, `from`, `to`, `groupId`, `class` (one of `exact`, `overlap`, `prior`), `runId`, `priorFrom`, `priorTo`, `delta`, `hubPath`, `anchor`, `notePath`, `level`, `mode`, `createdAt`; each `related[]` entry carries `name`, `groupId`, `bucketKey`, `hubs`; and `summary` carries the per-class counts. Default absent.
 
 The workflow SHALL reject invocations with:
 
@@ -57,11 +57,12 @@ Each subagent dispatched in phase 1+2 SHALL receive a prompt that explicitly enf
 
 The dispatch prompt SHALL include, at minimum: numbered execution steps; an explicit rule that the `fetch-changelog` executable's output is INTERMEDIATE data and the subagent MUST NOT terminate after invoking it; explicit handling for `no_changelog_source` (write `error.txt`, continue); a required final-response format `<groupId>: ok — <fetched>/<total> changelogs; <researched> researched.`; and a closing reminder that the task is incomplete if `research.md` is missing in the success path or `_meta.json` is not updated.
 
-When the `priorKnowledge` input is present, the prompt for a group SHALL additionally carry, after the mandatory contract above, a block headed `## Prior knowledge (not verified for this project)` holding one directive line per `hits[]` entry whose `groupId` is that group's and one line per `related[]` entry in that group. A group with no hit and no related entry SHALL NOT receive the block. The directive lines SHALL follow these four forms:
+When the `priorKnowledge` input is present, the prompt for a group SHALL additionally carry, after the mandatory contract above, a block headed `## Prior knowledge (not verified for this project)` holding one directive line per `hits[]` entry whose `groupId` is that group's and one line per `related[]` entry in that group. A group with no hit and no related entry SHALL NOT receive the block. The directive lines SHALL follow these four class forms, with two mutually exclusive `OVERLAP` renderings. The first `OVERLAP` line applies when `delta` is non-null and the second when it is `null`:
 
 ```text
 - <pkg> <from → to>: EXACT — after fetching its changelog, do not research it. Copy the `### Universal` section of <hubPath> under heading `## <pkg> (<from → to>)` verbatim, first line `source: prior-run <runId>`. [single-project: then write the `(this project)` sections by checking each copied finding against this codebase.]
 - <pkg> <from → to>: OVERLAP with <priorFrom → priorTo> — research only <delta>; read <hubPath> section `<anchor>` first and do not repeat its findings.
+- <pkg> <from → to>: OVERLAP with <priorFrom → priorTo> — the prior range covers this range; read <hubPath> section `<anchor>` first, research nothing beyond it, and do not repeat its findings.
 - <pkg> <from → to>: PRIOR run <priorFrom → priorTo> — its findings do not carry over. Read only `### Applied` under <anchor> for how earlier projects handled this package.
 - <pkg>: RELATED — sibling hubs in bucket <bucketKey>: <paths>. Context only.
 ```
@@ -87,6 +88,12 @@ The skill SHALL NOT dispatch a subagent with a looser prompt; substitution is a 
 - **WHEN** `priorKnowledge` carries an `overlap` hit whose `delta` is the sub-range not covered by the prior run
 - **THEN** the group's prompt carries an `OVERLAP` line naming `<priorFrom → priorTo>`, the `delta` to research, and the hub section `<anchor>` to read first
 - **AND** the line forbids repeating the prior section's findings
+
+#### Scenario: Covering overlap has no delta to research
+
+- **WHEN** `priorKnowledge` carries an `overlap` hit whose `delta` is `null` because the prior range covers the current range
+- **THEN** the group's prompt carries the covering-range `OVERLAP` line naming `<priorFrom → priorTo>` and the hub section `<anchor>` to read first
+- **AND** the line directs the subagent to research nothing beyond that section and does not render the word `null` as a research scope
 
 #### Scenario: Absent priorKnowledge leaves the prompt untouched
 

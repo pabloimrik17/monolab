@@ -65,7 +65,7 @@ With `<pkg>` alone, it SHALL print the package hub's ranges table derived from t
 
 ### Requirement: Unknown package and absent base
 
-When the knowledge root does not exist or has no `index.json`, the command SHALL print the single line `Knowledge: no base at <root>` and exit.
+When the knowledge root does not exist, the command SHALL print the single line `Knowledge: no base at <root>` and exit. When only `index.json` is missing, the ranged form SHALL rebuild it before matching; the package-only form SHALL read the durable hub directly.
 
 When the base exists but holds no hub for the requested package, the command SHALL print one line saying so and exit.
 

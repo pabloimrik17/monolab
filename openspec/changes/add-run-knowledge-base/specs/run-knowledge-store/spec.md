@@ -197,7 +197,7 @@ The persist skill SHALL write `outcome.json` into the run directory — from the
       "projectName": "monolab", // single-project: the run slug
       "mechanism": "apply-npm-updates", // apply-npm-updates | apply-engine-bumps | reconstructed (legacy)
       "bumps": {
-        /* verbatim result fragment of the mechanism: appliedGeneric/appliedOverrides/installRan/logPath/failure, or applied/failure for engines */
+        /* returned mechanism fragment verbatim, or the canonical clean no-bump fragment when only the changeset gate ran */
       },
       "changeset": {
         "status": "approved", // approved | rejected | skipped | not-run | verification-failed | unknown
@@ -210,9 +210,9 @@ The persist skill SHALL write `outcome.json` into the run directory — from the
 }
 ```
 
-`bumps` SHALL hold the mechanism's result fragment verbatim; it SHALL NOT be reshaped or summarised.
+When the bump mechanism ran, `bumps` SHALL hold its result fragment verbatim; it SHALL NOT be reshaped or summarised. When a Step 6 apply round reached only the changeset gate, `bumps` SHALL be the canonical clean no-bump fragment: `{ appliedGeneric: [], appliedOverrides: [], installRan: false, logPath: null, failure: null }` for dependency levels, or `{ resolvedTargets: {}, applied: [], skipped: [], droppedHashes: [] }` for `engines`.
 
-The run-level `outcome` SHALL derive from `projects[]`: `applied` when every project's `bumps.failure` is `null`, `partial` when at least one is `null`, and `failed` otherwise. Only `applied` and `partial` runs SHALL be persisted; a `failed` run and a cancelled run SHALL write nothing to the store. A run whose applicable count is zero SHALL still be persisted, because "nothing to apply at this range" is itself reusable.
+The run-level `outcome` SHALL derive from `projects[]`: `applied` when every project's `bumps.failure` is absent or `null`, `partial` when at least one is clean and another is not, and `failed` otherwise. Only `applied` and `partial` runs SHALL be persisted; a `failed` run and a cancelled run SHALL write nothing to the store. A run whose applicable count is zero SHALL still be persisted, because "nothing to apply at this range" is itself reusable.
 
 A run seeded from a pre-existing run directory SHALL carry `mechanism: "reconstructed"`, `gateOption: "unknown"`, changeset counts parsed from the changeset file, and `bumps` inferred from the run's apply log presence; its note SHALL carry `outcome: legacy` and `source: seeded-legacy`. A run seeded with the synthetic flag SHALL carry the `synthetic` tag on its note and `synthetic:true` in every hub marker it writes.
 

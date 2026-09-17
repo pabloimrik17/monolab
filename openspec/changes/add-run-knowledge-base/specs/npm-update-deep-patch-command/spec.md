@@ -24,7 +24,7 @@ This command is the anchor of the single-project deep family: the recall step he
 
 #### Scenario: Absent knowledge base leaves the run unchanged
 
-- **WHEN** the resolved knowledge root has no `index.json`
+- **WHEN** the resolved knowledge root does not exist
 - **THEN** the command emits `Knowledge: no base at <root>` and invokes `parallel-research-workflow` with no `priorKnowledge` input
 - **AND** every group is dispatched for fresh research exactly as it would be with Step 3.5 absent
 
@@ -128,7 +128,7 @@ Both writes SHALL be atomic — write a temp sibling, then rename — matching t
 
 At Step 7.5 — after the Step 7 final-summary data is computed and before the Step 8 cleanup prompt — the command SHALL persist the run into the knowledge store:
 
-1. Assemble the outcome object (the store's `outcome.json` shape, without `recordedAt`) from the apply result fragments already in hand: `runId`, `level`, `mode`, the selected `gateOption`, and exactly one `projects[]` entry whose `projectName` is the run slug, whose `mechanism` is `apply-npm-updates`, whose `bumps` is the apply skill's returned result fragment verbatim, and whose `changeset` records the gate `status`, the run-dir-relative `path` (or `null` when there is no changeset), and the applicable and inapplicable counts parsed from `changeset.md` (`null` when absent).
+1. Assemble the outcome object (the store's `outcome.json` shape, without `recordedAt`) from the apply result fragments already in hand: `runId`, `level`, `mode`, the selected `gateOption`, and one `projects[]` entry per Step 6 apply round. Each entry carries the run slug as `projectName`, the level's mechanism (`apply-npm-updates`, or `apply-engine-bumps` for `engines`), and the gate `status`, run-dir-relative changeset `path` (or `null`), and applicable and inapplicable counts (`null` when absent). When Step 6a ran, `bumps` is its returned fragment verbatim. When a `pick-subset` round selected only improvements, `bumps` is the canonical clean no-bump fragment: `{ appliedGeneric: [], appliedOverrides: [], installRan: false, logPath: null, failure: null }` for dependency levels, or `{ resolvedTargets: {}, applied: [], skipped: [], droppedHashes: [] }` for `engines`.
 2. Invoke `persist-run-knowledge` with `{ runDir, outcome }`; the skill stamps `recordedAt` and writes `<run-dir>/outcome.json` — the command SHALL NOT write it.
 3. Surface the skill's one-line digest and carry it verbatim into the summary's `Knowledge:` line.
 
@@ -145,6 +145,13 @@ Persistence SHALL NOT alter any part of the final summary other than the `Knowle
 
 - **WHEN** the apply skill returns its result fragment for the run
 - **THEN** `outcome.json` carries that fragment verbatim as the single `projects[]` entry's `bumps`, with `mechanism` `apply-npm-updates` and the changeset status, path, and counts alongside it
+
+#### Scenario: Improvement-only round is recorded
+
+- **WHEN** `pick-subset` selects improvements but no bumps and the changeset round completes
+- **THEN** `outcome.json` carries one `projects[]` entry for that round with its changeset result
+- **AND** `bumps` is the level's canonical clean no-bump fragment
+- **AND** the run is eligible for persistence as `applied`
 
 #### Scenario: Cancelled run is not persisted
 

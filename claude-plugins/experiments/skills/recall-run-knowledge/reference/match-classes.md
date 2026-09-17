@@ -24,7 +24,7 @@ Version comparison is `lib/semver.mjs`. Ranges are compared on the resolved vers
 - A current range the prior range covers entirely leaves nothing to research: `delta` is `null`, and the directive is to read the prior section and research nothing beyond it.
 - Every class other than `overlap` carries `delta: null`.
 
-`delta` is what the `OVERLAP` directive line names as the research scope, so its text reaches a subagent verbatim — it stays a range, never a sentence.
+A non-null `delta` is what the range-scoped `OVERLAP` directive names as the research scope, so its text reaches a subagent verbatim. A null `delta` selects the covering-range directive instead: read the prior section and research nothing beyond it.
 
 ## Exclusions
 

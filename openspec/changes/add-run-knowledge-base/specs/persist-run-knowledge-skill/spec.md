@@ -60,9 +60,9 @@ The skill SHALL NOT be invoked on the `cancel` path, on any `abort` path, or whe
 
 A run whose run-level `outcome` is `applied` or `partial` SHALL be persisted. A run whose run-level `outcome` is `failed` SHALL persist nothing — neither a run note, nor a hub section, nor a raw copy.
 
-A run whose `outcome.projects[]` is empty SHALL persist nothing: no apply invocation produced an entry, so the run is not vacuously `applied`, and the skill SHALL return `Knowledge: not persisted (nothing applied)`.
+A run whose `outcome.projects[]` is empty SHALL persist nothing: no Step 6 apply round reached either the bump mechanism or the changeset gate, so the run is not vacuously `applied`, and the skill SHALL return `Knowledge: not persisted (nothing applied)`.
 
-A run that applied its bumps and found no applicable improvements — `Applicable (0)` — is an `applied` run and SHALL be persisted with both a run note and its package hub sections, because "nothing to apply at this range" is itself a reusable conclusion.
+A run that applied its bumps and found no applicable improvements — `Applicable (0)` — is an `applied` run and SHALL be persisted with both a run note and its package hub sections, because "nothing to apply at this range" is itself a reusable conclusion. The same holds for an improvement-only round: its canonical clean no-bump fragment makes the verified changeset result persistable without inventing a bump invocation.
 
 The skill SHALL write only under the resolved knowledge root and to `<runDir>/outcome.json`. It SHALL NOT write to project files, to the Commander registry, to the changelog cache, or to any other path.
 
@@ -143,6 +143,8 @@ The main conversation SHALL receive only the one-line digest. It SHALL NOT read 
 
 Re-persisting the same `runId` SHALL be idempotent. The raw copy under the knowledge root SHALL be overwritten, the run note SHALL be regenerated, and each hub section identified by its `<!-- run:<runId> … -->` marker SHALL be replaced in place.
 
+Regeneration SHALL cover script-owned content only. A slot already filled by a subagent SHALL be carried across into the regenerated text, keyed by its slot name, in both the run note and every replaced hub section; an unfilled slot — blank, `<!-- distill -->` or `<!-- no-research -->` — SHALL regenerate normally. Re-persisting SHALL NOT be a way to lose distilled content.
+
 A second persist of the same run SHALL NOT append a duplicate hub section, SHALL NOT create a second run note, and SHALL NOT duplicate an entry in `index.json`.
 
 A different range for the same package SHALL append a new section rather than replace an existing one.
@@ -152,6 +154,12 @@ A different range for the same package SHALL append a new section rather than re
 - **WHEN** a run already persisted is persisted again
 - **THEN** each hub section carrying that run's marker SHALL be replaced in place
 - **AND** the hub SHALL hold the same number of sections as before
+
+#### Scenario: Re-persist preserves a filled slot
+
+- **WHEN** a run whose `### Universal` and `## Summary` slots have been filled is persisted again
+- **THEN** both slots SHALL keep their filled content
+- **AND** the script-owned content around them SHALL be regenerated
 
 #### Scenario: No duplicate note or index entry
 

@@ -178,7 +178,7 @@ export function computePreimageHash(content) {
     return createHash("sha256").update(blankSlots(content)).digest("hex");
 }
 
-const PREIMAGE_MARKER_RE = /\n?<!-- knowledge:preimage ([0-9a-f]{64}) -->\s*$/;
+const PREIMAGE_MARKER_RE = /\n?<!-- knowledge:preimage ([0-9a-f]{64}) -->\n(?![\s\S])/;
 
 export function stripPreimageMarker(content) {
     return content.replace(PREIMAGE_MARKER_RE, "\n");
