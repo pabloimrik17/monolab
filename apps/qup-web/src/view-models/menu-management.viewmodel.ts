@@ -69,12 +69,13 @@ export class MenuManagementViewModel extends BaseViewModel {
         try {
             const editId = this._editingId[0]();
             if (editId) {
-                const updated = await updateMenuItem(editId, {
+                await updateMenuItem(editId, { name, category, description });
+                // The API ignores an absent description, so the old one is kept.
+                this.patchItem(editId, {
                     name,
                     category,
-                    description,
+                    ...(description !== undefined && { description }),
                 });
-                this._items[1]((prev) => prev.map((i) => (i.id === editId ? updated : i)));
             } else {
                 const created = await createMenuItem({ name, category, description });
                 this._items[1]((prev) => [...prev, created]);
@@ -88,11 +89,15 @@ export class MenuManagementViewModel extends BaseViewModel {
     async handleToggleAvailability(item: MenuItemDto): Promise<void> {
         this._error[1]("");
         try {
-            const updated = await updateMenuItem(item.id, { available: !item.available });
-            this._items[1]((prev) => prev.map((i) => (i.id === item.id ? updated : i)));
+            await updateMenuItem(item.id, { available: !item.available });
+            this.patchItem(item.id, { available: !item.available });
         } catch (e) {
             this._error[1](e instanceof Error ? e.message : "Failed to update availability");
         }
+    }
+
+    private patchItem(id: string, changes: Partial<MenuItemDto>): void {
+        this._items[1]((prev) => prev.map((i) => (i.id === id ? { ...i, ...changes } : i)));
     }
 
     startEdit(item: MenuItemDto): void {
