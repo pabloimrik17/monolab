@@ -2,10 +2,10 @@ import { injectable } from "inversify";
 import { createSignal } from "solid-js";
 import { BaseViewModel } from "@m0n0lab/solid-clean";
 import { getSessionByCode, getSessionOrders } from "../server/data.ts";
+import { sessionEventsUrl } from "../services/sse-url.ts";
 import type { OrderDto } from "@m0n0lab/qup-shared";
 
-const SSE_BASE_URL =
-    (import.meta.env?.VITE_API_URL as string | undefined) ?? "http://localhost:3001";
+const ORDER_EVENTS = ["order:created", "order:status", "order:cancelled"] as const;
 
 @injectable()
 export class OrderStatusViewModel extends BaseViewModel {
@@ -61,17 +61,23 @@ export class OrderStatusViewModel extends BaseViewModel {
     }
 
     private connectSSE(): void {
-        const url = `${SSE_BASE_URL}/events/sessions/${this._sessionCode}`;
-        const es = new EventSource(url);
+        const es = new EventSource(sessionEventsUrl(this._sessionCode));
 
-        es.onmessage = async () => {
+        let latestRefresh = 0;
+        const refresh = async () => {
+            const refreshId = ++latestRefresh;
             try {
                 const orders = await getSessionOrders(this._sessionId);
+                if (refreshId !== latestRefresh) return;
                 this._orders[1](this.filterOrders(orders));
             } catch {
                 // silent — keep showing last known orders
             }
         };
+        // The API sends named SSE events, which never reach `onmessage`.
+        for (const event of ORDER_EVENTS) {
+            es.addEventListener(event, refresh);
+        }
 
         es.onerror = () => {
             // EventSource auto-reconnects; no action needed

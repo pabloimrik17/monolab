@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { inject, injectable } from "inversify";
 import { ResultAsync } from "neverthrow";
 import { PersistenceError, type MenuItem } from "@m0n0lab/qup-domain";
@@ -7,6 +7,8 @@ import { menuItems } from "../schema/menu-items.ts";
 import { DATA_TOKENS } from "../tokens.ts";
 import type { MenuItemRepository } from "@m0n0lab/qup-domain";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+
+const notDeleted = isNull(menuItems.deletedAt);
 
 @injectable()
 export class PgMenuItemRepository implements MenuItemRepository {
@@ -21,14 +23,17 @@ export class PgMenuItemRepository implements MenuItemRepository {
 
     findById(id: string): ResultAsync<MenuItem | null, PersistenceError> {
         return ResultAsync.fromPromise(
-            this.db.select().from(menuItems).where(eq(menuItems.id, id)),
+            this.db
+                .select()
+                .from(menuItems)
+                .where(and(eq(menuItems.id, id), notDeleted)),
             (e) => new PersistenceError(e),
         ).map((rows) => (rows.length > 0 ? menuItemToDomain(rows[0]!) : null));
     }
 
     findAll(): ResultAsync<MenuItem[], PersistenceError> {
         return ResultAsync.fromPromise(
-            this.db.select().from(menuItems).orderBy(menuItems.sortOrder),
+            this.db.select().from(menuItems).where(notDeleted).orderBy(menuItems.sortOrder),
             (e) => new PersistenceError(e),
         ).map((rows) => rows.map(menuItemToDomain));
     }
@@ -38,7 +43,7 @@ export class PgMenuItemRepository implements MenuItemRepository {
             this.db
                 .select()
                 .from(menuItems)
-                .where(eq(menuItems.available, true))
+                .where(and(eq(menuItems.available, true), notDeleted))
                 .orderBy(menuItems.sortOrder),
             (e) => new PersistenceError(e),
         ).map((rows) => rows.map(menuItemToDomain));
@@ -56,7 +61,7 @@ export class PgMenuItemRepository implements MenuItemRepository {
                         available: menuItem.available,
                         sortOrder: menuItem.sortOrder,
                     })
-                    .where(eq(menuItems.id, menuItem.id))
+                    .where(and(eq(menuItems.id, menuItem.id), notDeleted))
                     .returning({ id: menuItems.id });
                 if (updated.length === 0) {
                     throw new Error(`MenuItem ${menuItem.id} not found`);
@@ -70,8 +75,9 @@ export class PgMenuItemRepository implements MenuItemRepository {
         return ResultAsync.fromPromise(
             (async () => {
                 const deleted = await this.db
-                    .delete(menuItems)
-                    .where(eq(menuItems.id, id))
+                    .update(menuItems)
+                    .set({ deletedAt: new Date() })
+                    .where(and(eq(menuItems.id, id), notDeleted))
                     .returning({ id: menuItems.id });
                 if (deleted.length === 0) {
                     throw new Error(`MenuItem ${id} not found`);

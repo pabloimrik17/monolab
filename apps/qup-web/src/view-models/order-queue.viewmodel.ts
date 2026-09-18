@@ -3,9 +3,15 @@ import { createSignal } from "solid-js";
 import { BaseViewModel } from "@m0n0lab/solid-clean";
 import { getSession, getSessionOrders } from "../server/data.ts";
 import { cancelOrder, updateOrderStatus } from "../server/mutations.ts";
-import type { OrderDto, SessionDto } from "@m0n0lab/qup-shared";
-
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+import { sessionEventsUrl } from "../services/sse-url.ts";
+import type {
+    OrderCancelledEvent,
+    OrderCreatedEvent,
+    OrderDto,
+    OrderStatusEvent,
+    SessionDto,
+    UpdateOrderStatusRequest,
+} from "@m0n0lab/qup-shared";
 
 @injectable()
 export class OrderQueueViewModel extends BaseViewModel {
@@ -55,11 +61,14 @@ export class OrderQueueViewModel extends BaseViewModel {
         super.willUnmount();
     }
 
-    async handleUpdateStatus(orderId: string, status: OrderDto["status"]): Promise<void> {
+    async handleUpdateStatus(
+        orderId: string,
+        status: UpdateOrderStatusRequest["status"],
+    ): Promise<void> {
         this._error[1]("");
         try {
-            const updated = await updateOrderStatus(orderId, { status });
-            this._orders[1]((prev) => prev.map((o) => (o.id === orderId ? updated : o)));
+            await updateOrderStatus(orderId, { status });
+            this.patchOrder(orderId, { status });
         } catch (e) {
             this._error[1](e instanceof Error ? e.message : "Failed to update order status");
         }
@@ -69,31 +78,41 @@ export class OrderQueueViewModel extends BaseViewModel {
         this._error[1]("");
         try {
             await cancelOrder(orderId);
-            this._orders[1]((prev) =>
-                prev.map((o) => (o.id === orderId ? { ...o, status: "CANCELLED" as const } : o)),
-            );
+            this.patchOrder(orderId, { status: "CANCELLED" });
         } catch (e) {
             this._error[1](e instanceof Error ? e.message : "Failed to cancel order");
         }
     }
 
-    private connectSSE(sessionCode: string): void {
-        this._eventSource = new EventSource(`${API_URL}/events/sessions/${sessionCode}`);
+    private patchOrder(orderId: string, changes: Partial<OrderDto>): void {
+        this._orders[1]((prev) => prev.map((o) => (o.id === orderId ? { ...o, ...changes } : o)));
+    }
 
-        this._eventSource.onmessage = (event) => {
-            try {
-                const order = JSON.parse(event.data as string) as OrderDto;
-                this._orders[1]((prev) => {
-                    const idx = prev.findIndex((o) => o.id === order.id);
-                    if (idx >= 0) {
-                        return prev.map((o) => (o.id === order.id ? order : o));
-                    }
-                    return [...prev, order];
-                });
-            } catch {
-                // ignore malformed events
-            }
+    private connectSSE(sessionCode: string): void {
+        this._eventSource = new EventSource(sessionEventsUrl(sessionCode));
+
+        // The API sends named SSE events, which never reach `onmessage`.
+        const on = <T>(event: string, handler: (payload: T) => void) => {
+            this._eventSource?.addEventListener(event, (e: MessageEvent<string>) => {
+                try {
+                    handler(JSON.parse(e.data) as T);
+                } catch {
+                    // ignore malformed events
+                }
+            });
         };
+
+        on<OrderCreatedEvent>("order:created", ({ order }) => {
+            this._orders[1]((prev) =>
+                prev.some((o) => o.id === order.id) ? prev : [...prev, order],
+            );
+        });
+        on<OrderStatusEvent>("order:status", ({ orderId, status, updatedAt }) => {
+            this.patchOrder(orderId, { status, updatedAt });
+        });
+        on<OrderCancelledEvent>("order:cancelled", ({ orderId }) => {
+            this.patchOrder(orderId, { status: "CANCELLED" });
+        });
 
         this._eventSource.onerror = () => {
             this._error[1]("Lost connection to live updates");

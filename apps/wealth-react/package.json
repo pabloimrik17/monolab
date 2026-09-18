@@ -10,10 +10,10 @@
         "lint:knip": "knip --max-issues 100",
         "lint:prettier": "prettier . --check",
         "start": "react-router-serve ./build/server/index.js",
-        "typecheck": "tsc --noEmit",
         "test:unit": "vitest run",
         "test:unit:watch": "vitest",
-        "test:unit:coverage": "vitest run --coverage"
+        "test:unit:coverage": "vitest run --coverage",
+        "typecheck": "react-router typegen && tsc --noEmit"
     },
     "dependencies": {
         "@m0n0lab/wealth-tracker-core": "workspace:*",

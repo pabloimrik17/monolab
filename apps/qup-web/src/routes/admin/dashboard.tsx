@@ -21,13 +21,13 @@ export default function DashboardPage() {
                     <div class="flex gap-2">
                         <a
                             href="/admin/menu"
-                            class="px-3 py-1.5 bg-stone-200 text-stone-700 rounded-md text-sm font-medium hover:bg-stone-300"
+                            class="px-3 py-2 bg-stone-200 text-stone-700 rounded-md text-sm font-medium hover:bg-stone-300"
                         >
                             Menu
                         </a>
                         <a
                             href="/"
-                            class="px-3 py-1.5 bg-stone-200 text-stone-700 rounded-md text-sm font-medium hover:bg-stone-300"
+                            class="px-3 py-2 bg-stone-200 text-stone-700 rounded-md text-sm font-medium hover:bg-stone-300"
                         >
                             Home
                         </a>
@@ -88,23 +88,23 @@ export default function DashboardPage() {
                     </Show>
                     <For each={vm.sessions()}>
                         {(session) => (
-                            <div class="bg-white rounded-lg shadow p-4 flex justify-between items-center">
-                                <div>
+                            <div class="bg-white rounded-lg shadow p-4 flex justify-between items-center gap-3">
+                                <div class="min-w-0">
                                     <p class="font-medium text-stone-800">{session.name}</p>
                                     <p class="text-xs text-stone-500 font-mono">
                                         Code: {session.code}
                                     </p>
                                 </div>
-                                <div class="flex gap-2">
+                                <div class="flex gap-2 shrink-0">
                                     <a
                                         href={`/admin/session/${session.id}`}
-                                        class="px-3 py-1 bg-amber-100 text-amber-800 rounded-md text-sm font-medium hover:bg-amber-200"
+                                        class="px-4 py-2 bg-amber-100 text-amber-800 rounded-md text-sm font-medium hover:bg-amber-200"
                                     >
                                         Orders
                                     </a>
                                     <button
                                         onClick={() => vm.handleCloseSession(session.id)}
-                                        class="px-3 py-1 bg-red-100 text-red-700 rounded-md text-sm font-medium hover:bg-red-200"
+                                        class="px-4 py-2 bg-red-100 text-red-700 rounded-md text-sm font-medium hover:bg-red-200"
                                     >
                                         Close
                                     </button>

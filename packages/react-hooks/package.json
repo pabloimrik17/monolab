@@ -33,10 +33,8 @@
         "registry": "https://registry.npmjs.org/"
     },
     "scripts": {
-        "build": "pnpm run build:typecheck && pnpm run build:lib",
+        "build": "tsdown",
         "build:check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
-        "build:lib": "tsdown",
-        "build:typecheck": "tsc --noEmit",
         "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
         "lint:eslint:config-check": "eslint-config-prettier src/index.ts",
         "lint:eslint:fix": "eslint --cache --concurrency=auto --max-warnings 40 --fix .",
@@ -55,7 +53,8 @@
         "test:ui": "vitest --ui",
         "test:unit": "vitest run",
         "test:unit:coverage": "vitest run --coverage",
-        "test:unit:watch": "vitest"
+        "test:unit:watch": "vitest",
+        "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
     },
     "dependencies": {
         "tslib": "catalog:"

@@ -64,19 +64,17 @@ export class MenuManagementViewModel extends BaseViewModel {
         if (!name) return;
         this._error[1]("");
         const category = this._formCategory[0]() as MenuItemDto["category"];
-        const description = this._formDescription[0]().trim() || undefined;
+        const description = this._formDescription[0]().trim();
+        const fields = { name, category, ...(description ? { description } : {}) };
 
         try {
             const editId = this._editingId[0]();
             if (editId) {
-                const updated = await updateMenuItem(editId, {
-                    name,
-                    category,
-                    description,
-                });
-                this._items[1]((prev) => prev.map((i) => (i.id === editId ? updated : i)));
+                const editFields = { ...fields, description };
+                await updateMenuItem(editId, editFields);
+                this.patchItem(editId, editFields);
             } else {
-                const created = await createMenuItem({ name, category, description });
+                const created = await createMenuItem(fields);
                 this._items[1]((prev) => [...prev, created]);
             }
             this.resetForm();
@@ -88,11 +86,15 @@ export class MenuManagementViewModel extends BaseViewModel {
     async handleToggleAvailability(item: MenuItemDto): Promise<void> {
         this._error[1]("");
         try {
-            const updated = await updateMenuItem(item.id, { available: !item.available });
-            this._items[1]((prev) => prev.map((i) => (i.id === item.id ? updated : i)));
+            await updateMenuItem(item.id, { available: !item.available });
+            this.patchItem(item.id, { available: !item.available });
         } catch (e) {
             this._error[1](e instanceof Error ? e.message : "Failed to update availability");
         }
+    }
+
+    private patchItem(id: string, changes: Partial<MenuItemDto>): void {
+        this._items[1]((prev) => prev.map((i) => (i.id === id ? { ...i, ...changes } : i)));
     }
 
     startEdit(item: MenuItemDto): void {

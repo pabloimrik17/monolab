@@ -5,8 +5,15 @@
         {
             "idx": 0,
             "version": "7",
-            "when": 1772989495133,
-            "tag": "0000_lazy_jamie_braddock",
+            "when": 1789751963679,
+            "tag": "0000_narrow_wasp",
+            "breakpoints": true
+        },
+        {
+            "idx": 1,
+            "version": "7",
+            "when": 1789757777919,
+            "tag": "0001_soft_delete_menu_items",
             "breakpoints": true
         }
     ]

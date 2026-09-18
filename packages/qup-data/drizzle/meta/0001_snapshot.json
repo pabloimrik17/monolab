@@ -1,6 +1,6 @@
 {
-    "id": "f3eca469-5a10-419b-977c-0f281e52254e",
-    "prevId": "00000000-0000-0000-0000-000000000000",
+    "id": "2b679665-703b-4903-a19b-c5f0a166d2b1",
+    "prevId": "f3eca469-5a10-419b-977c-0f281e52254e",
     "version": "7",
     "dialect": "postgresql",
     "tables": {
@@ -46,6 +46,12 @@
                     "primaryKey": false,
                     "notNull": true,
                     "default": 0
+                },
+                "deleted_at": {
+                    "name": "deleted_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": false
                 }
             },
             "indexes": {},

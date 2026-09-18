@@ -5,6 +5,9 @@ export default {
     singleAttributePerLine: true,
     ignorePatterns: [
         "dist",
+        "out-tsc",
+        "build",
+        ".react-router",
         "coverage",
         ".nx",
         "openspec",

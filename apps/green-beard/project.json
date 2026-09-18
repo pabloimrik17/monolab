@@ -2,5 +2,13 @@
     "name": "@m0n0lab/green-beard",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "apps/green-beard/src",
-    "projectType": "application"
+    "projectType": "application",
+    "targets": {
+        "typecheck": {
+            "cache": true,
+            "dependsOn": ["^typecheck"],
+            "inputs": ["default", "{workspaceRoot}/packages/ts-configs/tsconfig.base.json"],
+            "outputs": []
+        }
+    }
 }

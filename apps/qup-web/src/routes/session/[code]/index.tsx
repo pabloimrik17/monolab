@@ -17,7 +17,8 @@ export default function SessionPage() {
         return instance;
     });
 
-    const handleContinue = () => {
+    const handleContinue = (e: SubmitEvent) => {
+        e.preventDefault();
         if (vm.guestName().trim()) {
             navigate(`/session/${params.code}/order?guest=${encodeURIComponent(vm.guestName())}`);
         }
@@ -40,12 +41,33 @@ export default function SessionPage() {
                 />
 
                 <Show when={vm.session()}>
-                    <div class="bg-white rounded-lg shadow p-4">
-                        <h2 class="font-semibold text-stone-800">{vm.session()!.name}</h2>
-                        <p class="text-sm text-stone-500 mt-1">
-                            {vm.menu().length} items available
-                        </p>
-                    </div>
+                    <form
+                        onSubmit={handleContinue}
+                        class="bg-white rounded-lg shadow p-4 space-y-3"
+                    >
+                        <div>
+                            <h2 class="font-semibold text-stone-800">{vm.session()!.name}</h2>
+                            <p class="text-sm text-stone-500 mt-1">
+                                {vm.menu().length} drinks available
+                            </p>
+                        </div>
+                        <input
+                            type="text"
+                            aria-label="Your name"
+                            placeholder="Your name"
+                            autocomplete="given-name"
+                            value={vm.guestName()}
+                            onInput={(e) => vm.setGuestName(e.currentTarget.value)}
+                            class="w-full px-4 py-3 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        />
+                        <button
+                            type="submit"
+                            disabled={!vm.guestName().trim()}
+                            class="w-full py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50"
+                        >
+                            Start ordering
+                        </button>
+                    </form>
 
                     <div class="space-y-3">
                         <h3 class="font-medium text-stone-700">Menu</h3>
@@ -64,23 +86,6 @@ export default function SessionPage() {
                                 </div>
                             )}
                         </For>
-                    </div>
-
-                    <div class="space-y-3">
-                        <input
-                            type="text"
-                            placeholder="Your name"
-                            value={vm.guestName()}
-                            onInput={(e) => vm.setGuestName(e.currentTarget.value)}
-                            class="w-full px-4 py-3 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
-                        />
-                        <button
-                            onClick={handleContinue}
-                            disabled={!vm.guestName().trim()}
-                            class="w-full py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50"
-                        >
-                            Start ordering
-                        </button>
                     </div>
                 </Show>
             </div>

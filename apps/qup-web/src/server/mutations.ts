@@ -23,21 +23,20 @@ async function post<T>(path: string, body?: unknown, admin = false): Promise<T> 
     const res = await fetch(`${API_URL}${path}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(admin && adminHeaders()) },
-        body: body ? JSON.stringify(body) : undefined,
+        body: body ? JSON.stringify(body) : null,
     });
     if (!res.ok) throw new Error(`POST ${path} failed: ${res.status}`);
     if (res.status === 204) return undefined as T;
     return res.json() as Promise<T>;
 }
 
-async function patch<T>(path: string, body: unknown, admin = false): Promise<T> {
+async function patch(path: string, body: unknown, admin = false): Promise<void> {
     const res = await fetch(`${API_URL}${path}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...(admin && adminHeaders()) },
         body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error(`PATCH ${path} failed: ${res.status}`);
-    return res.json() as Promise<T>;
 }
 
 async function del(path: string, admin = false): Promise<void> {
@@ -56,8 +55,8 @@ export async function createOrder(data: CreateOrderRequest): Promise<OrderDto> {
 export async function updateOrderStatus(
     orderId: string,
     data: UpdateOrderStatusRequest,
-): Promise<OrderDto> {
-    return patch<OrderDto>(`/orders/${orderId}/status`, data, true);
+): Promise<void> {
+    return patch(`/orders/${orderId}/status`, data, true);
 }
 
 export async function cancelOrder(orderId: string): Promise<void> {
@@ -69,8 +68,8 @@ export async function createSession(data: CreateSessionRequest): Promise<Session
     return post<SessionDto>("/sessions", data, true);
 }
 
-export async function closeSession(id: string): Promise<SessionDto> {
-    return patch<SessionDto>(`/sessions/${id}/close`, {}, true);
+export async function closeSession(id: string): Promise<void> {
+    return patch(`/sessions/${id}/close`, {}, true);
 }
 
 // Menu (admin)
@@ -78,11 +77,8 @@ export async function createMenuItem(data: CreateMenuItemRequest): Promise<MenuI
     return post<MenuItemDto>("/menu", data, true);
 }
 
-export async function updateMenuItem(
-    id: string,
-    data: UpdateMenuItemRequest,
-): Promise<MenuItemDto> {
-    return patch<MenuItemDto>(`/menu/${id}`, data, true);
+export async function updateMenuItem(id: string, data: UpdateMenuItemRequest): Promise<void> {
+    return patch(`/menu/${id}`, data, true);
 }
 
 export async function deleteMenuItem(id: string): Promise<void> {
