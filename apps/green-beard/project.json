@@ -2,5 +2,18 @@
     "name": "@m0n0lab/green-beard",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "apps/green-beard/src",
-    "projectType": "application"
+    "projectType": "application",
+    "targets": {
+        "typecheck": {
+            "cache": true,
+            "dependsOn": ["^typecheck"],
+            "executor": "nx:run-commands",
+            "options": {
+                "cwd": "apps/green-beard",
+                "command": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+            },
+            "inputs": ["default", "{workspaceRoot}/packages/ts-configs/tsconfig.base.json"],
+            "outputs": []
+        }
+    }
 }
