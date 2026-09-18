@@ -186,6 +186,24 @@ Monorepo-aware: when `repository.directory` is present in npm metadata, the comm
 
 Authoritative spec: `openspec/specs/npm-changelog-retrieval/spec.md`.
 
+### `/experiments:knowledge-persist`
+
+Persists one or more run directories into the run knowledge base by delegating to `persist-run-knowledge`. With no argument, offers every `plans/` directory that is `phase: "done"` and not yet in the base's `index.json`, via a multi-select defaulting to all; explicit paths bypass that filter, so a kept or already-persisted run can be re-persisted on purpose. `--synthetic` tags every selected run so recall never treats it as real applied evidence. Refuses (naming the path) anything that doesn't exist, has no `_meta.json`, or is stalled short of `phase: "done"`, and touches no project file, commit, branch or PR.
+
+```bash
+/experiments:knowledge-persist
+/experiments:knowledge-persist ~/.claude/experiments/plans/commander-deep-minor-minor-1784387463 --synthetic
+```
+
+### `/experiments:knowledge-recall`
+
+Asks the run knowledge base what it already knows about one package, outside any update run. `<pkg> <from> <to>` runs the same matcher a live run uses and prints hits by class (`exact`/`overlap`/`prior`) with each hit's hub path, anchor and note path; `<pkg>` alone prints the package hub's `ranges`/`runs`/`latest` straight from its frontmatter, no matcher involved. Prints `Knowledge: no base at <root>` when the base doesn't exist, and one line (never an error) for an unknown package or a range with no hit. Never opens a note or hub body, and never writes anything but the matcher's own index rebuild.
+
+```bash
+/experiments:knowledge-recall @nx/js
+/experiments:knowledge-recall @nx/js 23.0.5 23.3.0
+```
+
 ### `/experiments:purge-comments`
 
 Explicit entry point to the comment purge. Delegates to the `purge-comment-noise` skill and bypasses its autonomous trigger threshold, so it runs at any change size. Accepts an optional git ref (`HEAD~3`, a tag, a branch) or one or more paths as a scope override; with no argument the skill's default scope applies.
@@ -242,6 +260,14 @@ Single-project analog of `commander-update-orchestrator`, and the single source 
 
 Cross-project npm-update orchestration. Owns the fan-out / fan-in pipeline used by `/experiments:commander-update-{patch,minor,major,engines}` and their deep variants: list+filter projects from the registry, dispatch parallel scans via Haiku subagents (one per project, in a single message), deduplicate updates by package, version-align (max-wins with a one-prompt per-project fallback on range conflicts), render a unified plan, consult `pkg-upgrade-overrides.yaml` once per matched entry across the whole run, gate on the user's chosen apply path, then apply each project sequentially (stop-on-fail) and emit an aggregated summary. The `mode` input selects shallow (default) or deep — deep mode inserts Step 6.5 (cross-project research via `parallel-research-workflow`), expands the gate to four options (adds `apply-bumps-only`), and after the bumps loop runs a per-project changeset gate round for improvements (Step 10b — apply teammate + orchestrator-owned approval). At **`level=engines`** the per-project scan/apply route to `detect-toolchain-surfaces` + `apply-engine-bumps` (no ncu), cross-project alignment is on the engine version, and the override step is skipped — dependency levels (patch/minor/major) are unaffected. Pure built-in tools (`Read`, `Bash`, `AskUserQuestion`, `Agent`, `Skill`, `Edit`, `Write`, `EnterPlanMode`); read-only against the registry.
 
+### `recall-run-knowledge`
+
+Classifies every package a deep-update run is about to research against the run knowledge base — `exact`, `overlap`, `prior` or `related` — and hands the result to `parallel-research-workflow` as its optional `priorKnowledge` input, so a hit can turn a research subagent into a copy, narrow it to a range delta, or contribute prior applicability alone. Invoked after grouping and before the workflow dispatch, in both deep families. Read-only beyond the index rebuild its matcher (`match-knowledge.mjs`) triggers; degrades to a one-line no-op when the base is absent, empty, or yields no hit. Also backs `/experiments:knowledge-recall`, the same matcher outside any run.
+
+### `persist-run-knowledge`
+
+Turns an applied deep-update run into durable knowledge: an immutable run note, one accumulative package-hub section per package, and a raw copy of the run's artefacts, all under the run knowledge base (`~/.claude/experiments/knowledge/` by default, overridable via `userConfig.knowledge_root`). Invoked by `npm-update-deep-orchestrator` and `commander-update-orchestrator` after apply and before the cleanup prompt, and by `/experiments:knowledge-persist` over a user-chosen or pre-existing run directory. Scripts copy the allowlisted artefacts and stamp `outcome.json`; one subagent fills the short summaries into fixed slots; a script validates and rebuilds `index.json`. Never invoked on `cancel`, on an `abort` path, or when every project's bumps failed. Contributes exactly one `Knowledge:` digest line to the caller.
+
 ### `update-isolation`
 
 Resolves and creates an isolated branch/worktree for an update **before** manifests are bumped, returning the working directory the caller hands to `apply-npm-updates`. Strategy `auto` (worktrunk via `wt` if usable → plain `git worktree` fallback), plus `worktrunk` / `worktree` / `branch` / `ask` / `none`. Opt-in across the whole update family with `none` as the default (in-place, today's behavior). Creates a branch/worktree **only** — never commits, pushes, or opens a PR; worktree modes leave the current checkout untouched. Honors the apply install-skip when a worktrunk `post-start` hook already installed.
@@ -257,6 +283,16 @@ Prevention half of the comment-discipline pair, and owner of the canonical comme
 ### `purge-comment-noise`
 
 Post-hoc half of the pair. Reads the same `policy.md` through `${CLAUDE_PLUGIN_ROOT}` rather than carrying its own copy of the rules, scopes to the branch's changes against its base branch plus the uncommitted working tree and untracked files (overridable by git ref or path), and applies the policy to comments on the lines the diff added or modified, plus every line of an untracked file, which has no diff and is read whole — pre-existing comments in a touched file are left alone. Above its fan-out threshold the work is distributed, split by whole file, with agents editing in place and returning counts rather than file contents. Reports a compact per-file table of deleted/edited counts plus any unreferenced `TODO`/`FIXME` it removed, runs no typecheck/lint/test/build, and — on any run that deleted or edited something — recommends the repository's gates before committing. Processed file types and exclusions live in `SKILL.md` §2 and the fan-out thresholds in §3; the autonomous trigger thresholds live in the frontmatter description and the preamble above §1. The numbers are deliberately not repeated here.
+
+## User Configuration
+
+The plugin exposes one `userConfig` key (set it via `/plugin config experiments` or in your plugin settings):
+
+| Key              | Type   | Default | Accepted values                             | Effect                                                                                                                       |
+| ---------------- | ------ | ------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `knowledge_root` | string | `""`    | `""`, an absolute path, a `~`-prefixed path | Moves the run knowledge base off its default `~/.claude/experiments/knowledge/`. A relative value is rejected with an error. |
+
+The default preserves the built-in location, so you only need to set it to keep the knowledge base somewhere else — an Obsidian vault you already sync, for example. The value reaches the knowledge scripts verbatim as `KNOWLEDGE_ROOT`; `scripts/lib/knowledge.mjs` is the only place that expands `~`, applies the default and validates the value.
 
 ## Testing
 

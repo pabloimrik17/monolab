@@ -51,9 +51,19 @@ If the update set is empty (no `updates`, or every engine surface already matche
 
 Invoke `group-packages-for-research` with `{ updates }` (and `maxPerGroup` only when explicitly overridden). Capture `{ groups, warnings }`; append the warnings to a running list for the summary. Do NOT modify the scan result — the workflow needs it verbatim.
 
+## Step 3.5 — Recall prior run knowledge
+
+Invoke `recall-run-knowledge` with `{ groups, level, mode: "single-project" }` — the groups Step 3 emitted, because recall consumes their `bucketKey`. The step sits after grouping and before the Step 4 dispatch: prior knowledge reaches the research subagents through the workflow, never around it.
+
+A hit SHALL NOT remove a package from its group — the package still fetches its changelog and still appears in the bump set. Capture the returned object as `PRIOR_KNOWLEDGE` and surface only its one-line digest (`Knowledge: <e> exact, <o> overlap, <p> prior, <r> related of <n> packages`); this skill SHALL NOT open a run note or a package hub itself.
+
+Recall never blocks a run: if `recall-run-knowledge` errors, continue with NO `priorKnowledge` and surface the digest `Knowledge: recall failed (<reason>)`.
+
+When the knowledge base is absent the step is a no-op: recall returns `{ hits: [] }` with the digest `Knowledge: no base at <root>`, Step 4 invokes the workflow with NO `priorKnowledge` input, and every group is dispatched for fresh research exactly as it would be with this step absent.
+
 ## Step 4 — Dispatch the parallel research workflow
 
-Invoke `parallel-research-workflow` with `{ groups, level, scanResult }` (single-project mode). The workflow owns, in order: phase 0 stale-cleanup, plan-dir creation under `~/.claude/experiments/plans/<slug>-<level>-<unix-ts>/`, phase 1 batched parallel changelog fetch (each subagent invoking the `fetch-changelog` plugin executable per package — engine release notes at `level=engines`), phase 2 parallel codebase research, phase 3 mandatory integrity gate, and phase 4 **dossier synthesis**: the workflow's named synthesizer teammate writes `<plan-dir>/dossier.md` (the `## Changelogs` chronology assembled by the deterministic script — REQUIRED at every level) and the two-layer compliance check (script + fresh-eyes subagent, repair loop ≤ 3 rounds) runs before the dossier is surfaced.
+Invoke `parallel-research-workflow` with `{ groups, level, scanResult, priorKnowledge }` (single-project mode), where `priorKnowledge` is Step 3.5's `PRIOR_KNOWLEDGE`; omit the input entirely when Step 3.5 reported no base. The workflow owns, in order: phase 0 stale-cleanup, plan-dir creation under `~/.claude/experiments/plans/<slug>-<level>-<unix-ts>/`, phase 1 batched parallel changelog fetch (each subagent invoking the `fetch-changelog` plugin executable per package — engine release notes at `level=engines`), phase 2 parallel codebase research, phase 3 mandatory integrity gate, and phase 4 **dossier synthesis**: the workflow's named synthesizer teammate writes `<plan-dir>/dossier.md` (the `## Changelogs` chronology assembled by the deterministic script — REQUIRED at every level) and the two-layer compliance check (script + fresh-eyes subagent, repair loop ≤ 3 rounds) runs before the dossier is surfaced.
 
 Surface the workflow's progress messages as produced. This skill SHALL NOT advance the workflow's phases or dispatch research subagents itself; its only job during Step 4 is to wait.
 
@@ -90,6 +100,8 @@ When Step 5 resolved to an apply path (not `cancel`), raise exactly one `AskUser
 ## Step 6 — Apply
 
 Branch on the Step 5 option. At `major` with `per-bucket-worktree`, run 6a+6b once per bucket in `suggestedMergeOrder` (each in its own worktree, changesets under `<plan-dir>/changesets/<bucket-branch>/`); otherwise run once over the whole accepted set.
+
+**Phase boundaries (`apply-*` paths only).** Before the first manifest write, install, or changeset gate, set `phase` to `"executing"` in `<plan-dir>/_meta.json`; once apply completes — after 6a on `apply-bumps-only`, after the 6b round otherwise, and after the last bucket when running per bucket — set it to `"done"`, before Step 7.5 reads the run dir. Both writes are atomic (write a temp sibling, then rename — the convention `parallel-research-workflow` uses for `_meta.json`) and touch no other field. Neither value is written on `cancel` (Step 6d) or on the Step 4 early-exit aborts, which never reach Step 6; a Step 6a structured `failure` stops with `phase` left at `"executing"`.
 
 ### Step 6a — Bumps (`apply-all`, `apply-bumps-only`, and the bump part of `pick-subset`)
 
@@ -142,7 +154,7 @@ Print exactly `Cancelled. No files modified.` and skip to Step 7. The plan dir i
 
 ## Step 7 — Final summary
 
-Print the level's H1 (delta table), then conditionally (omit zero-count sections, except `Suggested next steps` — always present):
+Print the level's H1 (delta table), then conditionally (omit zero-count sections, except `Knowledge:` and `Suggested next steps` — always present):
 
 - `Applied buckets ({N}):` — `major` + `per-bucket-worktree` only: `- {bucket.title} → {workdir} (branch: {branchName})`.
 - `Applied bumps ({N}):` — `- {name} {currentVersion} → {targetVersion} ({location})`.
@@ -153,9 +165,26 @@ Print the level's H1 (delta table), then conditionally (omit zero-count sections
 - `Left untouched (support / unknown):` — `engines` only.
 - `Isolation:` — always: `none (applied in current tree)` or `<mode> — <workdir(s)>`.
 - `Install:` — `<pm> install executed` / `skipped (isolation already ran install)` / `skipped (no bumps applied)`.
+- `Knowledge:` — always: the one-line digest Step 7.5 returned, reproduced verbatim — `Knowledge: persisted <runId> → <root> (<p> packages, <h> hubs, <d> distilled, status <ok|draft>)` when the run was persisted, `Knowledge: not persisted (<reason>)` when it was not. Compute the summary data, run Step 7.5, then print the summary; never reword or truncate the digest.
 - `Suggested next steps (not executed):` — `Run your test suite.`, `Run lint / typecheck.`, `Review changes (\`git diff\`) and commit — any isolation branch may not pass repo commit hooks, so run lint/build before committing.`(engines adds`Reinstall dependencies under the new toolchain.` first).
 
-For the `cancel` path the summary body is `Cancelled. No files modified.` plus the always-present `Suggested next steps`.
+For the `cancel` path the summary body is `Cancelled. No files modified.` plus the always-present `Knowledge:` (`Knowledge: not persisted (cancelled)` — Step 7.5 does not run) and `Suggested next steps`.
+
+## Step 7.5 — Persist the run into the knowledge base
+
+After the Step 7 summary data is computed and before the Step 8 cleanup prompt, on the `apply-*` paths only:
+
+1. **Assemble the outcome object** — the knowledge store's `outcome.json` shape minus `recordedAt`, which the skill stamps — from the fragments already in hand: `runId` (`_meta.json.planDirName`, i.e. the plan-dir basename), `level`, `mode: "single-project"`, `gateOption` (the Step 5 option), and `projects[]` with one entry per Step 6 apply round (exactly one for a whole-set apply; one per bucket when Step 6 ran per bucket). A round that reached Step 6b gets an entry even when `pick-subset` selected no bumps and Step 6a did not run:
+    - `projectName` — the run slug.
+    - `mechanism` — the level's Step 6a bumps mechanism (delta table): `apply-npm-updates`, or `apply-engine-bumps` at `engines`.
+    - `bumps` — when Step 6a ran, that mechanism's returned result fragment **verbatim** (`appliedGeneric` / `appliedOverrides` / `installRan` / `logPath` / `failure`; `resolvedTargets` / `applied` / `skipped` / `droppedHashes` / `failure` for engines). Never reshape, prune, or summarize it. When Step 6a did not run, use the level's exact clean no-bump fragment: `{ appliedGeneric: [], appliedOverrides: [], installRan: false, logPath: null, failure: null }` for dependency levels; `{ resolvedTargets: {}, applied: [], skipped: [], droppedHashes: [] }` for `engines`.
+    - `changeset` — `{ status, path, applicable, inapplicable }`. `status` records what happened at the Step 6b gate: `approved` — the gate opened, the user approved (a zero-applicable changeset included) and the Step 6b on-disk re-check matched; `verification-failed` — the gate was approved and the edits were applied, but the on-disk re-check did not match the approved changeset (an `apply-*` path, not an abort; `bumps.failure` cannot record it, it covers the bump mechanism only); `rejected` — the gate opened and the user rejected; `skipped` — the gate could not open because there was nothing to decide (no bullets in scope); `not-run` — the round never reached the gate (`apply-bumps-only`, or it aborted before the gate opened). `unknown` belongs to `/experiments:knowledge-persist` reconstruction only; a live run never emits it. `path` is the run-dir-relative `changesets/**/changeset.md`, or `null` when none exists. `applicable` / `inapplicable` are the counts in that file's `## Applicable (<N>)` / `## Inapplicable (<M>)` headings, `null` when the file is absent.
+2. **Derive the run-level outcome**: `applied` when no entry's `bumps` carries a `failure`, `partial` when at least one entry is clean and another is not, `failed` otherwise.
+3. **Invoke `persist-run-knowledge`** with `{ runDir: <plan-dir>, outcome }`. The skill stamps `recordedAt` and writes `<plan-dir>/outcome.json` — this skill SHALL NOT write it. Capture the returned one-line digest for the Step 7 `Knowledge:` line.
+
+Skip persistence — emitting `Knowledge: not persisted (<reason>)` and nothing else — when the user selected `cancel`, when the run ended in any abort (the Step 4 phase 0/1/3 early exits), when the derived outcome is `failed`, or when `projects[]` is empty because no Step 6 apply round reached either the bump mechanism or the changeset gate — `Knowledge: not persisted (nothing applied)`; an empty `projects[]` derives vacuously to `applied` and SHALL NOT be persisted on that basis. `<reason>` is `cancelled`, `aborted`, `outcome failed` (the wording `persist-run-knowledge` itself uses), or the skill's own failure detail. A run whose changeset reported `Applicable (0)` IS persisted: its outcome is `applied`, and the fact that nothing was applicable at this range is itself reusable.
+
+Persistence SHALL NOT alter any part of the summary other than the `Knowledge:` line. A failure inside `persist-run-knowledge` surfaces as `Knowledge: not persisted (<reason>)`, SHALL NOT abort the run, and SHALL NOT prevent the Step 8 cleanup prompt from firing.
 
 ## Step 8 — Cleanup
 
@@ -165,6 +194,7 @@ Delegate the cleanup prompt to `parallel-research-workflow` (it owns `delete-pla
 
 - SHALL NOT create commits, push, or open pull requests autonomously; stops for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation via `update-isolation` is permitted (Step 5.5, opt-in, default `none`).
 - SHALL NOT modify any file when the user selects `cancel`. The plan dir under `~/.claude/experiments/plans/` is preserved until `delete-plan` at cleanup.
+- SHALL write under the knowledge root (`~/.claude/experiments/knowledge/`, or the configured `knowledge_root`) only on the `apply-*` paths — `apply-all`, `apply-bumps-only`, `pick-subset`, that is every execution-prompt option other than `cancel` — and only through `persist-run-knowledge` at Step 7.5. On `cancel` and on every abort it SHALL NOT invoke `persist-run-knowledge`, SHALL NOT create the knowledge root, and SHALL NOT write any file under it.
 - SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).
 - SHALL NOT consult the package upgrade override registry — override flows belong to the shallow `/experiments:npm-update-*` paths. (The dossier may mention overridable family upgrades as improvements; the user picks whether to apply them via the standard mechanism.)
 - SHALL NOT expand the changeset gate beyond bullets present in `dossier.md`.

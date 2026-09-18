@@ -13,6 +13,7 @@ Cross-project npm-update orchestration. Parameterized by `level` / `target`, so 
 - Invoked by `/experiments:commander-update-deep-patch` with `level=patch`, `target=patch`, `mode=deep` (deep mode, MON-199).
 - `commander-update-{minor,major,engines}` and `commander-update-deep-{minor,major,engines}` wire the matching `level`/`target`/`mode` trio. At `level=engines` the scan/apply steps route to the engine toolchain skills — see "Level-conditional routing: `level=engines`".
 - Composes with `parallel-research-workflow` (in cross-project mode) for the deep-mode research insertion (Step 6.5).
+- Composes with `recall-run-knowledge` (Step 6.5.3b) and `persist-run-knowledge` (Step 10b.5) for the deep-mode run-knowledge base — recall before the workflow dispatch, persist after apply and before cleanup.
 
 Never invoke directly from the user side. The skill is meant for command-layer composition.
 
@@ -40,17 +41,17 @@ Reject before any side effect:
 
 This skill ships two execution paths selected by the `mode` input. The shallow path is byte-equivalent to MON-194's shipped contract; the deep path layers research + a per-project changeset gate round on top.
 
-| Step / Concern                    | `mode === "shallow"` (default)                                                                     | `mode === "deep"`                                                                                                                                                                      |
-| --------------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Steps 1, 2, 3, 4, 5, 6, 8         | Identical (shared plumbing).                                                                       | Identical (shared plumbing).                                                                                                                                                           |
-| Step 6.5 (cross-project research) | SHALL NOT execute. No plan-dir is created.                                                         | Fires. Composes `group-packages-for-research` + `parallel-research-workflow` (cross-project mode). Produces `<plan-dir>/dossier.md` (synthesized by the workflow's teammate + checks). |
-| Step 7 (gate rendering)           | Generates the bump-set table inline from `CrossProjectPlan`.                                       | Dossier gate rendering: references `<plan-dir>/dossier.md` by path + a bounded digest; appends orchestrator-owned drift sections (Warnings, scan-failed, path-missing).                |
-| Step 9 (gate)                     | Three options: `apply-all`, `pick-subset`, `cancel`.                                               | Four options: `apply-all`, `apply-bumps-only`, `pick-subset`, `cancel`. `pick-subset` accepts both package names AND improvement-bullet titles.                                        |
-| Step 10 (apply)                   | Single per-project bumps loop (10.1–10.6).                                                         | Splits into Step 10a (bumps loop, identical mechanics; failure pauses for a stop/continue decision), Step 10b (per-project changeset gate round), Step 10c (end-of-flow cleanup).      |
-| Step 11 (summary) H1              | `## commander-update-<level> summary`                                                              | `## commander-update-deep-<level> summary`                                                                                                                                             |
-| Step 11 (summary) sections        | Shallow set (Applied / Failed / Pending / Skipped-by-{path,scan,user,policy,override} / Warnings). | Shallow set PLUS `Applied improvements`, `Skipped improvements`, `Inapplicable improvements`, `Skipped or unavailable groups`. Conditional `Review dossier.md` bullet on keep-plan.    |
+| Step / Concern                    | `mode === "shallow"` (default)                                                                     | `mode === "deep"`                                                                                                                                                                                                              |
+| --------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Steps 1, 2, 3, 4, 5, 6, 8         | Identical (shared plumbing).                                                                       | Identical (shared plumbing).                                                                                                                                                                                                   |
+| Step 6.5 (cross-project research) | SHALL NOT execute. No plan-dir is created.                                                         | Fires. Composes `group-packages-for-research` + `recall-run-knowledge` + `parallel-research-workflow` (cross-project mode). Produces `<plan-dir>/dossier.md` (synthesized by the workflow's teammate + checks).                |
+| Step 7 (gate rendering)           | Generates the bump-set table inline from `CrossProjectPlan`.                                       | Dossier gate rendering: references `<plan-dir>/dossier.md` by path + a bounded digest; appends orchestrator-owned drift sections (Warnings, scan-failed, path-missing).                                                        |
+| Step 9 (gate)                     | Three options: `apply-all`, `pick-subset`, `cancel`.                                               | Four options: `apply-all`, `apply-bumps-only`, `pick-subset`, `cancel`. `pick-subset` accepts both package names AND improvement-bullet titles.                                                                                |
+| Step 10 (apply)                   | Single per-project bumps loop (10.1–10.6).                                                         | Splits into Step 10a (bumps loop, identical mechanics; failure pauses for a stop/continue decision), Step 10b (per-project changeset gate round), Step 10b.5 (run knowledge persistence), Step 10c (end-of-flow cleanup).      |
+| Step 11 (summary) H1              | `## commander-update-<level> summary`                                                              | `## commander-update-deep-<level> summary`                                                                                                                                                                                     |
+| Step 11 (summary) sections        | Shallow set (Applied / Failed / Pending / Skipped-by-{path,scan,user,policy,override} / Warnings). | Shallow set PLUS `Applied improvements`, `Skipped improvements`, `Inapplicable improvements`, `Skipped or unavailable groups`, and the always-rendered `Knowledge:` line. Conditional `Review dossier.md` bullet on keep-plan. |
 
-The shallow path SHALL NOT execute Step 6.5, SHALL NOT run any changeset gate round at apply time, SHALL NOT invoke the workflow's end-of-flow cleanup, and SHALL NOT render deep-mode summary sections. The deep-mode insertions are local to Steps 6.5, 7, 9, 10a/10b/10c, and 11 — Steps 1, 2, 3, 4, 5, 6, and 8 behave identically across modes (in particular, Step 8 override registry consultation is shared verbatim — Decision 5 in `design.md`).
+The shallow path SHALL NOT execute Step 6.5, SHALL NOT run any changeset gate round at apply time, SHALL NOT invoke the workflow's end-of-flow cleanup, and SHALL NOT render deep-mode summary sections. The deep-mode insertions are local to Steps 6.5, 7, 9, 10a/10b/10b.5/10c, and 11 — Steps 1, 2, 3, 4, 5, 6, and 8 behave identically across modes (in particular, Step 8 override registry consultation is shared verbatim — Decision 5 in `design.md`).
 
 ## Level-conditional routing: `level=engines` (toolchain bump)
 
@@ -339,6 +340,32 @@ When the result is `"mixed"`, append the warning `Mixed package managers across 
 
 The workflow does NOT consume `scanResult.packageManager` for routing in cross-project mode — this field is informational only. It propagates into `<plan-dir>/scan-by-project.json` (which the orchestrator writes — see 6.5.5) for user inspection.
 
+### 6.5.3b Recall prior run knowledge
+
+Invoke `recall-run-knowledge` on the grouped deduplicated set:
+
+```ts
+{
+    groups: groups,              // from Step 6.5.2 — carries each package's bucketKey
+    level: skillInput.level,     // e.g. "patch"
+    mode: "cross-project",
+}
+```
+
+The step sits **after** grouping because a `related` match keys off the emitted groups' `bucketKey`, and **before** the workflow invocation because prior knowledge reaches the research subagents through the workflow's prompt template, never around it.
+
+Capture the returned object as `priorKnowledge` and pass it into 6.5.4. A hit SHALL NOT remove a package from its group: the package still fetches its changelog in the workflow's phase 1 and still appears in the cross-project bump set. An `exact` hit changes only what the research subagent is told to do with the package — copy the prior universal findings instead of researching them.
+
+**Context diet.** The orchestrator SHALL NOT open a run note or a package hub. It surfaces exactly one line:
+
+```text
+Knowledge: <e> exact, <o> overlap, <p> prior, <r> related of <n> packages
+```
+
+**No base.** When the resolved knowledge root does not exist, `recall-run-knowledge` returns `{ hits: [] }` and the digest `Knowledge: no base at <root>`. Invoke 6.5.4 with **no** `priorKnowledge` input — omit the key entirely. Every group is dispatched for fresh research and the rest of the deep run is byte-for-byte what it was before this step existed. A missing `index.json` is rebuilt and does not take this path.
+
+**Recall failure is non-fatal.** When `recall-run-knowledge` errors, continue the run with no prior knowledge — omit the `priorKnowledge` key at 6.5.4 exactly as on the no-base path — and surface `Knowledge: recall failed (<reason>)`. Recall SHALL NOT block a run.
+
 ### 6.5.4 Invoke the workflow
 
 Call `experiments:parallel-research-workflow` with:
@@ -348,6 +375,7 @@ Call `experiments:parallel-research-workflow` with:
     groups: groups,                                  // from Step 6.5.2
     level: skillInput.level,                         // e.g. "patch"
     scanResult: crossProjectScan,                    // from Step 6.5.3
+    priorKnowledge: priorKnowledge,                  // from Step 6.5.3b — OMIT this key when the base is absent
     mode: "cross-project",                           // mandatory for cross-project research contract
     slugOverride: `commander-deep-${level}`,         // e.g. "commander-deep-patch" — plan-dir slug
 }
@@ -586,7 +614,7 @@ Cancelled. No files modified.
 
 In **shallow mode**: exit `0` without touching files. Do NOT run any apply, install, or override command.
 
-In **deep mode**: the plan-dir exists (Step 6.5 created it). Do NOT run any apply, install, or override command, but DO invoke Step 10c (end-of-flow cleanup) before rendering the Step 11 summary. The summary's H1 SHALL be the deep H1 (`## commander-update-deep-<level> summary`) and the summary SHALL contain a single body line `Cancelled. No files modified.` plus the always-rendered `Suggested next steps` section.
+In **deep mode**: the plan-dir exists (Step 6.5 created it). Do NOT run any apply, install, or override command, but DO invoke Step 10c (end-of-flow cleanup) before rendering the Step 11 summary. The summary's H1 SHALL be the deep H1 (`## commander-update-deep-<level> summary`) and the summary SHALL contain a single body line `Cancelled. No files modified.` plus the always-rendered `Knowledge:` line (`Knowledge: not persisted (cancelled)` — see 10b.5.4) and `Suggested next steps` section.
 
 ## Step 9.5 — Optional isolation gate (default `none`, both modes)
 
@@ -611,14 +639,19 @@ Build `ISOLATION_BY_PROJECT` (consumed by Step 10.2/10.3):
 The apply step splits by mode.
 
 - **Shallow mode** (`mode === "shallow"` or absent): a single per-project bumps loop with no changeset gate round and no end-of-flow cleanup invocation. The existing 10.1–10.6 sub-steps apply unchanged. The orchestrator returns after Step 10.6 (or on stop-on-fail) and renders Step 11.
-- **Deep mode** (`mode === "deep"`): split into three phases:
+- **Deep mode** (`mode === "deep"`): split into four phases:
     1. **Step 10a — Bumps loop** (identical to shallow Step 10.1–10.6, except failure handling: a per-project failure pauses the run at the per-project failure gate — see 10.6.D).
     2. **Step 10b — Per-project changeset gate round** for improvements (conditional — see 10b's gating below).
-    3. **Step 10c — End-of-flow cleanup invocation** (runs on every deep path except workflow-abort paths).
+    3. **Step 10b.5 — Run knowledge persistence** (fires whenever Step 10a ran; skipped on `cancel`, on a run-level abort, and when every applied project failed).
+    4. **Step 10c — End-of-flow cleanup invocation** (runs on every deep path except workflow-abort paths).
 
-    A Step 10a failure removes the failed and unattempted (`pending`) projects from Step 10b; projects that DID apply bumps successfully still get their changeset gate round (see 10b's gating). Step 10c always runs (the plan-dir exists and the user deserves a cleanup decision).
+    A Step 10a failure removes the failed and unattempted (`pending`) projects from Step 10b; projects that DID apply bumps successfully still get their changeset gate round (see 10b's gating). Step 10b.5 then runs once for the whole run, before Step 10c. Step 10c always runs (the plan-dir exists and the user deserves a cleanup decision).
 
 ### Step 10a — Bumps loop (both modes; renamed from "Step 10" for shallow)
+
+**Deep mode only — mark the run as executing.** Before the first project's manifests are touched, write `phase: "executing"` into `<plan-dir>/_meta.json` atomically (write `_meta.json.tmp`, then rename — the convention `parallel-research-workflow` uses for its own transitions). `executing` and `done` are the consumer-owned phases the workflow never advances into; this orchestrator is their only writer. The matching `"done"` write happens at Step 10b.5.
+
+In **shallow mode** there is no plan-dir and no `_meta.json` — the shallow path writes neither phase value.
 
 Iterate the resolved project set in **registry insertion order** (already preserved through Steps 2–9). For each project:
 
@@ -705,7 +738,7 @@ On any failure (ncu, catalog, override, install — or `apply-engine-bumps` at `
 - **Question copy**: `Applying to <projectName> failed at <step> (exit <code>). Continue with the remaining <N> project(s)?`
 - `multiSelect: false`
 - **Options** (in this exact order):
-    - `stop` — Stop the bumps loop. Mark the failed project with the failing step + exit code; mark all unattempted projects as `pending`. Failed and pending projects are excluded from Step 10b; projects that already applied bumps successfully still get their changeset gate round when 10b's gating holds. Proceed to Step 10b (if gated in), then Step 10c, then Step 11.
+    - `stop` — Stop the bumps loop. Mark the failed project with the failing step + exit code; mark all unattempted projects as `pending`. Failed and pending projects are excluded from Step 10b; projects that already applied bumps successfully still get their changeset gate round when 10b's gating holds. Proceed to Step 10b (if gated in), then Step 10b.5, then Step 10c, then Step 11.
     - `continue-remaining` — Resume the bumps loop with the next project. The failed project is marked failed (excluded from Step 10b); a later failure raises this gate again.
 
 ### Step 10b — Per-project changeset gate round (deep mode only)
@@ -770,13 +803,101 @@ On approval:
 3. Record the verified `(bullet, project)` pairs into `APPLIED_IMPROVEMENTS` (Step 11 `Applied improvements`) and the teammate's inapplicable classifications (from `changeset.md`'s `## Inapplicable` section) into the Step 11 `Inapplicable improvements` buffer.
 4. **Teardown via `TaskStop`** — structured shutdown requests are unreliable for idle teammates. `TaskStop` is the mandated teardown on every path out of the round (applied, rejected, aborted).
 
-#### 10b.5 Changeset-round hard rules
+#### Changeset-round hard rules
 
 - The changeset SHALL NOT expand scope beyond bullets present in `dossier.md`. Adjacent opportunities the teammate discovers during reconnaissance SHALL be surfaced in the Step 11 `Suggested next steps` list, NEVER silently added to `changeset.md`.
 - After the approved edits are applied and verified, the round may run read-only verification over those edits and surface the result in the summary (read-only, no `--fix`).
 - The round SHALL NOT create commits or pull requests (or push); it stops for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation is a separate pre-apply step (Step 9.5); the changeset round itself creates no branch.
 - Neither the teammate nor the orchestrator SHALL touch any file outside the bullet's `affects projects:` project set.
 - The orchestrator SHALL NOT apply improvement edits itself — approval always delegates the apply to the teammate.
+
+### Step 10b.5 — Run knowledge persistence (deep mode only)
+
+Fires whenever Step 10a ran — after the last project's Step 10b round, or directly after Step 10a when no changeset round applied (`apply-bumps-only`, no improvement bullets in the dossier, `pick-subset` with bumps only, or no project eligible for the round). It always runs **before** Step 10c: the run directory must still exist when the knowledge base copies from it.
+
+Shallow mode SHALL NOT execute this step.
+
+#### 10b.5.1 Close the run's phase
+
+Write `phase: "done"` into `<plan-dir>/_meta.json` atomically (write `_meta.json.tmp`, then rename), the same way Step 10a wrote `"executing"`. Do this before invoking `persist-run-knowledge` — the skill reads the run directory after the phase is closed.
+
+#### 10b.5.2 Assemble the run outcome object
+
+Build **one** object for the whole run from fragments the orchestrator already holds — no re-read of research bodies, no per-project object. Shape (the knowledge store's `outcome.json` minus `recordedAt`, which the persist skill stamps):
+
+```jsonc
+{
+    "runId": "<plan-dir basename = _meta.json.planDirName>",
+    "level": "<the level input>",
+    "mode": "cross-project",
+    "gateOption": "apply-all", // the Step 9 selection: apply-all | apply-bumps-only | pick-subset
+    "projects": [
+        {
+            "projectName": "<registry name>",
+            "mechanism": "apply-npm-updates", // apply-engine-bumps at level=engines
+            "bumps": {/* the mechanism's returned result fragment, VERBATIM */},
+            "changeset": {
+                "status": "approved", // approved | verification-failed | rejected | skipped | not-run | unknown
+                "path": "changesets/<projectName>/changeset.md", // run-dir-relative, or null
+                "applicable": 1,
+                "inapplicable": 55,
+            },
+        },
+    ],
+}
+```
+
+- **One `projects[]` entry per project that reached apply** — i.e. every project for which Step 10a invoked the mechanism. A project skipped at 10.1 for an empty subset, left `pending` by a stop decision, or dropped earlier as path-missing / scan-failed contributes no entry.
+- `bumps` is the mechanism's result fragment **verbatim**: `{ appliedGeneric, appliedOverrides, installRan, logPath, failure }` from `apply-npm-updates`, or `{ resolvedTargets, applied, skipped, droppedHashes, failure? }` from `apply-engine-bumps`. Do NOT reshape, summarize, or drop `logPath`.
+- `changeset.status` — keyed on one axis only, what happened at the gate, and shared verbatim with the single-project orchestrator:
+    - `approved` — the gate opened at 10b.3, the user approved, and the 10b.4 on-disk re-check matched the approved changeset. A zero-applicable changeset is included here: an empty changed set is that changeset's expected match.
+    - `verification-failed` — the gate opened and was approved, the teammate applied, and the 10b.4 on-disk re-check did NOT match the approved changeset. It is neither `approved` (the edits did not land as approved) nor `skipped` (bullets were in scope), and `bumps.failure` cannot carry it — that field records the bump mechanism (ncu / catalog / override / install), never the changeset apply. A hub's `### Applied` section is read by later runs as how earlier projects handled a package, so an edit that did not land SHALL NOT be recorded as one that did.
+    - `rejected` — the gate opened at 10b.3 and the user rejected.
+    - `skipped` — the gate could not open because there was nothing to decide: no bullets in scope for this project (the dossier carried `_no improvements identified_`, `pick-subset` selected no improvement, or this project's `BULLETS_FOR_PROJECT` was empty).
+    - `not-run` — the round never reached the gate: `apply-bumps-only`, or it aborted before the gate opened (a 10b.2 pre-gate check violation, or no `changeset.md` written).
+    - `unknown` — `/experiments:knowledge-persist` reconstruction only; a live run never emits it.
+
+- `changeset.path` is run-dir-relative (`changesets/<projectName>/changeset.md`), or `null` when the project has no changeset.
+- `changeset.applicable` / `changeset.inapplicable` are the counts from that project's `## Applicable (<N>)` / `## Inapplicable (<M>)` headings — already in hand from the 10b.3 gate read and the 10b.4 recording, no new read — and `null` when the project has no changeset.
+
+The run-level outcome derives from the same object and decides whether the run is persisted at all: **`applied`** when every entry's `bumps.failure` is absent or `null`, **`partial`** when at least one entry is clean and another is not, **`failed`** otherwise.
+
+#### 10b.5.3 Persist once for the run
+
+Invoke `persist-run-knowledge` **exactly once per run** with:
+
+```ts
+{
+    runDir: "<the absolute plan-dir captured at Step 6.5.4>",
+    outcome: <the object from 10b.5.2>,
+}
+```
+
+One invocation, one run note covering every project — never one invocation per project. The skill stamps `recordedAt`, writes `<plan-dir>/outcome.json`, copies the allowlisted artefacts into the knowledge root, and returns one line. The orchestrator SHALL NOT write `outcome.json` itself and SHALL NOT open a run note or a package hub; it holds only the returned digest:
+
+```text
+Knowledge: persisted <runId> → <root> (<p> packages, <h> hubs, <d> distilled, status <ok|draft>)
+```
+
+Carry that line into the Step 11 `Knowledge:` line unchanged.
+
+#### 10b.5.4 When persistence is skipped
+
+Skip the invocation entirely — writing nothing under the knowledge root, not even creating it — and surface `Knowledge: not persisted (<reason>)` and nothing else, when:
+
+- **The user selected `cancel`** at Step 9 (or 9.2.D resolved to cancel) — reason `cancelled`. Step 10a never ran, so neither phase value is written and nothing is persisted; `Cancelled. No files modified.` keeps holding literally.
+- **The run aborted before the apply step** — the Step 6.5.6 workflow abort signals (phase 1 hard-wall, phase 3 integrity gate) — reason `aborted`. Apply was never reached, so neither `phase: "executing"` nor `phase: "done"` is written and nothing is persisted. In cross-project mode these paths exit before Step 11, so the `Knowledge:` line is not rendered at all; the reason exists for parity with the single-project orchestrator.
+
+    A failure **after** apply started is NOT an abort in this sense — it is an `apply-*` path. A 10b.2 pre-gate abort and a 10b.4 apply-verification failure both leave bumps on disk: `phase: "done"` is written and the run IS persisted.
+
+- **No project reached apply** — `projects[]` is empty (every project hit the 10.1 empty-subset skip), so nothing was applied. Reason `nothing applied`. `copy-run-knowledge.mjs` refuses this case as well; stopping here is belt and braces.
+- **The run-level outcome is `failed`** — no entry's `bumps.failure` is absent or `null`, i.e. every project that reached apply failed. Reason `outcome failed`, the exact string `persist-run-knowledge` returns for this case. Step 10c still fires.
+
+`Applicable (0)` is not a skip condition: "nothing applied at this range" is itself reusable, and the run is persisted normally. An `apply-bumps-only` run IS persisted, with `changeset.status` `not-run` and `path` `null` for every project.
+
+#### 10b.5.5 Persistence never masks the apply
+
+Persistence SHALL NOT alter any apply, changeset, or skip section of the Step 11 summary. A failure inside `persist-run-knowledge` surfaces as `Knowledge: not persisted (<reason>)`, SHALL NOT abort the run, and SHALL NOT prevent Step 10c from firing.
 
 ### Step 10c — End-of-flow cleanup invocation (deep mode only)
 
@@ -881,6 +1002,8 @@ Print a markdown summary. The H1 varies by mode. Render sections conditionally; 
 
 **Isolation:** {"none (applied in current tree)" | "worktree — one per applied project" | "branch — one per applied project"}
 
+**Knowledge:** {the Step 10b.5 digest — "persisted <runId> → <root> (<p> packages, <h> hubs, <d> distilled, status <ok|draft>)" or "not persisted (<reason>)"} # deep mode only — always renders
+
 **Suggested next steps (not executed):**
 
 - Run your test suite in each modified project.
@@ -907,6 +1030,7 @@ Print a markdown summary. The H1 varies by mode. Render sections conditionally; 
 | Skipped by override           | both      | At least one override entry got `skip-matched`.                                                                                                                 |
 | Warnings                      | both      | `warnings[]` non-empty.                                                                                                                                         |
 | Isolation                     | both      | Always (reflects the Step 9.5 choice; `none` when not isolated).                                                                                                |
+| Knowledge                     | deep only | Always in deep mode — the Step 10b.5 digest, or `not persisted (<reason>)` when persistence was skipped or failed. Never rendered in shallow mode.              |
 | Suggested next steps          | both      | Always.                                                                                                                                                         |
 
 ### 11.1.D Deep-mode section formats
@@ -919,6 +1043,11 @@ Print a markdown summary. The H1 varies by mode. Render sections conditionally; 
     - `(apply verification failed)` — the on-disk verification after `proceed` did not match the changeset (10b.4).
 - **Inapplicable improvements**: one line per (bullet, project) pair the apply teammate marked inapplicable in `changeset.md`'s `## Inapplicable` section. Format `- {bullet title} → {projectName} ({one-sentence reason captured during reconnaissance})`.
 - **Skipped or unavailable groups**: copied verbatim from `<plan-dir>/dossier.md`'s `## Skipped or unavailable` section (workflow-owned). Heading count `<N>` is the bullet count under that section in `dossier.md`.
+- **Knowledge**: the one-line digest Step 10b.5 returned, reproduced with no rewording, truncation or recomputation — only the leading `Knowledge:` is bolded, to match `**Isolation:**`. Exactly one such line renders on every terminal path of a deep run, immediately before `Suggested next steps`:
+    - persisted → `**Knowledge:** persisted <runId> → <root> (<p> packages, <h> hubs, <d> distilled, status <ok|draft>)`.
+    - skipped or failed → `**Knowledge:** not persisted (<reason>)`, naming the reason from 10b.5.4 (`cancelled`, `aborted`, `nothing applied`, `outcome failed`, or the `persist-run-knowledge` failure detail).
+
+    The line is additive: every other summary section renders exactly as it would without it. The recall digests (`Knowledge: <e> exact, …`, `Knowledge: no base at <root>`, `Knowledge: recall failed (<reason>)`) surface **inline at Step 6.5.3b** and SHALL NOT appear here: the summary's `Knowledge:` line is the persist digest and nothing else.
 
 ### 11.1.D.1 Suggested next steps in deep mode
 
@@ -937,7 +1066,8 @@ After the run completes (success, partial, cancel), the user-scoped registry `<H
 ## Hard rules
 
 - The skill SHALL NOT create commits, push, or open pull requests autonomously in any project; it stops for human-in-the-loop review before any such outward/VCS action. Branch/worktree isolation via the `update-isolation` skill (Step 9.5) is permitted (opt-in; default `none` = apply in place); creating an isolation branch/worktree is allowed, committing/pushing/PR-ing is not.
-- The skill SHALL NOT modify any file outside the per-project manifests it bumps. In particular, `<HOME>/.claude/commander/projects.json` SHALL remain byte-identical before and after every run.
+- The skill SHALL NOT modify any file outside the per-project manifests it bumps, the deep-mode run directory under `~/.claude/experiments/plans/`, and the knowledge root written at Step 10b.5. In particular, `<HOME>/.claude/commander/projects.json` SHALL remain byte-identical before and after every run.
+- The skill SHALL write to the knowledge root only on the `apply-*` paths — `apply-all`, `apply-bumps-only`, and `pick-subset`, that is every Step 9 confirmation-gate option other than `cancel` — and only through the `persist-run-knowledge` skill invoked at Step 10b.5. On `cancel` and on every run-level `abort` the skill SHALL NOT invoke `persist-run-knowledge`, SHALL NOT create the knowledge root, and SHALL NOT write any file under it: `Cancelled. No files modified.` stays literally true, and a knowledge root that was absent before the run is still absent after it.
 - The skill SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).
 - The skill SHALL NOT auto-execute an override command without the user selecting `run-override` for that entry.
 - The skill SHALL NOT run `ncu --upgrade` as a fallback after an override command fails (mirrors `npm-update-patch`).
@@ -970,6 +1100,11 @@ After the run completes (success, partial, cancel), the user-scoped registry `<H
 - `Apply teammate modified <projectName> before approval. Aborting the changeset round for this project.` — Step 10b.2 pre-gate check violation (deep mode).
 - `Improvements rejected at the changeset gate. No improvement edits applied; bumps are preserved.` — Step 10b.3 gate rejection (deep mode).
 - `Apply verification failed for <projectName>: <detail>.` — Step 10b.4 on-disk verification mismatch (deep mode).
+- `Knowledge: <e> exact, <o> overlap, <p> prior, <r> related of <n> packages` — Step 6.5.3b recall digest (deep mode).
+- `Knowledge: no base at <root>` — Step 6.5.3b with no knowledge base (deep mode); the workflow is invoked without `priorKnowledge`.
+- `Knowledge: recall failed (<reason>)` — Step 6.5.3b recall error (deep mode); non-fatal, the workflow is invoked without `priorKnowledge`.
+- `Knowledge: persisted <runId> → <root> (<p> packages, <h> hubs, <d> distilled, status <ok|draft>)` — Step 10b.5.3 persist digest (deep mode), reproduced in the Step 11 summary.
+- `Knowledge: not persisted (<reason>)` — Step 10b.5.4 persistence skipped, or a `persist-run-knowledge` failure (deep mode).
 
 ## Non-goals (deferred)
 
