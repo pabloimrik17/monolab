@@ -3,9 +3,6 @@
     "targets": {
         "dev": {
             "dependsOn": ["^build", "dev:migrate"]
-        },
-        "dev:migrate": {
-            "command": "pnpm --filter @m0n0lab/qup-data db:migrate"
         }
     }
 }

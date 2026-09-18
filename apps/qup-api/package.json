@@ -8,6 +8,7 @@
         "build:lib": "tsdown",
         "build:typecheck": "tsc --noEmit",
         "dev": "tsx watch src/index.ts",
+        "dev:migrate": "pnpm --filter @m0n0lab/qup-data db:migrate",
         "start": "node dist/index.js",
         "test:unit": "vitest run",
         "test:unit:watch": "vitest",

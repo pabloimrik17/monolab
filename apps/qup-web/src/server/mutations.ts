@@ -30,7 +30,6 @@ async function post<T>(path: string, body?: unknown, admin = false): Promise<T> 
     return res.json() as Promise<T>;
 }
 
-// PATCH endpoints reply `{ ok: true }`, not the updated resource.
 async function patch(path: string, body: unknown, admin = false): Promise<void> {
     const res = await fetch(`${API_URL}${path}`, {
         method: "PATCH",
