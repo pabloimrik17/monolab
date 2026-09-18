@@ -63,9 +63,12 @@ export class OrderStatusViewModel extends BaseViewModel {
     private connectSSE(): void {
         const es = new EventSource(sessionEventsUrl(this._sessionCode));
 
+        let latestRefresh = 0;
         const refresh = async () => {
+            const refreshId = ++latestRefresh;
             try {
                 const orders = await getSessionOrders(this._sessionId);
+                if (refreshId !== latestRefresh) return;
                 this._orders[1](this.filterOrders(orders));
             } catch {
                 // silent — keep showing last known orders
