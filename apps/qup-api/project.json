@@ -1,12 +1,6 @@
 {
     "name": "@m0n0lab/qup-api",
     "targets": {
-        "build": {
-            "command": "tsdown",
-            "options": {
-                "cwd": "{projectRoot}"
-            }
-        },
         "dev": {
             "dependsOn": ["^build", "dev:migrate"]
         }

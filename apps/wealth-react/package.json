@@ -12,7 +12,8 @@
         "start": "react-router-serve ./build/server/index.js",
         "test:unit": "vitest run",
         "test:unit:watch": "vitest",
-        "test:unit:coverage": "vitest run --coverage"
+        "test:unit:coverage": "vitest run --coverage",
+        "typecheck": "react-router typegen && tsc --noEmit"
     },
     "dependencies": {
         "@m0n0lab/wealth-tracker-core": "workspace:*",

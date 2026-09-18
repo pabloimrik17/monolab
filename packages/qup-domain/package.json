@@ -14,11 +14,13 @@
         "./package.json": "./package.json"
     },
     "scripts": {
+        "build": "tsdown",
         "test:unit": "vitest run",
         "test:unit:watch": "vitest",
         "test:unit:coverage": "vitest run --coverage",
         "test:mutation": "stryker run",
-        "test:mutation:report": "open reports/mutation/index.html"
+        "test:mutation:report": "open reports/mutation/index.html",
+        "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
     },
     "dependencies": {
         "inversify": "catalog:",

@@ -7,11 +7,6 @@
         "typecheck": {
             "cache": true,
             "dependsOn": ["^typecheck"],
-            "executor": "nx:run-commands",
-            "options": {
-                "cwd": "apps/green-beard",
-                "command": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
-            },
             "inputs": ["default", "{workspaceRoot}/packages/ts-configs/tsconfig.base.json"],
             "outputs": []
         }

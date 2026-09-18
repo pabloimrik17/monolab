@@ -33,6 +33,7 @@
         "registry": "https://registry.npmjs.org/"
     },
     "scripts": {
+        "build": "tsdown",
         "build:check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
         "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
         "lint:eslint:config-check": "eslint-config-prettier src/index.ts",
@@ -52,7 +53,8 @@
         "test:ui": "vitest --ui",
         "test:unit": "vitest run",
         "test:unit:coverage": "vitest run --coverage",
-        "test:unit:watch": "vitest"
+        "test:unit:watch": "vitest",
+        "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
     },
     "dependencies": {
         "tslib": "catalog:"

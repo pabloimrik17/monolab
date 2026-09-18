@@ -33,12 +33,14 @@
         "registry": "https://registry.npmjs.org/"
     },
     "scripts": {
+        "build": "tsdown",
         "build:check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
         "test:unit": "vitest run",
         "test:unit:watch": "vitest",
         "test:unit:coverage": "vitest run --coverage",
         "test:mutation": "stryker run",
-        "test:mutation:report": "open reports/mutation/index.html"
+        "test:mutation:report": "open reports/mutation/index.html",
+        "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "catalog:",
