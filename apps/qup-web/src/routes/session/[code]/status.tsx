@@ -9,7 +9,7 @@ import type { OrderStatusViewModel } from "../../../view-models/order-status.vie
 
 export default function StatusPage() {
     const params = useParams<{ code: string }>();
-    const [searchParams] = useSearchParams();
+    const [searchParams] = useSearchParams<{ guest?: string }>();
 
     const vm = useViewModel(() => {
         const instance = container.get<OrderStatusViewModel>(TOKENS.OrderStatusViewModel);

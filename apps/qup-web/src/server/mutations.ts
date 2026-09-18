@@ -23,7 +23,7 @@ async function post<T>(path: string, body?: unknown, admin = false): Promise<T> 
     const res = await fetch(`${API_URL}${path}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(admin && adminHeaders()) },
-        body: body ? JSON.stringify(body) : undefined,
+        body: body ? JSON.stringify(body) : null,
     });
     if (!res.ok) throw new Error(`POST ${path} failed: ${res.status}`);
     if (res.status === 204) return undefined as T;

@@ -8,7 +8,7 @@ import type { CreateOrderViewModel } from "../../../view-models/create-order.vie
 
 export default function OrderPage() {
     const params = useParams<{ code: string }>();
-    const [searchParams] = useSearchParams();
+    const [searchParams] = useSearchParams<{ guest?: string }>();
     const navigate = useNavigate();
 
     const vm = useViewModel(() => {

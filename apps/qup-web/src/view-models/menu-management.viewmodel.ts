@@ -65,19 +65,16 @@ export class MenuManagementViewModel extends BaseViewModel {
         this._error[1]("");
         const category = this._formCategory[0]() as MenuItemDto["category"];
         const description = this._formDescription[0]().trim() || undefined;
+        const fields = { name, category, ...(description !== undefined && { description }) };
 
         try {
             const editId = this._editingId[0]();
             if (editId) {
-                await updateMenuItem(editId, { name, category, description });
+                await updateMenuItem(editId, fields);
                 // The API ignores an absent description, so the old one is kept.
-                this.patchItem(editId, {
-                    name,
-                    category,
-                    ...(description !== undefined && { description }),
-                });
+                this.patchItem(editId, fields);
             } else {
-                const created = await createMenuItem({ name, category, description });
+                const created = await createMenuItem(fields);
                 this._items[1]((prev) => [...prev, created]);
             }
             this.resetForm();

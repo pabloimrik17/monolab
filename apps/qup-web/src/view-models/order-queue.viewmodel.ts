@@ -10,6 +10,7 @@ import type {
     OrderDto,
     OrderStatusEvent,
     SessionDto,
+    UpdateOrderStatusRequest,
 } from "@m0n0lab/qup-shared";
 
 @injectable()
@@ -60,7 +61,10 @@ export class OrderQueueViewModel extends BaseViewModel {
         super.willUnmount();
     }
 
-    async handleUpdateStatus(orderId: string, status: OrderDto["status"]): Promise<void> {
+    async handleUpdateStatus(
+        orderId: string,
+        status: UpdateOrderStatusRequest["status"],
+    ): Promise<void> {
         this._error[1]("");
         try {
             await updateOrderStatus(orderId, { status });
