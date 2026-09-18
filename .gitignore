@@ -362,3 +362,5 @@ sketch
 .nx/migrate-runs
 # fallow analysis cache
 .fallow/
+# Playwright MCP snapshots, console logs and screenshots
+.playwright-mcp/
