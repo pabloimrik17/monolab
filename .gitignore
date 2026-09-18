@@ -371,3 +371,5 @@ sketch
 .fallow/
 # Playwright MCP snapshots, console logs and screenshots
 .playwright-mcp/
+# TypeScript typecheck declaration output
+out-tsc/
