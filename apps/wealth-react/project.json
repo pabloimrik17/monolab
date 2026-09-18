@@ -1,0 +1,12 @@
+{
+    "name": "@m0n0lab/wealth-react",
+    "targets": {
+        "typecheck": {
+            "command": "react-router typegen && tsc --noEmit",
+            "options": {
+                "cwd": "{projectRoot}"
+            },
+            "dependsOn": ["^build"]
+        }
+    }
+}
