@@ -3,17 +3,22 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { getCookie, setCookie } from "vinxi/http";
 
-const ADMIN_PIN = process.env["API_ADMIN_PIN"];
-const AUTH_SECRET = process.env["QUP_AUTH_SECRET"];
 const COOKIE_NAME = "qup_admin";
-const IS_PROD = process.env["NODE_ENV"] === "production";
 
-if (!ADMIN_PIN || !AUTH_SECRET) {
-    throw new Error("API_ADMIN_PIN and QUP_AUTH_SECRET env vars are required");
+// Read lazily: module top-level code of a "use server" file also ships in the
+// client bundle, where these vars are absent and a top-level throw would break
+// every page that imports the DI container.
+function authEnv(): { pin: string; secret: string } {
+    const pin = process.env["API_ADMIN_PIN"];
+    const secret = process.env["QUP_AUTH_SECRET"];
+    if (!pin || !secret) {
+        throw new Error("API_ADMIN_PIN and QUP_AUTH_SECRET env vars are required");
+    }
+    return { pin, secret };
 }
 
 function sign(value: string): string {
-    return createHmac("sha256", AUTH_SECRET!).update(value).digest("hex");
+    return createHmac("sha256", authEnv().secret).update(value).digest("hex");
 }
 
 function cookiePayload(): string {
@@ -34,13 +39,13 @@ function isValidCookie(raw?: string): boolean {
 }
 
 export async function login(pin: string): Promise<{ success: boolean }> {
-    if (pin !== ADMIN_PIN) {
+    if (pin !== authEnv().pin) {
         return { success: false };
     }
 
     setCookie(COOKIE_NAME, cookiePayload(), {
         httpOnly: true,
-        secure: IS_PROD,
+        secure: process.env["NODE_ENV"] === "production",
         sameSite: "lax",
         path: "/",
         maxAge: 60 * 60 * 8, // 8 hours
