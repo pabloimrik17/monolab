@@ -1,7 +1,7 @@
 "use server";
 
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { getCookie, setCookie } from "vinxi/http";
+import { getCookie, getRequestProtocol, setCookie } from "vinxi/http";
 
 const COOKIE_NAME = "qup_admin";
 
@@ -45,7 +45,9 @@ export async function login(pin: string): Promise<{ success: boolean }> {
 
     setCookie(COOKIE_NAME, cookiePayload(), {
         httpOnly: true,
-        secure: process.env["NODE_ENV"] === "production",
+        // Not tied to NODE_ENV: a production build served over plain http on the LAN
+        // would otherwise set a Secure cookie the browser drops, blocking admin login.
+        secure: getRequestProtocol() === "https",
         sameSite: "lax",
         path: "/",
         maxAge: 60 * 60 * 8, // 8 hours
