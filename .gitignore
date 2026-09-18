@@ -147,6 +147,13 @@ web_modules/
 # TypeScript cache
 *.tsbuildinfo
 
+# TypeScript typecheck output (tsc --build declarations, separate from build dist)
+out-tsc
+
+# Generated route types and build output (react-router typegen/build regenerate them)
+.react-router
+apps/wealth-react/build
+
 # Optional npm cache directory
 .npm
 
