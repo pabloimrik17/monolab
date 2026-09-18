@@ -33,10 +33,7 @@
         "registry": "https://registry.npmjs.org/"
     },
     "scripts": {
-        "build": "pnpm run build:typecheck && pnpm run build:lib",
         "build:check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
-        "build:lib": "tsdown",
-        "build:typecheck": "tsc --noEmit",
         "test:unit": "vitest run",
         "test:unit:watch": "vitest",
         "test:unit:coverage": "vitest run --coverage",

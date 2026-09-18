@@ -4,9 +4,6 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "pnpm run build:typecheck && pnpm run build:lib",
-        "build:lib": "tsdown",
-        "build:typecheck": "tsc --noEmit",
         "dev": "tsx watch src/index.ts",
         "dev:migrate": "pnpm --filter @m0n0lab/qup-data db:migrate",
         "start": "node dist/index.js",

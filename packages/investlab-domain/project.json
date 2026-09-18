@@ -1,5 +1,6 @@
 {
-    "name": "@m0n0lab/investlab",
+    "name": "@m0n0lab/investlab-domain",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "targets": {
         "build": {
             "command": "tsdown",
