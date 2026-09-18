@@ -1,7 +1,7 @@
 import { injectable } from "inversify";
 import { createSignal } from "solid-js";
 import { BaseViewModel } from "@m0n0lab/solid-clean";
-import { getMenu, getSessionByCode } from "../server/data.ts";
+import { getAvailableMenu, getSessionByCode } from "../server/data.ts";
 import { createOrder } from "../server/mutations.ts";
 import type { MenuItemDto } from "@m0n0lab/qup-shared";
 
@@ -102,7 +102,7 @@ export class CreateOrderViewModel extends BaseViewModel {
         try {
             const [session, menu] = await Promise.all([
                 getSessionByCode(this._sessionCode),
-                getMenu(),
+                getAvailableMenu(),
             ]);
             this._menu[1](menu);
             if (session.status === "CLOSED") {

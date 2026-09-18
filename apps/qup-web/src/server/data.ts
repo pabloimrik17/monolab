@@ -16,6 +16,12 @@ export async function getMenu(): Promise<MenuItemDto[]> {
     return res.json() as Promise<MenuItemDto[]>;
 }
 
+export async function getAvailableMenu(): Promise<MenuItemDto[]> {
+    const res = await fetch(`${API_URL}/menu?available=true`);
+    if (!res.ok) throw new Error("Failed to load menu");
+    return res.json() as Promise<MenuItemDto[]>;
+}
+
 export async function getSessionOrders(sessionId: string): Promise<OrderDto[]> {
     const res = await fetch(`${API_URL}/sessions/${sessionId}/orders`);
     if (!res.ok) throw new Error("Failed to load orders");
