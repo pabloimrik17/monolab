@@ -65,11 +65,11 @@ Slice: finished orders age off the board on their own, without being deleted.
 
 Handoff from block 2: `OrderBoardViewModel.hasVisibleOrders()` decides the `No orders yet` state from the three main sections only. The cancelled strip must be added to that predicate in 3.5, or a session holding only cancelled orders shows `No orders yet` above a populated red strip. Block 2 also returns cancelled orders in the snapshot already, ordered last, newest-change-first — 3.5 needs no use-case ordering change.
 
-- [ ] 3.1 Add `visibleUntil` to `PublicOrderSummaryDto`; verify `pnpm nx run @m0n0lab/qup-shared:build:check-exports` passes (**export surface change — attw required**)
-- [ ] 3.2 Compute retention in `GetPublicOrderBoardUseCase` — `DONE` = `updatedAt + 5min`, `CANCELLED` = `updatedAt + 2min`, otherwise null — and omit already-expired orders from the snapshot; verify a just-served order appears with a deadline and a 6-minute-old served order does not
-- [ ] 3.3 Confirm retention never deletes: after an order ages off the board, verify the host's `GET /sessions/:id/orders` still returns it
-- [ ] 3.4 Add the single-timer expiry in `OrderBoardViewModel` — schedule to the nearest future `visibleUntil`, drop expired cards, reschedule, clear on unmount, no periodic ticker; verify a card disappears with no refresh and no interval is left running
-- [ ] 3.5 Add the red cancelled strip below the three sections, holding only cancelled orders within their window; verify a cancelled order appears in the strip, in none of the three columns, and leaves after 2 minutes
+- [x] 3.1 Add `visibleUntil` to `PublicOrderSummaryDto`; verify `pnpm nx run @m0n0lab/qup-shared:build:check-exports` passes (**export surface change — attw required**)
+- [x] 3.2 Compute retention in `GetPublicOrderBoardUseCase` — `DONE` = `updatedAt + 5min`, `CANCELLED` = `updatedAt + 2min`, otherwise null — and omit already-expired orders from the snapshot; verify a just-served order appears with a deadline and a 6-minute-old served order does not
+- [x] 3.3 Confirm retention never deletes: after an order ages off the board, verify the host's `GET /sessions/:id/orders` still returns it
+- [x] 3.4 Add the single-timer expiry in `OrderBoardViewModel` — schedule to the nearest future `visibleUntil`, drop expired cards, reschedule, clear on unmount, no periodic ticker; verify a card disappears with no refresh and no interval is left running
+- [x] 3.5 Add the red cancelled strip below the three sections, holding only cancelled orders within their window; verify a cancelled order appears in the strip, in none of the three columns, and leaves after 2 minutes
 
 ## 4. Block `board-live` — board signal stream
 
@@ -77,12 +77,14 @@ Handoff from block 2: `OrderBoardViewModel.hasVisibleOrders()` decides the `No o
 
 Slice: the board updates by itself, survives a dropped connection, and freezes when the session closes.
 
-- [ ] 4.1 Add a shared refetch-coalescing helper in `qup-web` (one request in flight, at most one trailing refetch, stale responses discarded); verify 10 rapid triggers during one in-flight request produce exactly one extra request
-- [ ] 4.2 Add `GET /events/sessions/:code/board` emitting payload-free `board:changed` (on create/status/cancel) and `session:closed`, with 422/404/409 code semantics and subscription release on disconnect; verify with `curl -N` that frames carry no order data and that listeners are released on client close
-- [ ] 4.3 Add a board SSE URL builder alongside `sse-url.ts`; verify the board connects to the correct origin from a phone on the LAN
-- [ ] 4.4 Subscribe `OrderBoardViewModel` to the stream and refetch through the coalescing helper; verify placing an order on a phone updates the board with no reload
-- [ ] 4.5 Add `Reconnecting…` on connection loss while retaining the last known board; verify stopping the API leaves the cards on screen with the notice shown
-- [ ] 4.6 Add closure freeze on `session:closed` — keep current cards, show `Session ended`, stop refetching and reconnecting; verify closing the session freezes an open board and that a reload then shows only `Session ended`
+Handoff from block 3: `applySnapshot()` now schedules the expiry timer on every successful snapshot and clears it on every failure, so a refetch routed through it keeps expiry correct for free — applying a snapshot by any other path leaves a timer armed for the previous snapshot's deadlines. **4.6's closure freeze must also clear the expiry timer**, or a "frozen" board keeps dropping cards as their deadlines pass. Block 4 branches from block 2, so the timer is not on its branch; the orchestrator resolves this when rebasing block 4 onto block 3.
+
+- [x] 4.1 Add a shared refetch-coalescing helper in `qup-web` (one request in flight, at most one trailing refetch, stale responses discarded); verify 10 rapid triggers during one in-flight request produce exactly one extra request
+- [x] 4.2 Add `GET /events/sessions/:code/board` emitting payload-free `board:changed` (on create/status/cancel) and `session:closed`, with 422/404/409 code semantics and subscription release on disconnect; verify with `curl -N` that frames carry no order data and that listeners are released on client close
+- [x] 4.3 Add a board SSE URL builder alongside `sse-url.ts`; verify the board connects to the correct origin from a phone on the LAN
+- [x] 4.4 Subscribe `OrderBoardViewModel` to the stream and refetch through the coalescing helper; verify placing an order on a phone updates the board with no reload
+- [x] 4.5 Add `Reconnecting…` on connection loss while retaining the last known board; verify stopping the API leaves the cards on screen with the notice shown
+- [x] 4.6 Add closure freeze on `session:closed` — keep current cards, show `Session ended`, stop refetching and reconnecting; verify closing the session freezes an open board and that a reload then shows only `Session ended`
 
 ## 5. Block `sse-sanitize` — strip payloads from the public stream
 
@@ -102,6 +104,8 @@ Slice: the existing session stream stops carrying order data, and both of its co
 
 Slice: the board becomes usable as a room display. Self-contained in the board route and its components.
 
+Handoff from block 4: board state notices render as direct `<p>` children of the `max-w-7xl` wrapper in `board.tsx`; the header is untouched and free for the QR and fullscreen control. **A frozen board keeps its wake lock** — release it in the freeze path (`OrderBoardViewModel.freeze()`), which already stops refetching, closes the stream and clears the expiry timer.
+
 - [ ] 6.1 Add `uqr` pinned to an exact version in `apps/qup-web/package.json`; verify `pnpm install` succeeds and `pnpm nx run @m0n0lab/qup-web:build` passes
 - [ ] 6.2 Add the header — session name, code, and a QR to `/session/:code` rendered inline as SVG on wide screens only; verify the QR is absent at narrow widths and that scanning it opens the join page
 - [ ] 6.3 Add the `Enter fullscreen` control, hidden while fullscreen is active; verify toggling it on a tablet
@@ -117,8 +121,12 @@ No test files are added (Q38/Q44) — this gate is the safety net.
 
 - [ ] 7.1 Run `pnpm nx run-many -t typecheck build test:unit` across the workspace and verify it passes clean
 - [ ] 7.2 Run `pnpm nx run @m0n0lab/qup-shared:build:check-exports` and verify attw reports no issue for the changed export surface
+Pre-existing `fallow audit` findings, reported by block 3 and inherited rather than introduced by it: `apps/qup-web/src/server/mutations.ts:17 post` (CRAP 30) and a clone group between `apps/qup-api/src/routes/event.routes.ts:13-22` and `session.routes.ts:97-104`. Decide at 7.3 whether to fix or accept them.
+
 - [ ] 7.3 Run the lint suite and verify knip stays within its 40-issue budget with no unused new export
 - [ ] 7.4 Verify `CONTEXT.md` and `docs/**` pass `lint:markdownlint` (unlike `openspec/`, `docs/` is not ignored) or are added to `.markdownlintignore`
 - [ ] 7.5 Manual walkthrough on one API process: join → order → host advances to `PREPARING` → `DONE` → card moves to `Recently served` → ages off after 5 min; cancel → red strip → gone after 2 min; kill the API → `Reconnecting…`; close the session → freeze + `Session ended`; reload → `Session ended` only
+The `Stale response ignored` scenario under Refetch coalescing cannot be exercised: strict single-flight serialises responses, so the requirement is met structurally. See `design.md`. Do not treat it as an unmet criterion at 7.6.
+
 - [ ] 7.6 Verify every acceptance criterion in `docs/public-order-board-decisions.md` is met, and reconcile that document with anything the implementation changed
 - [ ] 7.7 Confirm the archive order: `qup` and `fix-qup-web-wiring` archive before this change, or re-base these `MODIFIED` deltas onto whatever lands in `openspec/specs/`

@@ -112,6 +112,30 @@ Corrected to describe what the board actually needs and what the platform allows
 
 *Not done:* converting the existing throwing functions to typed outcomes. That is a `qup-web`-wide refactor with no task in this change, and none of its callers currently need the distinction.
 
+### The retention rule is one exported domain function, applied in two places
+
+`boardVisibleUntil(order): Date | null` lives in `qup-domain` and is exported from its index. `GetPublicOrderBoardUseCase` applies it to drop expired orders; `toPublicOrderSummary` applies it to stamp the field.
+
+*Why:* the design said the use case "stamps `visibleUntil`", which taken literally means the value is computed in the use case and handed to the serializer. But `toPublicOrderSummary` is shared with the per-guest read `GET /sessions/code/:code/orders?guest=`, which has no use case computing deadlines — that read would have emitted `visibleUntil: null` for every finished order. One exported rule keeps the window lengths in the domain and makes both public reads agree by construction.
+
+*Alternative:* put the deadline in the use case's return shape and pass it into the serializer (rejected — it leaves the per-guest read with no source for the field, or duplicates the windows).
+
+### The cancelled strip is hidden when empty; the three main sections are not
+
+*Why:* the layout requirement pins always-rendered to the three main sections, so the board does not shift as orders move between them. The strip's own requirement says only that it "shows no cards" when nothing is within its window. A permanently visible empty red band is noise on a room display, and the strip sits below the columns so hiding it shifts nothing above.
+
+### Both SSE streams share one handler, and the keep-alive watches the abort flag
+
+`event.routes.ts` resolves the session by code, subscribes to its events and releases on disconnect in one `sessionStream` factory; the two routes differ only in the frame they build. The board's frame builder returns `data: ""` unconditionally, so that stream cannot construct a payload at all — which is what makes the no-leak property structural rather than a matter of remembering.
+
+It also fixes a pre-existing leak, accepted here as out-of-slice: `StreamingApi.write` swallows its errors, so writing to a client that has gone away never throws, and the keep-alive loop kept a timer alive for every dead connection. The loop now watches `stream.aborted` / `stream.closed` itself. No change to what either stream puts on the wire.
+
+### "Stale response ignored" is satisfied structurally, not at runtime
+
+The coalescing requirement carries a scenario where an earlier snapshot request resolves after a later one has already been applied, and the earlier response is discarded. Under the strict single-flight helper that scenario cannot occur: a second request never starts while one is running, so responses are serialised and nothing can reach that branch.
+
+The monotonically increasing request id is kept as defence in depth, because design.md asks for it and because `stop()` must still discard an in-flight response. But the requirement is met by making its violation impossible rather than by handling it, so no check at 7.6 can exercise that scenario, and nothing should be written expecting to.
+
 ## Risks / Trade-offs
 
 - **The capabilities this change modifies are not in `openspec/specs/` yet** — they live in the unarchived `qup` change (110/113 tasks done) and `fix-qup-web-wiring` (complete). If those archive after this change, the `MODIFIED` deltas here have no base to apply to. → Archive `qup` and `fix-qup-web-wiring` before archiving this change, or re-base these deltas onto whatever lands in `openspec/specs/`.
