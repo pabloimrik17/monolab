@@ -3,6 +3,7 @@ import {
     type CloseSessionUseCase,
     type CreateSessionUseCase,
     type GetActiveSessionsUseCase,
+    type GetPublicOrderBoardUseCase,
     type GetSessionByCodeUseCase,
     type GetSessionByIdUseCase,
     type GetSessionOrdersUseCase,
@@ -11,7 +12,10 @@ import {
 import { errorJson } from "../errors/error-mapping.ts";
 import { adminOnly } from "../middleware/admin-only.ts";
 import { toOrderDto, toSessionDto } from "../serializers/dto-serializers.ts";
-import { toPublicOrderSummary } from "../serializers/public-serializers.ts";
+import {
+    toPublicOrderBoardDto,
+    toPublicOrderSummary,
+} from "../serializers/public-serializers.ts";
 import type { CreateSessionRequest } from "@m0n0lab/qup-shared";
 import type { Container } from "inversify";
 
@@ -57,6 +61,19 @@ export function sessionRoutes(container: Container) {
 
         return result.match(
             (session) => c.json(toSessionDto(session)),
+            (error) => errorJson(c, error),
+        );
+    });
+
+    // GET /sessions/code/:code/board (guest, no PIN)
+    app.get("/code/:code/board", async (c) => {
+        const code = c.req.param("code");
+        const uc = container.get<GetPublicOrderBoardUseCase>(TOKENS.GetPublicOrderBoardUseCase);
+
+        const result = await uc.execute(code);
+
+        return result.match(
+            (board) => c.json(toPublicOrderBoardDto(board.session, board.orders)),
             (error) => errorJson(c, error),
         );
     });
