@@ -3,7 +3,8 @@ import { streamSSE } from "hono/streaming";
 import { type EventBus, type GetSessionByCodeUseCase, Order, TOKENS } from "@m0n0lab/qup-domain";
 import { errorJson } from "../errors/error-mapping.ts";
 import { toOrderDto } from "../serializers/dto-serializers.ts";
-import type { SSEStreamingApi } from "hono/streaming";
+import type { Context } from "hono";
+import type { SSEMessage, SSEStreamingApi } from "hono/streaming";
 import type { Container } from "inversify";
 
 const KEEPALIVE_MS = 30_000;
@@ -23,6 +24,9 @@ const BOARD_SIGNALS = new Map<string, string>([
     ["order:cancelled", "board:changed"],
     ["session:closed", "session:closed"],
 ]);
+
+// Returning null drops the event instead of writing a frame for it.
+type ToFrame = (event: string, payload: Record<string, unknown>) => SSEMessage | null;
 
 function subscribeForSession(
     eventBus: EventBus,
@@ -65,78 +69,64 @@ async function keepAlive(stream: SSEStreamingApi): Promise<void> {
     }
 }
 
-function openSession(container: Container, code: string) {
-    return container.get<GetSessionByCodeUseCase>(TOKENS.GetSessionByCodeUseCase).execute(code);
+// Both streams are the same machine — resolve the session by code, subscribe to its events,
+// release on disconnect — and differ only in the frame they put on the wire.
+function sessionStream(container: Container, events: readonly string[], toFrame: ToFrame) {
+    return async (c: Context): Promise<Response> => {
+        const getSession = container.get<GetSessionByCodeUseCase>(TOKENS.GetSessionByCodeUseCase);
+        // The route pattern guarantees the param; matches how the other routes read theirs.
+        const sessionResult = await getSession.execute(c.req.param("code")!);
+
+        if (sessionResult.isErr()) {
+            return errorJson(c, sessionResult.error);
+        }
+
+        const sessionId = sessionResult.value.id;
+        const eventBus = container.get<EventBus>(TOKENS.EventBus);
+
+        return streamSSE(c, async (stream) => {
+            const release = subscribeForSession(eventBus, sessionId, events, (event, payload) => {
+                const frame = toFrame(event, payload);
+                if (frame) {
+                    void stream.writeSSE(frame);
+                }
+            });
+
+            stream.onAbort(release);
+            await keepAlive(stream);
+            release();
+        });
+    };
 }
 
 export function eventRoutes(container: Container) {
     const app = new Hono();
 
     // GET /events/sessions/:code — SSE filtered by session
-    app.get("/sessions/:code", async (c) => {
-        const sessionResult = await openSession(container, c.req.param("code"));
-
-        if (sessionResult.isErr()) {
-            return errorJson(c, sessionResult.error);
-        }
-
-        const sessionId = sessionResult.value.id;
-        const eventBus = container.get<EventBus>(TOKENS.EventBus);
-
-        return streamSSE(c, async (stream) => {
-            const release = subscribeForSession(
-                eventBus,
-                sessionId,
-                SESSION_STREAM_EVENTS,
-                (event, data) => {
-                    // Serialize Order entity to DTO for order:created
-                    const serialized =
-                        event === "order:created" && data["order"] instanceof Order
-                            ? { ...data, order: toOrderDto(data["order"]) }
-                            : data;
-                    void stream.writeSSE({ event, data: JSON.stringify(serialized) });
-                },
-            );
-
-            stream.onAbort(release);
-            await keepAlive(stream);
-            release();
-        });
-    });
+    app.get(
+        "/sessions/:code",
+        sessionStream(container, SESSION_STREAM_EVENTS, (event, data) => {
+            // Serialize Order entity to DTO for order:created
+            const serialized =
+                event === "order:created" && data["order"] instanceof Order
+                    ? { ...data, order: toOrderDto(data["order"]) }
+                    : data;
+            return { event, data: JSON.stringify(serialized) };
+        }),
+    );
 
     // GET /events/sessions/:code/board — payload-free signals for the public board.
     // No PIN: the session code is the only key, and 422/404/409 come from the same
     // code-scoped state machine every other public endpoint uses.
-    app.get("/sessions/:code/board", async (c) => {
-        const sessionResult = await openSession(container, c.req.param("code"));
-
-        if (sessionResult.isErr()) {
-            return errorJson(c, sessionResult.error);
-        }
-
-        const sessionId = sessionResult.value.id;
-        const eventBus = container.get<EventBus>(TOKENS.EventBus);
-
-        return streamSSE(c, async (stream) => {
-            const release = subscribeForSession(
-                eventBus,
-                sessionId,
-                [...BOARD_SIGNALS.keys()],
-                (event) => {
-                    // Empty by construction: a stream that never builds a payload cannot
-                    // leak one, whatever the event that triggered it carried.
-                    const signal = BOARD_SIGNALS.get(event);
-                    if (signal) {
-                        void stream.writeSSE({ event: signal, data: "" });
-                    }
-                },
-            );
-
-            stream.onAbort(release);
-            await keepAlive(stream);
-            release();
-        });
-    });
+    app.get(
+        "/sessions/:code/board",
+        sessionStream(container, [...BOARD_SIGNALS.keys()], (event) => {
+            // Empty by construction: a stream that never builds a payload cannot leak one,
+            // whatever the event that triggered it carried.
+            const signal = BOARD_SIGNALS.get(event);
+            return signal ? { event: signal, data: "" } : null;
+        }),
+    );
 
     return app;
 }
