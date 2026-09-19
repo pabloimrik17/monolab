@@ -92,10 +92,12 @@ Handoff from block 3: `applySnapshot()` now schedules the expiry timer on every 
 
 Slice: the existing session stream stops carrying order data, and both of its consumers move to refetch. Must land with its consumers in the same slice or the admin queue breaks.
 
-- [ ] 5.1 Change `OrderCreatedEvent` in `packages/qup-shared/src/events.ts` to carry no order object; verify `pnpm nx run-many -t typecheck` names every affected consumer (**export surface change — attw required**)
-- [ ] 5.2 Remove `Order`/`toOrderDto` serialization from `apps/qup-api/src/routes/event.routes.ts`; verify `curl -N /events/sessions/:code` over a full order lifecycle emits no notes, customizations, or complete DTO
-- [ ] 5.3 Move `OrderStatusViewModel` to the public per-guest read from block 1 and drop its client-side name filtering; verify `/session/:code/status?guest=Ana` shows only Ana's orders and the payload contains no other guest
-- [ ] 5.4 Move `OrderQueueViewModel` from event-payload patching to refetching the host snapshot via the coalescing helper; verify a guest order placed elsewhere appears in the admin queue with notes and customizations intact, and that host status/cancel buttons still work
+- [x] 5.1 Change `OrderCreatedEvent` in `packages/qup-shared/src/events.ts` to carry no order object; verify `pnpm nx run-many -t typecheck` names every affected consumer (**export surface change — attw required**)
+- [x] 5.2 Remove `Order`/`toOrderDto` serialization from `apps/qup-api/src/routes/event.routes.ts`; verify `curl -N /events/sessions/:code` over a full order lifecycle emits no notes, customizations, or complete DTO
+- [x] 5.3 Move `OrderStatusViewModel` to the public per-guest read from block 1 and drop its client-side name filtering; verify `/session/:code/status?guest=Ana` shows only Ana's orders and the payload contains no other guest
+- [x] 5.4 Move `OrderQueueViewModel` from event-payload patching to refetching the host snapshot via the coalescing helper; verify a guest order placed elsewhere appears in the admin queue with notes and customizations intact, and that host status/cancel buttons still work
+**5.5 is not met — one gap remains.** `POST /orders` needs no PIN and returns `toOrderDto(order)`, the complete DTO with notes and customizations. It only echoes back the order the caller just submitted, so no guest can read another guest's data through it. But `specs/qup-api/spec.md` states that "a complete `OrderDto` SHALL never be returned from an endpoint that does not require the admin PIN", and this endpoint does exactly that. No task in this change covers it. Fix: return 201 with `{ id }` or no body — `qup-web` discards the response (`create-order.viewmodel.ts` awaits `createOrder(...)` without assigning it). Every other public GET, stream and route was verified clean by block 5.
+
 - [ ] 5.5 Verify the boundary holds end to end: with no PIN, no reachable endpoint or stream returns notes, customizations, or an active session code
 
 ## 6. Block `display` — shared-display affordances
@@ -106,12 +108,18 @@ Slice: the board becomes usable as a room display. Self-contained in the board r
 
 Handoff from block 4: board state notices render as direct `<p>` children of the `max-w-7xl` wrapper in `board.tsx`; the header is untouched and free for the QR and fullscreen control. **A frozen board keeps its wake lock** — release it in the freeze path (`OrderBoardViewModel.freeze()`), which already stops refetching, closes the stream and clears the expiry timer.
 
-- [ ] 6.1 Add `uqr` pinned to an exact version in `apps/qup-web/package.json`; verify `pnpm install` succeeds and `pnpm nx run @m0n0lab/qup-web:build` passes
-- [ ] 6.2 Add the header — session name, code, and a QR to `/session/:code` rendered inline as SVG on wide screens only; verify the QR is absent at narrow widths and that scanning it opens the join page
-- [ ] 6.3 Add the `Enter fullscreen` control, hidden while fullscreen is active; verify toggling it on a tablet
-- [ ] 6.4 Request a screen wake lock when supported, re-request on `visibilitychange`, release on unmount, silent fallback otherwise; verify no error in a browser without the API and that the screen stays awake in one that has it
-- [ ] 6.5 Add brief column transitions and new-order highlighting, suppressed under `prefers-reduced-motion`, with no sound; verify both motion settings
-- [ ] 6.6 Raise the board's type scale and contrast over the guest screens while keeping the light palette; verify legibility from across a room on the target tablet
+- [x] 6.1 Add `uqr` pinned to an exact version in `apps/qup-web/package.json`; verify `pnpm install` succeeds and `pnpm nx run @m0n0lab/qup-web:build` passes
+- [x] 6.2 Add the header — session name, code, and a QR to `/session/:code` rendered inline as SVG on wide screens only; verify the QR is absent at narrow widths and that scanning it opens the join page
+- [x] 6.3 Add the `Enter fullscreen` control, hidden while fullscreen is active; verify toggling it on a tablet
+- [x] 6.4 Request a screen wake lock when supported, re-request on `visibilitychange`, release on unmount, silent fallback otherwise; verify no error in a browser without the API and that the screen stays awake in one that has it
+- [x] 6.5 Add brief column transitions and new-order highlighting, suppressed under `prefers-reduced-motion`, with no sound; verify both motion settings
+- [x] 6.6 Raise the board's type scale and contrast over the guest screens while keeping the light palette; verify legibility from across a room on the target tablet
+
+**Integration blocker — `display` does not yet sit on `sse-sanitize`.** Blocks 5 and 6 ran in parallel, both off `board-live`, so `feature/qup-board-display` does not contain block 5. Merging the top of the stack as it stands would drop block 5 entirely: the sanitized stream and the repaired guest status screen. Check before any `gh stack merge`: `git merge-base --is-ancestor feature/qup-board-sse-sanitize feature/qup-board-display`.
+
+Rebasing `display` onto `sse-sanitize` conflicts in `apps/qup-web/src/routes/session/[code]/board.tsx` (4 hunks), and the conflict is semantic, not mechanical. Block 5 extracted the board card into a shared `components/public-order-card.tsx` (with a `tone` prop for cancelled), now used by **both** the board and the guest status screen, and deleted the inline `BoardCard`/`ItemLine`. Block 6 kept that inline card and added to it the board type scale (6.6) and the new-order highlight (`board-card`, `board-card-new`, `isHighlighted`, 6.5). Block 6's styling has to move into the shared component — but behind a board-only variant, because 6.6 requires the board to read larger than the guest screens, so it cannot simply apply to the shared card. That is a design decision. The rebase was attempted and aborted; no branch was changed.
+
+Block 6 also moved `OrderBoardViewModel` from a plain signal to `createStore` + `reconcile(orders, { key: "id" })`, so unchanged cards keep object identity across refetches and do not re-animate as new. Block 5 did not touch that file.
 
 ## 7. Validation gate (orchestrator)
 
