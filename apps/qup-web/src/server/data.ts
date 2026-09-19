@@ -1,6 +1,6 @@
 "use server";
 
-import type { MenuItemDto, SessionDto } from "@m0n0lab/qup-shared";
+import type { MenuItemDto, PublicOrderBoardDto, SessionDto } from "@m0n0lab/qup-shared";
 
 // Public reads only: every endpoint called here needs no admin PIN.
 // Host reads live in host-data.ts behind the admin-session check.
@@ -22,4 +22,29 @@ export async function getAvailableMenu(): Promise<MenuItemDto[]> {
     const res = await fetch(`${API_URL}/menu?available=true`);
     if (!res.ok) throw new Error("Failed to load menu");
     return res.json() as Promise<MenuItemDto[]>;
+}
+
+// Public read: the board is reachable with the session code alone, so this function
+// attaches no admin PIN and needs no admin session. The API's code-scoped status
+// semantics are mapped to the board's states rather than thrown, because the board
+// distinguishes "Session not found" (422/404) from "Session ended" (409).
+export type PublicOrderBoardResult =
+    | { status: "ok"; board: PublicOrderBoardDto }
+    | { status: "not-found" }
+    | { status: "ended" }
+    | { status: "error"; message: string };
+
+export async function getPublicOrderBoard(code: string): Promise<PublicOrderBoardResult> {
+    const res = await fetch(`${API_URL}/sessions/code/${encodeURIComponent(code)}/board`);
+
+    if (res.ok) {
+        return { status: "ok", board: (await res.json()) as PublicOrderBoardDto };
+    }
+    if (res.status === 404 || res.status === 422) {
+        return { status: "not-found" };
+    }
+    if (res.status === 409) {
+        return { status: "ended" };
+    }
+    return { status: "error", message: `Failed to load board (${res.status})` };
 }

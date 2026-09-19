@@ -5,6 +5,7 @@ export const TOKENS = {
     JoinSessionViewModel: Symbol.for("JoinSessionViewModel"),
     CreateOrderViewModel: Symbol.for("CreateOrderViewModel"),
     OrderStatusViewModel: Symbol.for("OrderStatusViewModel"),
+    OrderBoardViewModel: Symbol.for("OrderBoardViewModel"),
     AdminLoginViewModel: Symbol.for("AdminLoginViewModel"),
     DashboardViewModel: Symbol.for("DashboardViewModel"),
     OrderQueueViewModel: Symbol.for("OrderQueueViewModel"),
