@@ -37,6 +37,7 @@ export interface PublicOrderSummaryDto {
     status: "PENDING" | "PREPARING" | "DONE" | "CANCELLED";
     items: PublicOrderItemLineDto[];
     hiddenItemCount: number;
+    visibleUntil: string | null; // ISO date; null when the order does not expire
 }
 
 export interface MenuItemDto {

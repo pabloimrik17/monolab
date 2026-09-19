@@ -1,6 +1,7 @@
 // Public projection only. Deliberately never imports the complete-DTO serializers, so no
 // endpoint reachable without the admin PIN has a path to notes, customizations, menu item
 // ids, or the session id.
+import { boardVisibleUntil } from "@m0n0lab/qup-domain";
 import type { Order, Session } from "@m0n0lab/qup-domain";
 import type { PublicOrderBoardDto, PublicOrderSummaryDto } from "@m0n0lab/qup-shared";
 
@@ -25,6 +26,9 @@ export function toPublicOrderSummary(order: Order): PublicOrderSummaryDto {
                 quantity: item.quantity,
             })),
         hiddenItemCount: Math.max(0, order.items.length - MAX_VISIBLE_ITEM_LINES),
+        // Absolute, from the domain's single retention rule, so the client never has to
+        // know the window lengths and the two public reads cannot disagree.
+        visibleUntil: boardVisibleUntil(order)?.toISOString() ?? null,
     };
 }
 
