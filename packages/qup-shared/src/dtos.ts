@@ -47,3 +47,9 @@ export interface MenuItemDto {
     available: boolean;
     sortOrder: number;
 }
+
+export interface PublicOrderBoardDto {
+    sessionName: string;
+    sessionCode: string;
+    orders: PublicOrderSummaryDto[];
+}
