@@ -1,6 +1,11 @@
 "use server";
 
-import type { MenuItemDto, PublicOrderBoardDto, SessionDto } from "@m0n0lab/qup-shared";
+import type {
+    MenuItemDto,
+    PublicOrderBoardDto,
+    PublicOrderSummaryDto,
+    SessionDto,
+} from "@m0n0lab/qup-shared";
 
 // Public reads only: every endpoint called here needs no admin PIN.
 // Host reads live in host-data.ts behind the admin-session check.
@@ -52,4 +57,19 @@ export async function getPublicOrderBoard(code: string): Promise<PublicOrderBoar
             message: `Failed to load board (${res.status})`,
         }
     );
+}
+
+// Public read: the guest status screen. `guest` is a filter the API applies, not a
+// credential — the caller gets the same reduced projection the board does, so knowing a
+// name buys no notes and no customizations. The screen only needs success or failure,
+// so this throws rather than naming outcomes.
+export async function getPublicGuestOrders(
+    code: string,
+    guest: string,
+): Promise<PublicOrderSummaryDto[]> {
+    const res = await fetch(
+        `${API_URL}/sessions/code/${encodeURIComponent(code)}/orders?guest=${encodeURIComponent(guest)}`,
+    );
+    if (!res.ok) throw new Error(`Failed to load orders (${res.status})`);
+    return res.json() as Promise<PublicOrderSummaryDto[]>;
 }

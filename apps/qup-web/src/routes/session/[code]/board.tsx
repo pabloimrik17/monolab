@@ -1,32 +1,11 @@
 import { useParams } from "@solidjs/router";
 import { For, Show } from "solid-js";
 import { useViewModel } from "@m0n0lab/solid-clean";
+import { PublicOrderCard } from "../../../components/public-order-card.tsx";
 import { container } from "../../../container.ts";
 import { TOKENS } from "../../../tokens.ts";
 import type { OrderBoardViewModel } from "../../../view-models/order-board.viewmodel.ts";
-import type { PublicOrderItemLineDto, PublicOrderSummaryDto } from "@m0n0lab/qup-shared";
-
-function ItemLine(props: { line: PublicOrderItemLineDto }) {
-    return (
-        <li class="text-lg text-stone-700">
-            {props.line.quantity}× {props.line.name}
-        </li>
-    );
-}
-
-function BoardCard(props: { order: PublicOrderSummaryDto }) {
-    return (
-        <li class="bg-white rounded-xl shadow p-4 space-y-2">
-            <p class="text-2xl font-semibold text-stone-900">{props.order.guestName}</p>
-            <ul class="space-y-1">
-                <For each={props.order.items}>{(line) => <ItemLine line={line} />}</For>
-            </ul>
-            <Show when={props.order.hiddenItemCount > 0}>
-                <p class="text-base text-stone-500">+{props.order.hiddenItemCount} more</p>
-            </Show>
-        </li>
-    );
-}
+import type { PublicOrderSummaryDto } from "@m0n0lab/qup-shared";
 
 // Cancelled orders live here and nowhere else: a red strip under the three sections,
 // laid out as a row so it reads as a footnote to the board rather than a fourth column.
@@ -37,17 +16,10 @@ function CancelledStrip(props: { orders: PublicOrderSummaryDto[] }) {
             <ul class="flex flex-wrap gap-3">
                 <For each={props.orders}>
                     {(order) => (
-                        <li class="bg-white border border-red-200 rounded-xl shadow p-4 space-y-2 min-w-64">
-                            <p class="text-2xl font-semibold text-red-900">{order.guestName}</p>
-                            <ul class="space-y-1">
-                                <For each={order.items}>{(line) => <ItemLine line={line} />}</For>
-                            </ul>
-                            <Show when={order.hiddenItemCount > 0}>
-                                <p class="text-base text-stone-500">
-                                    +{order.hiddenItemCount} more
-                                </p>
-                            </Show>
-                        </li>
+                        <PublicOrderCard
+                            order={order}
+                            tone="cancelled"
+                        />
                     )}
                 </For>
             </ul>
@@ -60,7 +32,7 @@ function BoardSection(props: { title: string; orders: PublicOrderSummaryDto[] })
         <section class="space-y-3">
             <h2 class="text-xl font-bold uppercase tracking-wide text-stone-600">{props.title}</h2>
             <ul class="space-y-3">
-                <For each={props.orders}>{(order) => <BoardCard order={order} />}</For>
+                <For each={props.orders}>{(order) => <PublicOrderCard order={order} />}</For>
             </ul>
         </section>
     );
