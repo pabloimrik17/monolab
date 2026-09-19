@@ -34,17 +34,22 @@ export type PublicOrderBoardResult =
     | { status: "ended" }
     | { status: "error"; message: string };
 
+const BOARD_FAILURES: Record<number, PublicOrderBoardResult> = {
+    404: { status: "not-found" },
+    422: { status: "not-found" },
+    409: { status: "ended" },
+};
+
 export async function getPublicOrderBoard(code: string): Promise<PublicOrderBoardResult> {
     const res = await fetch(`${API_URL}/sessions/code/${encodeURIComponent(code)}/board`);
 
     if (res.ok) {
         return { status: "ok", board: (await res.json()) as PublicOrderBoardDto };
     }
-    if (res.status === 404 || res.status === 422) {
-        return { status: "not-found" };
-    }
-    if (res.status === 409) {
-        return { status: "ended" };
-    }
-    return { status: "error", message: `Failed to load board (${res.status})` };
+    return (
+        BOARD_FAILURES[res.status] ?? {
+            status: "error",
+            message: `Failed to load board (${res.status})`,
+        }
+    );
 }

@@ -2,6 +2,7 @@ import { injectable } from "inversify";
 import { createSignal } from "solid-js";
 import { BaseViewModel } from "@m0n0lab/solid-clean";
 import { getPublicOrderBoard } from "../server/data.ts";
+import type { PublicOrderBoardResult } from "../server/data.ts";
 import type { PublicOrderBoardDto, PublicOrderSummaryDto } from "@m0n0lab/qup-shared";
 
 export type BoardState = "loading" | "ready" | "not-found" | "ended" | "error";
@@ -47,28 +48,25 @@ export class OrderBoardViewModel extends BaseViewModel {
 
         this._state[1]("loading");
         try {
-            const result = await getPublicOrderBoard(this._requestedCode);
-            switch (result.status) {
-                case "ok":
-                    this._board[1](result.board);
-                    this._state[1]("ready");
-                    break;
-                case "not-found":
-                    this._board[1](undefined);
-                    this._state[1]("not-found");
-                    break;
-                case "ended":
-                    this._board[1](undefined);
-                    this._state[1]("ended");
-                    break;
-                default:
-                    this._error[1](result.message);
-                    this._state[1]("error");
-            }
+            this.applySnapshot(await getPublicOrderBoard(this._requestedCode));
         } catch (e) {
             this._error[1](e instanceof Error ? e.message : "Failed to load the board");
             this._state[1]("error");
         }
+    }
+
+    private applySnapshot(result: PublicOrderBoardResult): void {
+        if (result.status === "ok") {
+            this._board[1](result.board);
+            this._state[1]("ready");
+            return;
+        }
+
+        this._board[1](undefined);
+        if (result.status === "error") {
+            this._error[1](result.message);
+        }
+        this._state[1](result.status);
     }
 
     private section(status: PublicOrderSummaryDto["status"]): PublicOrderSummaryDto[] {
