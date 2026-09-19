@@ -74,7 +74,8 @@ describe("CreateOrderUseCase", () => {
                 },
             ]);
             expect(saved).toEqual([order]);
-            expect(events).toEqual([["order:created", { order, sessionId: session.id }]]);
+            // Exact payload: the bus feeds a public stream, so only the session id rides on it.
+            expect(events).toEqual([["order:created", { sessionId: session.id }]]);
         });
 
         it("refuses an unknown session", async () => {

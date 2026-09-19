@@ -97,8 +97,9 @@ export class CreateOrderUseCase {
 
                 return this.orderRepo.save(orderResult.value).map((saved) => {
                     try {
+                        // The bus feeds a public SSE stream, so the entity stops here: the
+                        // signal says an order was created and nothing about what is in it.
                         this.eventBus.emit("order:created", {
-                            order: saved,
                             sessionId: saved.sessionId,
                         });
                     } catch {
