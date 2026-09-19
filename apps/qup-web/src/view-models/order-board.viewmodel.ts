@@ -42,9 +42,16 @@ export class OrderBoardViewModel extends BaseViewModel {
     readonly pending = (): PublicOrderSummaryDto[] => this.section("PENDING");
     readonly preparing = (): PublicOrderSummaryDto[] => this.section("PREPARING");
     readonly recentlyServed = (): PublicOrderSummaryDto[] => this.section("DONE");
+    readonly cancelled = (): PublicOrderSummaryDto[] => this.section("CANCELLED");
 
+    // The cancelled strip counts: a session holding only cancelled orders would otherwise
+    // show `No orders yet` above a populated strip.
     readonly hasVisibleOrders = (): boolean =>
-        this.pending().length + this.preparing().length + this.recentlyServed().length > 0;
+        this.pending().length +
+            this.preparing().length +
+            this.recentlyServed().length +
+            this.cancelled().length >
+        0;
 
     override async didMount(): Promise<void> {
         this._error[1]("");

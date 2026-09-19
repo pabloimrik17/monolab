@@ -28,6 +28,33 @@ function BoardCard(props: { order: PublicOrderSummaryDto }) {
     );
 }
 
+// Cancelled orders live here and nowhere else: a red strip under the three sections,
+// laid out as a row so it reads as a footnote to the board rather than a fourth column.
+function CancelledStrip(props: { orders: PublicOrderSummaryDto[] }) {
+    return (
+        <section class="rounded-xl border-2 border-red-300 bg-red-50 p-4 space-y-3">
+            <h2 class="text-xl font-bold uppercase tracking-wide text-red-700">Cancelled</h2>
+            <ul class="flex flex-wrap gap-3">
+                <For each={props.orders}>
+                    {(order) => (
+                        <li class="bg-white border border-red-200 rounded-xl shadow p-4 space-y-2 min-w-64">
+                            <p class="text-2xl font-semibold text-red-900">{order.guestName}</p>
+                            <ul class="space-y-1">
+                                <For each={order.items}>{(line) => <ItemLine line={line} />}</For>
+                            </ul>
+                            <Show when={order.hiddenItemCount > 0}>
+                                <p class="text-base text-stone-500">
+                                    +{order.hiddenItemCount} more
+                                </p>
+                            </Show>
+                        </li>
+                    )}
+                </For>
+            </ul>
+        </section>
+    );
+}
+
 function BoardSection(props: { title: string; orders: PublicOrderSummaryDto[] }) {
     return (
         <section class="space-y-3">
@@ -97,6 +124,10 @@ export default function BoardPage() {
                             orders={vm.recentlyServed()}
                         />
                     </div>
+
+                    <Show when={vm.cancelled().length > 0}>
+                        <CancelledStrip orders={vm.cancelled()} />
+                    </Show>
                 </Show>
             </div>
         </main>
