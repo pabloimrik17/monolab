@@ -3,17 +3,8 @@ import { For, Show } from "solid-js";
 import { useViewModel } from "@m0n0lab/solid-clean";
 import { container } from "../../../container.ts";
 import { TOKENS } from "../../../tokens.ts";
-import type {
-    BoardState,
-    OrderBoardViewModel,
-} from "../../../view-models/order-board.viewmodel.ts";
+import type { OrderBoardViewModel } from "../../../view-models/order-board.viewmodel.ts";
 import type { PublicOrderItemLineDto, PublicOrderSummaryDto } from "@m0n0lab/qup-shared";
-
-const STATE_NOTICES: Partial<Record<BoardState, { text: string; class: string }>> = {
-    loading: { text: "Loading...", class: "text-xl text-stone-500" },
-    "not-found": { text: "Session not found", class: "text-2xl text-stone-700" },
-    ended: { text: "Session ended", class: "text-2xl text-stone-700" },
-};
 
 function ItemLine(props: { line: PublicOrderItemLineDto }) {
     return (
@@ -71,8 +62,16 @@ export default function BoardPage() {
                     </Show>
                 </header>
 
-                <Show when={STATE_NOTICES[vm.state()]}>
-                    {(notice) => <p class={`text-center ${notice().class}`}>{notice().text}</p>}
+                <Show when={vm.state() === "loading"}>
+                    <p class="text-center text-xl text-stone-500">Loading...</p>
+                </Show>
+
+                <Show when={vm.state() === "not-found"}>
+                    <p class="text-center text-2xl text-stone-700">Session not found</p>
+                </Show>
+
+                <Show when={vm.state() === "ended"}>
+                    <p class="text-center text-2xl text-stone-700">Session ended</p>
                 </Show>
 
                 <Show when={vm.state() === "error"}>
