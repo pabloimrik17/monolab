@@ -25,7 +25,7 @@ Block 5 owns the repair (5.3) and SHALL add the public per-guest server function
 **Delivery: `gh stack`, 6 layers.** Rationale: ~25 files across 4 packages with 3 breaking public-API changes — too much for one reviewable PR, and the slices have a clean linear dependency order, so independent PRs would conflict. One PR per block, stacked bottom-up in the order below. Parallel teammates still work concurrently; the orchestrator lands their branches into the stack in dependency order. Stack order = block order: `boundary` → `board-core` → `retention` → `board-live` → `sse-sanitize` → `display`.
 
 - [x] 0.1 Create the 6-layer stack skeleton with `gh-stack` off `develop` and verify `gh stack view` lists all layers in the order above
-- [ ] 0.2 Dispatch wave 1 teammates and verify each reports its block's manual check passing before wave 2 starts
+- [x] 0.2 Dispatch wave 1 teammates and verify each reports its block's manual check passing before wave 2 starts
 
 ## 1. Block `boundary` — close the public data boundary
 
