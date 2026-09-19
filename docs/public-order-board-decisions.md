@@ -75,6 +75,7 @@ Decision: one shared status per order. The order remains `PREPARING` until all i
 **Q17 — Orders with many items**  
 Question: show all lines, a count only, or truncate?  
 Decision: show at most 3 product lines, followed by `+N more`.
+Revised during implementation: `order_items` has no position column and the repository sorts items by `menu_item_id`, a random UUID, so "the order's own item order" does not exist in the data. The public projection sorts lines by product name before truncating, so the 3 shown are stable across refetches. Adding a position column was considered and rejected as out of scope for this change.
 
 **Q18 — Cancelled-order placement**  
 Question: fourth column, pending column, or separate area?  
@@ -230,7 +231,7 @@ interface PublicOrderSummaryDto {
     items: Array<{
         name: string;
         quantity: number;
-    }>; // at most 3 product lines
+    }>; // at most 3 product lines, ordered by name
     hiddenItemCount: number;
     visibleUntil: string | null;
 }
@@ -245,7 +246,7 @@ interface PublicOrderSummaryDto {
 
 - A guest who knows an open session code can open `/session/:code/board` without a host PIN.
 - Wide screens show three stable columns; narrow screens show the same sections stacked.
-- Cards show guest name and at most three product lines, then `+N more`; notes and customizations never reach the board response.
+- Cards show guest name and at most three product lines ordered by product name, then `+N more`; notes and customizations never reach the board response.
 - `Pending` and `Preparing` sort oldest first; `Recently served` sorts newest first.
 - `DONE` disappears after 5 minutes and `CANCELLED` after 2 minutes without deleting stored orders.
 - Cancelled cards appear in a temporary red strip below the main columns.

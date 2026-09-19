@@ -7,7 +7,7 @@ A read-only public order board on a shared tablet next to the host answers "is m
 ## What Changes
 
 - Add a read-only board at `/session/:code/board`, reachable with the session code and no host PIN, plus a `View board` link from the session page.
-- Add a dedicated public projection (`PublicOrderBoardDto`) exposing only session name/code, order UUID (as a non-displayed render key), guest name, status, at most 3 product lines, a hidden-item count, and `visibleUntil`. Notes, customizations, session id, and unrelated timestamps never reach it.
+- Add a dedicated public projection (`PublicOrderBoardDto`) exposing only session name/code, order UUID (as a non-displayed render key), guest name, status, at most 3 product lines ordered by product name, a hidden-item count, and `visibleUntil`. Notes, customizations, session id, and unrelated timestamps never reach it.
 - Add `GET /sessions/code/:code/board` (snapshot) and `GET /events/sessions/:code/board` (payload-free `board:changed` / `session:closed` signals). The client refetches the snapshot on every signal, coalescing bursts.
 - Apply server-side retention: `DONE` visible 5 minutes, `CANCELLED` 2 minutes, computed from `updatedAt`. Orders are never deleted.
 - Add board presentation: `Pending` / `Preparing` / `Recently served` columns (always rendered, stacked on mobile), a temporary red cancelled strip, session header with code and wide-screen join QR, fullscreen control, screen wake lock, reduced-motion-aware transitions, `Reconnecting…` on connection loss, and frozen `Session ended` state on closure.

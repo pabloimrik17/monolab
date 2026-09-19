@@ -96,13 +96,29 @@ It is public, returns complete `OrderDto`s, and nothing in `qup-web` calls it; `
 
 *Why:* leaving a redundant leaky endpoint behind defeats the point of the change.
 
+### The board snapshot arrives pre-sorted; the client never re-sorts
+
+`GetPublicOrderBoardUseCase` returns `orders` already in board order — `PENDING` oldest first, then `PREPARING` oldest first, then `DONE` newest first by last status change — and the route renders each section in the array order it received.
+
+*Why:* the projection forbids every timestamp but `visibleUntil`, while the layout requires `Pending`/`Preparing` oldest first and `Recently served` newest first. Without this, the two requirements contradict each other: the client is asked to sort on data it is not allowed to see. Sorting server-side satisfies both and keeps the ordering rule next to the retention rule that already lives in the use case.
+
+*Alternatives:* expose `createdAt`/`updatedAt` on the projection (rejected — widens the public surface for a presentation concern); sort `Recently served` by `visibleUntil` descending (equivalent while the window is a constant offset, but it silently breaks if the two retention windows ever differ per status, and it does not exist before block 3).
+
+### Server functions return discriminated unions, not neverthrow `Result`
+
+The inherited `qup-web` requirement said server functions "return typed results using neverthrow `Result`", with a scenario demanding `Err<ApiErrorDto>` rather than a throw. Nothing in the codebase does this: every function in `server/data.ts` throws a plain `Error`, and `neverthrow` is not even a dependency of `apps/qup-web`. The `MODIFIED` delta here restates that requirement, so this change would have republished a claim that was never true.
+
+Corrected to describe what the board actually needs and what the platform allows: a server function whose caller must distinguish outcomes (the board snapshot must tell 404 from 409) returns a plain serializable discriminated union; one whose caller only needs success or failure may throw. A class instance does not survive the SolidStart server-function serialization boundary, so `Result` was never available here regardless.
+
+*Not done:* converting the existing throwing functions to typed outcomes. That is a `qup-web`-wide refactor with no task in this change, and none of its callers currently need the distinction.
+
 ## Risks / Trade-offs
 
 - **The capabilities this change modifies are not in `openspec/specs/` yet** — they live in the unarchived `qup` change (110/113 tasks done) and `fix-qup-web-wiring` (complete). If those archive after this change, the `MODIFIED` deltas here have no base to apply to. → Archive `qup` and `fix-qup-web-wiring` before archiving this change, or re-base these deltas onto whatever lands in `openspec/specs/`.
 - **`OrderCreatedEvent` changes shape in a published package** (`@m0n0lab/qup-shared`) → coordinate the API and web deploys together; there is no external consumer today, and `attw --pack` plus `nx run-many -t typecheck` catch every internal break at build time.
 - **Admin dashboard fan-out becomes authenticated** — `DashboardViewModel` fetches orders per active session to compute its summary, so every one of those now needs the admin path. → Keep the summary logic as-is and only swap the data function; a missed one fails loudly with 401 rather than silently.
 - **Sanitizing SSE removes the admin queue's optimistic path** → the queue already patches locally on its own mutations; the refetch only has to cover other people's changes.
-- **Knip has a 70-issue budget** and this adds exported types and a new dependency → keep every new export consumed by a real caller in the same slice that introduces it.
+- **Knip has a 40-issue budget (`knip --max-issues 40`)** and this adds exported types and a new dependency → keep every new export consumed by a real caller in the same slice that introduces it.
 - **Wake lock is released by the browser on tab hide** and is not re-acquired automatically → re-request on `visibilitychange` when the board becomes visible again.
 - **Single API process** (ADR 0003) → documented, not mitigated. Snapshots stay correct; only live invalidation depends on it.
 - **`docs/` is not markdownlint-ignored** (unlike `openspec/`), and `CONTEXT.md` at the repo root is not in `.markdownlintignore` → these new files must pass `lint:markdownlint` or be added to the ignore list.

@@ -6,7 +6,7 @@ Gives guests a read-only, shared view of a session's orders — reachable with t
 
 ### Requirement: Public board projection
 
-The system SHALL define a public order board projection exposing only: session name, session code, and for each order its identifier, guest name, status, an ordered list of at most 3 product lines (name and quantity), the count of product lines not listed, and an absolute visibility deadline (`visibleUntil`, or null when the order does not expire).
+The system SHALL define a public order board projection exposing only: session name, session code, and for each order its identifier, guest name, status, at most 3 product lines (name and quantity) ordered by product name, the count of product lines not listed, and an absolute visibility deadline (`visibleUntil`, or null when the order does not expire).
 
 The projection SHALL NOT expose order notes, item customizations, menu item identifiers, the session identifier, or any timestamp other than `visibleUntil`. The order identifier is a stable rendering key and SHALL NOT be displayed. Possession of that identifier SHALL NOT authorize any read or mutation.
 
@@ -20,12 +20,12 @@ Leverages the existing `@m0n0lab/qup-shared` DTO package and the `Order` aggrega
 #### Scenario: Order with more than three product lines
 
 - **WHEN** an order contains 5 distinct product lines
-- **THEN** the projection lists exactly 3 of them, in the order's own item order, and reports a hidden count of 2
+- **THEN** the projection lists exactly 3 of them, the first 3 by product name, and reports a hidden count of 2
 
 #### Scenario: Order with three or fewer product lines
 
 - **WHEN** an order contains 2 product lines
-- **THEN** the projection lists both and reports a hidden count of 0
+- **THEN** the projection lists both, ordered by product name, and reports a hidden count of 0
 
 #### Scenario: Order identifier grants no access
 

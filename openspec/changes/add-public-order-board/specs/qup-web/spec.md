@@ -39,7 +39,9 @@ Guest routes SHALL obtain order data only through public projections; no guest r
 
 ### Requirement: Server functions as BFF
 
-The system SHALL use SolidStart `"use server"` functions for data loading and mutations. Server functions SHALL call the Hono API internally, handle auth (PIN from httpOnly cookie), and return typed results using neverthrow `Result`. The browser SHALL never call the Hono API directly except for SSE connections.
+The system SHALL use SolidStart `"use server"` functions for data loading and mutations. Server functions SHALL call the Hono API internally and handle auth (PIN from httpOnly cookie). The browser SHALL never call the Hono API directly except for SSE connections.
+
+A server function whose caller must tell one API outcome from another SHALL return a plain serializable discriminated union naming each outcome. A server function whose caller only needs success or failure MAY throw instead. A return value crosses the SolidStart server-function serialization boundary, so a class-based result type does not survive the trip and SHALL NOT be used for this.
 
 Server functions SHALL be split by trust level. A public server function SHALL call only endpoints that need no admin PIN. A host server function SHALL verify the caller's admin session before attaching the PIN, so that a server function is never an unauthenticated proxy to a host-only endpoint.
 
@@ -53,10 +55,10 @@ Server functions SHALL be split by trust level. A public server function SHALL c
 - **WHEN** the admin changes an order status
 - **THEN** a server function sends the PATCH to Hono with the PIN from the cookie
 
-#### Scenario: Server function returns typed Result
+#### Scenario: Server function distinguishes API outcomes
 
-- **WHEN** the Hono API returns an error response
-- **THEN** the server function returns `Err<ApiErrorDto>` (not throws)
+- **WHEN** the Hono API answers a board snapshot request with 404 for an unknown code and 409 for a closed session
+- **THEN** the server function returns a discriminated union naming each outcome separately, rather than collapsing both into one failure
 
 #### Scenario: Host server function rejects an unauthenticated caller
 

@@ -16,10 +16,15 @@ Main session = orchestrator. It does not implement slices; it dispatches teammat
 - `apps/qup-api/src/routes/session.routes.ts` — blocks 1 and 2
 - `apps/qup-web/src/view-models/order-board.viewmodel.ts` — blocks 2, 3, 4
 - `apps/qup-web/src/routes/session/[code]/board.tsx` — blocks 2, 3, 6
+- `apps/qup-web/src/view-models/order-status.viewmodel.ts` — blocks 1 and 5
+
+**The stack merges atomically.** `design.md` Migration Plan step 1 ships `qup-shared`, `qup-domain`, `qup-api`, and `qup-web` together, so the stack lands in one all-or-nothing merge (`gh stack merge <top> --yes`) rather than layer by layer. This matters: block 1 puts `adminOnly()` on `GET /sessions/:id/orders`, which the guest status screen still consumes until block 5 moves it to the public per-guest read. From layer 1 to layer 4 that screen returns 401 by construction. Reviewers of those layers see it; `develop` never does. Landing layer 1 on its own would ship the regression.
+
+Block 5 owns the repair (5.3) and SHALL add the public per-guest server function in `qup-web` alongside the ViewModel change — block 1 cannot add it, because nothing in that slice consumes it and knip would flag it unused. The public order card that 5.3 needs is block 2's; 5.3 reuses it rather than adding a second one.
 
 **Delivery: `gh stack`, 6 layers.** Rationale: ~25 files across 4 packages with 3 breaking public-API changes — too much for one reviewable PR, and the slices have a clean linear dependency order, so independent PRs would conflict. One PR per block, stacked bottom-up in the order below. Parallel teammates still work concurrently; the orchestrator lands their branches into the stack in dependency order. Stack order = block order: `boundary` → `board-core` → `retention` → `board-live` → `sse-sanitize` → `display`.
 
-- [ ] 0.1 Create the 6-layer stack skeleton with `gh-stack` off `develop` and verify `gh stack view` lists all layers in the order above
+- [x] 0.1 Create the 6-layer stack skeleton with `gh-stack` off `develop` and verify `gh stack view` lists all layers in the order above
 - [ ] 0.2 Dispatch wave 1 teammates and verify each reports its block's manual check passing before wave 2 starts
 
 ## 1. Block `boundary` — close the public data boundary
@@ -28,14 +33,14 @@ Main session = orchestrator. It does not implement slices; it dispatches teammat
 
 Slice: no unauthenticated caller can list session codes or read complete orders, and guests get a reduced per-guest read instead. Independent of the board; ships and is verifiable alone.
 
-- [ ] 1.1 Add `PublicOrderSummaryDto` to `packages/qup-shared/src/dtos.ts` and export from `index.ts`; verify `pnpm nx run @m0n0lab/qup-shared:build:check-exports` passes (**export surface change — attw required**)
-- [ ] 1.2 Add a public-projection serializer in `apps/qup-api/src/serializers/` that maps `Order` → `PublicOrderSummaryDto` (max 3 item lines, `hiddenItemCount`, no notes/customizations/menuItemId/sessionId) and never imports `toOrderDto`; verify by reading the module that it has no path to the complete DTO
-- [ ] 1.3 Add `GET /sessions/code/:code/orders?guest=` returning the reduced projection filtered server-side, 422 when `guest` is absent; verify `curl` for a session with two guests returns only the requested guest's orders and no notes
-- [ ] 1.4 Remove `GET /orders?sessionId=&guest=`; verify no caller remains (`grep` across `apps/` and `packages/`) and `pnpm nx run-many -t typecheck` passes
-- [ ] 1.5 Apply `adminOnly()` to `GET /sessions?status=OPEN`, `GET /sessions/:id`, `GET /sessions/:id/orders`; verify each returns 401 without `X-Admin-Pin` and 200 with it
-- [ ] 1.6 Split `apps/qup-web/src/server/data.ts` into public reads and host reads, guarding every host read with `isAuthenticated()`; verify an unauthenticated invocation of a host read is refused and sends no PIN to the API
-- [ ] 1.7 Guard every PIN-forwarding function in `apps/qup-web/src/server/mutations.ts` with `isAuthenticated()` (closes a pre-existing open proxy); verify an unauthenticated call is refused while the admin UI still performs all its actions
-- [ ] 1.8 Point `DashboardViewModel` and `OrderQueueViewModel` at the host reads; verify `/admin/dashboard` and `/admin/session/:id` still render sessions, codes, and complete orders after login
+- [x] 1.1 Add `PublicOrderSummaryDto` to `packages/qup-shared/src/dtos.ts` and export from `index.ts`; verify `pnpm nx run @m0n0lab/qup-shared:build:check-exports` passes (**export surface change — attw required**)
+- [x] 1.2 Add a public-projection serializer in `apps/qup-api/src/serializers/` that maps `Order` → `PublicOrderSummaryDto` (max 3 item lines, `hiddenItemCount`, no notes/customizations/menuItemId/sessionId) and never imports `toOrderDto`; verify by reading the module that it has no path to the complete DTO
+- [x] 1.3 Add `GET /sessions/code/:code/orders?guest=` returning the reduced projection filtered server-side, 422 when `guest` is absent; verify `curl` for a session with two guests returns only the requested guest's orders and no notes
+- [x] 1.4 Remove `GET /orders?sessionId=&guest=`; verify no caller remains (`grep` across `apps/` and `packages/`) and `pnpm nx run-many -t typecheck` passes
+- [x] 1.5 Apply `adminOnly()` to `GET /sessions?status=OPEN`, `GET /sessions/:id`, `GET /sessions/:id/orders`; verify each returns 401 without `X-Admin-Pin` and 200 with it
+- [x] 1.6 Split `apps/qup-web/src/server/data.ts` into public reads and host reads, guarding every host read with `isAuthenticated()`; verify an unauthenticated invocation of a host read is refused and sends no PIN to the API
+- [x] 1.7 Guard every PIN-forwarding function in `apps/qup-web/src/server/mutations.ts` with `isAuthenticated()` (closes a pre-existing open proxy); verify an unauthenticated call is refused while the admin UI still performs all its actions
+- [x] 1.8 Point `DashboardViewModel` and `OrderQueueViewModel` at the host reads; verify `/admin/dashboard` and `/admin/session/:id` still render sessions, codes, and complete orders after login
 
 ## 2. Block `board-core` — board walking skeleton
 
@@ -43,20 +48,22 @@ Slice: no unauthenticated caller can list session codes or read complete orders,
 
 Slice: a guest with only the session code opens `/session/:code/board` and sees real orders in three columns. No retention, no live updates yet.
 
-- [ ] 2.1 Add `PublicOrderBoardDto` (session name/code + order summaries) to `packages/qup-shared/src/dtos.ts` and export it; verify `pnpm nx run @m0n0lab/qup-shared:build:check-exports` passes (**export surface change — attw required**)
-- [ ] 2.2 Add `GetPublicOrderBoardUseCase` to `qup-domain` (resolve session by code, load its orders), register its token and `domainModule` binding, export from `index.ts`; verify `pnpm nx run @m0n0lab/qup-domain:typecheck` passes
-- [ ] 2.3 Add `GET /sessions/code/:code/board` returning the snapshot with no PIN; verify `curl` returns 200 for an open session, 422 for a malformed code, 404 for an unknown code, 409 for a closed session
-- [ ] 2.4 Add a public board-snapshot server function in `qup-web` (no admin session required); verify it resolves for a caller with no admin cookie
-- [ ] 2.5 Add `OrderBoardViewModel` (`@injectable()`, extends `BaseViewModel`) with snapshot load plus `Session not found` / `Session ended` / `No orders yet` states, register token and `webModule` binding; verify each state renders for the matching session code
-- [ ] 2.6 Add `/session/:code/board` route rendering `Pending` / `Preparing` / `Recently served` — always all three, columns on wide screens, stacked on narrow — sorted oldest-first, oldest-first, newest-first, one card per order, with `+N more` after 3 item lines; verify in a browser at wide and narrow widths against a session holding a 5-line order
-- [ ] 2.7 Add the `View board` link on `/session/:code`; verify it opens the board without a PIN
-- [ ] 2.8 Verify the whole slice: `pnpm nx run-many -t typecheck build test:unit` passes and the board shows live-correct data on manual refresh
+- [x] 2.1 Add `PublicOrderBoardDto` (session name/code + order summaries) to `packages/qup-shared/src/dtos.ts` and export it; verify `pnpm nx run @m0n0lab/qup-shared:build:check-exports` passes (**export surface change — attw required**)
+- [x] 2.2 Add `GetPublicOrderBoardUseCase` to `qup-domain` (resolve session by code, load its orders), register its token and `domainModule` binding, export from `index.ts`; verify `pnpm nx run @m0n0lab/qup-domain:typecheck` passes
+- [x] 2.3 Add `GET /sessions/code/:code/board` returning the snapshot with no PIN; verify `curl` returns 200 for an open session, 422 for a malformed code, 404 for an unknown code, 409 for a closed session
+- [x] 2.4 Add a public board-snapshot server function in `qup-web` (no admin session required); verify it resolves for a caller with no admin cookie
+- [x] 2.5 Add `OrderBoardViewModel` (`@injectable()`, extends `BaseViewModel`) with snapshot load plus `Session not found` / `Session ended` / `No orders yet` states, register token and `webModule` binding; verify each state renders for the matching session code
+- [x] 2.6 Add `/session/:code/board` route rendering `Pending` / `Preparing` / `Recently served` — always all three, columns on wide screens, stacked on narrow — sorted oldest-first, oldest-first, newest-first, one card per order, with `+N more` after 3 item lines; verify in a browser at wide and narrow widths against a session holding a 5-line order
+- [x] 2.7 Add the `View board` link on `/session/:code`; verify it opens the board without a PIN
+- [x] 2.8 Verify the whole slice: `pnpm nx run-many -t typecheck build test:unit` passes and the board shows live-correct data on manual refresh
 
 ## 3. Block `retention` — visibility window and cancelled strip
 
 `[model: opus-5 · effort: medium · wave 2 · stack layer 3]`
 
 Slice: finished orders age off the board on their own, without being deleted.
+
+Handoff from block 2: `OrderBoardViewModel.hasVisibleOrders()` decides the `No orders yet` state from the three main sections only. The cancelled strip must be added to that predicate in 3.5, or a session holding only cancelled orders shows `No orders yet` above a populated red strip. Block 2 also returns cancelled orders in the snapshot already, ordered last, newest-change-first — 3.5 needs no use-case ordering change.
 
 - [ ] 3.1 Add `visibleUntil` to `PublicOrderSummaryDto`; verify `pnpm nx run @m0n0lab/qup-shared:build:check-exports` passes (**export surface change — attw required**)
 - [ ] 3.2 Compute retention in `GetPublicOrderBoardUseCase` — `DONE` = `updatedAt + 5min`, `CANCELLED` = `updatedAt + 2min`, otherwise null — and omit already-expired orders from the snapshot; verify a just-served order appears with a deadline and a 6-minute-old served order does not
@@ -110,7 +117,7 @@ No test files are added (Q38/Q44) — this gate is the safety net.
 
 - [ ] 7.1 Run `pnpm nx run-many -t typecheck build test:unit` across the workspace and verify it passes clean
 - [ ] 7.2 Run `pnpm nx run @m0n0lab/qup-shared:build:check-exports` and verify attw reports no issue for the changed export surface
-- [ ] 7.3 Run the lint suite and verify knip stays within its 70-issue budget with no unused new export
+- [ ] 7.3 Run the lint suite and verify knip stays within its 40-issue budget with no unused new export
 - [ ] 7.4 Verify `CONTEXT.md` and `docs/**` pass `lint:markdownlint` (unlike `openspec/`, `docs/` is not ignored) or are added to `.markdownlintignore`
 - [ ] 7.5 Manual walkthrough on one API process: join → order → host advances to `PREPARING` → `DONE` → card moves to `Recently served` → ages off after 5 min; cancel → red strip → gone after 2 min; kill the API → `Reconnecting…`; close the session → freeze + `Session ended`; reload → `Session ended` only
 - [ ] 7.6 Verify every acceptance criterion in `docs/public-order-board-decisions.md` is met, and reconcile that document with anything the implementation changed
