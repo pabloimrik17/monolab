@@ -1,0 +1,18 @@
+{
+    "groupId": "solo-chalk-1",
+    "packages": [
+        {
+            "name": "chalk",
+            "from": "4.1.0",
+            "to": "4.1.2",
+            "location": "root",
+            "sourceFile": "package.json"
+        }
+    ],
+    "phase": "done",
+    "status": "ok",
+    "startedAt": "2026-07-12T11:04:02Z",
+    "completedAt": "2026-07-12T11:05:30Z",
+    "errorPhase": null,
+    "errorReason": null
+}
