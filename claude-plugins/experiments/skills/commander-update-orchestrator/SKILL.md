@@ -354,7 +354,7 @@ Invoke `recall-run-knowledge` on the grouped deduplicated set:
 
 The step sits **after** grouping because a `related` match keys off the emitted groups' `bucketKey`, and **before** the workflow invocation because prior knowledge reaches the research subagents through the workflow's prompt template, never around it.
 
-Capture the returned object as `priorKnowledge` and pass it into 6.5.4. A hit SHALL NOT remove a package from its group: the package still fetches its changelog in the workflow's phase 1 and still appears in the cross-project bump set. An `exact` hit changes only what the research subagent is told to do with the package — copy the prior universal findings instead of researching them.
+Capture the returned object as `RECALL_RESULT`. Pass it unchanged into 6.5.4 as `priorKnowledge` only when `baseAbsent` is false, `error` is absent, and `hits[]` or `related[]` is non-empty. A hit SHALL NOT remove a package from its group: the package still fetches its changelog in the workflow's phase 1 and still appears in the cross-project bump set. An `exact` hit changes only what the research subagent is told to do with the package — copy the prior universal findings instead of researching them.
 
 **Context diet.** The orchestrator SHALL NOT open a run note or a package hub. It surfaces exactly one line:
 
@@ -362,9 +362,9 @@ Capture the returned object as `priorKnowledge` and pass it into 6.5.4. A hit SH
 Knowledge: <e> exact, <o> overlap, <p> prior, <r> related of <n> packages
 ```
 
-**No base.** When the resolved knowledge root does not exist, `recall-run-knowledge` returns `{ hits: [] }` and the digest `Knowledge: no base at <root>`. Invoke 6.5.4 with **no** `priorKnowledge` input — omit the key entirely. Every group is dispatched for fresh research and the rest of the deep run is byte-for-byte what it was before this step existed. A missing `index.json` is rebuilt and does not take this path.
+**No base.** When the resolved knowledge root does not exist, `recall-run-knowledge` returns the complete `{ root, baseAbsent: true, hits: [], related: [], summary }` result and the digest `Knowledge: no base at <root>`. Invoke 6.5.4 with **no** `priorKnowledge` input — omit the key entirely. Every group is dispatched for fresh research and the rest of the deep run is byte-for-byte what it was before this step existed. A missing `index.json` is rebuilt and does not take this path.
 
-**Recall failure is non-fatal.** When `recall-run-knowledge` errors, continue the run with no prior knowledge — omit the `priorKnowledge` key at 6.5.4 exactly as on the no-base path — and surface `Knowledge: recall failed (<reason>)`. Recall SHALL NOT block a run.
+**Recall failure is non-fatal.** When `RECALL_RESULT.error` is present, preserve its complete `{ root, baseAbsent: false, hits: [], related: [], summary, error }` shape but continue with no prior knowledge — omit the `priorKnowledge` key at 6.5.4 exactly as on the no-base path — and surface `Knowledge: recall failed (<reason>)`. A non-zero or unparseable matcher result takes the same no-prior path. Recall SHALL NOT block a run.
 
 ### 6.5.4 Invoke the workflow
 
@@ -642,14 +642,14 @@ The apply step splits by mode.
 - **Deep mode** (`mode === "deep"`): split into four phases:
     1. **Step 10a — Bumps loop** (identical to shallow Step 10.1–10.6, except failure handling: a per-project failure pauses the run at the per-project failure gate — see 10.6.D).
     2. **Step 10b — Per-project changeset gate round** for improvements (conditional — see 10b's gating below).
-    3. **Step 10b.5 — Run knowledge persistence** (fires whenever Step 10a ran; skipped on `cancel`, on a run-level abort, and when every applied project failed).
+    3. **Step 10b.5 — Run knowledge persistence** (fires whenever a project reached apply through Step 10a or an improvement-only Step 10b round; skipped on `cancel`, on a run-level abort, and when every applied project failed).
     4. **Step 10c — End-of-flow cleanup invocation** (runs on every deep path except workflow-abort paths).
 
-    A Step 10a failure removes the failed and unattempted (`pending`) projects from Step 10b; projects that DID apply bumps successfully still get their changeset gate round (see 10b's gating). Step 10b.5 then runs once for the whole run, before Step 10c. Step 10c always runs (the plan-dir exists and the user deserves a cleanup decision).
+    A Step 10a failure removes the failed and unattempted (`pending`) projects from Step 10b; projects that applied bumps successfully and improvement-only projects with in-scope bullets still get their changeset gate round (see 10b's gating). Step 10b.5 then runs once for the whole run, before Step 10c. Step 10c always runs (the plan-dir exists and the user deserves a cleanup decision).
 
 ### Step 10a — Bumps loop (both modes; renamed from "Step 10" for shallow)
 
-**Deep mode only — mark the run as executing.** Before the first project's manifests are touched, write `phase: "executing"` into `<plan-dir>/_meta.json` atomically (write `_meta.json.tmp`, then rename — the convention `parallel-research-workflow` uses for its own transitions). `executing` and `done` are the consumer-owned phases the workflow never advances into; this orchestrator is their only writer. The matching `"done"` write happens at Step 10b.5.
+**Deep mode only — mark the run as executing.** Before the first apply action — a bump mechanism invocation or an improvement-only Step 10b round — write `phase: "executing"` into `<plan-dir>/_meta.json` atomically (write `_meta.json.tmp`, then rename — the convention `parallel-research-workflow` uses for its own transitions). `executing` and `done` are the consumer-owned phases the workflow never advances into; this orchestrator is their only writer. The matching `"done"` write happens at Step 10b.5.
 
 In **shallow mode** there is no plan-dir and no `_meta.json` — the shallow path writes neither phase value.
 
@@ -747,7 +747,7 @@ Fires only when ALL of:
 
 - (a) `mode === "deep"`.
 - (b) The Step 9 gate option was `apply-all` (NOT `apply-bumps-only`, NOT `cancel`). For `pick-subset` see 10b.0 below.
-- (c) Step 10a completed without failure for **at least one** project. The round covers exactly the projects that successfully applied bumps; failed and `pending` projects are excluded.
+- (c) At least one project is eligible: it either completed Step 10a without failure, or has no selected bumps and has a non-empty `BULLETS_FOR_PROJECT` for this improvement-only round. Failed and `pending` projects are excluded.
 - (d) The workflow's `dossier.md` contains at least one improvement bullet (`Improvements (...)` section body is NOT the `_no improvements identified_` sentinel).
 
 If any of (a)–(d) is false, Step 10b SHALL NOT execute. The Step 11 summary's `Applied improvements` section is omitted (zero items).
@@ -762,9 +762,11 @@ When the gate was `pick-subset` (deep path 9.2.D), only improvement bullets whos
 
 Per project, the in-scope set is further restricted by each bullet's `affects projects:` tag (set by the workflow's phase 4 synthesis from `<plan-dir>/cross-project-plan.json`): `BULLETS_FOR_PROJECT = in-scope bullets whose affects-projects list contains this project` — a bounded titles-only read of `dossier.md`, the same read 9.2.D validation used; no research bodies. If `BULLETS_FOR_PROJECT` is empty, skip this project's round silently.
 
+A project skipped at 10.1 because its selected bump subset is empty still enters Step 10b when `BULLETS_FOR_PROJECT` is non-empty. This is an improvement-only round; it is not `pending` and did not fail.
+
 #### 10b.1 Pre-spawn snapshot + apply teammate (turn 1 = recon + changeset, no source edit)
 
-For each successfully-applied project with a non-empty `BULLETS_FOR_PROJECT`:
+For each eligible project with a non-empty `BULLETS_FOR_PROJECT`:
 
 1. **Snapshot** the project tree before spawning: `node ${CLAUDE_PLUGIN_ROOT}/scripts/check-source-untouched.mjs snapshot --dir "<WORKDIR>" --out "<plan-dir>/changesets/<projectName>/baseline.json"`.
 2. **Spawn a single apply teammate** for the project. The spawn prompt SHALL instruct, at minimum:
@@ -813,7 +815,7 @@ On approval:
 
 ### Step 10b.5 — Run knowledge persistence (deep mode only)
 
-Fires whenever Step 10a ran — after the last project's Step 10b round, or directly after Step 10a when no changeset round applied (`apply-bumps-only`, no improvement bullets in the dossier, `pick-subset` with bumps only, or no project eligible for the round). It always runs **before** Step 10c: the run directory must still exist when the knowledge base copies from it.
+Fires whenever at least one project reached apply through Step 10a or an improvement-only Step 10b round — after the last project's Step 10b round, or directly after Step 10a when no changeset round applied (`apply-bumps-only`, no improvement bullets in the dossier, or `pick-subset` with bumps only). It always runs **before** Step 10c: the run directory must still exist when the knowledge base copies from it.
 
 Shallow mode SHALL NOT execute this step.
 
@@ -847,8 +849,8 @@ Build **one** object for the whole run from fragments the orchestrator already h
 }
 ```
 
-- **One `projects[]` entry per project that reached apply** — i.e. every project for which Step 10a invoked the mechanism. A project skipped at 10.1 for an empty subset, left `pending` by a stop decision, or dropped earlier as path-missing / scan-failed contributes no entry.
-- `bumps` is the mechanism's result fragment **verbatim**: `{ appliedGeneric, appliedOverrides, installRan, logPath, failure }` from `apply-npm-updates`, or `{ resolvedTargets, applied, skipped, droppedHashes, failure? }` from `apply-engine-bumps`. Do NOT reshape, summarize, or drop `logPath`.
+- **One `projects[]` entry per project that reached apply** — every project for which Step 10a invoked the mechanism, plus every improvement-only project that reached Step 10b. A project left `pending` by a stop decision or dropped earlier as path-missing / scan-failed contributes no entry.
+- `bumps` is the mechanism's result fragment **verbatim** when Step 10a invoked it: `{ appliedGeneric, appliedOverrides, installRan, logPath, failure }` from `apply-npm-updates`, or `{ resolvedTargets, applied, skipped, droppedHashes, failure? }` from `apply-engine-bumps`. Do NOT reshape, summarize, or drop `logPath`. For an improvement-only project where Step 10a did not invoke a mechanism, use the level's clean no-bump fragment exactly: `{ "appliedGeneric": [], "appliedOverrides": [], "installRan": false, "logPath": null, "failure": null }` for dependency levels, or `{ "resolvedTargets": {}, "applied": [], "skipped": [], "droppedHashes": [] }` for `level=engines`.
 - `changeset.status` — keyed on one axis only, what happened at the gate, and shared verbatim with the single-project orchestrator:
     - `approved` — the gate opened at 10b.3, the user approved, and the 10b.4 on-disk re-check matched the approved changeset. A zero-applicable changeset is included here: an empty changed set is that changeset's expected match.
     - `verification-failed` — the gate opened and was approved, the teammate applied, and the 10b.4 on-disk re-check did NOT match the approved changeset. It is neither `approved` (the edits did not land as approved) nor `skipped` (bullets were in scope), and `bumps.failure` cannot carry it — that field records the bump mechanism (ncu / catalog / override / install), never the changeset apply. A hub's `### Applied` section is read by later runs as how earlier projects handled a package, so an edit that did not land SHALL NOT be recorded as one that did.
@@ -860,7 +862,7 @@ Build **one** object for the whole run from fragments the orchestrator already h
 - `changeset.path` is run-dir-relative (`changesets/<projectName>/changeset.md`), or `null` when the project has no changeset.
 - `changeset.applicable` / `changeset.inapplicable` are the counts from that project's `## Applicable (<N>)` / `## Inapplicable (<M>)` headings — already in hand from the 10b.3 gate read and the 10b.4 recording, no new read — and `null` when the project has no changeset.
 
-The run-level outcome derives from the same object and decides whether the run is persisted at all: **`applied`** when every entry's `bumps.failure` is absent or `null`, **`partial`** when at least one entry is clean and another is not, **`failed`** otherwise.
+The run-level outcome derives from the same object and decides whether the run is persisted at all: **`applied`** when `projects[]` is non-empty and every entry's `bumps.failure` is absent or `null`, **`partial`** when at least one entry is clean and another is not, **`failed`** otherwise. An empty `projects[]` has no persistable outcome and takes the `nothing applied` path in 10b.5.4.
 
 #### 10b.5.3 Persist once for the run
 
@@ -890,7 +892,7 @@ Skip the invocation entirely — writing nothing under the knowledge root, not e
 
     A failure **after** apply started is NOT an abort in this sense — it is an `apply-*` path. A 10b.2 pre-gate abort and a 10b.4 apply-verification failure both leave bumps on disk: `phase: "done"` is written and the run IS persisted.
 
-- **No project reached apply** — `projects[]` is empty (every project hit the 10.1 empty-subset skip), so nothing was applied. Reason `nothing applied`. `copy-run-knowledge.mjs` refuses this case as well; stopping here is belt and braces.
+- **No project reached apply** — `projects[]` is empty (no bump mechanism ran and no improvement-only project reached Step 10b), so nothing was applied. Reason `nothing applied`. `copy-run-knowledge.mjs` refuses this case as well; stopping here is belt and braces.
 - **The run-level outcome is `failed`** — no entry's `bumps.failure` is absent or `null`, i.e. every project that reached apply failed. Reason `outcome failed`, the exact string `persist-run-knowledge` returns for this case. Step 10c still fires.
 
 `Applicable (0)` is not a skip condition: "nothing applied at this range" is itself reusable, and the run is persisted normally. An `apply-bumps-only` run IS persisted, with `changeset.status` `not-run` and `path` `null` for every project.

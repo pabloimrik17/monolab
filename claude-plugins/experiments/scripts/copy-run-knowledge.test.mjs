@@ -330,6 +330,23 @@ test("copyRunKnowledge: the hub's Applied section carries entry titles, not thei
     assert.doesNotMatch(applied, /\/Users\/someone/);
 });
 
+test("copyRunKnowledge: changeset titles match the exact package name", () => {
+    const runDir = cloneFixture("dryrun-alpha-minor-1783854242");
+    const changesetPath = join(runDir, "changesets", "changeset.md");
+    writeFileSync(
+        changesetPath,
+        readFileSync(changesetPath, "utf8")
+            .replace("### [medium] zod —", "### [medium] zod-extra —")
+            .replace("- **[low] zod —", "- **[low] zod-extra —"),
+    );
+    const root = tempRoot();
+    copyRunKnowledge({ runDir, root });
+
+    const applied = readFileSync(join(root, "packages", "zod.md"), "utf8").split("### Applied")[1];
+    assert.match(applied, /_no findings_/);
+    assert.doesNotMatch(applied, /zod-extra/);
+});
+
 test("copyRunKnowledge: a bullet-listed changeset section keeps one title per bullet", () => {
     const runDir = cloneFixture("commander-deep-minor-minor-1784387463");
     const root = tempRoot();

@@ -2,11 +2,11 @@
 
 ### Requirement: Workflow orchestration
 
-When the scan returns one or more updates, the command SHALL invoke the `dependency-grouping-strategy` skill with object input `{ updates: ScanResult.updates }` (and `maxPerGroup` only when explicitly overridden), then invoke the `recall-run-knowledge` skill at Step 3.5 with the emitted `groups`, the `level` `patch`, and `mode: single-project`, then invoke the `parallel-research-workflow` skill with the resulting groups, the level `patch`, the verbatim `ScanResult` (so the workflow can persist `scan.json`), and the recall skill's output as the workflow's optional `priorKnowledge` input. The command SHALL surface progress messages emitted by the workflow but SHALL NOT advance phases on the workflow's behalf.
+When the scan returns one or more updates, the command SHALL invoke the `dependency-grouping-strategy` skill with object input `{ updates: ScanResult.updates }` (and `maxPerGroup` only when explicitly overridden), then invoke the `recall-run-knowledge` skill at Step 3.5 with the emitted `groups`, the `level` `patch`, and `mode: single-project`, then invoke the `parallel-research-workflow` skill with the resulting groups, the level `patch`, the verbatim `ScanResult` (so the workflow can persist `scan.json`), and the recall result as the workflow's optional `priorKnowledge` input only when `baseAbsent` is false, `error` is absent, and a hit or related entry exists. The command SHALL surface progress messages emitted by the workflow but SHALL NOT advance phases on the workflow's behalf.
 
 Step 3.5 SHALL sit after grouping — it consumes the emitted groups' `bucketKey` — and before the workflow dispatch, because `priorKnowledge` reaches the research subagents through the workflow and not around it. A recall hit SHALL NOT remove a package from its group; the package still fetches its changelog and still appears in the bump set. The command SHALL NOT open a run note or a package hub itself: it SHALL surface only the recall digest `Knowledge: <e> exact, <o> overlap, <p> prior, <r> related of <n> packages`.
 
-When the knowledge base is absent, Step 3.5 SHALL be a no-op: recall SHALL return `{ hits: [] }`, SHALL emit the digest `Knowledge: no base at <root>`, and the command SHALL invoke `parallel-research-workflow` without a `priorKnowledge` input, leaving the rest of the run byte-for-byte as it was before this step existed.
+When the knowledge base is absent, Step 3.5 SHALL be a no-op: recall SHALL preserve the complete `{ root, baseAbsent: true, hits: [], related: [], summary }` result, SHALL emit the digest `Knowledge: no base at <root>`, and the command SHALL invoke `parallel-research-workflow` without a `priorKnowledge` input, leaving the rest of the run byte-for-byte as it was before this step existed. A complete result carrying `error` likewise remains available to the caller but SHALL produce `Knowledge: recall failed (<reason>)` and no `priorKnowledge`.
 
 This command is the anchor of the single-project deep family: the recall step here and the phase and persist steps below belong to the shared deep contract, so `/experiments:npm-update-deep-minor`, `/experiments:npm-update-deep-major`, and `/experiments:npm-update-deep-engines` inherit them under the experiments-plugin `Deep command family consolidation` rule and SHALL NOT restate them per level.
 
@@ -19,7 +19,7 @@ This command is the anchor of the single-project deep family: the recall step he
 
 - **WHEN** the grouping skill emits 2 groups for the scanned updates
 - **THEN** the command invokes `recall-run-knowledge` with those 2 groups, `level` `patch`, and `mode: single-project` BEFORE it invokes `parallel-research-workflow`
-- **AND** the recall output is passed to the workflow as its `priorKnowledge` input
+- **AND** a non-error recall output with at least one hit or related entry is passed unchanged to the workflow as its `priorKnowledge` input
 - **AND** no package is removed from its group because of a hit
 
 #### Scenario: Absent knowledge base leaves the run unchanged

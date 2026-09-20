@@ -324,6 +324,12 @@ function lineTitle(line) {
     return (bold ? bold[1] : t).trim();
 }
 
+function titlePackageName(line) {
+    return lineTitle(line)
+        .replace(/^\[[^\]]+\]\s*/, "")
+        .split(/\s+/)[0];
+}
+
 /**
  * Titles of the entries naming `packageName` under the `## Applicable` /
  * `## Inapplicable` heading `headingRe` matches. A section either lists its
@@ -341,7 +347,9 @@ function extractSectionTitles(content, headingRe, packageName) {
         if (inSection) lines.push(line);
     }
     const entryRe = lines.some((l) => /^### /.test(l)) ? /^### / : /^-\s/;
-    return lines.filter((l) => entryRe.test(l) && l.includes(packageName)).map(lineTitle);
+    return lines
+        .filter((line) => entryRe.test(line) && titlePackageName(line) === packageName)
+        .map(lineTitle);
 }
 
 function buildHubAppliedInfo(packageName, changesetFiles) {

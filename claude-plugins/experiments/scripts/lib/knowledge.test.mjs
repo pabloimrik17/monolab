@@ -245,18 +245,23 @@ test("parseResearchPackages: exact-hit copy carries the source line and is strip
         "",
         "source: prior-run commander-deep-minor-minor-1784387463",
         "",
-        "### Workarounds resolved (universal)",
+        "### Universal",
         "",
-        "_no findings_",
+        "**Workarounds resolved (universal)**",
         "",
-        "### Improvements applicable (universal)",
+        "- fixed the thing",
         "",
-        "_no findings_",
+        "**Improvements applicable (universal)**",
+        "",
+        "- new API",
         "",
     ].join("\n");
     const [pkg] = parseResearchPackages(content);
     assert.equal(pkg.sourceRunId, "commander-deep-minor-minor-1784387463");
+    assert.equal(pkg.format, "universal-only");
     assert.ok(!pkg.sections["Workarounds resolved (universal)"].includes("source:"));
+    assert.match(universalContent(pkg), /fixed the thing/);
+    assert.match(universalContent(pkg), /new API/);
 });
 
 test("classifyRange: identical range is exact", () => {

@@ -245,6 +245,8 @@ export function withSupersededBy(markerLine, supersededBy) {
 const PACKAGE_HEADING_RE = /^## (.+?)\s*\(([^()]+)\)\s*$/;
 const H3_RE = /^### (.+?)\s*$/;
 const SOURCE_LINE_RE = /^source:\s*prior-run\s+(\S+)/;
+const COPIED_UNIVERSAL_LABEL_RE =
+    /^\*\*((?:Workarounds resolved|Improvements applicable) \(universal\))\*\*$/;
 
 export function parseResearchPackages(content) {
     const lines = content.split("\n");
@@ -283,10 +285,11 @@ function finalizeResearchPackage(pkg) {
         if (key !== null) sections[key] = buf.join("\n").trim();
     };
     for (const line of lines) {
-        const hm = H3_RE.exec(line);
-        if (hm) {
+        const heading =
+            H3_RE.exec(line) ?? (sourceRunId ? COPIED_UNIVERSAL_LABEL_RE.exec(line.trim()) : null);
+        if (heading) {
             flush();
-            key = hm[1].trim();
+            key = heading[1].trim();
             buf = [];
         } else if (key !== null) {
             buf.push(line);

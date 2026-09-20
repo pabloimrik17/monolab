@@ -257,6 +257,12 @@ export function checkKnowledgeNotes(files, { root, markDraft = false } = {}) {
     const resolvedRoot = root ?? resolveKnowledgeRoot();
     const resolvedFiles = files.map((f) => (isAbsolute(f) ? f : join(resolvedRoot, f)));
     const contents = resolvedFiles.map((file) => ({ file, content: readFileSync(file, "utf8") }));
+    const runNoteCount = contents.filter(
+        ({ content }) => parseFrontmatter(content).data.type === "run",
+    ).length;
+    if (markDraft && runNoteCount > 1) {
+        throw new Error("--mark-draft accepts at most one run note");
+    }
     const violations = contents.flatMap(({ file, content }) => checkKnowledgeNote(file, content));
     const result = { ok: violations.length === 0, violations };
     if (markDraft) {

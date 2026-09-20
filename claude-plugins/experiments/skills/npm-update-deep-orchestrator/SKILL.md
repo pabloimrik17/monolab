@@ -55,11 +55,11 @@ Invoke `group-packages-for-research` with `{ updates }` (and `maxPerGroup` only 
 
 Invoke `recall-run-knowledge` with `{ groups, level, mode: "single-project" }` — the groups Step 3 emitted, because recall consumes their `bucketKey`. The step sits after grouping and before the Step 4 dispatch: prior knowledge reaches the research subagents through the workflow, never around it.
 
-A hit SHALL NOT remove a package from its group — the package still fetches its changelog and still appears in the bump set. Capture the returned object as `PRIOR_KNOWLEDGE` and surface only its one-line digest (`Knowledge: <e> exact, <o> overlap, <p> prior, <r> related of <n> packages`); this skill SHALL NOT open a run note or a package hub itself.
+A hit SHALL NOT remove a package from its group — the package still fetches its changelog and still appears in the bump set. Capture the returned object as `RECALL_RESULT`; pass it unchanged as `PRIOR_KNOWLEDGE` only when `baseAbsent` is false, `error` is absent, and `hits[]` or `related[]` is non-empty. Surface only its one-line digest (`Knowledge: <e> exact, <o> overlap, <p> prior, <r> related of <n> packages`); this skill SHALL NOT open a run note or a package hub itself.
 
 Recall never blocks a run: if `recall-run-knowledge` errors, continue with NO `priorKnowledge` and surface the digest `Knowledge: recall failed (<reason>)`.
 
-When the knowledge base is absent the step is a no-op: recall returns `{ hits: [] }` with the digest `Knowledge: no base at <root>`, Step 4 invokes the workflow with NO `priorKnowledge` input, and every group is dispatched for fresh research exactly as it would be with this step absent.
+When the knowledge base is absent the step is a no-op: recall returns the complete `{ root, baseAbsent: true, hits: [], related: [], summary }` result with the digest `Knowledge: no base at <root>`, Step 4 invokes the workflow with NO `priorKnowledge` input, and every group is dispatched for fresh research exactly as it would be with this step absent.
 
 ## Step 4 — Dispatch the parallel research workflow
 

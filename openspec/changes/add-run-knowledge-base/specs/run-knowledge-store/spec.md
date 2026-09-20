@@ -212,7 +212,7 @@ The persist skill SHALL write `outcome.json` into the run directory — from the
 
 When the bump mechanism ran, `bumps` SHALL hold its result fragment verbatim; it SHALL NOT be reshaped or summarised. When a Step 6 apply round reached only the changeset gate, `bumps` SHALL be the canonical clean no-bump fragment: `{ appliedGeneric: [], appliedOverrides: [], installRan: false, logPath: null, failure: null }` for dependency levels, or `{ resolvedTargets: {}, applied: [], skipped: [], droppedHashes: [] }` for `engines`.
 
-The run-level `outcome` SHALL derive from `projects[]`: `applied` when every project's `bumps.failure` is absent or `null`, `partial` when at least one is clean and another is not, and `failed` otherwise. Only `applied` and `partial` runs SHALL be persisted; a `failed` run and a cancelled run SHALL write nothing to the store. A run whose applicable count is zero SHALL still be persisted, because "nothing to apply at this range" is itself reusable.
+The run-level `outcome` SHALL derive from `projects[]`: `applied` when at least one project exists and every project's `bumps.failure` is absent or `null`, `partial` when at least one is clean and another is not, and `failed` otherwise. An empty `projects[]` has no persistable run-level outcome: it SHALL write no `outcome.json`, run note, hub section, raw copy, or other store file, and SHALL report `Knowledge: not persisted (nothing applied)`. Only non-empty `applied` and `partial` runs SHALL be persisted; a `failed` run and a cancelled run SHALL write nothing to the store. A run whose applicable count is zero SHALL still be persisted, because "nothing to apply at this range" is itself reusable.
 
 A run seeded from a pre-existing run directory SHALL carry `mechanism: "reconstructed"`, `gateOption: "unknown"`, changeset counts parsed from the changeset file, and `bumps` inferred from the run's apply log presence; its note SHALL carry `outcome: legacy` and `source: seeded-legacy`. A run seeded with the synthetic flag SHALL carry the `synthetic` tag on its note and `synthetic:true` in every hub marker it writes.
 
@@ -227,6 +227,13 @@ A run seeded from a pre-existing run directory SHALL carry `mechanism: "reconstr
 - **WHEN** every project in a run has a non-null `bumps.failure`
 - **THEN** the run-level `outcome` SHALL be `failed`
 - **AND** no file under the resolved root SHALL be created or modified
+
+#### Scenario: An empty project list is not vacuously applied
+
+- **WHEN** a run's `projects[]` is empty
+- **THEN** it SHALL have no persistable run-level outcome
+- **AND** no `outcome.json`, run note, hub section, raw copy, or store file SHALL be written
+- **AND** the persistence step SHALL report `Knowledge: not persisted (nothing applied)`
 
 #### Scenario: A zero-applicable run is still persisted
 

@@ -51,7 +51,7 @@ The matcher owns every rule in `reference/match-classes.md`, so its hits are the
 
 When the output carries `baseAbsent: true` — no root on disk — stop:
 
-- Return `{ "hits": [] }`.
+- Return the matcher's complete result unchanged as `recallResult`: `{ root, baseAbsent: true, hits: [], related: [], summary }`.
 - Emit `Knowledge: no base at <root>`, with the `root` the matcher resolved.
 - Hand the caller **no** `priorKnowledge`, so its dispatch step omits the input entirely.
 
@@ -61,17 +61,19 @@ That is the whole no-op. The prompts are the prompts of a run without this capab
 
 This skill returns; the caller dispatches. `npm-update-deep-orchestrator` captures the result at Step 3.5 and invokes the workflow at Step 4, `commander-update-orchestrator` at 6.5.3b and 6.5.4 — dispatching from here would run the phase-1+2 fan-out twice.
 
-`priorKnowledge` is the matcher's output object, passed through byte-for-byte: whatever the matcher printed is what the workflow receives, `root` included — the prompt block needs it to resolve the root-relative paths it hands a subagent.
+Keep the matcher's output object byte-for-byte as `recallResult`, `root` included. It is the authoritative result on successful, absent-base and rebuild-failure paths.
 
-When `hits[]` and `related[]` are both empty, return no `priorKnowledge` at all — an empty object would append empty blocks and an empty dossier section for nothing.
+The caller passes `recallResult` unchanged as `priorKnowledge` only when `baseAbsent` is false, `error` is absent, and at least one of `hits[]` or `related[]` is non-empty. Otherwise it omits `priorKnowledge`; an empty object would append empty blocks and an empty dossier section for nothing.
 
 ### 4. A failure never stops the run
 
-When the matcher errors — non-zero exit, unparseable output, or output carrying an `error` field, which is how it reports a base it found but could not rebuild — return no `priorKnowledge` and report `Knowledge: recall failed (<reason>)`, `<reason>` being that `error` or the failure detail. The caller carries on to its workflow dispatch, exactly as it does when persistence fails.
+When a parseable matcher result carries an `error` field — how it reports a base it found but could not rebuild — preserve that complete result as `recallResult`, omit `priorKnowledge`, and report `Knowledge: recall failed (<reason>)` using its `error`. On a non-zero exit or unparseable output there is no usable matcher result; omit `priorKnowledge` and use the process or parse failure detail in the same digest. The caller carries on to its workflow dispatch, exactly as it does when persistence fails.
 
 Every failure reads the same way, the rebuild included. `Knowledge: no base at <root>` is reserved for a base that is missing; a base that could not be read is a real problem, and a digest that calls it "no base" hides it. That is why the two arrive as different fields: `baseAbsent` for the first, `error` for the second.
 
 ### 5. Report one line
+
+Choose exactly one digest from `recallResult` in this order: `baseAbsent: true` → `Knowledge: no base at <root>`; `error` present → `Knowledge: recall failed (<reason>)`; otherwise → the count line below. A non-zero exit or unparseable output also uses the failure line.
 
 ```text
 Knowledge: <e> exact, <o> overlap, <p> prior, <r> related of <n> packages
@@ -83,13 +85,13 @@ A base that matched nothing still reports its counts here — `Knowledge: 0 exac
 
 ## Output
 
-One JSON object with three top-level keys:
+One `recallResult` JSON object with these content keys:
 
 - `hits[]` — one entry per classified package: `name`, `from`, `to`, `groupId`, `class`, `runId`, `priorFrom`, `priorTo`, `delta`, `hubPath`, `anchor`, `notePath`, `level`, `mode`, `createdAt`. `hubPath` and `notePath` are relative to the knowledge root; `anchor` is the hub section heading text, e.g. `23.0.2 → 23.1.0`.
 - `related[]` — one entry per context-only package: `name`, `groupId`, `bucketKey`, `hubs[]`.
 - `summary` — `exact`, `overlap`, `prior`, `related`, and `packages`, the number of scanned packages considered.
 
-Two matcher-set fields travel with it: `root`, the resolved absolute knowledge root, which the prompt block prints so root-relative paths resolve; and `baseAbsent`, true only when that root does not exist. A third, `error`, appears only when the base exists but could not be rebuilt — step 4's case.
+Two matcher-set fields travel with it: `root`, the resolved absolute knowledge root, which the prompt block prints so root-relative paths resolve; and `baseAbsent`, true only when that root does not exist. A third, `error`, appears only when the base exists but could not be rebuilt — step 4's case. The complete absent-base shape keeps all five regular keys (`root`, `baseAbsent`, `hits`, `related`, `summary`); the complete rebuild-failure shape keeps those five and adds `error`.
 
 `hits[]` and `related[]` are disjoint: a package lands in one or the other, never both.
 

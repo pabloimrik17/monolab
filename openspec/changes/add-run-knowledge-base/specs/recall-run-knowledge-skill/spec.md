@@ -50,16 +50,16 @@ Its input SHALL be the emitted `groups[]` — each group carrying its `groupId`,
 
 ### Requirement: No-op when the base is absent
 
-When the resolved knowledge root does not exist, the skill SHALL return `{ "hits": [] }` and SHALL emit the digest `Knowledge: no base at <root>`.
+When the resolved knowledge root does not exist, the skill SHALL return the complete matcher result `{ "root": "<root>", "baseAbsent": true, "hits": [], "related": [], "summary": { "exact": 0, "overlap": 0, "prior": 0, "related": 0, "packages": <n> } }` and SHALL emit the digest `Knowledge: no base at <root>`.
 
 In that case the run SHALL be byte-for-byte today's run plus that one digest line: no `priorKnowledge` SHALL be passed to the workflow, no prompt block SHALL be appended, and no `## Prior runs` section SHALL appear in the dossier.
 
-The same no-op SHALL apply when the base exists but yields no hit and no related entry.
+When the base exists but yields no hit and no related entry, the complete result SHALL instead carry `baseAbsent: false`, the count digest SHALL render, and the workflow SHALL still receive no `priorKnowledge`.
 
 #### Scenario: Missing knowledge root
 
 - **WHEN** the resolved knowledge root does not exist
-- **THEN** the skill SHALL return `{ "hits": [] }`
+- **THEN** the skill SHALL return the complete five-key result with `baseAbsent: true`, empty `hits[]` and `related[]`, and zero class counts in `summary`
 - **AND** SHALL print `Knowledge: no base at <root>`
 - **AND** SHALL NOT pass `priorKnowledge` to the workflow
 
@@ -163,9 +163,9 @@ The skill SHALL produce one JSON object with five top-level keys: the three belo
 
 `baseAbsent` — `true` when the root is missing, `false` otherwise. A base that exists but cannot be rebuilt SHALL carry `baseAbsent: false` and an additional `error` key naming the reason, so the caller reports `recall failed` rather than asserting a base that is not there.
 
-This is the object the workflow receives as `priorKnowledge`, so it SHALL match the shape the `parallel-research-workflow` delta fixes for that input.
+This object is the authoritative `recallResult`. The workflow receives it unchanged as `priorKnowledge` only when `baseAbsent` is false, `error` is absent, and at least one of `hits[]` or `related[]` is non-empty.
 
-The skill SHALL pass this object unchanged to `parallel-research-workflow` as its optional `priorKnowledge` input. It SHALL NOT reshape, trim or summarise the object on the way, and it SHALL NOT inject prior text into subagent prompts by any route other than that input.
+When eligible, the skill SHALL pass this object unchanged to `parallel-research-workflow` as its optional `priorKnowledge` input. It SHALL NOT reshape, trim or summarise the object on the way, and it SHALL NOT inject prior text into subagent prompts by any route other than that input. Absent-base, failure, and empty-match results remain complete at the caller but SHALL NOT be passed as `priorKnowledge`.
 
 #### Scenario: Hit carries the full field set
 
@@ -187,7 +187,7 @@ The skill SHALL pass this object unchanged to `parallel-research-workflow` as it
 
 ### Requirement: Main-window context diet
 
-The main window SHALL receive exactly one line from recall: `Knowledge: <e> exact, <o> overlap, <p> prior, <r> related of <n> packages`, where the counts are the fields of `summary`.
+The main window SHALL receive exactly one line from recall, selected in this order: `baseAbsent: true` → `Knowledge: no base at <root>`; `error` present, non-zero matcher exit, or unparseable matcher output → `Knowledge: recall failed (<reason>)`; otherwise → `Knowledge: <e> exact, <o> overlap, <p> prior, <r> related of <n> packages`, where the counts are the fields of `summary`.
 
 The main SHALL NOT open a package hub, a run note or any raw run artefact under the knowledge root. Every read of a note body SHALL happen in a subagent or in a script.
 
@@ -219,7 +219,7 @@ The groups SHALL reach the matcher on stdin (`--groups -`) rather than through a
 
 #### Scenario: Recall failure is non-fatal
 
-- **WHEN** the matcher exits non-zero for any reason other than an absent base
+- **WHEN** the matcher returns a complete result carrying `error`, or exits non-zero without a usable result
 - **THEN** the run SHALL continue with no `priorKnowledge`
 - **AND** the digest SHALL read `Knowledge: recall failed (<reason>)`
 
@@ -233,6 +233,7 @@ The groups SHALL reach the matcher on stdin (`--groups -`) rather than through a
 #### Scenario: Rebuild failure degrades, never aborts
 
 - **WHEN** the index rebuild fails
-- **THEN** recall SHALL return `{ "hits": [] }` with the digest `Knowledge: recall failed (<reason>)`
+- **THEN** recall SHALL return the complete six-key result `{ "root": "<root>", "baseAbsent": false, "hits": [], "related": [], "summary": { "exact": 0, "overlap": 0, "prior": 0, "related": 0, "packages": <n> }, "error": "<reason>" }`
+- **AND** the digest SHALL read `Knowledge: recall failed (<reason>)`
 - **AND** the run SHALL continue to the workflow dispatch
 - **AND** it SHALL NOT report the absent-base digest, which asserts a base that is missing rather than one that could not be read

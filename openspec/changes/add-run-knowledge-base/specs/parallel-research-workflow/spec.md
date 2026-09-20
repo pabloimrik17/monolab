@@ -81,6 +81,7 @@ The skill SHALL NOT dispatch a subagent with a looser prompt; substitution is a 
 - **WHEN** `priorKnowledge` carries an `exact` hit for `@nx/js 23.0.2 → 23.1.0` in group `nx-1`
 - **THEN** the `nx-1` prompt carries the `## Prior knowledge (not verified for this project)` block with an `EXACT` line naming the hit's `hubPath` and `runId`
 - **AND** the line instructs the subagent to fetch the changelog, skip research, and copy the hub's `### Universal` section under `## @nx/js (23.0.2 → 23.1.0)` with first line `source: prior-run <runId>`
+- **AND** persistence SHALL parse that verbatim section's bold universal labels as `Workarounds resolved (universal)` and `Improvements applicable (universal)` rather than treating the package as legacy
 - **AND** in `single-project` mode it also instructs the subagent to write the `(this project)` sections by checking each copied finding against this codebase
 
 #### Scenario: Overlap hit restricts research to the delta
@@ -165,7 +166,7 @@ In `single-project` mode at `level ∈ {patch, minor}` the file SHALL begin with
 
 The teammate populates the non-chronology sections by reading the healthy groups' `research.md` files plus the mode's scan artifacts — `scan.json` in `single-project` mode; `scan-by-project.json` and `cross-project-plan.json` in `cross-project` mode (which has no `scan.json`). The bump-set section SHALL list every update from those artifacts regardless of group health — in `single-project` mode as a markdown table with columns `package | current → target | location`; in `cross-project` mode per the "Cross-project `dossier.md` template" requirement. The `Changelogs` section SHALL be the output of the deterministic chronology script (see "Changelog chronology section in dossier.md"); the teammate links or embeds that output and SHALL NOT re-type changelog bodies.
 
-Before the dossier is surfaced to the user, the two-layer compliance check defined by the experiments-plugin "Dossier synthesis by teammate with two-layer compliance check" requirement SHALL run (repair loop capped at 3 rounds, residual violations escalated into the user gate).
+Before the dossier is surfaced to the user, the two-layer compliance check defined by the experiments-plugin "Dossier synthesis by teammate with two-layer compliance check" requirement SHALL run (repair loop capped at 3 rounds, residual violations escalated into the user gate). A single-project universal-section purity violation SHALL name the offending `research.md`, package, and heading. The repair round SHALL move the offending content into the matching `(this project)` section in that `research.md`, then refresh affected dossier content before both layers run again; repairing `dossier.md` alone is insufficient.
 
 **Synthesizer terminal-failure fallback.** If the synthesizer teammate terminates abnormally (e.g., an API failure) before completing `dossier.md`, the skill SHALL tear it down and re-dispatch a fresh synthesizer exactly once. On a second consecutive terminal failure the skill SHALL degrade to **direct synthesis**: the main agent authors the dossier from the healthy groups' `research.md` files and the script-assembled chronology (appended verbatim, never re-typed). Both compliance layers remain mandatory on the degraded path — the layer-2 fresh-eyes subagent is the independence backstop once author independence is lost — and the degraded dossier SHALL carry a one-line banner noting the fallback. Every input needed for recovery already lives on disk (per-group `research.md`, `chronology.md`, scan artifacts); no phase SHALL be re-run. This is the bounded, documented exception to the main-context diet rule: on this path the main agent MAY read only the healthy groups' `research.md` files, SHALL append `chronology.md` via a mechanical file-level append (never loading changelog bodies into context), and SHALL NOT read `changelogs/` or the `~/.claude/changelogs/` cache; the digest surfaced to the user keeps its bounded size.
 
@@ -176,6 +177,13 @@ The skill SHALL update the global `_meta.json.phase` to `"synthesis"` before dis
 - **WHEN** phase 3 completes successfully or the user chose `continue-without`
 - **THEN** `dossier.md` is authored by the named synthesizer teammate
 - **AND** the main conversation does not read `research.md` files or changelog bodies
+
+#### Scenario: Universal-section violation is repaired at its source
+
+- **WHEN** layer 2 finds a project path, file glob, or `Justification:` line under a single-project `(universal)` heading
+- **THEN** the repair round moves the offending content to the matching `(this project)` heading in the named `research.md`
+- **AND** refreshes affected `dossier.md` content from the repaired research
+- **AND** both compliance layers run again
 
 #### Scenario: Synthesizer dies twice → direct synthesis with both layers
 
@@ -269,6 +277,7 @@ The workflow SHALL NOT dispatch a cross-project subagent without this prompt tem
 - **WHEN** the workflow dispatches a cross-project subagent for a group carrying an `exact` hit and `priorKnowledge` is present
 - **THEN** the prompt carries the `## Prior knowledge (not verified for this project)` block with an `EXACT` line that omits the `[single-project: …]` clause
 - **AND** the resulting `research.md` carries the copied `### Universal` content under `## <pkg> (<from → to>)` with first line `source: prior-run <runId>`, and no `(this project)` section
+- **AND** persistence SHALL parse that verbatim section's bold universal labels as the two universal subsections rather than treating the package as legacy
 
 ---
 

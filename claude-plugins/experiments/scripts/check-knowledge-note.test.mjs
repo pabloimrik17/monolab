@@ -296,6 +296,21 @@ test("--mark-draft: marks the run note even when a hub file in the same batch is
     assert.equal(data.status, "draft");
 });
 
+test("--mark-draft: rejects multiple run notes before writing either status", () => {
+    const dir = mkdtempSync(join(tmpdir(), "check-knowledge-multiple-runs-"));
+    const firstPath = join(dir, "run-a.md");
+    const secondPath = join(dir, "run-b.md");
+    writeFileSync(firstPath, compliantRunNote());
+    writeFileSync(secondPath, compliantRunNote().replace("Did the thing.", ""));
+
+    assert.throws(
+        () => checkKnowledgeNotes([firstPath, secondPath], { markDraft: true }),
+        /--mark-draft accepts at most one run note/,
+    );
+    assert.equal(parseFrontmatter(readFileSync(firstPath, "utf8")).data.status, "ok");
+    assert.equal(parseFrontmatter(readFileSync(secondPath, "utf8")).data.status, "ok");
+});
+
 test("CLI: --mark-draft flag flows through and --root resolves a relative digest path", () => {
     const dir = mkdtempSync(join(tmpdir(), "check-knowledge-cli-mark-draft-"));
     const runsDir = join(dir, "runs");
