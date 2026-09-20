@@ -109,10 +109,36 @@ function readExistingOutcome(runDir) {
     }
 }
 
+function crossProjectNames(runDir) {
+    const scansPath = join(runDir, "scan-by-project.json");
+    if (existsSync(scansPath)) {
+        const scans = readJson(scansPath);
+        if (scans && typeof scans === "object" && !Array.isArray(scans)) {
+            return Object.keys(scans).sort();
+        }
+    }
+    const dossierPath = join(runDir, "dossier.md");
+    if (!existsSync(dossierPath)) return [];
+    const covered = /^Projects covered:\s*(.+)$/m.exec(readFileSync(dossierPath, "utf8"));
+    if (!covered) return [];
+    return [
+        ...new Set(
+            covered[1]
+                .split(",")
+                .map((name) => name.trim())
+                .filter(Boolean),
+        ),
+    ].sort();
+}
+
 /** Reconstructs a project only when the run directory contains apply evidence. */
 function reconstructedProjects(runDir, meta, changesetFiles) {
     if (meta.mode !== "single-project") {
-        return changesetFiles.map((cf) => reconstructedProject(cf.project, cf, runDir));
+        if (changesetFiles.length > 0) {
+            return changesetFiles.map((cf) => reconstructedProject(cf.project, cf, runDir));
+        }
+        if (!hasApplyLog(runDir)) return [];
+        return crossProjectNames(runDir).map((name) => reconstructedProject(name, null, runDir));
     }
     if (changesetFiles.length === 0 && !hasApplyLog(runDir)) return [];
     return [reconstructedProject(meta.slug, changesetFiles[0] ?? null, runDir)];
@@ -293,7 +319,18 @@ function extractSectionTitles(content, headingRe, packageName) {
         .map(lineTitle);
 }
 
-function buildHubAppliedInfo(packageName, changesetFiles) {
+function outcomeEntriesForChangeset(cf, projects) {
+    const byPath = projects.filter((project) => project.changeset?.path === cf.relPath);
+    if (byPath.length > 0) return byPath;
+    if (cf.project !== null) {
+        const byProject = projects.filter((project) => project.projectName === cf.project);
+        if (byProject.length > 0) return byProject;
+    }
+    const names = new Set(projects.map((project) => project.projectName));
+    return names.size === 1 ? projects : [];
+}
+
+function buildHubAppliedInfo(packageName, changesetFiles, projects) {
     if (changesetFiles.length === 0) return { text: "no changeset", anyApplicable: false };
     const blocks = [];
     let anyApplicable = false;
@@ -307,10 +344,15 @@ function buildHubAppliedInfo(packageName, changesetFiles) {
         ).length;
         if (applicableTitles.length === 0 && inapplicableCount === 0) continue;
         if (applicableTitles.length > 0) anyApplicable = true;
+        const outcomeEntries = outcomeEntriesForChangeset(cf, projects);
+        const statuses = [
+            ...new Set(outcomeEntries.map((entry) => changesetStatusText(entry.changeset?.status))),
+        ];
         blocks.push(
             [
-                `#### ${cf.project ?? "project"}`,
+                `#### ${outcomeEntries[0]?.projectName ?? cf.project ?? "project"}`,
                 "",
+                ...(statuses.length > 0 ? [`- changeset: ${statuses.join(", ")}`] : []),
                 `- applicable: ${applicableTitles.length ? applicableTitles.join("; ") : "none"}`,
                 `- inapplicable: ${inapplicableCount ? `${inapplicableCount} title(s)` : "none"}`,
             ].join("\n"),
@@ -587,7 +629,7 @@ export function copyRunKnowledge({ runDir, outcome = null, synthetic = false, ro
         const distillNeeded = !researchMissing && universalContent(pkg.research) === null;
         const universalText =
             researchMissing || distillNeeded ? null : universalContent(pkg.research);
-        const appliedInfo = buildHubAppliedInfo(pkg.name, changesetFiles);
+        const appliedInfo = buildHubAppliedInfo(pkg.name, changesetFiles, resolvedOutcome.projects);
 
         const updated = upsertHub(existing, {
             name: pkg.name,

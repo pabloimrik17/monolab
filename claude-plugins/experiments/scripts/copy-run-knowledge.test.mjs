@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+    cpSync,
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    rmSync,
+    writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -398,6 +406,31 @@ test("reconstructOutcome: single-project legacy dir parses changeset counts and 
     assert.equal(outcome.projects[0].changeset.inapplicable, 4);
 });
 
+test("copyRunKnowledge: cross-project legacy apply without changesets persists dossier projects", () => {
+    const runDir = cloneFixture("commander-deep-minor-minor-1784387463");
+    rmSync(join(runDir, "changesets"), { recursive: true });
+    mkdirSync(join(runDir, "logs"));
+    writeFileSync(join(runDir, "logs", "apply-legacy.log"), "applied\n");
+    const root = tempRoot();
+
+    const result = copyRunKnowledge({ runDir, root });
+    const outcome = JSON.parse(readFileSync(join(runDir, "outcome.json"), "utf8"));
+
+    assert.equal(result.failed, undefined);
+    assert.deepEqual(
+        outcome.projects.map((project) => project.projectName),
+        ["dotfiles", "monolab"],
+    );
+    assert.ok(outcome.projects.every((project) => project.mechanism === "reconstructed"));
+    assert.ok(outcome.projects.every((project) => project.changeset.path === null));
+    const runNote = readFileSync(
+        join(root, "runs", "commander-deep-minor-minor-1784387463.md"),
+        "utf8",
+    );
+    assert.match(runNote, /^projects: \[dotfiles, monolab\]$/m);
+    assert.match(runNote, /^outcome: legacy$/m);
+});
+
 test("copyRunKnowledge: omitting --outcome reconstructs one and marks the note seeded-legacy", () => {
     const runDir = cloneFixture("dryrun-alpha-minor-1783854242");
     const root = tempRoot();
@@ -408,41 +441,49 @@ test("copyRunKnowledge: omitting --outcome reconstructs one and marks the note s
     assert.match(runNote, /source: seeded-legacy/);
 });
 
-test("copyRunKnowledge: a verification-failed changeset status passes through to the run note", () => {
-    const runDir = cloneFixture("dryrun-alpha-minor-1783854242");
-    const root = tempRoot();
-    copyRunKnowledge({
-        runDir,
-        outcome: {
-            runId: "dryrun-alpha-minor-1783854242",
-            level: "minor",
-            mode: "single-project",
-            gateOption: "apply-all",
-            projects: [
-                {
-                    projectName: "dryrun-alpha",
-                    mechanism: "apply-npm-updates",
-                    bumps: {
-                        appliedGeneric: ["zod"],
-                        appliedOverrides: [],
-                        installRan: true,
-                        logPath: null,
-                        failure: null,
+test.each(["verification-failed", "rejected"])(
+    "copyRunKnowledge: a %s changeset status passes through to the run note and hub",
+    (status) => {
+        const runDir = cloneFixture("dryrun-alpha-minor-1783854242");
+        const root = tempRoot();
+        copyRunKnowledge({
+            runDir,
+            outcome: {
+                runId: "dryrun-alpha-minor-1783854242",
+                level: "minor",
+                mode: "single-project",
+                gateOption: "apply-all",
+                projects: [
+                    {
+                        projectName: "dryrun-alpha",
+                        mechanism: "apply-npm-updates",
+                        bumps: {
+                            appliedGeneric: ["zod"],
+                            appliedOverrides: [],
+                            installRan: true,
+                            logPath: null,
+                            failure: null,
+                        },
+                        changeset: {
+                            status,
+                            path: "changesets/changeset.md",
+                            applicable: 1,
+                            inapplicable: 4,
+                        },
                     },
-                    changeset: {
-                        status: "verification-failed",
-                        path: "changesets/changeset.md",
-                        applicable: 1,
-                        inapplicable: 4,
-                    },
-                },
-            ],
-        },
-        root,
-    });
-    const runNote = readFileSync(join(root, "runs", "dryrun-alpha-minor-1783854242.md"), "utf8");
-    assert.match(runNote, /changeset: verification-failed/);
-});
+                ],
+            },
+            root,
+        });
+        const runNote = readFileSync(
+            join(root, "runs", "dryrun-alpha-minor-1783854242.md"),
+            "utf8",
+        );
+        assert.match(runNote, new RegExp(`changeset: ${status}`));
+        const hub = readFileSync(join(root, "packages", "zod.md"), "utf8");
+        assert.match(hub, new RegExp(`- changeset: ${status}`));
+    },
+);
 
 test("copyRunKnowledge: --synthetic tags the note and every hub marker", () => {
     const runDir = cloneFixture("dryrun-alpha-minor-1783854242");

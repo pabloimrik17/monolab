@@ -70,8 +70,8 @@ Surface the workflow's progress messages as produced. This skill SHALL NOT advan
 Early-exit handling (skip the Step 5 execution prompt entirely — no `AskUserQuestion`, no dossier item applied):
 
 - Phase 0 `cancel` → print `Cancelled by stale-cleanup. No files modified.` and exit (no plan dir exists; Step 8 is not reached).
-- Phase 1 hard-wall `abort` → print `Aborted at hard-wall. No files modified.`, skip to Step 8 (plan dir preserved).
-- Phase 3 integrity `abort` → print `Aborted on integrity check. No files modified.`, skip to Step 8 (plan dir preserved).
+- Phase 1 hard-wall `abort` → print `Aborted at hard-wall. No files modified.`, set the persist digest to `Knowledge: not persisted (aborted)`, skip Steps 4.5–7.5, invoke Step 8 once, then render the Step 7 abort summary.
+- Phase 3 integrity `abort` → print `Aborted on integrity check. No files modified.`, set the same digest, skip Steps 4.5–7.5, invoke Step 8 once, then render the Step 7 abort summary.
 
 ## Step 4.5 — PR partition (level `major` only)
 
@@ -169,6 +169,8 @@ Print the level's H1 (delta table), then conditionally (omit zero-count sections
 - `Suggested next steps (not executed):` — `Run your test suite.`, `Run lint / typecheck.`, `Review changes (\`git diff\`) and commit — any isolation branch may not pass repo commit hooks, so run lint/build before committing.`(engines adds`Reinstall dependencies under the new toolchain.` first).
 
 For the `cancel` path the summary body is `Cancelled. No files modified.` plus the always-present `Knowledge:` (`Knowledge: not persisted (cancelled)` — Step 7.5 does not run) and `Suggested next steps`.
+
+For a Phase 1/3 `abort`, the summary body is the surfaced abort message, `Isolation: none (apply not started)`, `Install: skipped (no bumps applied)`, `Knowledge: not persisted (aborted)`, and `Suggested next steps`. No apply section renders.
 
 ## Step 7.5 — Persist the run into the knowledge base
 

@@ -404,8 +404,8 @@ Both files are pretty-printed (2-space indent). The workflow itself does NOT req
 The workflow can return one of three abort signals. The orchestrator SHALL handle each before advancing to Step 7:
 
 - **Phase 0 `cancel`** (`Cancelled by stale-cleanup`): print exactly `Cancelled. No files modified.` and exit `0`. Steps 7–11 SHALL NOT execute. No plan-dir is created for this run (phase 0's `cancel` short-circuits before plan-dir creation).
-- **Phase 1 hard-wall `abort`**: surface the workflow's abort message verbatim. Skip Steps 7–11 (no override prompts, no gate, no apply, no Step 10c cleanup invocation). The plan-dir IS preserved on disk per the workflow's contract; the orchestrator SHALL NOT re-invoke the workflow for cleanup on this path.
-- **Phase 3 integrity-gate `abort`**: same as Phase 1 hard-wall — surface message verbatim, skip Steps 7–11, plan-dir preserved on disk.
+- **Phase 1 hard-wall `abort`**: surface the workflow's abort message verbatim. Set the persist digest to `Knowledge: not persisted (aborted)`, skip Steps 7–10b.5, invoke Step 10c exactly once, then render the Step 11 abort summary. No phase value is written.
+- **Phase 3 integrity-gate `abort`**: handle exactly like the Phase 1 abort: surface the message, set the abort digest, skip apply and persistence, invoke Step 10c once, then render Step 11.
 
 For Phase 1 `degrade-to-direct-synthesis` (a non-abort outcome of the hard-wall prompt), the workflow proceeds to phase 4 and emits `dossier.md` with the degraded banner (research consolidated from the changelog cache). The orchestrator continues normally to Step 7 — the degraded path is NOT an early exit.
 
@@ -468,9 +468,10 @@ If the workflow's `dossier.md` reports zero bumps (the `Cross-project bump set` 
 
 - Print any orchestrator warnings (per the rules in Step 7.D, point 2 above).
 - Print exactly `No <level> updates available across selected projects.`
-- Exit `0` without invoking Step 8, Step 9, Step 10a/10b/10c, or Step 11.
+- Set the persist digest to `Knowledge: not persisted (nothing applied)` and skip Steps 8–10b.5.
+- Invoke Step 10c exactly once, then render Step 11 with no apply sections, `Isolation: none (apply not started)`, the persist digest, and `Suggested next steps`.
 
-The plan-dir is preserved on disk; the workflow's end-of-flow cleanup runs separately when the next deep-mode invocation hits phase 0 stale-cleanup (>10 days). The orchestrator SHALL NOT delete the plan-dir on the empty-plan exit path.
+The plan-dir remains or is deleted according to the explicit Step 10c cleanup choice.
 
 ## Step 8 — Override registry consultation
 
@@ -888,7 +889,7 @@ Carry that line into the Step 11 `Knowledge:` line unchanged.
 Skip the invocation entirely — writing nothing under the knowledge root, not even creating it — and surface `Knowledge: not persisted (<reason>)` and nothing else, when:
 
 - **The user selected `cancel`** at Step 9 (or 9.2.D resolved to cancel) — reason `cancelled`. Step 10a never ran, so neither phase value is written and nothing is persisted; `Cancelled. No files modified.` keeps holding literally.
-- **The run aborted before the apply step** — the Step 6.5.6 workflow abort signals (phase 1 hard-wall, phase 3 integrity gate) — reason `aborted`. Apply was never reached, so neither `phase: "executing"` nor `phase: "done"` is written and nothing is persisted. In cross-project mode these paths exit before Step 11, so the `Knowledge:` line is not rendered at all; the reason exists for parity with the single-project orchestrator.
+- **The run aborted before the apply step** — the Step 6.5.6 workflow abort signals (phase 1 hard-wall, phase 3 integrity gate) — reason `aborted`. Apply was never reached, so neither `phase: "executing"` nor `phase: "done"` is written and nothing is persisted. Step 10c still fires, then Step 11 renders `Knowledge: not persisted (aborted)`.
 
     A failure **after** apply started is NOT an abort in this sense — it is an `apply-*` path. A 10b.2 pre-gate abort and a 10b.4 apply-verification failure both leave bumps on disk: `phase: "done"` is written and the run IS persisted.
 
@@ -915,13 +916,15 @@ The workflow prompts the user via `AskUserQuestion`:
 
 Capture the user's choice into `cleanupOutcome ∈ { "delete-plan", "keep-plan" }`. The Step 11 summary's `Suggested next steps` uses `cleanupOutcome` to decide whether to include the `Review <plan-dir>/dossier.md before re-running.` bullet.
 
-**Skip Step 10c when** the workflow returned an abort signal in Step 6.5.6 (phase 1 hard-wall abort or phase 3 integrity-gate abort). On abort paths the orchestrator has already exited before reaching this point — Step 10c is not reached. On Step 9 `cancel` (deep), on Step 10a stop-on-fail (deep), on Step 10b rejection, and on the happy path, Step 10c DOES fire — the plan-dir exists and the user deserves a single cleanup decision per run.
+Step 10c fires on every deep path with a plan-dir: Phase 1/3 abort, empty plan, Step 9 `cancel`, Step 10a stop-on-fail, Step 10b rejection, and the happy path. Phase 0 stale-cleanup `cancel` is the sole deep exit without Step 10c because no plan-dir was created.
 
 The orchestrator SHALL NOT prompt for cleanup itself — the workflow owns the prompt. If the user picks `delete-plan`, the workflow removes the plan-dir before returning; the orchestrator's Step 11 summary still references `<plan-dir>` by its captured path but the `Review <plan-dir>/dossier.md` bullet is omitted (no dossier to review).
 
 ## Step 11 — Cross-project summary
 
 Print a markdown summary. The H1 varies by mode. Render sections conditionally; sections with count zero SHALL be omitted, except `Suggested next steps`, which SHALL always appear.
+
+Phase 1/3 abort and empty-plan paths reach this step after Step 10c. They render no apply sections and carry their precomputed `Knowledge: not persisted (aborted|nothing applied)` digest.
 
 **H1**:
 
@@ -1057,7 +1060,7 @@ Deep mode includes the same three baseline bullets (test, lint/typecheck, git di
 
 - When `cleanupOutcome === "keep-plan"` (recorded by Step 10c — see the workflow's global `_meta.json` end-of-flow cleanup state): include `- Review <plan-dir>/dossier.md before re-running.` as the fourth bullet, substituting `<plan-dir>` with the absolute plan-dir path captured in Step 6.5.4.
 - When `cleanupOutcome === "delete-plan"`: omit the fourth bullet (the plan-dir was deleted; there is no `dossier.md` to review).
-- When Step 10c was skipped (workflow abort paths): the orchestrator already exited before Step 11 — this branch is not reached.
+- A missing `cleanupOutcome` is possible only on Phase 0 stale-cleanup `cancel`, which creates no plan-dir and exits before Step 11.
 
 ### 11.2 Registry-byte-identity verification (manual check)
 

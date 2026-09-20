@@ -120,6 +120,7 @@ tags: [package]
 
 #### monolab
 
+- changeset: approved
 - applicable: Adopt the new `--no-color` flag in the lint script
 - inapplicable: 55 title(s)
 
@@ -154,12 +155,12 @@ Each persisted range is one `## <from> → <to>` section. Its first line is the 
 
 Then, in this order:
 
-| Section                     | Owner                                                                   | Content                                                                                                                                 |
-| --------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `> [!info] Source:` callout | script                                                                  | Wikilink to the run note, plus level, mode, `createdAt`.                                                                                |
-| `### Universal`             | script-copied, or **subagent** when the slot carries `<!-- distill -->` | `<!-- slot:universal -->` … `<!-- /slot -->`, holding the run's `(universal)` research findings. No line cap.                           |
-| `### Applied`               | script                                                                  | Built from the copied `changesets/**/changeset.md`: per project, the applicable and inapplicable titles, or `no changeset` when absent. |
-| `### Summary`               | **subagent**, one slot                                                  | `<!-- slot:summary -->` … `<!-- /slot -->`. At most 5 lines: what the range brings, who should care, what earlier projects did.         |
+| Section                     | Owner                                                                   | Content                                                                                                                         |
+| --------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `> [!info] Source:` callout | script                                                                  | Wikilink to the run note, plus level, mode, `createdAt`.                                                                        |
+| `### Universal`             | script-copied, or **subagent** when the slot carries `<!-- distill -->` | `<!-- slot:universal -->` … `<!-- /slot -->`, holding the run's `(universal)` research findings. No line cap.                   |
+| `### Applied`               | script                                                                  | Built from `outcome.json` and copied changesets: project gate status and applicable/inapplicable titles, or `no changeset`.     |
+| `### Summary`               | **subagent**, one slot                                                  | `<!-- slot:summary -->` … `<!-- /slot -->`. At most 5 lines: what the range brings, who should care, what earlier projects did. |
 
 Re-persisting a run replaces the section carrying its marker in place — never appends a second one. Persisting a range the package does not yet hold appends a new `##` section and extends `ranges` and `runs`.
 

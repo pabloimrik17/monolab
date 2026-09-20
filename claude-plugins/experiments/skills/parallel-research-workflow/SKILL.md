@@ -830,13 +830,13 @@ When the consumer re-invokes the workflow for cleanup, the workflow SHALL prompt
     - `delete-plan` — recursively `rm -rf <plan-dir>`.
     - `keep-plan` — leave it on disk; the next invocation's stale-cleanup (phase 0) will catch it after 10 days.
 
-Cleanup re-entry is consumer-driven and optional: when phase 1 or phase 3 returns `abort`, the workflow itself exits cleanly with the plan dir preserved (per lines covering each abort option) and does NOT prompt for cleanup on its own. The consumer decides whether to re-invoke the workflow for cleanup; if it does, the workflow MUST present the `delete-plan` / `keep-plan` prompt above. If the consumer skips re-invocation, the plan dir stays on disk until the next stale-cleanup pass (phase 0).
+Cleanup re-entry is consumer-driven: when phase 1 or phase 3 returns `abort`, the workflow itself returns with the plan dir preserved and does NOT prompt on its own. The consumer SHALL re-invoke the workflow exactly once; that re-entry presents the `delete-plan` / `keep-plan` prompt above.
 
 The workflow SHALL NOT delete the plan dir without explicit `delete-plan`. There is no default option. Stale-cleanup (phase 0) is the safety net.
 
-**Persistence precedes this prompt.** When the consumer persisted the run into the knowledge base (via the `persist-run-knowledge` skill), it SHALL have done so **before** re-invoking the workflow for cleanup — so `delete-plan` never destroys knowledge that is not already stored outside the plan directory. The prompt's position at flow end is unchanged and its two options keep their meaning. The workflow itself writes nothing under the knowledge root: persisting there is the consumer's step, and the presence of `priorKnowledge` grants the workflow no write path to it (see "Hard rules").
+**Eligible persistence precedes this prompt.** When the run qualifies for knowledge persistence, the consumer SHALL finish it before re-invoking cleanup. Abort, cancel, and no-apply paths persist nothing and carry their skip digest into the final summary; explicit `delete-plan` may discard that non-persisted run directory. The workflow itself writes nothing under the knowledge root: persisting there is the consumer's step, and the presence of `priorKnowledge` grants the workflow no write path to it (see "Hard rules").
 
-After the cleanup choice, the workflow returns control to the consumer. The consumer is responsible for advancing `_meta.json.phase` to `"executing"` / `"done"` when applicable (only if the dir was kept; otherwise the file is gone with the dir). The workflow itself SHALL NOT set the phase past `"synthesis"` — see Hard rules.
+After the cleanup choice, the workflow returns control without changing the phase. The consumer writes `"executing"` at apply start and `"done"` before persistence and cleanup; abort, cancel, and no-apply paths write neither. A `delete-plan` choice may then remove the file with the directory. The workflow itself SHALL NOT set the phase past `"synthesis"` — see Hard rules.
 
 ## Hard rules
 
