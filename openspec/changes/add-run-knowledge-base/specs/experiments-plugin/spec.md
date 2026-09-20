@@ -9,7 +9,7 @@ The plugin manifest SHALL include:
 - `description`: "Beta skills and commands staging area for monolab"
 - `keywords`: ["experiments", "beta", "staging", "skills"]
 
-The manifest SHALL also declare a `userConfig` block. This change adds exactly one key to it, `knowledge_root`, with `type` `"string"`, a `title`, a `description` stating that an accepted value is an absolute path or a `~`-prefixed path and that a relative value is rejected, and `default` `""`.
+The manifest SHALL also declare a `userConfig` block. This change adds exactly one key to it, `knowledge_root`, with `type` `"string"`, a `title`, a short user-facing `description` of its purpose, and `default` `""`.
 
 The empty default SHALL mean the built-in knowledge root `~/.claude/experiments/knowledge/`; a non-empty value SHALL override it. The manifest SHALL declare the key and its default only — resolving, expanding and validating the value is the knowledge store's contract, not the manifest's.
 
@@ -22,7 +22,7 @@ The empty default SHALL mean the built-in knowledge root `~/.claude/experiments/
 
 - **WHEN** parsing `plugin.json`
 - **THEN** `userConfig.knowledge_root` SHALL be present with `type: "string"`, a `title`, a `description` and `default: ""`
-- **AND** the `description` SHALL state that an accepted value is absolute or `~`-prefixed
+- **AND** the `description` SHALL explain that the setting selects the persisted run-knowledge directory
 - **AND** the empty default SHALL mean the built-in root `~/.claude/experiments/knowledge/`
 
 ---
