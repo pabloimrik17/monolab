@@ -201,10 +201,6 @@ test("edited-outside-slot: a change outside a slot after the marker was written 
 });
 
 test("edited-outside-slot: filling a slot alone does not trip the pre-image check", () => {
-    // Regression: the fill step itself must not be misdetected as an
-    // out-of-slot edit — only the compliant fixtures above prove that, but
-    // this pins it against the specific "content changed inside a slot"
-    // case explicitly.
     const written = appendPreimageMarker(
         serializeFrontmatter(hubData(), hubBody("<!-- distill -->", "")),
     );
@@ -245,9 +241,6 @@ test("--mark-draft: residual violations write status: draft into the run note an
     const { data } = parseFrontmatter(readFileSync(notePath, "utf8"));
     assert.equal(data.status, "draft");
 
-    // Stamping `draft` rewrites frontmatter, which lives outside every slot.
-    // Without restamping the pre-image the note would report a phantom
-    // `edited-outside-slot` on every later run, on top of the real violation.
     const again = checkKnowledgeNotes([notePath], {});
     assert.deepEqual(
         again.violations.filter((v) => v.rule === "edited-outside-slot"),

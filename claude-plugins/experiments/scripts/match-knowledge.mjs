@@ -1,29 +1,5 @@
 #!/usr/bin/env node
-/**
- * match-knowledge — D6 classifier. Rebuilds the index, then classifies
- * every scanned `pkg (from → to)` against the knowledge base into `exact`,
- * `overlap`, `prior`, or `related`, and reports counts. Read-only beyond
- * the index rebuild it triggers.
- *
- * Usage:
- *   match-knowledge.mjs [--root <dir>] --groups <groups.json>
- *   match-knowledge.mjs [--root <dir>] --groups -
- *
- * `--root` defaults to `resolveKnowledgeRoot()` when omitted. `--groups` is
- * the `{ groups: [{ groupId, bucketKey, packages: [{ name, from, to }] }] }`
- * object emitted by group-packages-for-research (a bare array is also
- * accepted); `-` reads the same JSON from stdin, for a caller that only
- * holds the groups in-conversation and must not create a scratch file
- * outside the knowledge root.
- *
- * Output: JSON `{ root, baseAbsent, hits, related, summary }`, degrading to
- * `hits: [], related: [], baseAbsent: true` when the root is missing — the
- * caller reads `root` and `baseAbsent` to print `Knowledge: no base at <root>`
- * without probing the filesystem itself. A base that exists but cannot be
- * rebuilt is a different thing and carries `baseAbsent: false` plus `error`,
- * so the caller says `recall failed` rather than asserting a base that is not
- * there. Either way the run continues: recall never aborts it.
- */
+/** Rebuilds the index and classifies scanned package ranges against prior runs. */
 
 import { existsSync, readFileSync } from "node:fs";
 import { buildKnowledgeIndex } from "./build-knowledge-index.mjs";
@@ -51,12 +27,7 @@ function readGroupsInput(value) {
     return JSON.parse(raw);
 }
 
-/**
- * The scanned input already carries `bucketKey` per group — read it from
- * there first. Deriving from `groupId` is a fallback for an incomplete
- * caller only; the derivation goes wrong for any bucket whose name itself
- * ends in digits, so the real value always wins when present.
- */
+/** Prefers the explicit bucket key; deriving it can lose numeric suffixes. */
 function flattenGroups(groupsInput) {
     const groups = Array.isArray(groupsInput) ? groupsInput : (groupsInput.groups ?? []);
     return groups.flatMap((g) =>
@@ -92,10 +63,7 @@ function candidatesForPackage(index, pkg) {
     return entry.ranges
         .filter((range) => !isExcluded(range))
         .map((range) => {
-            // A version the comparer cannot parse — a `catalog:` entry, a tag,
-            // a workspace protocol — is one candidate's problem, not the run's.
-            // Letting it throw would lose every other package's hit as well and
-            // turn a recall that had answers into `recall failed`.
+            // One unparseable candidate must not fail the whole recall.
             let classified;
             try {
                 classified = classifyRange(
@@ -176,12 +144,7 @@ export function matchKnowledge(index, groupsInput) {
     return { root: index.root, baseAbsent: false, hits, related, summary };
 }
 
-/**
- * Rebuild-then-match. Both failure modes yield no hits and let the run go on,
- * but they are not the same fact: a base that is not there reads `baseAbsent`,
- * a base that could not be read reads `error`. Calling the second one "no base"
- * would hide a corrupt store behind a routine digest line.
- */
+/** Distinguishes an absent base from a base that failed to rebuild. */
 export function recallAgainstRoot(root, groupsInput) {
     const resolvedRoot = root ?? resolveKnowledgeRoot();
     const packageCount = flattenGroups(groupsInput).length;
@@ -214,9 +177,7 @@ if (invokedDirectly) {
     try {
         main();
     } catch (err) {
-        // `resolveKnowledgeRoot` rejecting a relative `knowledge_root` is a
-        // user-configuration error, not a crash: it earns the one exact line
-        // the store contract fixes, never a stack trace.
+        // Configuration errors return one line, never a stack trace.
         process.stderr.write(`Error: ${err?.message ?? err}\n`);
         process.exit(2);
     }

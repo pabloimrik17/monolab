@@ -1,10 +1,4 @@
-/**
- * Shared primitives for the run-knowledge store (D1-D8 of the
- * add-run-knowledge-base design): root resolution, the package slug rule,
- * an Obsidian-safe frontmatter codec (scalars and string lists only),
- * slot/marker helpers, the `research.md` section parser (both heading
- * contracts), and range algebra over `lib/semver.mjs`.
- */
+/** Shared parsing, marker, path, and range helpers for the knowledge store. */
 
 import { createHash } from "node:crypto";
 import { homedir } from "node:os";
@@ -12,7 +6,6 @@ import { isAbsolute, join } from "node:path";
 import { normalizePackageName } from "./cache.mjs";
 import { compare } from "./semver.mjs";
 
-/** D1: default root, `userConfig.knowledge_root` override, `~` expansion. */
 export function resolveKnowledgeRoot(env = process.env) {
     const override = env.knowledge_root ?? env.KNOWLEDGE_ROOT ?? "";
     if (!override) {
@@ -27,17 +20,9 @@ export function resolveKnowledgeRoot(env = process.env) {
     return override;
 }
 
-/** D2: `@scope/name` -> `@scope__name`, identical to the changelog cache. */
 export const pkgSlug = normalizePackageName;
 
-/**
- * D4's `changeset.status` enum. Six values: the original five plus
- * `verification-failed` — the changeset gate opened and was approved, the
- * edits were applied, and the orchestrator's on-disk re-check found the
- * changed set didn't match the approved changeset. Every script that reads
- * `outcome.projects[].changeset.status` passes it through verbatim; none
- * filters against a narrower set.
- */
+// Keep this aligned with `outcome.projects[].changeset.status`.
 export const CHANGESET_STATUSES = [
     "approved",
     "rejected",
@@ -127,8 +112,7 @@ function serializeScalar(value) {
 
 const RESERVED_SCALARS = new Set(["true", "false", "null", "~"]);
 
-// Quoting is deliberately conservative: it only has to round-trip through
-// our own parser above, not satisfy a full YAML grammar.
+// This codec only needs to round-trip through `parseFrontmatter`.
 function needsQuoting(s) {
     if (s === "") return true;
     if (RESERVED_SCALARS.has(s)) return true;
@@ -144,7 +128,6 @@ export function emptySlot(name) {
 
 const SLOT_RE = /<!-- slot:(\w+) -->\n?([\s\S]*?)<!-- \/slot -->/g;
 
-/** Every slot pair in `content`, in document order. */
 export function findSlots(content) {
     const slots = [];
     let m;
@@ -155,7 +138,6 @@ export function findSlots(content) {
     return slots;
 }
 
-/** A slot is unfilled if it is blank or still carries a pre-fill sentinel. */
 export function isSlotUnfilled(slotContent) {
     return (
         slotContent.trim() === "" ||
@@ -164,9 +146,7 @@ export function isSlotUnfilled(slotContent) {
     );
 }
 
-// Proves nothing outside a slot changed between the script's write and a
-// later re-read: slot content is blanked before hashing, and the marker
-// itself sits after the hashed region, at the very end of the file.
+// Hash only script-owned content; slot bodies remain model-owned.
 export function blankSlots(content) {
     return content.replace(
         /<!-- slot:(\w+) -->\n?[\s\S]*?<!-- \/slot -->/g,
@@ -189,7 +169,6 @@ export function appendPreimageMarker(content) {
     return `${trimmed}<!-- knowledge:preimage ${computePreimageHash(trimmed)} -->\n`;
 }
 
-/** `{ ok, reason }` — false when the marker is missing or content outside a slot changed. */
 export function verifyPreimage(content) {
     const m = PREIMAGE_MARKER_RE.exec(content);
     if (!m) return { ok: false, reason: "missing preimage marker" };
@@ -219,14 +198,12 @@ export function parseRunMarker(line) {
     };
 }
 
-/** First index at or after `fromIndex` holding a non-blank line, or -1. */
 export function nextNonBlankIndex(lines, fromIndex) {
     let i = fromIndex;
     while (i < lines.length && lines[i].trim() === "") i++;
     return i < lines.length ? i : -1;
 }
 
-/** The `<!-- run:… -->` marker following a `## <from> → <to>` heading, a blank line apart per the note templates. */
 export function findSectionMarker(lines, headingIndex) {
     const markerIdx = nextNonBlankIndex(lines, headingIndex + 1);
     if (markerIdx === -1) return null;
@@ -234,14 +211,11 @@ export function findSectionMarker(lines, headingIndex) {
     return marker ? { index: markerIdx, marker } : null;
 }
 
-/** Replace `supersededBy:<old>` in a marker line, keyed by exact runId. */
 export function withSupersededBy(markerLine, supersededBy) {
     return markerLine.replace(/supersededBy:\S*/, `supersededBy:${supersededBy ?? ""}`);
 }
 
-// Accepts every heading contract in play: legacy (`### Workarounds resolved`),
-// cross-project universal-only (`### Workarounds resolved (universal)`), and
-// the D8 single-project split (adds the `(this project)` twin of each).
+// Supports legacy, universal-only, and universal/project heading contracts.
 const PACKAGE_HEADING_RE = /^## (.+?)\s*\(([^()]+)\)\s*$/;
 const H3_RE = /^### (.+?)\s*$/;
 const SOURCE_LINE_RE = /^source:\s*prior-run\s+(\S+)/;
@@ -306,11 +280,7 @@ function finalizeResearchPackage(pkg) {
     return { name: pkg.name, from: pkg.from, to: pkg.to, sourceRunId, format, sections };
 }
 
-/**
- * The hub's `### Universal` slot content for one research package section,
- * or `null` when the section predates the universal/this-project split and
- * must instead be distilled by the subagent (`<!-- distill -->`).
- */
+/** Returns universal hub content, or `null` when legacy research needs distillation. */
 export function universalContent(pkgSection) {
     if (pkgSection.format === "legacy") return null;
     const workarounds = pkgSection.sections["Workarounds resolved (universal)"] ?? "_no findings_";
@@ -327,21 +297,16 @@ export function universalContent(pkgSection) {
     ].join("\n");
 }
 
-// bucketKey is not itself stored in _meta.json; the copy step and the index
-// builder both recover it from groupId.
+// Group metadata stores `groupId`, not `bucketKey`.
 export function bucketKeyFromGroupId(groupId) {
     return groupId.replace(/-\d+$/, "");
 }
 
-/** True when the half-open ranges (a.from, a.to] and (b.from, b.to] overlap. */
 export function rangesOverlap(a, b) {
     return compare(a.from, b.to) < 0 && compare(b.from, a.to) < 0;
 }
 
-/**
- * The sub-range(s) of `current` not covered by `prior`, half-open-interval
- * subtraction, formatted `(from, to]`; `null` when nothing is left over.
- */
+/** Returns the half-open portion of `current` not covered by `prior`. */
 export function computeDelta(prior, current) {
     const segments = [];
     if (compare(prior.from, current.from) > 0) {
@@ -356,7 +321,6 @@ export function computeDelta(prior, current) {
     return segments.map(([from, to]) => `(${from}, ${to}]`).join(", ");
 }
 
-/** D6: classify a candidate `prior` range against the `current` scan range. */
 export function classifyRange(prior, current) {
     if (compare(prior.from, current.from) === 0 && compare(prior.to, current.to) === 0) {
         return { class: "exact", delta: null };

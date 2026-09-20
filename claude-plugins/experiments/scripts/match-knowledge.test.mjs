@@ -80,8 +80,6 @@ test("overlap: intersecting range carries the correct delta", () => {
 });
 
 test("bucketKey: the group record's own value wins over the groupId-derived fallback", () => {
-    // Bucket name ending in digits would derive wrong ("nx-2" -> "nx-" vs
-    // the real "nx"); the explicit group record must win when present.
     const index = indexWith([nxRange()]);
     const groups = {
         groups: [
@@ -236,8 +234,7 @@ test("recallAgainstRoot: a base that exists but cannot be rebuilt is not an abse
     const root = join(mkdtempSync(join(tmpdir(), "broken-vault-")), "vault");
     mkdirSync(join(root, "runs"), { recursive: true });
     writeFileSync(join(root, "index.json"), "{}\n");
-    // The base is plainly there, and just as plainly unreadable: `packages`
-    // is a file where the rebuild will try to list a directory.
+    // Make the existing base unreadable during rebuild.
     writeFileSync(join(root, "packages"), "not a directory\n");
 
     const result = recallAgainstRoot(
@@ -330,10 +327,6 @@ test("recallAgainstRoot: rebuilds a missing index before matching a persisted va
         .ranges.find((range) => range.runId === result.hits[0].runId);
     assert.equal(rebuiltRange.supersededBy, null);
 
-    // A scanned version the comparer cannot read — `catalog:`, a dist-tag, a
-    // workspace protocol — must cost that one package its hit and nothing
-    // more. Throwing through would turn a recall that had answers into
-    // `recall failed` and lose every sibling's hit with it.
     const mixed = groupsWith([
         { name: "@commitlint/cli", from: "catalog:", to: "21.2.1" },
         { name: "@nx/js", from: "23.0.2", to: "23.1.0" },

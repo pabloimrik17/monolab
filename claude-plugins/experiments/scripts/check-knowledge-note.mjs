@@ -1,25 +1,5 @@
 #!/usr/bin/env node
-/**
- * check-knowledge-note — D5 step 3: validates a run note or package hub
- * after the subagent has filled its slots. Checks frontmatter keys and
- * types, that every slot is filled, per-slot line caps, no fenced code
- * block inside a slot, no edit outside a slot (the script's own pre-image
- * hash), and no occurrence of "plan" in a heading.
- *
- * Usage:
- *   check-knowledge-note.mjs [--root <dir>] [--mark-draft] <path...>
- *
- * `--root` defaults to `resolveKnowledgeRoot()` when omitted; a relative
- * `<path>` (e.g. `runs/<runId>.md`, straight from the copy step's digest)
- * resolves against it, an absolute path is used as-is.
- *
- * `--mark-draft`: when violations remain, writes `status: draft` into the
- * run-note frontmatter (frontmatter is script-owned; a model never sets
- * this) and reports the resulting `status` (`ok` | `draft`).
- *
- * Output: JSON { ok, violations: [{ rule, file, message }], status? }.
- * Exit codes: 0 = compliant; 1 = violations found; 2 = usage error.
- */
+/** Validates generated knowledge notes and can mark one run note as draft. */
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
@@ -234,21 +214,14 @@ export function checkKnowledgeNote(file, content) {
     return violations;
 }
 
-/**
- * `--mark-draft`: writes the validation result into the run note among
- * `files` (`draft` on residual violations, `ok` after clean revalidation).
- * Frontmatter is script-owned; a model never edits it. Hub files carry no
- * `status` field — recall excludes them through the range's owning run.
- */
+/** Writes the validation status into the single run note in `files`. */
 function writeRunNoteStatus(contents, status) {
     const runEntry = contents.find(({ content }) => parseFrontmatter(content).data.type === "run");
     if (!runEntry) return;
     const { data, body } = parseFrontmatter(runEntry.content);
     if (data.status === status) return;
     data.status = status;
-    // Frontmatter is script-owned content outside every slot, so this write
-    // has to restamp the hash it invalidates — otherwise the note reports an
-    // `edited-outside-slot` violation forever after, on top of the real one.
+    // Frontmatter changes require a new pre-image hash.
     const updated = serializeFrontmatter(data, body);
     writeFileSync(runEntry.file, appendPreimageMarker(stripPreimageMarker(updated)));
 }
@@ -287,9 +260,7 @@ if (invokedDirectly) {
     try {
         main();
     } catch (err) {
-        // `resolveKnowledgeRoot` rejecting a relative `knowledge_root` is a
-        // user-configuration error, not a crash: it earns the one exact line
-        // the store contract fixes, never a stack trace.
+        // Configuration errors return one line, never a stack trace.
         process.stderr.write(`Error: ${err?.message ?? err}\n`);
         process.exit(2);
     }

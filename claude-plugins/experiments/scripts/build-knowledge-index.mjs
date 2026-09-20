@@ -1,19 +1,5 @@
 #!/usr/bin/env node
-/**
- * build-knowledge-index — D5 step 4: rebuilds `index.json` from run-note
- * frontmatter, hub markers, and the copied `groups/<gid>/_meta.json` files,
- * and writes `supersededBy` back into the older hub marker it covers.
- *
- * Usage:
- *   build-knowledge-index.mjs [--root <dir>]
- *
- * `--root` defaults to `resolveKnowledgeRoot()` when omitted — callers
- * never need to re-implement D1's expansion/validation rule themselves.
- *
- * Output: JSON `{ root, runs: [...], packages: [...] }` (also written to
- * `<root>/index.json`).
- * Exit codes: 0 = rebuilt; 2 = usage/structural error (missing root).
- */
+/** Rebuilds `index.json` from run notes, hubs, and copied group metadata. */
 
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -69,7 +55,6 @@ function readRuns(root) {
     return runs;
 }
 
-/** groupId/bucketKey for `packageName`, from the run's copied group metas. */
 function findGroupInfo(root, runId, packageName) {
     const groupsDir = join(root, "runs", runId, "groups");
     if (!existsSync(groupsDir)) return { groupId: null, bucketKey: null };
@@ -84,7 +69,6 @@ function findGroupInfo(root, runId, packageName) {
     return { groupId: null, bucketKey: null };
 }
 
-/** `## <from> → <to>` headings and their marker, a blank line apart per the note templates. */
 export function parseRangeHeading(line) {
     if (!line.startsWith("## ")) return null;
 
@@ -162,7 +146,6 @@ function readHubs(root, runs) {
         });
 }
 
-/** A later range "covers" an older one when it fully contains it and isn't identical. */
 function covers(newer, older) {
     if (newer.from === older.from && newer.to === older.to) return false;
     try {
@@ -203,8 +186,7 @@ function writeBackSupersededBy(hub) {
         changed = true;
     }
     if (changed) {
-        // The marker line sits outside every slot, so `check-knowledge-note.mjs`
-        // would read this edit as a model touching script-owned bytes. Restamp.
+        // Marker edits change the script-owned pre-image.
         content = appendPreimageMarker(stripPreimageMarker(content));
         writeFileSync(join(hub.dir ?? "", hub.file), content);
     }
@@ -255,9 +237,7 @@ if (invokedDirectly) {
     try {
         main();
     } catch (err) {
-        // `resolveKnowledgeRoot` rejecting a relative `knowledge_root` is a
-        // user-configuration error, not a crash: it earns the one exact line
-        // the store contract fixes, never a stack trace.
+        // Configuration errors return one line, never a stack trace.
         process.stderr.write(`Error: ${err?.message ?? err}\n`);
         process.exit(2);
     }

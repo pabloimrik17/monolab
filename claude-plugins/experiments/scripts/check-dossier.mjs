@@ -140,8 +140,7 @@ export function expectedHeadings(level, mode) {
  * and reports every later package block as missing. Any `## ` line whose
  * title is not canonical is body content. `PR plan` is canonical too — the
  * major flow appends it after `## Changelogs` (retained legacy name).
- * `Prior runs` is canonical but optional (`add-run-knowledge-base`): present
- * only when `recall-run-knowledge` found a hit, never part of `expected`.
+ * `Prior runs` is canonical but optional, so it is never part of `expected`.
  */
 function h2Sections(content, canonicalTitles) {
     const canonical = new Set([...canonicalTitles, "PR plan", "Prior runs"]);

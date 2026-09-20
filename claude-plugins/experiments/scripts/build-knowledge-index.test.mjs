@@ -224,9 +224,7 @@ test.each([
     if (supersedes) assert.match(hubContent, supersededMarker);
     else assert.doesNotMatch(hubContent, supersededMarker);
     assert.match(hubContent, /## 23\.0\.2 → 23\.1\.0/);
-    // The marker is script-owned content outside every slot, so the rewrite has
-    // to restamp the pre-image hash the validator checks; without it the next
-    // `check-knowledge-note.mjs` run reads this as a model edit.
+    // Supersession rewrites must preserve the pre-image invariant.
     assert.deepEqual(verifyPreimage(hubContent), { ok: true, reason: null });
 });
 

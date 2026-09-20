@@ -301,8 +301,7 @@ test("copyRunKnowledge: a group with no research.md is not a distillation", () =
 
 test("copyRunKnowledge: the hub's Applied section carries entry titles, not their fields", () => {
     const runDir = cloneFixture("commander-deep-minor-minor-1784387463");
-    // The fixture's one Applicable entry names a package outside its groups;
-    // point it at a package the run actually carries so a hub records it.
+    // Retarget the fixture entry to a package present in the run.
     const changesetPath = join(runDir, "changesets", "monolab", "changeset.md");
     writeFileSync(
         changesetPath,
@@ -319,10 +318,6 @@ test("copyRunKnowledge: the hub's Applied section carries entry titles, not thei
         "### Applied",
     )[1];
 
-    // The whole `### <pkg> — <what changed>` heading is the title, and it is
-    // the only one: an entry's own `- **File**: …` line is a field of that
-    // entry, not a second entry — mining it appended junk and leaked another
-    // machine's absolute paths into the hub.
     assert.match(
         applied,
         /^- applicable: @nx\/js — no-constant-binary-expression gains a checkRelationalComparisons option$/m,
@@ -362,7 +357,6 @@ test("copyRunKnowledge: a run's own outcome.json survives a re-persist that pass
     const runDir = cloneFixture("commander-deep-minor-minor-1784387463");
     const root = tempRoot();
     copyRunKnowledge({ runDir, outcome: CROSS_OUTCOME, root });
-    // Re-persist the way /experiments:knowledge-persist does: no outcome passed.
     copyRunKnowledge({ runDir, root });
 
     const onDisk = JSON.parse(readFileSync(join(runDir, "outcome.json"), "utf8"));
@@ -490,10 +484,6 @@ test("copyRunKnowledge: --synthetic tags the note and every hub marker", () => {
 });
 
 test("copyRunKnowledge: several outcome.projects[] entries for one project (per-bucket apply) render as one project row", () => {
-    // Per-bucket worktrees (level: major in the real flow) run apply once per
-    // bucket, so outcome.projects[] carries several entries sharing one
-    // projectName. The fixture's own level is what the outcome has to declare —
-    // the writer rejects an identity that disagrees with `_meta.json`.
     const runDir = cloneFixture("dryrun-alpha-minor-1783854242");
     const root = tempRoot();
     const outcome = {

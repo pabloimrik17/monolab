@@ -1,40 +1,5 @@
 #!/usr/bin/env node
-/**
- * copy-run-knowledge — D5 step 1 of the persist pipeline. Stamps
- * `recordedAt` onto the assembled outcome object and writes it as
- * `<runDir>/outcome.json`, bootstraps the knowledge vault on first use,
- * copies the allowlisted run artefacts, and writes the run note plus every
- * package hub section with slots left empty — except `### Universal`,
- * which the script fills directly from non-legacy research. Research that
- * predates the universal/this-project split gets the `<!-- distill -->`
- * marker; a package whose group produced no `research.md` at all gets
- * `<!-- no-research -->`, which is not a distillation and never sets
- * `distilled: true`.
- *
- * Usage:
- *   copy-run-knowledge.mjs --run-dir <dir>
- *       [--outcome <json> | --outcome-file <path>] [--synthetic] [--root <dir>]
- *
- * `--outcome`/`--outcome-file` carry the object described in the
- * `outcome.json` contract, minus `recordedAt`. Omit both to have the script
- * reconstruct one from the run directory (changeset counts, apply-log
- * presence) — the seeding path for legacy run directories. `--root`
- * defaults to `resolveKnowledgeRoot()` when omitted.
- *
- * `outcome.projects[]` may carry more than one entry per project — one per
- * apply invocation (e.g. one per bucket at `level: major`); they are
- * grouped by `projectName` when rendering the run note.
- *
- * `projects[].changeset.status` is one of `lib/knowledge.mjs`'s
- * `CHANGESET_STATUSES` (six values, including `verification-failed`);
- * this script passes it through to the run note and hub verbatim.
- *
- * Output: JSON digest `{ root, runId, notePath, hubs, packages, slots,
- * distill, noResearch }`, or `{ failed: true, reason }` when the run-level outcome is
- * `failed` or `outcome.projects` is empty.
- * Exit codes: 0 = persisted; 1 = nothing persisted (see `reason`);
- * 2 = usage/structural error.
- */
+/** Copies one run into the knowledge store and creates its notes and hubs. */
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -57,7 +22,6 @@ import {
 } from "./lib/knowledge.mjs";
 import { compare } from "./lib/semver.mjs";
 
-/** Verbatim pass-through, defended against a value outside the six-status enum. */
 function changesetStatusText(status) {
     return CHANGESET_STATUSES.includes(status) ? status : "unknown";
 }
@@ -93,12 +57,7 @@ function readJsonArg(value) {
     return readJson(value);
 }
 
-/**
- * `applied` when every project entry is clean, `partial` when at least one
- * is clean and at least one is not, `failed` when none is, `empty` when
- * `projects` has no entry (D4's derivation is vacuously "applied" on an
- * empty array; the caller must refuse that case instead of persisting it).
- */
+/** Classifies clean, mixed, failed, and empty project outcomes. */
 export function computeRunOutcome(outcome) {
     if (!outcome.projects || outcome.projects.length === 0) return "empty";
     const failures = outcome.projects.map((p) => p.bumps?.failure ?? null);
@@ -139,7 +98,6 @@ function reconstructedProject(projectName, cf, runDir) {
     };
 }
 
-/** The run's own apply record, when it kept one. */
 function readExistingOutcome(runDir) {
     const path = join(runDir, "outcome.json");
     if (!existsSync(path)) return null;
@@ -151,13 +109,7 @@ function readExistingOutcome(runDir) {
     }
 }
 
-/**
- * A reconstruction carries apply evidence or it carries nothing: a run
- * directory with neither a changeset nor an apply log has no record that an
- * apply ever happened, so it emits no project and `computeRunOutcome` refuses
- * the run as `empty` — the same outcome a cross-project directory with no
- * changeset already gets, instead of a synthesised clean `bumps.failure: null`.
- */
+/** Reconstructs a project only when the run directory contains apply evidence. */
 function reconstructedProjects(runDir, meta, changesetFiles) {
     if (meta.mode !== "single-project") {
         return changesetFiles.map((cf) => reconstructedProject(cf.project, cf, runDir));
@@ -166,7 +118,6 @@ function reconstructedProjects(runDir, meta, changesetFiles) {
     return [reconstructedProject(meta.slug, changesetFiles[0] ?? null, runDir)];
 }
 
-/** A run directory with no `outcome.json`: reconstruct one (D5/persist-skill "Legacy run handling"). */
 export function reconstructOutcome(runDir, meta) {
     const changesetFiles = findChangesetFiles(runDir);
     return {
@@ -219,7 +170,6 @@ function readGroups(runDir) {
         });
 }
 
-/** Union of every group's packages, first-group-wins, paired with its research section. */
 function collectPackages(groups) {
     const byName = new Map();
     for (const g of groups) {
@@ -240,7 +190,6 @@ function collectPackages(groups) {
     return [...byName.values()];
 }
 
-/** `outcome.projects[]` may hold several entries per project (one per apply invocation). */
 function groupProjectsByName(projects) {
     const order = [];
     const byName = new Map();
@@ -311,15 +260,12 @@ function copyAllowlisted(runDir, destDir, groups, changesetFiles) {
     }
 }
 
-// Best-effort: the changeset prose has no per-package structure, only
-// free-form titles. Shape follows note-templates.md's illustrative
-// `#### <project>` / applicable / inapplicable layout.
+// Changeset prose is a fallback when no structured entry exists.
 function lineTitle(line) {
     const t = line
         .replace(/^#+\s*/, "")
         .replace(/^-\s*/, "")
         .trim();
-    // Bullet entries lead with a bold title: `**[low] zod — …:** rationale`.
     const bold = /^\*\*(.+?):?\*\*/.exec(t);
     return (bold ? bold[1] : t).trim();
 }
@@ -330,12 +276,7 @@ function titlePackageName(line) {
         .split(/\s+/)[0];
 }
 
-/**
- * Titles of the entries naming `packageName` under the `## Applicable` /
- * `## Inapplicable` heading `headingRe` matches. A section either lists its
- * entries as `###` headings — whose own `- **File:** …` lines are the entry's
- * fields, not entries — or as top-level bullets; never both.
- */
+/** Extracts exact-package titles from H3 or bullet changeset entries. */
 function extractSectionTitles(content, headingRe, packageName) {
     let inSection = false;
     const lines = [];
@@ -383,13 +324,7 @@ function packageOutcomeWord({ text, anyApplicable }) {
     return anyApplicable ? "applicable" : "no findings";
 }
 
-/**
- * Slot content is model-owned — the preimage hash blanks slots for exactly
- * that reason — so regenerating the script-owned text around it must not throw
- * it away: every slot the subagent already filled is carried across into the
- * freshly built text, keyed by slot name. Unfilled slots (blank,
- * `<!-- distill -->`, `<!-- no-research -->`) regenerate normally.
- */
+/** Preserves filled slots while regenerating script-owned note content. */
 function carryFilledSlots(oldContent, newContent) {
     if (!oldContent) return newContent;
     const filled = new Map(
@@ -512,11 +447,7 @@ function buildPackagesTable(rows) {
     return `${header}\n${body}`;
 }
 
-/**
- * One `### <project>` block per distinct project, even when several
- * `outcome.projects[]` entries share that name (one per apply invocation,
- * e.g. per bucket at `level: major`) — never one row per invocation.
- */
+/** Renders one block per project, merging repeated apply entries. */
 function buildAppliedBlock(projectGroups) {
     return projectGroups
         .map(({ projectName, entries }) => {
@@ -555,11 +486,7 @@ function buildRunNote(m) {
         source: m.source,
         tags,
     };
-    // run-knowledge-store's exact-key list and persist-run-knowledge-skill's
-    // "distilled: true" requirement disagree; per the orchestrator ruling,
-    // treat the thirteen as always-present and this as a 14th conditional
-    // key, written here (never by a model), absent when the run isn't
-    // legacy-distilled.
+    // `distilled` is the sole conditional frontmatter key.
     if (m.distilled) data.distilled = true;
     const body = [
         `# Run ${m.runId}`,
@@ -583,12 +510,7 @@ function buildRunNote(m) {
     return serializeFrontmatter(data, body);
 }
 
-/**
- * `planDirName` is read from the run's own `_meta.json` and becomes a path
- * segment under the vault. A hand-edited or seeded record carrying `..` or a
- * separator would make `copyAllowlisted` and the run-note write land outside
- * `<root>/runs/`; keep it one plain component.
- */
+/** Prevents `planDirName` from escaping `<root>/runs/`. */
 function assertSafeRunId(runId) {
     if (
         typeof runId !== "string" ||
@@ -606,16 +528,10 @@ function assertSafeRunId(runId) {
 export function copyRunKnowledge({ runDir, outcome = null, synthetic = false, root = null }) {
     const meta = readJson(join(runDir, "_meta.json"));
     assertSafeRunId(meta.planDirName);
-    // Reconstruction is the last resort, not the default: a run directory that
-    // already holds an `outcome.json` holds the real apply record, and
-    // rebuilding one over it would downgrade a persisted `applied` run to
-    // `legacy` and lose the gate option and changeset statuses for good.
+    // Prefer the recorded apply result; reconstruction loses live-run detail.
     const resolvedOutcome =
         outcome ?? readExistingOutcome(runDir) ?? reconstructOutcome(runDir, meta);
-    // The note and every hub marker are stamped from `_meta.json`, while
-    // `outcome.json` is written from the outcome object. A disagreement would
-    // persist one run's apply record against another run's metadata and
-    // artefacts, so refuse it before bootstrapping the vault.
+    // Refuse identity mismatches before any store write.
     for (const [field, metaValue] of [
         ["runId", meta.planDirName],
         ["level", meta.level],
@@ -765,9 +681,7 @@ if (invokedDirectly) {
     try {
         main();
     } catch (err) {
-        // `resolveKnowledgeRoot` rejecting a relative `knowledge_root` is a
-        // user-configuration error, not a crash: it earns the one exact line
-        // the store contract fixes, never a stack trace.
+        // Configuration errors return one line, never a stack trace.
         process.stderr.write(`Error: ${err?.message ?? err}\n`);
         process.exit(2);
     }
