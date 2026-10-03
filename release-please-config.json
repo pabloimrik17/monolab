@@ -136,6 +136,30 @@
                     "jsonpath": "$.plugins[?(@.name=='expo-developer')].version"
                 }
             ]
+        },
+        "claude-plugins/prompt-presets": {
+            "release-type": "simple",
+            "package-name": "prompt-presets",
+            "tag-separator": "--",
+            "include-v-in-tag": true,
+            "changelog-path": "CHANGELOG.md",
+            "extra-files": [
+                {
+                    "type": "json",
+                    "path": ".claude-plugin/plugin.json",
+                    "jsonpath": "$.version"
+                },
+                {
+                    "type": "json",
+                    "path": "package.json",
+                    "jsonpath": "$.version"
+                },
+                {
+                    "type": "json",
+                    "path": "/.claude-plugin/marketplace.json",
+                    "jsonpath": "$.plugins[?(@.name=='prompt-presets')].version"
+                }
+            ]
         }
     },
     "changelog-sections": [
