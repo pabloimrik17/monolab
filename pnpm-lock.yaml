@@ -471,6 +471,8 @@ importers:
 
   claude-plugins/expo-developer: {}
 
+  claude-plugins/prompt-presets: {}
+
   packages/http-client:
     dependencies:
       tslib:
