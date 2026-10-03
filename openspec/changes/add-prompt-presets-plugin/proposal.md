@@ -7,7 +7,7 @@ Some community prompts are worth re-running verbatim, but retyping them is error
 ## What Changes
 
 - New Claude Code plugin `prompt-presets` at `claude-plugins/prompt-presets/` (manifest, `package.json`, `README.md`, `CHANGELOG.md`).
-- New command `commands/matt-retro.md` → invoked as `/prompt-presets:matt-retro`. Body = the tweet's prompt, verbatim, with no rewording or additions.
+- New command `commands/matt-retro.md` → invoked as `/prompt-presets:matt-retro`. Body = the tweet's prompt verbatim (`/retro …` through "…save tokens."), no rewording, additions or removals. Requires Matt Pocock's `retro` skill installed.
 - Register plugin in root `.claude-plugin/marketplace.json` (appended last; array order matters for release-please jsonpaths).
 - Wire release-please: `release-please-config.json` package entry + `.release-please-manifest.json` seed.
 - Plugin is a new package; no change to existing plugins. No peer deps, no exports.

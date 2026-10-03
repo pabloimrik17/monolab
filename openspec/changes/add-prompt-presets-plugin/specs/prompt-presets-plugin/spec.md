@@ -33,18 +33,20 @@ The plugin SHALL provide a slash command `matt-retro` (invoked as `/prompt-prese
 #### Scenario: Prompt body is verbatim
 
 - **WHEN** reading the body of `matt-retro.md` (everything after the frontmatter, trimmed)
-- **THEN** it SHALL equal exactly: `read my last 10 coding agent sessions and find ways to make my repo easier to navigate. Find where agents take too long to find relevant information, or rely on out-of-date docs.`
+- **THEN** it SHALL equal exactly: `/retro read my last 10 coding agent sessions and find ways to make my repo easier to navigate. Find where agents take too long to find relevant information, or rely on out-of-date docs. Improving navigability is such an underrated way to save tokens.`
+- **AND** it SHALL NOT include the post's `Prompt of the day:` label
 - **AND** it SHALL contain no added instructions, headings or `$ARGUMENTS` placeholder
 
 #### Scenario: Source attribution kept outside the prompt
 
 - **WHEN** reading `claude-plugins/prompt-presets/README.md`
 - **THEN** it SHALL list `matt-retro`, credit Matt Pocock and link the source post
+- **AND** it SHALL state that the command requires Matt Pocock's `retro` skill (`mattpocock/skills`) to be installed
 
 #### Scenario: Running the command
 
 - **WHEN** a user with the plugin installed runs `/prompt-presets:matt-retro`
-- **THEN** Claude Code SHALL receive the verbatim prompt as the user turn
+- **THEN** Claude Code SHALL receive the verbatim prompt as the user turn, which directs it to the installed `retro` skill
 
 ### Requirement: Marketplace registration
 

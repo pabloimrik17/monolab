@@ -15,13 +15,13 @@ Source post text: `/retro read my last 10 coding agent sessions and find ways to
 
 **Non-Goals:**
 
-- Bundling or reimplementing Matt Pocock's `/retro` skill (lives in `mattpocock/skills`).
+- Bundling or reimplementing Matt Pocock's `retro` skill (lives in `mattpocock/skills`); it's an external prerequisite, documented in README.
 - Arguments, parameterization (e.g. session count) or prompt edits.
 - Tests/scripts — plugin is markdown-only, like `commander`.
 
 ## Decisions
 
-1. **Prompt boundary = the sentences after `/retro`, up to "out-of-date docs."** The leading `/retro` invokes Matt's own skill, which this plugin doesn't ship; inside a command body it would be inert text or a broken skill reference. The final sentence ("Improving navigability is such an underrated way to save tokens.") is commentary to readers, not instruction to the agent. Alternative: copy the whole post including `/retro` → rejected, depends on an uninstalled skill. See Open Questions.
+1. **Prompt = full post text minus the `Prompt of the day:` label**, including the leading `/retro` and the closing sentence. `/retro` targets Matt Pocock's `retro` skill, which the user has installed; the label is post framing, not prompt. Alternative: drop `/retro` and the closing sentence → rejected by the user (keep the prompt untouched).
 2. **Command, not skill.** User-invoked, fixed text, no auto-trigger → `commands/` matches. Skill would allow model auto-invocation, unwanted for a retro over the user's sessions.
 3. **No `$ARGUMENTS`.** "Exactly the prompt" — appending args would alter it.
 4. **Attribution in README + frontmatter `description`**, not in body, to keep body verbatim.
@@ -32,8 +32,5 @@ Source post text: `/retro read my last 10 coding agent sessions and find ways to
 
 - [Prompt references "my last 10 coding agent sessions" — Claude Code must locate transcripts (`~/.claude/projects/…`) itself] → accepted; verbatim requirement wins. Document the expectation in README.
 - [Source text obtained via search snippet, not x.com directly] → verify against the post before merging (task 1.1).
+- [`/retro` inside a command body isn't expanded as a slash command; the model must map it to the installed skill. Without the skill, or if it's installed under another name, the prompt still runs but without the skill's guidance] → README states the prerequisite; smoke test (2.3) confirms the skill is picked up.
 - [Upstream post edits] → preset pinned to the text at proposal time; README links source.
-
-## Open Questions
-
-- Should the body keep the leading `/retro` (only useful if the user also installs `mattpocock/skills` retro)? Default: drop it (Decision 1). Changes only the body string, not structure.

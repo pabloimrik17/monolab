@@ -10,8 +10,8 @@
 ## 2. matt-retro command
 
 - [ ] 2.1 Create `commands/matt-retro.md` with frontmatter `description` (credits Matt Pocock) and the verbatim body; verify body via `sed '1,/^---$/{/^---$/!d};1,/^---$/d' | tr -d '\n'` equals the spec string
-- [ ] 2.2 Write `claude-plugins/prompt-presets/README.md`: purpose, `/prompt-presets:matt-retro` usage, source link + credit, note on session transcripts, release-flow link (per `claude-plugin-release` docs requirement); verify `pnpm nx run-many -t lint` markdown checks pass
-- [ ] 2.3 Smoke test: `claude --plugin-dir ./claude-plugins/prompt-presets`, run `/prompt-presets:matt-retro`, confirm the verbatim prompt is sent
+- [ ] 2.2 Write `claude-plugins/prompt-presets/README.md`: purpose, prerequisite `retro` skill from `mattpocock/skills`, `/prompt-presets:matt-retro` usage, source link + credit, note on session transcripts, release-flow link (per `claude-plugin-release` docs requirement); verify `pnpm nx run-many -t lint` markdown checks pass
+- [ ] 2.3 Smoke test: `claude --plugin-dir ./claude-plugins/prompt-presets`, run `/prompt-presets:matt-retro`, confirm the verbatim prompt is sent and the `retro` skill is invoked
 
 ## 3. Marketplace + release wiring
 
