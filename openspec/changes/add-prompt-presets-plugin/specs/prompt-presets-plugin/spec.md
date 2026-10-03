@@ -30,6 +30,11 @@ The plugin SHALL provide a slash command `matt-retro` (invoked as `/prompt-prese
 - **WHEN** listing `claude-plugins/prompt-presets/commands/`
 - **THEN** `matt-retro.md` SHALL exist with YAML frontmatter containing a `description`
 
+#### Scenario: Only the user can invoke it
+
+- **WHEN** reading the frontmatter of `matt-retro.md`
+- **THEN** it SHALL set `disable-model-invocation: true`, so Claude never starts the retro without the user running the command
+
 #### Scenario: Prompt body is verbatim
 
 - **WHEN** reading the body of `matt-retro.md` (everything after the frontmatter, trimmed)
