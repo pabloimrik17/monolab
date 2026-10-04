@@ -9,6 +9,7 @@
     },
     "files": [
         "dist",
+        "!**/*.tsbuildinfo",
         "package.json",
         "README.md",
         "CHANGELOG.md",
@@ -30,7 +31,7 @@
         "registry": "https://registry.npmjs.org/"
     },
     "scripts": {
-        "build": "tsc -b --clean && tsc -b",
+        "build": "tsc --build tsconfig.lib.json",
         "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
         "lint:eslint:config-check": "eslint-config-prettier src/index.ts",
         "lint:eslint:fix": "eslint --cache --concurrency=auto --max-warnings 40 --fix .",
@@ -48,7 +49,7 @@
         "test:unit": "vitest run",
         "test:unit:coverage": "vitest run --coverage",
         "test:unit:watch": "vitest",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
     },
     "dependencies": {
         "tslib": "catalog:"

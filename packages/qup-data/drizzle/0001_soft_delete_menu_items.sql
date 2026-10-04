@@ -1,0 +1,1 @@
+ALTER TABLE "menu_items" ADD COLUMN "deleted_at" timestamp;

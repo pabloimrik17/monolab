@@ -8,11 +8,12 @@
         "build": "vite build",
         "preview": "vite preview",
         "prepare": "svelte-kit sync",
-        "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+        "check": "pnpm run typecheck",
         "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
         "test:unit": "vitest run",
         "test:unit:watch": "vitest",
-        "test:unit:coverage": "vitest run --coverage"
+        "test:unit:coverage": "vitest run --coverage",
+        "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
     },
     "devDependencies": {
         "@codecov/sveltekit-plugin": "2.0.1",

@@ -1,0 +1,9 @@
+{
+    "slug": "dryrun-alpha",
+    "planDirName": "dryrun-alpha-minor-1783854242",
+    "level": "minor",
+    "mode": "single-project",
+    "createdAt": "2026-07-12T11:04:02Z",
+    "phase": "done",
+    "groupIds": ["solo-chalk-1", "solo-lodash-1", "solo-semver-1", "solo-zod-1"]
+}

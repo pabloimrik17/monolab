@@ -2,7 +2,7 @@ import { PassThrough } from "node:stream";
 import { createReadableStreamFromReadable } from "@react-router/node";
 import { renderToPipeableStream } from "react-dom/server";
 import { ServerRouter } from "react-router";
-import type { AppLoadContext, EntryContext } from "react-router";
+import type { EntryContext, RouterContextProvider } from "react-router";
 
 const ABORT_DELAY = 5_000;
 
@@ -11,7 +11,7 @@ export default function handleRequest(
     responseStatusCode: number,
     responseHeaders: Headers,
     routerContext: EntryContext,
-    _loadContext: AppLoadContext,
+    _loadContext: RouterContextProvider,
 ) {
     return new Promise((resolve, reject) => {
         let shellRendered = false;

@@ -3,14 +3,16 @@
     "compilerOptions": {
         "module": "preserve",
         "moduleResolution": "bundler",
-        "outDir": "./dist",
+        "outDir": "./out-tsc",
         "rootDir": "./src",
         "declaration": true,
         "composite": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "jsx": "preserve",
-        "jsxImportSource": "solid-js"
+        "jsxImportSource": "solid-js",
+        "lib": ["ES2024", "DOM", "DOM.Iterable"],
+        "types": ["node", "vinxi/types/client", "@solidjs/start/env"]
     },
     "include": ["src/**/*"],
     "exclude": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],

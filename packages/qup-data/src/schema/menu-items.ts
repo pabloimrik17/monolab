@@ -1,4 +1,4 @@
-import { boolean, integer, pgTable, text, uuid, varchar } from "drizzle-orm/pg-core";
+import { boolean, integer, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const menuItems = pgTable("menu_items", {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -7,4 +7,6 @@ export const menuItems = pgTable("menu_items", {
     description: text("description"),
     available: boolean("available").default(true).notNull(),
     sortOrder: integer("sort_order").default(0).notNull(),
+    // Soft delete: past order_items keep their FK to deleted items.
+    deletedAt: timestamp("deleted_at"),
 });

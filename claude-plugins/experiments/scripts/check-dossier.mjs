@@ -140,9 +140,10 @@ export function expectedHeadings(level, mode) {
  * and reports every later package block as missing. Any `## ` line whose
  * title is not canonical is body content. `PR plan` is canonical too — the
  * major flow appends it after `## Changelogs` (retained legacy name).
+ * `Prior runs` is canonical but optional, so it is never part of `expected`.
  */
 function h2Sections(content, canonicalTitles) {
-    const canonical = new Set([...canonicalTitles, "PR plan"]);
+    const canonical = new Set([...canonicalTitles, "PR plan", "Prior runs"]);
     const lines = content.split("\n");
     const sections = [];
     let current = null;
@@ -180,6 +181,20 @@ export function checkDossier({ content, bumpSet, level, mode, cacheRoot }) {
             });
         } else {
             lastIndex = idx;
+        }
+    }
+
+    const priorRunsIdx = titles.indexOf("Prior runs");
+    if (priorRunsIdx !== -1) {
+        const bumpSetHeading = expected.find((h) => h.endsWith("bump set"));
+        const before = titles[priorRunsIdx - 1];
+        const after = titles[priorRunsIdx + 1];
+        if (before !== "Skipped or unavailable" || after !== bumpSetHeading) {
+            violations.push({
+                rule: "prior-runs-position",
+                message:
+                    '"## Prior runs" must sit immediately after "## Skipped or unavailable" and immediately before the bump set',
+            });
         }
     }
 

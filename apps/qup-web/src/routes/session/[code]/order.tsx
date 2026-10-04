@@ -8,7 +8,7 @@ import type { CreateOrderViewModel } from "../../../view-models/create-order.vie
 
 export default function OrderPage() {
     const params = useParams<{ code: string }>();
-    const [searchParams] = useSearchParams();
+    const [searchParams] = useSearchParams<{ guest?: string }>();
     const navigate = useNavigate();
 
     const vm = useViewModel(() => {
@@ -19,6 +19,10 @@ export default function OrderPage() {
         }
         return instance;
     });
+
+    const quantityOf = (menuItemId: string) =>
+        vm.cart().find((c) => c.menuItemId === menuItemId)?.quantity ?? 0;
+    const totalItems = () => vm.cart().reduce((sum, c) => sum + c.quantity, 0);
 
     const handleSubmit = async () => {
         await vm.submitOrder();
@@ -49,14 +53,26 @@ export default function OrderPage() {
                     <h3 class="font-medium text-stone-700">Menu</h3>
                     <For each={vm.menu()}>
                         {(item) => (
-                            <div class="bg-white rounded-lg shadow p-3 flex justify-between items-center">
-                                <div>
-                                    <p class="font-medium text-stone-800">{item.name}</p>
+                            <div class="bg-white rounded-lg shadow p-3 flex justify-between items-center gap-3">
+                                <div class="min-w-0">
+                                    <p class="font-medium text-stone-800">
+                                        {item.name}
+                                        <Show when={quantityOf(item.id) > 0}>
+                                            <span class="ml-2 px-2 py-0.5 rounded-full bg-amber-600 text-white text-xs font-semibold align-middle">
+                                                ×{quantityOf(item.id)}
+                                            </span>
+                                        </Show>
+                                    </p>
                                     <p class="text-xs text-stone-500">{item.category}</p>
+                                    <Show when={item.description}>
+                                        <p class="text-sm text-stone-600 mt-1">
+                                            {item.description}
+                                        </p>
+                                    </Show>
                                 </div>
                                 <button
                                     onClick={() => vm.addToCart(item)}
-                                    class="px-3 py-1 bg-amber-100 text-amber-800 rounded-md text-sm font-medium hover:bg-amber-200"
+                                    class="shrink-0 px-4 py-2 bg-amber-100 text-amber-800 rounded-md text-sm font-medium hover:bg-amber-200 active:bg-amber-300"
                                 >
                                     + Add
                                 </button>
@@ -77,7 +93,7 @@ export default function OrderPage() {
                                         </span>
                                         <button
                                             onClick={() => vm.removeFromCart(item.menuItemId)}
-                                            class="text-red-500 text-sm hover:text-red-700"
+                                            class="-my-1 px-2 py-1 text-red-500 text-sm hover:text-red-700"
                                         >
                                             Remove
                                         </button>
@@ -107,17 +123,20 @@ export default function OrderPage() {
                         rows={2}
                     />
 
-                    <button
-                        onClick={handleSubmit}
-                        disabled={vm.loading() || vm.closed()}
-                        class="w-full py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50"
-                    >
-                        {vm.closed()
-                            ? "Session closed"
-                            : vm.loading()
-                              ? "Submitting..."
-                              : "Submit order"}
-                    </button>
+                    {/* Sticky so the submit stays reachable while browsing a long menu on a phone */}
+                    <div class="sticky bottom-0 -mx-4 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] bg-stone-50/95 backdrop-blur">
+                        <button
+                            onClick={handleSubmit}
+                            disabled={vm.loading() || vm.closed()}
+                            class="w-full py-3 bg-amber-600 text-white font-semibold rounded-lg shadow-lg hover:bg-amber-700 transition-colors disabled:opacity-50"
+                        >
+                            {vm.closed()
+                                ? "Session closed"
+                                : vm.loading()
+                                  ? "Submitting..."
+                                  : `Submit order (${totalItems()})`}
+                        </button>
+                    </div>
                 </Show>
             </div>
         </main>

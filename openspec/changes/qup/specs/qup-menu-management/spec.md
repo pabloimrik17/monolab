@@ -46,7 +46,12 @@ The system SHALL define a `MenuItemRepository` interface in `qup-domain` with me
 
 #### Scenario: Delete a menu item
 - **WHEN** `delete(id)` is called with a valid ID
-- **THEN** the item is removed and `Ok<void>` is returned
+- **THEN** the item is soft-deleted (its `deleted_at` is set) and `Ok<void>` is returned
+- **AND** `findById`, `findAll`, `findAllAvailable` and `update` treat it as non-existent from then on
+
+#### Scenario: Delete a menu item that past orders reference
+- **WHEN** `delete(id)` is called for an item referenced by existing `order_items` rows
+- **THEN** `Ok<void>` is returned and those order items still reference it and keep their `menu_item_name`
 
 ### Requirement: Menu CRUD use cases
 
@@ -82,7 +87,7 @@ The system SHALL provide a `GetMenuUseCase` that retrieves menu items. It SHALL 
 
 ### Requirement: Drizzle menu_items table
 
-The system SHALL define a `menu_items` table: `id` (UUID PK), `name` (VARCHAR 100, NOT NULL), `category` (VARCHAR 20, NOT NULL), `description` (TEXT, nullable), `available` (BOOLEAN, NOT NULL, default true), `sort_order` (INTEGER, NOT NULL, default 0).
+The system SHALL define a `menu_items` table: `id` (UUID PK), `name` (VARCHAR 100, NOT NULL), `category` (VARCHAR 20, NOT NULL), `description` (TEXT, nullable), `available` (BOOLEAN, NOT NULL, default true), `sort_order` (INTEGER, NOT NULL, default 0), `deleted_at` (TIMESTAMP, nullable; set when the item is deleted, NULL while it is live).
 
 #### Scenario: Table schema matches domain model
 - **WHEN** the menu_items table is inspected

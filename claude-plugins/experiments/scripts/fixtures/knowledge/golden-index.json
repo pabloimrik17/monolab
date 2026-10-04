@@ -1,0 +1,206 @@
+{
+    "runs": [
+        {
+            "runId": "commander-deep-minor-minor-1784387463",
+            "notePath": "runs/commander-deep-minor-minor-1784387463.md",
+            "level": "minor",
+            "mode": "cross-project",
+            "createdAt": "2026-07-18T15:11:03Z",
+            "outcome": "applied",
+            "status": "ok",
+            "projects": ["dotfiles", "monolab"],
+            "tags": ["run", "minor", "cross-project"],
+            "distilled": false
+        },
+        {
+            "runId": "dryrun-alpha-minor-1783854242",
+            "notePath": "runs/dryrun-alpha-minor-1783854242.md",
+            "level": "minor",
+            "mode": "single-project",
+            "createdAt": "2026-07-12T11:04:02Z",
+            "outcome": "applied",
+            "status": "ok",
+            "projects": ["dryrun-alpha"],
+            "tags": ["run", "minor", "single-project", "distilled"],
+            "distilled": true
+        }
+    ],
+    "packages": [
+        {
+            "name": "@commitlint/cli",
+            "hubPath": "packages/@commitlint__cli.md",
+            "latest": "21.2.1",
+            "ranges": [
+                {
+                    "from": "21.1.0",
+                    "to": "21.2.1",
+                    "anchor": "21.1.0 → 21.2.1",
+                    "runId": "commander-deep-minor-minor-1784387463",
+                    "notePath": "runs/commander-deep-minor-minor-1784387463.md",
+                    "level": "minor",
+                    "mode": "cross-project",
+                    "createdAt": "2026-07-18T15:11:03Z",
+                    "status": "ok",
+                    "groupId": "commitlint-1",
+                    "bucketKey": "commitlint",
+                    "synthetic": false,
+                    "supersededBy": null
+                }
+            ]
+        },
+        {
+            "name": "@commitlint/config-conventional",
+            "hubPath": "packages/@commitlint__config-conventional.md",
+            "latest": "21.2.0",
+            "ranges": [
+                {
+                    "from": "21.1.0",
+                    "to": "21.2.0",
+                    "anchor": "21.1.0 → 21.2.0",
+                    "runId": "commander-deep-minor-minor-1784387463",
+                    "notePath": "runs/commander-deep-minor-minor-1784387463.md",
+                    "level": "minor",
+                    "mode": "cross-project",
+                    "createdAt": "2026-07-18T15:11:03Z",
+                    "status": "ok",
+                    "groupId": "commitlint-1",
+                    "bucketKey": "commitlint",
+                    "synthetic": false,
+                    "supersededBy": null
+                }
+            ]
+        },
+        {
+            "name": "@commitlint/types",
+            "hubPath": "packages/@commitlint__types.md",
+            "latest": "21.2.0",
+            "ranges": [
+                {
+                    "from": "21.1.0",
+                    "to": "21.2.0",
+                    "anchor": "21.1.0 → 21.2.0",
+                    "runId": "commander-deep-minor-minor-1784387463",
+                    "notePath": "runs/commander-deep-minor-minor-1784387463.md",
+                    "level": "minor",
+                    "mode": "cross-project",
+                    "createdAt": "2026-07-18T15:11:03Z",
+                    "status": "ok",
+                    "groupId": "commitlint-1",
+                    "bucketKey": "commitlint",
+                    "synthetic": false,
+                    "supersededBy": null
+                }
+            ]
+        },
+        {
+            "name": "@nx/js",
+            "hubPath": "packages/@nx__js.md",
+            "latest": "23.1.0",
+            "ranges": [
+                {
+                    "from": "23.0.2",
+                    "to": "23.1.0",
+                    "anchor": "23.0.2 → 23.1.0",
+                    "runId": "commander-deep-minor-minor-1784387463",
+                    "notePath": "runs/commander-deep-minor-minor-1784387463.md",
+                    "level": "minor",
+                    "mode": "cross-project",
+                    "createdAt": "2026-07-18T15:11:03Z",
+                    "status": "ok",
+                    "groupId": "nx-1",
+                    "bucketKey": "nx",
+                    "synthetic": false,
+                    "supersededBy": null
+                }
+            ]
+        },
+        {
+            "name": "chalk",
+            "hubPath": "packages/chalk.md",
+            "latest": "4.1.2",
+            "ranges": [
+                {
+                    "from": "4.1.0",
+                    "to": "4.1.2",
+                    "anchor": "4.1.0 → 4.1.2",
+                    "runId": "dryrun-alpha-minor-1783854242",
+                    "notePath": "runs/dryrun-alpha-minor-1783854242.md",
+                    "level": "minor",
+                    "mode": "single-project",
+                    "createdAt": "2026-07-12T11:04:02Z",
+                    "status": "ok",
+                    "groupId": "solo-chalk-1",
+                    "bucketKey": "solo-chalk",
+                    "synthetic": false,
+                    "supersededBy": null
+                }
+            ]
+        },
+        {
+            "name": "lodash",
+            "hubPath": "packages/lodash.md",
+            "latest": "4.18.1",
+            "ranges": [
+                {
+                    "from": "4.17.19",
+                    "to": "4.18.1",
+                    "anchor": "4.17.19 → 4.18.1",
+                    "runId": "dryrun-alpha-minor-1783854242",
+                    "notePath": "runs/dryrun-alpha-minor-1783854242.md",
+                    "level": "minor",
+                    "mode": "single-project",
+                    "createdAt": "2026-07-12T11:04:02Z",
+                    "status": "ok",
+                    "groupId": "solo-lodash-1",
+                    "bucketKey": "solo-lodash",
+                    "synthetic": false,
+                    "supersededBy": null
+                }
+            ]
+        },
+        {
+            "name": "semver",
+            "hubPath": "packages/semver.md",
+            "latest": "7.8.5",
+            "ranges": [
+                {
+                    "from": "7.5.4",
+                    "to": "7.8.5",
+                    "anchor": "7.5.4 → 7.8.5",
+                    "runId": "dryrun-alpha-minor-1783854242",
+                    "notePath": "runs/dryrun-alpha-minor-1783854242.md",
+                    "level": "minor",
+                    "mode": "single-project",
+                    "createdAt": "2026-07-12T11:04:02Z",
+                    "status": "ok",
+                    "groupId": "solo-semver-1",
+                    "bucketKey": "solo-semver",
+                    "synthetic": false,
+                    "supersededBy": null
+                }
+            ]
+        },
+        {
+            "name": "zod",
+            "hubPath": "packages/zod.md",
+            "latest": "3.25.76",
+            "ranges": [
+                {
+                    "from": "3.23.8",
+                    "to": "3.25.76",
+                    "anchor": "3.23.8 → 3.25.76",
+                    "runId": "dryrun-alpha-minor-1783854242",
+                    "notePath": "runs/dryrun-alpha-minor-1783854242.md",
+                    "level": "minor",
+                    "mode": "single-project",
+                    "createdAt": "2026-07-12T11:04:02Z",
+                    "status": "ok",
+                    "groupId": "solo-zod-1",
+                    "bucketKey": "solo-zod",
+                    "synthetic": false,
+                    "supersededBy": null
+                }
+            ]
+        }
+    ]
+}

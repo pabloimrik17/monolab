@@ -27,6 +27,12 @@
             "source": "./claude-plugins/expo-developer",
             "version": "1.0.0",
             "description": "Expo/React Native developer tools with dependency validation"
+        },
+        {
+            "name": "prompt-presets",
+            "source": "./claude-plugins/prompt-presets",
+            "version": "0.1.0",
+            "description": "Curated third-party prompts shipped verbatim as slash commands"
         }
     ]
 }

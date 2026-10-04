@@ -375,6 +375,60 @@ test("engines dossier with breaking-changes after improvements fails order", () 
     assert.ok(result.violations.some((v) => v.rule === "heading-order"));
 });
 
+test("Prior runs: dossier without the section still passes", () => {
+    const result = checkDossier({
+        content: compliantDossier(),
+        bumpSet: BUMP_SET,
+        level: "patch",
+        mode: "single-project",
+        cacheRoot: seededRoot(),
+    });
+    assert.deepEqual(result, { ok: true, violations: [] });
+});
+
+test("Prior runs: correctly positioned section passes", () => {
+    const content = compliantDossier().replace(
+        "## Patch bump set",
+        [
+            "## Prior runs",
+            "",
+            "- zod 3.23.0 → 3.24.1 — exact hit from [[runs/run-a]] (patch, single-project, 2026-01-01T00:00:00Z)",
+            "",
+            "## Patch bump set",
+        ].join("\n"),
+    );
+    const result = checkDossier({
+        content,
+        bumpSet: BUMP_SET,
+        level: "patch",
+        mode: "single-project",
+        cacheRoot: seededRoot(),
+    });
+    assert.deepEqual(result, { ok: true, violations: [] });
+});
+
+test("Prior runs: misplaced section fails", () => {
+    const content = compliantDossier().replace(
+        "## Changelogs",
+        [
+            "## Prior runs",
+            "",
+            "- zod 3.23.0 → 3.24.1 — exact hit from [[runs/run-a]] (patch, single-project, 2026-01-01T00:00:00Z)",
+            "",
+            "## Changelogs",
+        ].join("\n"),
+    );
+    const result = checkDossier({
+        content,
+        bumpSet: BUMP_SET,
+        level: "patch",
+        mode: "single-project",
+        cacheRoot: seededRoot(),
+    });
+    assert.ok(!result.ok);
+    assert.ok(result.violations.some((v) => v.rule === "prior-runs-position"));
+});
+
 test("major level requires breaking-changes section before improvements", () => {
     const result = checkDossier({
         content: compliantDossier(),

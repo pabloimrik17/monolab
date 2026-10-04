@@ -1,7 +1,7 @@
 import { injectable } from "inversify";
 import { createSignal } from "solid-js";
 import { BaseViewModel } from "@m0n0lab/solid-clean";
-import { getMenu, getSessionByCode } from "../server/data.ts";
+import { getAvailableMenu, getSessionByCode } from "../server/data.ts";
 import type { MenuItemDto, SessionDto } from "@m0n0lab/qup-shared";
 
 @injectable()
@@ -48,7 +48,10 @@ export class JoinSessionViewModel extends BaseViewModel {
         }
         this._loading[1](true);
         try {
-            const [session, menu] = await Promise.all([getSessionByCode(this._code), getMenu()]);
+            const [session, menu] = await Promise.all([
+                getSessionByCode(this._code),
+                getAvailableMenu(),
+            ]);
             this._session[1](session);
             this._menu[1](menu);
         } catch (e) {

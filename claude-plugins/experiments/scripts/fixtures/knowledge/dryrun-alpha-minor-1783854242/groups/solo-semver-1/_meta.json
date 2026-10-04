@@ -1,0 +1,18 @@
+{
+    "groupId": "solo-semver-1",
+    "packages": [
+        {
+            "name": "semver",
+            "from": "7.5.4",
+            "to": "7.8.5",
+            "location": "root",
+            "sourceFile": "package.json"
+        }
+    ],
+    "phase": "done",
+    "status": "ok",
+    "startedAt": "2026-07-12T11:04:02Z",
+    "completedAt": "2026-07-12T11:06:08Z",
+    "errorPhase": null,
+    "errorReason": null
+}
