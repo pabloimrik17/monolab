@@ -5,5 +5,8 @@
     "exports": "./src/index.ts",
     "compilerOptions": {
         "lib": ["ES2023", "DOM"]
+    },
+    "imports": {
+        "react": "npm:react@^19.0.0"
     }
 }
