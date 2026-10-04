@@ -5,5 +5,12 @@
     "exports": "./src/index.ts",
     "compilerOptions": {
         "lib": ["ES2023", "DOM"]
+    },
+    "imports": {
+        "@m0n0lab/react-hooks": "jsr:@m0n0lab/react-hooks@^1.4.1",
+        "@m0n0lab/ts-types": "jsr:@m0n0lab/ts-types@^1.1.1",
+        "inversify": "npm:inversify@^8.0.0",
+        "react": "npm:react@^19.0.0",
+        "rxjs": "npm:rxjs@^7.0.0"
     }
 }
