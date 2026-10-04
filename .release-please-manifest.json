@@ -1,13 +1,13 @@
 {
-    "packages/http-client": "0.2.2",
-    "packages/react-clean": "3.4.0",
-    "packages/react-hooks": "1.4.0",
+    "packages/http-client": "0.2.3",
+    "packages/react-clean": "3.4.1",
+    "packages/react-hooks": "1.4.1",
     "packages/ts-configs": "1.2.1",
     "packages/types": "0.1.0",
-    "packages/ts-types": "1.1.0",
-    "packages/solid-clean": "0.2.1",
+    "packages/ts-types": "1.1.1",
+    "packages/solid-clean": "0.2.2",
     "claude-plugins/commander": "0.2.0",
-    "claude-plugins/experiments": "1.6.0",
+    "claude-plugins/experiments": "1.7.0",
     "claude-plugins/expo-developer": "1.0.0",
-    "claude-plugins/prompt-presets": "0.1.0"
+    "claude-plugins/prompt-presets": "0.2.0"
 }
