@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/pabloimrik17/monolab/compare/solid-clean-v0.2.1...solid-clean-v0.2.2) (2026-10-04)
+
+
+### Code Refactoring
+
+* **nx:** keep commands in package scripts ([31f5f8a](https://github.com/pabloimrik17/monolab/commit/31f5f8a2ed5117bd53e866eefa0af63f1e2dda0c))
+
 ## [0.2.1](https://github.com/pabloimrik17/monolab/compare/solid-clean-v0.2.0...solid-clean-v0.2.1) (2026-05-24)
 
 
