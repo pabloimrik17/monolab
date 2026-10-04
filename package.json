@@ -16,7 +16,7 @@
         "lint:fallow": "fallow dead-code --fail-on-issues",
         "lint:knip": "knip --max-issues 40",
         "lint:knip:fix": "knip --fix",
-        "lint:markdownlint": "markdownlint README.md",
+        "lint:markdownlint": "markdownlint .",
         "lint:oxfmt": "oxfmt --check",
         "lint:oxfmt:fix": "oxfmt",
         "monorepo:clean:dist": "pnpm dlx rimraf@5.0.10 -g \"**/dist\"",
