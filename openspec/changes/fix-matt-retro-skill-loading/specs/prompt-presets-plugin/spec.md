@@ -10,10 +10,16 @@ The plugin SHALL ship `scripts/load-skill.sh <plugin> <skill>`, a POSIX `sh` scr
 - **THEN** it SHALL print `Base directory for this skill: <dir>` followed by that `SKILL.md` without its frontmatter
 - **AND** exit 0
 
-#### Scenario: Several copies installed
+#### Scenario: Several plugin copies installed
 
-- **WHEN** more than one installed copy matches (plugin cache versions or marketplaces, or `skills/<skill>/SKILL.md` in the Claude config dir, or `.claude/skills/<skill>/SKILL.md` under the current directory)
+- **WHEN** more than one copy matches in the plugin cache (versions, marketplaces or `skills/` layouts)
 - **THEN** it SHALL print only the most recently modified copy
+
+#### Scenario: Standalone skill
+
+- **WHEN** no plugin copy matches
+- **THEN** it SHALL print `skills/<skill>/SKILL.md` from the Claude config dir if present, otherwise `.claude/skills/<skill>/SKILL.md` under the current directory
+- **AND** a copy under the current directory SHALL NOT be printed while a plugin or Claude-config-dir copy exists
 
 #### Scenario: Skill not installed
 
