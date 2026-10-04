@@ -7,7 +7,7 @@ root=${CLAUDE_CONFIG_DIR:-$HOME/.claude}
 
 file=$(ls -t "$root"/plugins/cache/*/"$plugin"/*/skills/*/"$skill"/SKILL.md \
     "$root"/plugins/cache/*/"$plugin"/*/skills/"$skill"/SKILL.md \
-    "$root/skills/$skill/SKILL.md" 2>/dev/null | head -n 1)
+    "$root/skills/$skill/SKILL.md" "$PWD/.claude/skills/$skill/SKILL.md" 2>/dev/null | head -n 1)
 
 if [ -z "$file" ]; then
     echo "The \`$skill\` skill is not installed; continue without it."

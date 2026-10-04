@@ -7,7 +7,7 @@
 ## What Changes
 
 - New `claude-plugins/prompt-presets/scripts/load-skill.sh <plugin> <skill>` (POSIX `sh`): prints the newest installed `SKILL.md` for that skill, frontmatter stripped, under a `Base directory for this skill:` header; prints a one-line notice when the skill is absent.
-- `commands/matt-retro.md`: adds `allowed-tools` for that script and one `` !`${CLAUDE_PLUGIN_ROOT}/scripts/load-skill.sh mattpocock-skills retro` `` line above the prompt. The prompt text stays verbatim.
+- `commands/matt-retro.md`: adds `allowed-tools` for that script and one `` !`"${CLAUDE_PLUGIN_ROOT}/scripts/load-skill.sh" mattpocock-skills retro` `` line above the prompt. The prompt text stays verbatim.
 - README: prerequisite reworded (installed `mattpocock-skills` plugin, or a standalone `retro` skill); drops the "Claude resolves it to the installed skill" claim.
 - Existing plugin, patch fix. No deps, no exports, no peer deps.
 
@@ -24,5 +24,5 @@ None.
 ## Impact
 
 - Files: `claude-plugins/prompt-presets/scripts/load-skill.sh` (new), `commands/matt-retro.md`, `README.md`.
-- Release: `fix(prompt-presets)` → release-please patch (`0.1.1`) on next `develop` → `main` promotion.
+- Release: `fix(prompt-presets)`; ships in the plugin's first release-please release, `0.2.0` with #301's unreleased `feat`, on next `develop` → `main` promotion.
 - Runtime: the command runs one bundled shell script, pre-approved by `allowed-tools`.

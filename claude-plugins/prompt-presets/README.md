@@ -14,7 +14,7 @@ Matt Pocock's "prompt of the day" ([source post](https://x.com/mattpocockuk/stat
 
 **Prerequisite:** Matt Pocock's `retro` skill from [`mattpocock/skills`](https://www.skills.sh/mattpocock/skills/retro), installed through the `mattpocock-skills` plugin or as a standalone skill.
 
-`retro` sets `disable-model-invocation: true`, so Claude cannot load it, and a `/retro` inside a command body is not expanded. The command therefore runs `scripts/load-skill.sh` (pre-approved via `allowed-tools`; it only reads the Claude config dir) to inject the installed `SKILL.md` ahead of the verbatim prompt. Without the skill, it injects a one-line notice and the prompt runs without the skill's guidance.
+`retro` sets `disable-model-invocation: true`, so Claude cannot load it, and a `/retro` inside a command body is not expanded. The command therefore runs `scripts/load-skill.sh` (pre-approved via `allowed-tools`; it only reads installed skills in the Claude config dir and the project's `.claude/skills`) to inject the installed `SKILL.md` ahead of the verbatim prompt. Without the skill, it injects a one-line notice and the prompt runs without the skill's guidance.
 
 Claude reads your recent sessions from the local Claude Code transcripts (`~/.claude/projects/`).
 

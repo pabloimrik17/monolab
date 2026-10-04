@@ -12,7 +12,7 @@ The plugin SHALL ship `scripts/load-skill.sh <plugin> <skill>`, a POSIX `sh` scr
 
 #### Scenario: Several copies installed
 
-- **WHEN** more than one installed copy matches (plugin cache versions or marketplaces, or `skills/<skill>/SKILL.md` in the Claude config dir)
+- **WHEN** more than one installed copy matches (plugin cache versions or marketplaces, or `skills/<skill>/SKILL.md` in the Claude config dir, or `.claude/skills/<skill>/SKILL.md` under the current directory)
 - **THEN** it SHALL print only the most recently modified copy
 
 #### Scenario: Skill not installed
@@ -50,12 +50,12 @@ The plugin SHALL provide a slash command `matt-retro` (invoked as `/prompt-prese
 
 - **WHEN** reading the frontmatter of `matt-retro.md`
 - **THEN** it SHALL set `disable-model-invocation: true`, so Claude never starts the retro without the user running the command
-- **AND** its `allowed-tools` SHALL allow only `Bash(${CLAUDE_PLUGIN_ROOT}/scripts/load-skill.sh:*)`
+- **AND** its `allowed-tools` SHALL allow only `Bash("${CLAUDE_PLUGIN_ROOT}/scripts/load-skill.sh":*)`
 
 #### Scenario: Prompt body is verbatim
 
 - **WHEN** reading the body of `matt-retro.md` (everything after the frontmatter, trimmed)
-- **THEN** its first line SHALL be `` !`${CLAUDE_PLUGIN_ROOT}/scripts/load-skill.sh mattpocock-skills retro` ``
+- **THEN** its first line SHALL be `` !`"${CLAUDE_PLUGIN_ROOT}/scripts/load-skill.sh" mattpocock-skills retro` ``
 - **AND** the remaining text, trimmed, SHALL equal exactly: `/retro read my last 10 coding agent sessions and find ways to make my repo easier to navigate. Find where agents take too long to find relevant information, or rely on out-of-date docs. Improving navigability is such an underrated way to save tokens.`
 - **AND** it SHALL NOT include the post's `Prompt of the day:` label
 - **AND** it SHALL contain no other added instructions, headings or `$ARGUMENTS` placeholder
