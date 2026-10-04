@@ -1,9 +1,32 @@
-# prompt-presets-plugin Specification
+## ADDED Requirements
 
-## Purpose
-Claude Code plugin that ships curated third-party prompts as slash commands, reproducing each source prompt verbatim so it can be re-run consistently in any project.
+### Requirement: Installed skill loader
 
-## Requirements
+The plugin SHALL ship `scripts/load-skill.sh <plugin> <skill>`, a POSIX `sh` script that prints an installed skill's instructions so a command can inject a skill the Skill tool refuses (`disable-model-invocation: true`).
+
+#### Scenario: Skill installed through a plugin
+
+- **WHEN** running `scripts/load-skill.sh mattpocock-skills retro` with `retro` in an installed `mattpocock-skills` plugin under `plugins/cache/` of the Claude config dir (`$CLAUDE_CONFIG_DIR`, default `~/.claude`)
+- **THEN** it SHALL print `Base directory for this skill: <dir>` followed by that `SKILL.md` without its frontmatter
+- **AND** exit 0
+
+#### Scenario: Several plugin copies installed
+
+- **WHEN** more than one copy matches in the plugin cache (versions, marketplaces or `skills/` layouts)
+- **THEN** it SHALL print only the most recently modified copy
+
+#### Scenario: Standalone skill
+
+- **WHEN** no plugin copy matches
+- **THEN** it SHALL print `skills/<skill>/SKILL.md` from the Claude config dir if present, otherwise `.claude/skills/<skill>/SKILL.md` under the current directory
+- **AND** a copy under the current directory SHALL NOT be printed while a plugin or Claude-config-dir copy exists
+
+#### Scenario: Skill not installed
+
+- **WHEN** no copy matches
+- **THEN** it SHALL print one line naming the missing skill and exit 0
+
+## MODIFIED Requirements
 
 ### Requirement: Plugin structure
 
@@ -59,54 +82,3 @@ The plugin SHALL provide a slash command `matt-retro` (invoked as `/prompt-prese
 
 - **WHEN** a user without the `retro` skill runs `/prompt-presets:matt-retro`
 - **THEN** the user turn SHALL carry a one-line notice that `retro` is not installed, followed by the verbatim prompt
-
-### Requirement: Marketplace registration
-
-The plugin SHALL be listed in the root `.claude-plugin/marketplace.json` so it installs via `/plugin install prompt-presets@monolab`.
-
-#### Scenario: Marketplace entry
-
-- **WHEN** reading `.claude-plugin/marketplace.json`
-- **THEN** `plugins[]` SHALL contain an entry with `name: "prompt-presets"`, `source: "./claude-plugins/prompt-presets"`, a `description`, and `version` equal to the plugin's `plugin.json` version
-- **AND** existing entries SHALL keep their order, with the new entry appended last
-
-### Requirement: Release automation
-
-The plugin SHALL be released by release-please with the same configuration shape as the existing plugins, producing tags `prompt-presets--v{version}`.
-
-#### Scenario: release-please config entry
-
-- **WHEN** reading `release-please-config.json`
-- **THEN** `packages["claude-plugins/prompt-presets"]` SHALL have `release-type: "simple"`, `package-name: "prompt-presets"`, `tag-separator: "--"`, `include-v-in-tag: true`, `changelog-path: "CHANGELOG.md"`
-- **AND** its `extra-files` SHALL bump `.claude-plugin/plugin.json` (`$.version`), `package.json` (`$.version`) and `/.claude-plugin/marketplace.json` (`$.plugins[?(@.name=='prompt-presets')].version`)
-
-#### Scenario: Manifest seed
-
-- **WHEN** reading `.release-please-manifest.json`
-- **THEN** it SHALL contain `"claude-plugins/prompt-presets"` equal to the plugin's `plugin.json` version
-
-### Requirement: Installed skill loader
-
-The plugin SHALL ship `scripts/load-skill.sh <plugin> <skill>`, a POSIX `sh` script that prints an installed skill's instructions so a command can inject a skill the Skill tool refuses (`disable-model-invocation: true`).
-
-#### Scenario: Skill installed through a plugin
-
-- **WHEN** running `scripts/load-skill.sh mattpocock-skills retro` with `retro` in an installed `mattpocock-skills` plugin under `plugins/cache/` of the Claude config dir (`$CLAUDE_CONFIG_DIR`, default `~/.claude`)
-- **THEN** it SHALL print `Base directory for this skill: <dir>` followed by that `SKILL.md` without its frontmatter
-- **AND** exit 0
-
-#### Scenario: Several plugin copies installed
-
-- **WHEN** more than one copy matches in the plugin cache (versions, marketplaces or `skills/` layouts)
-- **THEN** it SHALL print only the most recently modified copy
-
-#### Scenario: Standalone skill
-
-- **WHEN** no plugin copy matches
-- **THEN** it SHALL print `skills/<skill>/SKILL.md` from the Claude config dir if present, otherwise `.claude/skills/<skill>/SKILL.md` under the current directory
-- **AND** a copy under the current directory SHALL NOT be printed while a plugin or Claude-config-dir copy exists
-
-#### Scenario: Skill not installed
-
-- **WHEN** no copy matches
-- **THEN** it SHALL print one line naming the missing skill and exit 0
