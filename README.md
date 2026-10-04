@@ -84,7 +84,8 @@ This project uses Node.js version 24.12.0. To install and use this specific vers
 1. Make sure you have [nvm (Node Version Manager)](https://github.com/nvm-sh/nvm) installed
 2. Clone the repository and navigate to the project directory
 3. Run the following command to install and use the correct Node.js version:
- <!-- markdownlint-enable MD013 MD029 -->
+
+ <!-- markdownlint-restore -->
 
 ```bash
 nvm use
@@ -111,7 +112,8 @@ corepack prepare pnpm@10.27.0 --activate
 ```
 
 3. Verify the installation:
- <!-- markdownlint-enable MD013 MD029 -->
+
+ <!-- markdownlint-restore -->
 
 ```bash
 pnpm --version
@@ -254,7 +256,7 @@ Tests run automatically in CI via Nx Cloud distribution:
 
 [![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fpabloimrik17%2Fmonolab%2Fdevelop)](https://dashboard.stryker-mutator.io/reports/github.com/pabloimrik17/monolab/develop)
 
-<!-- markdownlint-enable MD013 -->
+<!-- markdownlint-restore -->
 
 This project uses [Stryker Mutator](https://stryker-mutator.io/) for mutation
 testing to validate the quality of our test suites. Mutation testing introduces
@@ -318,7 +320,7 @@ Mutation testing runs automatically in CI with the following behavior:
   for historical tracking
 - **Artifacts**: Mutation reports are uploaded as CI artifacts for 30 days
 
-<!-- markdownlint-enable MD013 -->
+<!-- markdownlint-restore -->
 
 #### Local Development
 
