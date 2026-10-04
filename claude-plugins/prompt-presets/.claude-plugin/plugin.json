@@ -1,6 +1,6 @@
 {
     "name": "prompt-presets",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "Curated third-party prompts shipped verbatim as slash commands",
     "author": {
         "name": "Pablo F.G.",
@@ -9,5 +9,9 @@
     "license": "MIT",
     "repository": "https://github.com/pabloimrik17/monolab",
     "homepage": "https://github.com/pabloimrik17/monolab/tree/main/claude-plugins/prompt-presets",
-    "keywords": ["prompts", "presets", "retro"]
+    "keywords": [
+        "prompts",
+        "presets",
+        "retro"
+    ]
 }
