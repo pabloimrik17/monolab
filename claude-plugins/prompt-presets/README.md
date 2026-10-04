@@ -12,7 +12,9 @@ Matt Pocock's "prompt of the day" ([source post](https://x.com/mattpocockuk/stat
 /retro read my last 10 coding agent sessions and find ways to make my repo easier to navigate. Find where agents take too long to find relevant information, or rely on out-of-date docs. Improving navigability is such an underrated way to save tokens.
 ```
 
-**Prerequisite:** Matt Pocock's `retro` skill from [`mattpocock/skills`](https://www.skills.sh/mattpocock/skills/retro) must be installed. The command body is sent as plain prompt text, so `/retro` is not expanded as a slash command; Claude resolves it to the installed skill. Without the skill, the prompt still runs but without its guidance.
+**Prerequisite:** Matt Pocock's `retro` skill from [`mattpocock/skills`](https://www.skills.sh/mattpocock/skills/retro), installed through the `mattpocock-skills` plugin or as a standalone skill.
+
+`retro` sets `disable-model-invocation: true`, so Claude cannot load it, and a `/retro` inside a command body is not expanded. The command therefore runs `scripts/load-skill.sh` (pre-approved via `allowed-tools`; it only reads the Claude config dir) to inject the installed `SKILL.md` ahead of the verbatim prompt. Without the skill, it injects a one-line notice and the prompt runs without the skill's guidance.
 
 Claude reads your recent sessions from the local Claude Code transcripts (`~/.claude/projects/`).
 
