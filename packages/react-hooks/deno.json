@@ -7,6 +7,6 @@
         "lib": ["ES2023", "DOM"]
     },
     "imports": {
-        "react": "npm:react@^19.0.0"
+        "react": "npm:react@19.3.0"
     }
 }
