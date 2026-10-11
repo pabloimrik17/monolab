@@ -42,6 +42,7 @@
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "catalog:",
+        "@m0n0lab/vitest-config": "workspace:*",
         "@vitest/coverage-v8": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",

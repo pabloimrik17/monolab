@@ -52,6 +52,7 @@
         "tslib": "catalog:"
     },
     "devDependencies": {
+        "@m0n0lab/vitest-config": "workspace:*",
         "@stryker-mutator/api": "catalog:",
         "typescript": "catalog:",
         "vitest": "catalog:"

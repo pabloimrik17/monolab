@@ -26,6 +26,9 @@
         "path": "../../packages/investlab-core"
       },
       {
+        "path": "../../packages/vitest-config"
+      },
+      {
         "path": "./tsconfig.node.json"
       }
     ]

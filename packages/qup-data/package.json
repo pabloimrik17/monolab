@@ -30,6 +30,7 @@
         "pg": "catalog:"
     },
     "devDependencies": {
+        "@m0n0lab/vitest-config": "workspace:*",
         "drizzle-kit": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",

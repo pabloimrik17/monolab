@@ -25,6 +25,7 @@
         "neverthrow": "catalog:"
     },
     "devDependencies": {
+        "@m0n0lab/vitest-config": "workspace:*",
         "tsdown": "catalog:",
         "typescript": "catalog:",
         "vitest": "catalog:"

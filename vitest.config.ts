@@ -1,50 +1,15 @@
-import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
 
 /**
- * Vitest root configuration for MonoLab monorepo
+ * Config for `vitest` run from the repo root (`pnpm test:ui`): each package's
+ * vitest.config.ts becomes a project with its own settings. Nx runs those
+ * configs directly instead.
  *
- * This configuration uses the projects feature to auto-discover per-package
- * vitest.config.ts files. Each package has its own isolated configuration
- * to prevent test result file overwrites when Nx runs tests sequentially.
- *
- * Root-level shared configuration (inherited by all packages):
- * - Automatic cleanup: clearMocks, restoreMocks, unstubEnvs, unstubGlobals
- * - Concurrency: maxConcurrency set to 10 for parallel test execution
- * - Browser configuration: Playwright provider (chromium)
- *
- * Package-specific configuration (defined in each package's vitest.config.ts):
- * - Test file includes: *.{test,spec}.{ts,tsx}
- * - JUnit XML reporter for Codecov Test Analytics
- * - Coverage configuration with v8 provider and lcov reporter
- * - React packages (react-hooks, react-clean) run all tests in a real browser
- *   (Playwright/chromium) via vitest-browser-react; no jsdom.
- * - Non-rendering packages run in the default Node environment.
- *
- * @see https://vitest.dev/guide/workspace
- * @see https://vitest.dev/guide/migration.html#workspace-is-replaced-with-projects
- * @see https://docs.codecov.com/docs/test-analytics
+ * Root test options never reach file-based projects; shared settings live in
+ * @m0n0lab/vitest-config, which each project merges itself.
  */
 export default defineConfig({
     test: {
-        // Auto-discover vitest.config.ts files in all packages
-        projects: ["packages/*"],
-        // Shared test configuration
-        clearMocks: true,
-        restoreMocks: true,
-        unstubEnvs: true,
-        unstubGlobals: true,
-        maxConcurrency: 10,
-        // Browser configuration (inherited by projects that need it)
-        browser: {
-            enabled: false,
-            headless: true,
-            provider: playwright(),
-            instances: [
-                {
-                    browser: "chromium",
-                },
-            ],
-        },
+        projects: ["packages/*/vitest.config.ts"],
     },
 });

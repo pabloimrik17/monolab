@@ -55,6 +55,7 @@
         "tslib": "catalog:"
     },
     "devDependencies": {
+        "@m0n0lab/vitest-config": "workspace:*",
         "typescript": "catalog:",
         "vitest": "catalog:"
     },

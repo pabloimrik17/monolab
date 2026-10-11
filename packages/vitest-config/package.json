@@ -1,0 +1,47 @@
+{
+    "name": "@m0n0lab/vitest-config",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./src/index.ts"
+        },
+        "./browser": {
+            "types": "./dist/browser.d.ts",
+            "import": "./src/browser.ts"
+        }
+    },
+    "scripts": {
+        "build": "tsc --build tsconfig.lib.json",
+        "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
+        "lint:eslint:config-check": "eslint-config-prettier src/index.ts",
+        "lint:eslint:fix": "eslint --cache --concurrency=auto --max-warnings 40 --fix .",
+        "lint:knip": "knip --max-issues 40",
+        "lint:knip:fix": "knip --fix",
+        "lint:oxfmt": "oxfmt --check .",
+        "lint:oxfmt:fix": "oxfmt .",
+        "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
+    },
+    "devDependencies": {
+        "@vitest/browser-playwright": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:"
+    },
+    "peerDependencies": {
+        "@vitest/browser-playwright": "catalog:",
+        "vitest": "catalog:"
+    },
+    "peerDependenciesMeta": {
+        "@vitest/browser-playwright": {
+            "optional": true
+        }
+    },
+    "engines": {
+        "node": ">=22.0.0",
+        "pnpm": "11.15.0"
+    },
+    "packageManager": "pnpm@11.15.0"
+}

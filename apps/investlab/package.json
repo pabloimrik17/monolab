@@ -32,6 +32,7 @@
     },
     "devDependencies": {
         "@codecov/rollup-plugin": "catalog:",
+        "@m0n0lab/vitest-config": "workspace:*",
         "@types/pg": "8.20.0",
         "tsdown": "catalog:",
         "typescript": "catalog:",

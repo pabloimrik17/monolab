@@ -53,6 +53,7 @@
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "catalog:",
+        "@m0n0lab/vitest-config": "workspace:*",
         "@stryker-mutator/core": "catalog:",
         "@stryker-mutator/typescript-checker": "catalog:",
         "@stryker-mutator/vitest-runner": "catalog:",

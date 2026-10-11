@@ -61,6 +61,7 @@
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "catalog:",
+        "@m0n0lab/vitest-config": "workspace:*",
         "@stryker-mutator/api": "catalog:",
         "@types/react": "catalog:",
         "@vitejs/plugin-react-swc": "catalog:",

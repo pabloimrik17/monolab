@@ -50,6 +50,9 @@
       },
       {
         "path": "./apps/investlab"
+      },
+      {
+        "path": "./packages/vitest-config"
       }
     ]
 }

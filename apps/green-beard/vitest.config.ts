@@ -1,17 +1,21 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig, mergeConfig } from "vitest/config";
+import { sharedConfig } from "@m0n0lab/vitest-config";
 
-export default defineConfig({
-    test: {
-        include: ["**/*.{test,spec}.{ts,svelte.ts}"],
-        passWithNoTests: true,
-        reporters: ["default", "junit"],
-        outputFile: {
-            junit: "./test-results.junit.xml",
+export default mergeConfig(
+    sharedConfig,
+    defineConfig({
+        test: {
+            include: ["**/*.{test,spec}.{ts,svelte.ts}"],
+            passWithNoTests: true,
+            reporters: ["default", "junit"],
+            outputFile: {
+                junit: "./test-results.junit.xml",
+            },
+            coverage: {
+                provider: "v8",
+                reporter: ["lcov", "text", "json", "html"],
+                reportsDirectory: "./coverage",
+            },
         },
-        coverage: {
-            provider: "v8",
-            reporter: ["lcov", "text", "json", "html"],
-            reportsDirectory: "./coverage",
-        },
-    },
-});
+    }),
+);

@@ -22,6 +22,9 @@
     ],
     "references": [
         {
+            "path": "../vitest-config"
+        },
+        {
             "path": "./tsconfig.node.json"
         }
     ]
