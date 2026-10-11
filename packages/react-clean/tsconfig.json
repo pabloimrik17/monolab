@@ -19,7 +19,8 @@
         "**/*.spec.tsx",
         "**/*.browser.test.ts",
         "**/*.browser.test.tsx",
-        "**/*.integration.ts"
+        "**/*.integration.ts",
+        "**/*.integration.tsx"
     ],
     "references": [
         {

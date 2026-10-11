@@ -2,5 +2,10 @@
     "name": "@m0n0lab/http-client",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/http-client/src",
-    "projectType": "library"
+    "projectType": "library",
+    "targets": {
+        "test:integration": {
+            "dependsOn": ["build"]
+        }
+    }
 }

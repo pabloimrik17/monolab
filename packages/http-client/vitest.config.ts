@@ -16,6 +16,17 @@ export default mergeConfig(
                 reporter: ["lcov", "text", "json", "html"],
                 reportsDirectory: "./coverage",
             },
+            projects: [
+                { extends: true, test: { name: "unit" } },
+                {
+                    extends: true,
+                    test: { name: "integration", include: ["src/**/*.integration.ts"] },
+                },
+                {
+                    extends: true,
+                    test: { name: "types", typecheck: { enabled: true, only: true } },
+                },
+            ],
         },
     }),
 );

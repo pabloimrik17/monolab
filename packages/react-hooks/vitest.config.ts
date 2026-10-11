@@ -13,7 +13,6 @@ export default mergeConfig(
             dedupe: ["react", "react-dom"],
         },
         test: {
-            include: ["**/*.{test,spec}.{ts,tsx}"],
             // Stryker inPlace backups contain copies of all tests; never collect them
             exclude: [...configDefaults.exclude, "**/.stryker-tmp/**"],
             reporters: ["default", "junit"],
@@ -26,6 +25,20 @@ export default mergeConfig(
                 reportsDirectory: "./coverage",
             },
             browser: headlessChromium(),
+            projects: [
+                {
+                    extends: true,
+                    test: { name: "unit", include: ["**/*.{test,spec}.{ts,tsx}"] },
+                },
+                {
+                    extends: true,
+                    test: { name: "integration", include: ["src/**/*.integration.{ts,tsx}"] },
+                },
+                {
+                    extends: true,
+                    test: { name: "types", typecheck: { enabled: true, only: true } },
+                },
+            ],
         },
     }),
 );
