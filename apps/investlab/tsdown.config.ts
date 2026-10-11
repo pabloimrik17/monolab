@@ -1,7 +1,7 @@
 import { codecovRollupPlugin } from "@codecov/rollup-plugin";
 import { defineConfig } from "tsdown";
 
-const codecovToken = process.env.CODECOV_TOKEN?.trim();
+const codecovToken = process.env["CODECOV_TOKEN"]?.trim();
 
 export default defineConfig({
     name: "@m0n0lab/investlab",
@@ -32,7 +32,7 @@ export default defineConfig({
         codecovRollupPlugin({
             enableBundleAnalysis: Boolean(codecovToken),
             bundleName: "investlab",
-            uploadToken: codecovToken,
+            ...(codecovToken != null && { uploadToken: codecovToken }),
             gitService: "github",
         }),
     ],
