@@ -1,8 +1,7 @@
-import { configDefaults, defineProject } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
-export default defineProject({
+export default defineConfig({
     test: {
-        extends: true,
         // Stryker inPlace backups contain copies of all tests; never collect them
         exclude: [...configDefaults.exclude, "**/.stryker-tmp/**"],
         reporters: ["default", "junit"],
