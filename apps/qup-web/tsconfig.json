@@ -22,6 +22,9 @@
         },
         {
             "path": "../../packages/solid-clean"
+        },
+        {
+            "path": "./tsconfig.node.json"
         }
     ]
 }

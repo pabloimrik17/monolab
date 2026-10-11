@@ -7,8 +7,8 @@
         "typecheck": {
             "cache": true,
             "dependsOn": ["^typecheck"],
-            "inputs": ["default", "{workspaceRoot}/packages/ts-configs/tsconfig.base.json"],
-            "outputs": []
+            "inputs": ["default"],
+            "outputs": ["{projectRoot}/out-tsc/tooling"]
         }
     }
 }

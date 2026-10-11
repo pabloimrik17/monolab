@@ -44,7 +44,8 @@
         "test:ui": "vitest --ui",
         "test:unit": "nx run-many --target=test:unit",
         "test:unit:affected": "nx affected --target=test:unit",
-        "test:unit:watch": "nx run-many --target=test:unit:watch"
+        "test:unit:watch": "nx run-many --target=test:unit:watch",
+        "typecheck": "tsc --build tsconfig.node.json"
     },
     "devDependencies": {
         "@codecov/bundle-analyzer": "2.0.1",
@@ -107,7 +108,8 @@
     "packageManager": "pnpm@11.15.0",
     "nx": {
         "includedScripts": [
-            "lint:fallow"
+            "lint:fallow",
+            "typecheck"
         ]
     }
 }

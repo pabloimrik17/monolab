@@ -16,6 +16,9 @@
     "references": [
         {
             "path": "../qup-domain"
+        },
+        {
+            "path": "./tsconfig.node.json"
         }
     ]
 }

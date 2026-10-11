@@ -1,0 +1,15 @@
+{
+    "name": "@m0n0lab/source",
+    "$schema": "node_modules/nx/schemas/project-schema.json",
+    "targets": {
+        "typecheck": {
+            "cache": true,
+            "inputs": [
+                "{projectRoot}/*.config.ts",
+                "{projectRoot}/tsconfig.node.json",
+                "sharedGlobals"
+            ],
+            "outputs": ["{projectRoot}/out-tsc/tooling"]
+        }
+    }
+}

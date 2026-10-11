@@ -19,5 +19,10 @@
         "**/*.browser.test.ts",
         "**/*.browser.test.tsx",
         "**/*.integration.ts"
+    ],
+    "references": [
+        {
+            "path": "./tsconfig.node.json"
+        }
     ]
 }
