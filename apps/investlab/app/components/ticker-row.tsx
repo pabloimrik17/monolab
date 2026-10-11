@@ -1,4 +1,4 @@
-import type { Quote, Ticker } from "@m0n0lab/wealth-tracker-core";
+import type { Quote, Ticker } from "@m0n0lab/investlab-core";
 
 interface TickerRowProps {
     ticker: Ticker;

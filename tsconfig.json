@@ -19,9 +19,6 @@
         "path": "./packages/http-client"
       },
       {
-        "path": "./packages/wealth-tracker-core"
-      },
-      {
         "path": "./packages/solid-clean"
       },
       {
@@ -47,9 +44,6 @@
       },
       {
         "path": "./packages/investlab-data"
-      },
-      {
-        "path": "./apps/investlab"
       }
     ]
 }

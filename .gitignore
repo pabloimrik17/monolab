@@ -152,7 +152,7 @@ out-tsc
 
 # Generated route types and build output (react-router typegen/build regenerate them)
 .react-router
-apps/wealth-react/build
+apps/investlab/build
 
 # Optional npm cache directory
 .npm

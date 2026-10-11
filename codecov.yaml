@@ -75,12 +75,12 @@ coverage:
                 flags:
                     - solid-clean
 
-            wealth-tracker-core:
+            investlab-core:
                 target: auto
                 threshold: 2%
                 informational: false
                 flags:
-                    - wealth-tracker-core
+                    - investlab-core
 
             green-beard:
                 target: auto
@@ -96,12 +96,12 @@ coverage:
                 flags:
                     - qup-web
 
-            wealth-react:
+            investlab:
                 target: auto
                 threshold: 2%
                 informational: false
                 flags:
-                    - wealth-react
+                    - investlab
 
             qup-shared:
                 target: auto
@@ -181,12 +181,12 @@ coverage:
                 flags:
                     - solid-clean
 
-            wealth-tracker-core:
+            investlab-core:
                 target: 50%
                 threshold: 10%
                 informational: false
                 flags:
-                    - wealth-tracker-core
+                    - investlab-core
 
             green-beard:
                 target: 50%
@@ -202,12 +202,12 @@ coverage:
                 flags:
                     - qup-web
 
-            wealth-react:
+            investlab:
                 target: 50%
                 threshold: 10%
                 informational: false
                 flags:
-                    - wealth-react
+                    - investlab
 
             qup-shared:
                 target: 50%
@@ -293,9 +293,9 @@ flags:
             - packages/solid-clean/
         carryforward: true
 
-    wealth-tracker-core:
+    investlab-core:
         paths:
-            - packages/wealth-tracker-core/
+            - packages/investlab-core/
         carryforward: true
 
     green-beard:
@@ -308,9 +308,9 @@ flags:
             - apps/qup-web/
         carryforward: true
 
-    wealth-react:
+    investlab:
         paths:
-            - apps/wealth-react/
+            - apps/investlab/
         carryforward: true
 
     qup-shared:

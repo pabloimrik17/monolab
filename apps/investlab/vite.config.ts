@@ -7,7 +7,7 @@ import { defineConfig, type PluginOption } from "vite";
 const codecovToken = process.env.CODECOV_TOKEN?.trim();
 const codecovPlugin = codecovVitePlugin({
     enableBundleAnalysis: Boolean(codecovToken),
-    bundleName: "wealth-react",
+    bundleName: "investlab",
     uploadToken: codecovToken,
     gitService: "github",
 }) as PluginOption;

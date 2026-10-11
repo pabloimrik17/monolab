@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QuoteCacheImpl } from "./quote-cache-impl.ts";
+import type { FinnhubClient } from "./finnhub-client.ts";
 import type { Quote } from "@m0n0lab/investlab-domain";
-import type { FinnhubClient } from "@m0n0lab/wealth-tracker-core";
 import type Redis from "ioredis";
 
 function makeQuote(symbol: string, price = 150): Quote {

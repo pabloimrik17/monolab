@@ -9,7 +9,6 @@ export default defineConfig({
     deps: {
         neverBundle: [
             /^@m0n0lab\/investlab-domain($|\/)/,
-            /^@m0n0lab\/wealth-tracker-core($|\/)/,
             /^ioredis($|\/)/,
             /^inversify($|\/)/,
             /^neverthrow($|\/)/,

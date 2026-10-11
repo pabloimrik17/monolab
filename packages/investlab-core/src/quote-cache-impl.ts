@@ -2,7 +2,7 @@ import { inject, injectable, optional } from "inversify";
 import { ResultAsync } from "neverthrow";
 import { PersistenceError, type Quote, type QuoteCache } from "@m0n0lab/investlab-domain";
 import { CORE_TOKENS } from "./tokens.ts";
-import type { FinnhubClient } from "@m0n0lab/wealth-tracker-core";
+import type { FinnhubClient } from "./finnhub-client.ts";
 import type Redis from "ioredis";
 
 const DEFAULT_TTL_SECONDS = 3600; // 1 hour

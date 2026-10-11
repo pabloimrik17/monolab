@@ -9,7 +9,7 @@ const config = {
     },
     dashboard: {
         ...baseConfig.dashboard,
-        module: "wealth-tracker-core",
+        module: "investlab-core",
     },
 };
 export default config;

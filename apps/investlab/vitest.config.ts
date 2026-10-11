@@ -2,8 +2,8 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
     test: {
+        include: ["**/*.{test,spec}.{ts,tsx}"],
         passWithNoTests: true,
-        include: ["**/*.{test,spec}.ts"],
         reporters: ["default", "junit"],
         outputFile: {
             junit: "./test-results.junit.xml",

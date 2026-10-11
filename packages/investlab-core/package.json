@@ -15,19 +15,26 @@
     },
     "scripts": {
         "build": "tsdown",
+        "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
+        "lint:eslint:fix": "eslint --cache --concurrency=auto --max-warnings 40 --fix .",
+        "lint:knip": "knip --max-issues 70",
+        "test:mutation": "stryker run",
+        "test:mutation:report": "open reports/mutation/index.html",
         "test:unit": "vitest run",
-        "test:unit:watch": "vitest",
         "test:unit:coverage": "vitest run --coverage",
+        "test:unit:watch": "vitest",
         "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
     },
     "dependencies": {
         "@m0n0lab/investlab-domain": "workspace:*",
-        "@m0n0lab/wealth-tracker-core": "workspace:*",
         "inversify": "catalog:",
         "ioredis": "catalog:",
         "neverthrow": "catalog:"
     },
     "devDependencies": {
+        "@stryker-mutator/core": "catalog:",
+        "@stryker-mutator/typescript-checker": "catalog:",
+        "@stryker-mutator/vitest-runner": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",
         "vitest": "catalog:"

@@ -32,6 +32,7 @@ export function createQuotePoller(client: FinnhubClient, options: QuotePollerOpt
         return Math.min(Math.max(ms, MIN_INTERVAL), MAX_INTERVAL);
     }
 
+    // fallow-ignore-next-line complexity -- pre-existing, file moved verbatim; pinned fallow lacks move attribution
     async function poll(pollGeneration: number): Promise<void> {
         if (tickers.length === 0) {
             if (polling && pollGeneration === generation) {

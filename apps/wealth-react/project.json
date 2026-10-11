@@ -1,8 +1,0 @@
-{
-    "name": "@m0n0lab/wealth-react",
-    "targets": {
-        "typecheck": {
-            "dependsOn": ["^build"]
-        }
-    }
-}

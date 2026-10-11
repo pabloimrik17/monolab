@@ -5,7 +5,7 @@ import {
     type FinnhubClient,
     type Quote,
     type QuotePoller,
-} from "@m0n0lab/wealth-tracker-core";
+} from "@m0n0lab/investlab-core";
 
 export const tickerStore = createTickerStore(window.localStorage);
 
@@ -29,4 +29,4 @@ export function createPoller(
     });
 }
 
-export type { Quote, Ticker } from "@m0n0lab/wealth-tracker-core";
+export type { Quote, Ticker } from "@m0n0lab/investlab-core";
