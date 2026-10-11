@@ -84,6 +84,7 @@ This project uses Node.js version 24.12.0. To install and use this specific vers
 1. Make sure you have [nvm (Node Version Manager)](https://github.com/nvm-sh/nvm) installed
 2. Clone the repository and navigate to the project directory
 3. Run the following command to install and use the correct Node.js version:
+
  <!-- markdownlint-enable MD013 MD029 -->
 
 ```bash
@@ -111,6 +112,7 @@ corepack prepare pnpm@10.27.0 --activate
 ```
 
 3. Verify the installation:
+
  <!-- markdownlint-enable MD013 MD029 -->
 
 ```bash
@@ -442,7 +444,8 @@ When the Release PR is merged:
     - OIDC Trusted Publisher authentication
 2. **npm Publishing**: Packages are built and published to npm
     - Build generates `dist/` artifacts
-    - Uses `pnpm publish` which automatically transforms `workspace:*` → semver ranges
+    - Uses `pnpm publish`, which automatically transforms `workspace:*` into
+      semver ranges
     - Provenance attestation via OIDC authentication
 3. **GitHub Releases**: release-please creates GitHub releases with changelogs
    and tags
