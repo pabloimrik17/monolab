@@ -82,6 +82,34 @@ coverage:
                 flags:
                     - investlab-core
 
+            investlab-domain:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - investlab-domain
+
+            investlab-data-server:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - investlab-data-server
+
+            investlab-application-server:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - investlab-application-server
+
+            investlab-data-contracts:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - investlab-data-contracts
+
             green-beard:
                 target: auto
                 threshold: 2%
@@ -187,6 +215,34 @@ coverage:
                 informational: false
                 flags:
                     - investlab-core
+
+            investlab-domain:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - investlab-domain
+
+            investlab-data-server:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - investlab-data-server
+
+            investlab-application-server:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - investlab-application-server
+
+            investlab-data-contracts:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - investlab-data-contracts
 
             green-beard:
                 target: 50%
@@ -296,6 +352,26 @@ flags:
     investlab-core:
         paths:
             - packages/investlab-core/
+        carryforward: true
+
+    investlab-domain:
+        paths:
+            - packages/investlab-domain/
+        carryforward: true
+
+    investlab-data-server:
+        paths:
+            - packages/investlab-data-server/
+        carryforward: true
+
+    investlab-application-server:
+        paths:
+            - packages/investlab-application-server/
+        carryforward: true
+
+    investlab-data-contracts:
+        paths:
+            - packages/investlab-data-contracts/
         carryforward: true
 
     green-beard:

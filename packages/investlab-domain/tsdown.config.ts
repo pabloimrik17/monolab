@@ -6,7 +6,7 @@ export default defineConfig({
     format: ["esm"],
     fixedExtension: false,
     outDir: "dist",
-    deps: { neverBundle: [/^inversify($|\/)/, /^neverthrow($|\/)/] },
+    deps: { neverBundle: [/^neverthrow($|\/)/] },
     dts: {
         compilerOptions: {
             composite: false,

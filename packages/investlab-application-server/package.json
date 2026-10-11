@@ -1,5 +1,5 @@
 {
-    "name": "@m0n0lab/investlab-data",
+    "name": "@m0n0lab/investlab-application-server",
     "version": "0.1.0",
     "private": true,
     "type": "module",
@@ -15,8 +15,6 @@
     },
     "scripts": {
         "build": "tsdown",
-        "db:generate": "drizzle-kit generate",
-        "db:migrate": "drizzle-kit migrate",
         "test:unit": "vitest run",
         "test:unit:watch": "vitest",
         "test:unit:coverage": "vitest run --coverage",
@@ -24,19 +22,16 @@
     },
     "dependencies": {
         "@m0n0lab/investlab-domain": "workspace:*",
-        "drizzle-orm": "catalog:",
         "inversify": "catalog:",
-        "neverthrow": "catalog:",
-        "pg": "catalog:"
+        "neverthrow": "catalog:"
     },
     "devDependencies": {
-        "drizzle-kit": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",
         "vitest": "catalog:"
     },
     "engines": {
-        "node": ">=22.0.0",
+        "node": "24.18.0",
         "pnpm": "11.15.0"
     },
     "packageManager": "pnpm@11.15.0"

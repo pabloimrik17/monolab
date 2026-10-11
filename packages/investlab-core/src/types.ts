@@ -1,14 +1,8 @@
+import type { Quote } from "@m0n0lab/investlab-domain";
+
 export interface Ticker {
     symbol: string;
     addedAt: Date;
-}
-
-export interface Quote {
-    symbol: string;
-    price: number;
-    change: number;
-    changePercent: number;
-    updatedAt: Date;
 }
 
 export interface TickerWithQuote extends Ticker {
@@ -20,3 +14,5 @@ export interface Storage {
     setItem(key: string, value: string): void;
     removeItem(key: string): void;
 }
+
+export type { Quote } from "@m0n0lab/investlab-domain";

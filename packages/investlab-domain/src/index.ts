@@ -3,6 +3,7 @@ export {
     DomainError,
     InstrumentNotFoundError,
     PersistenceError,
+    PortfolioItemNotFoundError,
     ValidationError,
 } from "./errors.ts";
 
@@ -14,13 +15,13 @@ export { Sector } from "./value-objects/sector.ts";
 // Entities
 export { Instrument } from "./entities/instrument.ts";
 export type { InstrumentProps } from "./entities/instrument.ts";
+export { PortfolioItem } from "./entities/portfolio-item.ts";
+export type { PortfolioItemProps } from "./entities/portfolio-item.ts";
 
 // Ports
 export type { InstrumentRepository } from "./ports/instrument.repository.ts";
 export type { Quote, QuoteCache } from "./ports/quote-cache.ts";
+export type { PortfolioItemRepository } from "./ports/portfolio-item.repository.ts";
 
 // Tokens
 export { TOKENS } from "./tokens.ts";
-
-// Module
-export { domainModule } from "./domain.module.ts";

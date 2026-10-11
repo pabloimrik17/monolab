@@ -27,3 +27,11 @@ export class InstrumentNotFoundError extends DomainError {
         this.name = "InstrumentNotFoundError";
     }
 }
+
+export class PortfolioItemNotFoundError extends DomainError {
+    readonly code = "PORTFOLIO_ITEM_NOT_FOUND";
+    constructor(id: string) {
+        super(`Portfolio item not found: ${id}`);
+        this.name = "PortfolioItemNotFoundError";
+    }
+}

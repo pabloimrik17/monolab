@@ -60,7 +60,8 @@
         // port implementations bound in DI; members invoked by use-cases via the port interface
         { "implements": "MenuItemRepository", "members": ["*"] },
         { "implements": "OrderRepository", "members": ["*"] },
-        { "implements": "SessionRepository", "members": ["*"] }
+        { "implements": "SessionRepository", "members": ["*"] },
+        { "implements": "PortfolioItemRepository", "members": ["*"] }
     ],
     "rules": {
         "require-suppression-reason": "warn"

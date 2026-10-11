@@ -1,19 +1,13 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-    name: "@m0n0lab/investlab-data",
+    name: "@m0n0lab/investlab-application-server",
     entry: ["src/index.ts"],
     format: ["esm"],
     fixedExtension: false,
     outDir: "dist",
     deps: {
-        neverBundle: [
-            /^@m0n0lab\/investlab-domain($|\/)/,
-            /^drizzle-orm($|\/)/,
-            /^pg($|\/)/,
-            /^inversify($|\/)/,
-            /^neverthrow($|\/)/,
-        ],
+        neverBundle: [/^@m0n0lab\/investlab-domain($|\/)/, /^inversify($|\/)/, /^neverthrow($|\/)/],
     },
     dts: {
         compilerOptions: {

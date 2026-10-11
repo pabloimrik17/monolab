@@ -1,4 +1,8 @@
+import { existsSync } from "node:fs";
 import { defineConfig } from "drizzle-kit";
+
+const appEnvFile = "../../apps/investlab/.env";
+if (existsSync(appEnvFile)) process.loadEnvFile(appEnvFile);
 
 export default defineConfig({
     dialect: "postgresql",

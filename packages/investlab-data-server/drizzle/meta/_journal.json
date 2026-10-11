@@ -8,6 +8,13 @@
             "when": 1775841290218,
             "tag": "0000_new_stryfe",
             "breakpoints": true
+        },
+        {
+            "idx": 1,
+            "version": "7",
+            "when": 1776547067315,
+            "tag": "0001_flat_squadron_supreme",
+            "breakpoints": true
         }
     ]
 }
