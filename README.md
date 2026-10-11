@@ -235,10 +235,11 @@ test("hook executes in real browser", () => {
 
 ### Configuration
 
-- **Workspace config**: `vitest.workspace.ts` (shared settings)
-- **Package configs**: `packages/*/vitest.config.ts` (per-package overrides)
-- **Shared settings**: `clearMocks`, `restoreMocks`, `unstubEnvs`,
-  `unstubGlobals`, `maxConcurrency: 10`
+- **Project configs**: `packages/*/vitest.config.ts`, `apps/*/vitest.config.ts`
+- **Shared settings**: `@m0n0lab/vitest-config` (`clearMocks`, `restoreMocks`,
+  `unstubEnvs`, `unstubGlobals`, `maxConcurrency: 10`), merged into every
+  config with `mergeConfig(sharedConfig, ...)`
+- **Browser mode**: `headlessChromium()` from `@m0n0lab/vitest-config/browser`
 
 ### CI Testing
 
