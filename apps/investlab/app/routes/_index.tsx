@@ -2,16 +2,21 @@ import { useEffect, useRef, useState } from "react";
 import { AddTicker } from "../components/add-ticker";
 import { RefreshIndicator } from "../components/refresh-indicator";
 import { TickerList } from "../components/ticker-list";
-import { createPoller, tickerStore } from "../lib/wealth";
+import { createPoller, getTickerStore } from "../lib/wealth";
 import type { Quote, Ticker } from "../lib/wealth";
+
 export default function Index() {
-    const [tickers, setTickers] = useState<Ticker[]>(() => tickerStore.getTickers());
+    const [tickers, setTickers] = useState<Ticker[]>([]);
     const [quotes, setQuotes] = useState<Map<string, Quote>>(new Map());
     const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
     const [isPolling, setIsPolling] = useState(false);
     const pollerRef = useRef<ReturnType<typeof createPoller> | null>(null);
 
     useEffect(() => {
+        const store = getTickerStore();
+        const initialTickers = store.getTickers();
+        setTickers(initialTickers);
+
         const poller = createPoller(
             (newQuotes) => {
                 setQuotes(newQuotes);
@@ -23,7 +28,7 @@ export default function Index() {
         );
         pollerRef.current = poller;
 
-        const symbols = tickers.map((t) => t.symbol);
+        const symbols = initialTickers.map((t) => t.symbol);
         if (symbols.length > 0) {
             poller.start(symbols);
             setIsPolling(true);
@@ -52,13 +57,15 @@ export default function Index() {
     }, [tickers]);
 
     function handleAdd(symbol: string) {
-        tickerStore.add(symbol);
-        setTickers(tickerStore.getTickers());
+        const store = getTickerStore();
+        store.add(symbol);
+        setTickers(store.getTickers());
     }
 
     function handleRemove(symbol: string) {
-        tickerStore.remove(symbol);
-        setTickers(tickerStore.getTickers());
+        const store = getTickerStore();
+        store.remove(symbol);
+        setTickers(store.getTickers());
     }
 
     return (

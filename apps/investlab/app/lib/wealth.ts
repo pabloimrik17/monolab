@@ -5,11 +5,18 @@ import {
     type FinnhubClient,
     type Quote,
     type QuotePoller,
+    type TickerStore,
 } from "@m0n0lab/investlab-core";
 
-export const tickerStore = createTickerStore(window.localStorage);
-
+let tickerStoreInstance: TickerStore | null = null;
 let finnhubClient: FinnhubClient | null = null;
+
+export function getTickerStore(): TickerStore {
+    if (tickerStoreInstance === null) {
+        tickerStoreInstance = createTickerStore(window.localStorage);
+    }
+    return tickerStoreInstance;
+}
 
 function getFinnhubClient(): FinnhubClient {
     if (finnhubClient === null) {

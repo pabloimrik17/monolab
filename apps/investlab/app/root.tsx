@@ -1,4 +1,4 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import { Link, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import "./app.css";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -10,11 +10,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     name="viewport"
                     content="width=device-width, initial-scale=1.0"
                 />
-                <title>Wealth Tracker</title>
+                <title>InvestLab</title>
                 <Meta />
                 <Links />
             </head>
             <body>
+                <nav className="top-nav">
+                    <Link to="/">Tickers</Link>
+                    <Link to="/portfolio">Portfolio</Link>
+                </nav>
                 {children}
                 <ScrollRestoration />
                 <Scripts />

@@ -14,9 +14,20 @@
         "noEmit": true,
         "isolatedModules": true,
         "resolveJsonModule": true,
-        "types": ["vite/client"]
+        "types": ["vite/client"],
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
     },
     "references": [
+      {
+        "path": "../../packages/investlab-domain"
+      },
+      {
+        "path": "../../packages/investlab-data-server"
+      },
+      {
+        "path": "../../packages/investlab-application-server"
+      },
       {
         "path": "../../packages/investlab-core"
       }
