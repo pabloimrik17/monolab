@@ -57,7 +57,7 @@ export function PortfolioItemRow({ item, onEdit }: PortfolioItemRowProps) {
                         type="submit"
                         disabled={isDeleting}
                         onClick={(e) => {
-                            if (!confirm("Delete this holding?")) {
+                            if (!confirm("Delete this portfolio item?")) {
                                 e.preventDefault();
                             }
                         }}

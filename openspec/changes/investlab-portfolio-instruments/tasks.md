@@ -56,4 +56,4 @@
 - [x] 6.5 Verify `nx run investlab-domain:test` passes — entity tests
 - [x] 6.6 Verify `nx run investlab-application-server:test` passes — use case tests
 - [x] 6.7 Verify `nx run investlab:build` succeeds (app with new SSR route)
-- [ ] 6.8 Manual test: create, view, edit, delete portfolio item end-to-end
+- [x] 6.8 Manual test: create, view, edit, delete portfolio item end-to-end

@@ -10,8 +10,8 @@ export function PortfolioTable({ items, onEdit }: PortfolioTableProps) {
     if (items.length === 0) {
         return (
             <div className="empty-state">
-                <p>No holdings yet.</p>
-                <p>Add your first holding to get started.</p>
+                <p>No portfolio items yet.</p>
+                <p>Add your first item to get started.</p>
             </div>
         );
     }

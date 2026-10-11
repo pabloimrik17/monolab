@@ -21,7 +21,7 @@ export function PortfolioPage({ items, instruments, error }: PortfolioPageProps)
                         type="button"
                         onClick={vm.openCreate}
                     >
-                        Add holding
+                        Add item
                     </button>
                 ) : null}
             </header>

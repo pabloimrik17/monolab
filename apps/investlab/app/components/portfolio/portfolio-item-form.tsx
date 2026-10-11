@@ -35,7 +35,7 @@ function hasKey<K extends string>(data: unknown, key: K): data is Record<K, unkn
 
 function submitLabel(isSubmitting: boolean, isEditing: boolean): string {
     if (isSubmitting) return "Saving…";
-    return isEditing ? "Save changes" : "Add holding";
+    return isEditing ? "Save changes" : "Add item";
 }
 
 function IntentFields({ editing }: { editing: PortfolioItemView | undefined }) {
