@@ -103,6 +103,13 @@ coverage:
                 flags:
                     - investlab-application-server
 
+            investlab-application-client:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - investlab-application-client
+
             investlab-data-contracts:
                 target: auto
                 threshold: 2%
@@ -244,6 +251,13 @@ coverage:
                 flags:
                     - investlab-application-server
 
+            investlab-application-client:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - investlab-application-client
+
             investlab-data-contracts:
                 target: 50%
                 threshold: 10%
@@ -381,6 +395,11 @@ flags:
     investlab-application-server:
         paths:
             - packages/investlab-application-server/
+        carryforward: true
+
+    investlab-application-client:
+        paths:
+            - packages/investlab-application-client/
         carryforward: true
 
     investlab-data-contracts:
