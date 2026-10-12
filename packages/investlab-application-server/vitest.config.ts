@@ -5,7 +5,6 @@ export default mergeConfig(
     sharedConfig,
     defineConfig({
         test: {
-            include: ["**/*.{test,spec}.ts"],
             typecheck: { enabled: true },
             // Stryker inPlace backups contain copies of all tests; never collect them
             exclude: [...configDefaults.exclude, "**/.stryker-tmp/**"],

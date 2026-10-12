@@ -5,7 +5,6 @@ export default mergeConfig(
     sharedConfig,
     defineConfig({
         test: {
-            include: ["**/*.{test,spec}.ts"],
             typecheck: { enabled: true },
             reporters: ["default", "junit"],
             outputFile: {
