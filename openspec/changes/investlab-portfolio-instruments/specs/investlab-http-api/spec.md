@@ -38,7 +38,7 @@ The API SHALL expose `GET /portfolio-items` (200, items with their instrument da
 
 ### Requirement: Instrument and quote endpoints
 
-The API SHALL expose `GET /instruments` (200, the instrument catalog) and `GET /quotes?symbols=<comma-separated symbols>` (200, current quotes for the requested symbols). These, with the portfolio item endpoints, SHALL be the API's complete route list.
+The API SHALL expose `GET /instruments` (200, the instrument catalog) and `GET /quotes?symbols=<comma-separated symbols>` (200, current quotes for the requested symbols). These, with `GET /health` and the portfolio item endpoints, SHALL be the API's complete route list.
 
 #### Scenario: List instruments
 - **WHEN** `GET /instruments` is called with a valid token
@@ -52,17 +52,25 @@ The API SHALL expose `GET /instruments` (200, the instrument catalog) and `GET /
 - **WHEN** `GET /quotes` is called without a `symbols` parameter
 - **THEN** the API responds 422 with `code` `VALIDATION_ERROR`
 
+### Requirement: Health endpoint
+
+The API SHALL expose `GET /health` (200, `{ "status": "ok" }`) as a public liveness probe. It SHALL NOT require a token and SHALL NOT touch Postgres, Redis or Finnhub.
+
+#### Scenario: Liveness without a token
+- **WHEN** `GET /health` is called without an `Authorization` header
+- **THEN** the API responds 200 with `{ "status": "ok" }`
+
 ### Requirement: Bearer token protection
 
-The API SHALL reject any request lacking `Authorization: Bearer <INVESTLAB_API_TOKEN>` with HTTP 401. Only the web server SHALL hold the token.
+The API SHALL reject any request to a route other than `GET /health` that lacks `Authorization: Bearer <INVESTLAB_API_TOKEN>` with HTTP 401. Only the web server SHALL hold the token.
 
 #### Scenario: Missing token
-- **WHEN** a request without an `Authorization` header reaches any route
+- **WHEN** a request without an `Authorization` header reaches any route except `GET /health`
 - **THEN** the API responds 401 and no use case runs
 
 ### Requirement: Error responses keyed by code
 
-The API SHALL answer use case errors with `{ code, message, statusCode }`, choosing the HTTP status from the error `code`. For 5xx statuses the message SHALL be generic.
+The API SHALL answer use case errors with `{ code, message, statusCode }` (the `apiErrorDtoSchema` of `investlab-data-contracts`, which clients parse), choosing the HTTP status from the error `code`. For 5xx statuses the message SHALL be generic.
 
 #### Scenario: Unknown portfolio item
 - **WHEN** `PUT /portfolio-items/:id` targets a non-existent item
@@ -74,11 +82,19 @@ The API SHALL answer use case errors with `{ code, message, statusCode }`, choos
 
 ### Requirement: Request validation with shared contracts
 
-The API SHALL validate request bodies with the zod schemas from `investlab-data-contracts` and respond 422 with `code` `VALIDATION_ERROR` when validation fails.
+The API SHALL validate request bodies and the `:id` path parameter (UUID) with the zod schemas from `investlab-data-contracts` and respond 422 with `code` `VALIDATION_ERROR` and an `issues` array of `{ path, message }` when validation fails. No use case runs on a validation failure.
 
 #### Scenario: Target weight out of range
 - **WHEN** a create request carries `targetWeight` 150
-- **THEN** the API responds 422 with `code` `VALIDATION_ERROR`
+- **THEN** the API responds 422 with `code` `VALIDATION_ERROR` and an issue whose `path` is `targetWeight`
+
+#### Scenario: Malformed body
+- **WHEN** a create request body is not valid JSON
+- **THEN** the API responds 422 with `code` `VALIDATION_ERROR` and a single issue with empty `path`
+
+#### Scenario: Malformed id
+- **WHEN** `PUT /portfolio-items/not-a-uuid` is called
+- **THEN** the API responds 422 with `code` `VALIDATION_ERROR` and no use case runs
 
 ### Requirement: Quotes served through the API
 
