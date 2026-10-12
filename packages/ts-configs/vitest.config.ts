@@ -1,8 +1,7 @@
-import { defineProject } from "vitest/config";
+import { defineConfig } from "vitest/config";
 
-export default defineProject({
+export default defineConfig({
     test: {
-        extends: true,
         reporters: ["default", "junit"],
         outputFile: {
             junit: "./test-results.junit.xml",
@@ -12,9 +11,5 @@ export default defineProject({
             reporter: ["lcov", "text", "json", "html"],
             reportsDirectory: "./coverage",
         },
-    },
-    typecheck: {
-        enabled: true,
-        include: ["**/*.test-d.ts"],
     },
 });

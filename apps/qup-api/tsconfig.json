@@ -21,6 +21,9 @@
         },
         {
             "path": "../../packages/qup-shared"
+        },
+        {
+            "path": "./tsconfig.node.json"
         }
     ]
 }

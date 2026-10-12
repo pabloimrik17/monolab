@@ -8,6 +8,9 @@
             "{workspaceRoot}/package.json",
             "{workspaceRoot}/pnpm-lock.yaml",
             "{workspaceRoot}/tsconfig.base.json",
+            "{workspaceRoot}/packages/ts-configs/tsconfig.base.json",
+            "{workspaceRoot}/packages/ts-configs/tsconfig.node.*.json",
+            "{workspaceRoot}/packages/ts-configs/tsconfig.web.*.json",
             "{workspaceRoot}/nx.json",
             "{workspaceRoot}/.github/workflows/ci.yml"
         ]
@@ -156,9 +159,15 @@
         "test:mutation:report": {
             "cache": false
         },
-        "typecheck": {
-            "dependsOn": ["^typecheck", "^build"]
-        }
+        "typecheck": [
+            {
+                "dependsOn": ["^typecheck", "^build"]
+            },
+            {
+                "filter": { "plugin": "@nx/js/typescript" },
+                "inputs": ["...", "sharedGlobals"]
+            }
+        ]
     },
     "sync": {
         "applyChanges": true

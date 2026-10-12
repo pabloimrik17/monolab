@@ -18,6 +18,9 @@
       },
       {
         "path": "../investlab-domain"
+      },
+      {
+        "path": "./tsconfig.node.json"
       }
     ]
 }
