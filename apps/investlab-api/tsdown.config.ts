@@ -9,7 +9,15 @@ export default defineConfig({
     format: ["esm"],
     outDir: "dist",
     deps: {
-        neverBundle: [/^@m0n0lab\//, /^hono($|\/)/, /^inversify($|\/)/, /^neverthrow($|\/)/],
+        neverBundle: [
+            /^@m0n0lab\//,
+            /^drizzle-orm($|\/)/,
+            /^hono($|\/)/,
+            /^inversify($|\/)/,
+            /^ioredis($|\/)/,
+            /^neverthrow($|\/)/,
+            /^pg($|\/)/,
+        ],
     },
     dts: {
         compilerOptions: {

@@ -3,6 +3,9 @@
     "targets": {
         "typecheck": {
             "dependsOn": ["^build"]
+        },
+        "dev": {
+            "dependsOn": ["^build"]
         }
     }
 }

@@ -1,6 +1,6 @@
 import { serve } from "@hono/node-server";
 import { createApp } from "./app.ts";
-import { createContainer } from "./container.ts";
+import { createContainer, readApiEnv } from "./container.ts";
 
 const parsedPort = Number(process.env["PORT"] ?? 3002);
 if (!Number.isInteger(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
@@ -15,7 +15,7 @@ if (!token) {
     process.exit(1);
 }
 
-const app = createApp(createContainer(), { token });
+const app = createApp(createContainer(readApiEnv(process.env)), { token });
 
 console.log(`investlab-api listening on http://localhost:${port}`);
 serve({ fetch: app.fetch, port });
