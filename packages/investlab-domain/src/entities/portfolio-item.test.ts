@@ -103,6 +103,31 @@ describe("PortfolioItem", () => {
             });
             expect(result.isErr()).toBe(true);
         });
+        it("accepts boundary values for broker length and currentValue", () => {
+            const result = PortfolioItem.create({
+                instrumentId: validInstrumentId,
+                broker: ` ${"b".repeat(100)} `,
+                targetWeight: 10,
+                currentValue: 9_999_999_999.99,
+            });
+            expect(result.isOk()).toBe(true);
+        });
+
+        it.each([
+            ["broker longer than 100 chars", { broker: "b".repeat(101) }],
+            ["currentValue above 9_999_999_999.99", { currentValue: 10_000_000_000 }],
+        ])("returns ValidationError for %s", (_case, override) => {
+            const result = PortfolioItem.create({
+                instrumentId: validInstrumentId,
+                broker: "MyInvestor",
+                targetWeight: 10,
+                ...override,
+            });
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error.code).toBe("VALIDATION_ERROR");
+            }
+        });
     });
 
     describe("update", () => {
@@ -126,6 +151,22 @@ describe("PortfolioItem", () => {
                 expect(item.targetWeight).toBe(25);
                 expect(item.currentValue).toBe(500);
                 expect(item.notes).toBe("updated");
+            }
+        });
+
+        it("clears notes when notes is explicitly undefined", () => {
+            const result = PortfolioItem.create({
+                instrumentId: validInstrumentId,
+                broker: "MyInvestor",
+                targetWeight: 10,
+                notes: "old",
+            });
+            expect(result.isOk()).toBe(true);
+            if (result.isOk()) {
+                expect(result.value.update({ notes: undefined }).isOk()).toBe(true);
+                expect(result.value.notes).toBeUndefined();
+                expect(result.value.update({ broker: "Binance" }).isOk()).toBe(true);
+                expect(result.value.notes).toBeUndefined();
             }
         });
 
@@ -181,6 +222,22 @@ describe("PortfolioItem", () => {
             if (result.isOk()) {
                 const updateResult = result.value.update({ currentValue: -1 });
                 expect(updateResult.isErr()).toBe(true);
+            }
+        });
+        it.each([
+            ["broker longer than 100 chars", { broker: "b".repeat(101) }],
+            ["currentValue above 9_999_999_999.99", { currentValue: 10_000_000_000 }],
+        ])("rejects %s", (_case, changes) => {
+            const result = PortfolioItem.create({
+                instrumentId: validInstrumentId,
+                broker: "MyInvestor",
+                targetWeight: 10,
+            });
+            expect(result.isOk()).toBe(true);
+            if (result.isOk()) {
+                expect(result.value.update(changes).isErr()).toBe(true);
+                expect(result.value.broker).toBe("MyInvestor");
+                expect(result.value.currentValue).toBe(0);
             }
         });
     });

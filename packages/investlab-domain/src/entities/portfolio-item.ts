@@ -16,13 +16,22 @@ export interface PortfolioItemChanges {
     broker?: string;
     targetWeight?: number;
     currentValue?: number;
-    notes?: string;
+    /** Explicitly `undefined` clears the notes; omit the key to keep them. */
+    notes?: string | undefined;
 }
+
+// Mirror the portfolio_items column limits: broker varchar(100), current_value numeric(12,2).
+const BROKER_MAX_LENGTH = 100;
+const CURRENT_VALUE_MAX = 9_999_999_999.99;
 
 const CHANGE_RULES: ReadonlyArray<readonly [(props: PortfolioItemChanges) => boolean, string]> = [
     [
         (props) => props.broker !== undefined && !props.broker.trim(),
         "PortfolioItem broker cannot be empty",
+    ],
+    [
+        (props) => props.broker !== undefined && props.broker.trim().length > BROKER_MAX_LENGTH,
+        `PortfolioItem broker cannot exceed ${BROKER_MAX_LENGTH} characters`,
     ],
     [
         (props) =>
@@ -37,8 +46,12 @@ const CHANGE_RULES: ReadonlyArray<readonly [(props: PortfolioItemChanges) => boo
     [
         (props) =>
             props.currentValue !== undefined &&
-            !(Number.isFinite(props.currentValue) && props.currentValue >= 0),
-        "PortfolioItem currentValue must be a non-negative number",
+            !(
+                Number.isFinite(props.currentValue) &&
+                props.currentValue >= 0 &&
+                props.currentValue <= CURRENT_VALUE_MAX
+            ),
+        `PortfolioItem currentValue must be a number between 0 and ${CURRENT_VALUE_MAX}`,
     ],
 ];
 

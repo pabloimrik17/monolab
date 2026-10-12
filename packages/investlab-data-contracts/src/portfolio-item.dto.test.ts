@@ -21,6 +21,19 @@ describe("portfolioItemDtoSchema", () => {
         expect(result.success).toBe(true);
     });
 
+    it("rejects currentValue above the persisted maximum", () => {
+        const result = portfolioItemDtoSchema.safeParse({
+            id: ID,
+            instrumentId: ID,
+            broker: "MyInvestor",
+            targetWeight: 15,
+            currentValue: 10_000_000_000,
+            createdAt: "2026-01-01T00:00:00.000Z",
+            updatedAt: "2026-01-01T00:00:00.000Z",
+        });
+        expect(result.success).toBe(false);
+    });
+
     it("rejects non-ISO dates", () => {
         const result = portfolioItemDtoSchema.safeParse({
             id: ID,
@@ -52,6 +65,9 @@ describe("createPortfolioItemDtoSchema", () => {
         { broker: "" },
         { instrumentId: "not-a-uuid" },
         { currentValue: -5 },
+        { currentValue: 10_000_000_000 },
+        { broker: "   " },
+        { broker: "b".repeat(101) },
     ])("rejects %o", (override) => {
         expect(
             createPortfolioItemDtoSchema.safeParse({
@@ -69,7 +85,21 @@ describe("updatePortfolioItemDtoSchema", () => {
         expect(updatePortfolioItemDtoSchema.safeParse({}).success).toBe(true);
     });
 
-    it("rejects out-of-range weight", () => {
-        expect(updatePortfolioItemDtoSchema.safeParse({ targetWeight: 200 }).success).toBe(false);
+    it.each([
+        { targetWeight: 200 },
+        { currentValue: 10_000_000_000 },
+        { broker: "   " },
+        { broker: "b".repeat(101) },
+    ])("rejects %o", (patch) => {
+        expect(updatePortfolioItemDtoSchema.safeParse(patch).success).toBe(false);
+    });
+
+    it("accepts boundary values and trims broker", () => {
+        const result = updatePortfolioItemDtoSchema.safeParse({
+            broker: ` ${"b".repeat(100)} `,
+            currentValue: 9_999_999_999.99,
+        });
+        expect(result.success).toBe(true);
+        expect(result.data?.broker).toBe("b".repeat(100));
     });
 });
