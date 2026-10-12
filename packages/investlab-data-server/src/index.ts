@@ -4,3 +4,4 @@ export { DATA_TOKENS } from "./tokens.ts";
 export { instruments, portfolioItems } from "./schema/index.ts";
 export { PgInstrumentRepository } from "./repositories/pg-instrument.repository.ts";
 export { PgPortfolioItemRepository } from "./repositories/pg-portfolio-item.repository.ts";
+export { PgPortfolioItemQuery } from "./queries/pg-portfolio-item.query.ts";

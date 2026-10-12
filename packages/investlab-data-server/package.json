@@ -28,6 +28,7 @@
         "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
     },
     "dependencies": {
+        "@m0n0lab/drizzle-neverthrow": "workspace:*",
         "@m0n0lab/investlab-domain": "workspace:*",
         "drizzle-orm": "catalog:",
         "inversify": "catalog:",

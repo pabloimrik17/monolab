@@ -613,6 +613,9 @@ importers:
 
   packages/investlab-data-server:
     dependencies:
+      '@m0n0lab/drizzle-neverthrow':
+        specifier: workspace:*
+        version: link:../drizzle-neverthrow
       '@m0n0lab/investlab-domain':
         specifier: workspace:*
         version: link:../investlab-domain
