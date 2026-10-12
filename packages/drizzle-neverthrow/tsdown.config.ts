@@ -1,0 +1,23 @@
+import { defineConfig } from "tsdown";
+
+export default defineConfig({
+    name: "@m0n0lab/drizzle-neverthrow",
+    entry: ["src/index.ts"],
+    format: ["esm"],
+    fixedExtension: false,
+    outDir: "dist",
+    // Prevent bundling peer deps; rely on consumer to provide them.
+    deps: {
+        neverBundle: [/^drizzle-orm($|\/)/, /^neverthrow($|\/)/],
+    },
+    dts: {
+        compilerOptions: {
+            composite: false,
+            outDir: "dist",
+        },
+    },
+    sourcemap: true,
+    clean: true,
+    minify: false,
+    target: "ES2023",
+});

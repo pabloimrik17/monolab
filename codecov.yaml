@@ -40,6 +40,13 @@ coverage:
                 flags:
                     - ts-types
 
+            drizzle-neverthrow:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - drizzle-neverthrow
+
             http-client:
                 target: auto
                 threshold: 2%
@@ -173,6 +180,13 @@ coverage:
                 informational: false
                 flags:
                     - ts-types
+
+            drizzle-neverthrow:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - drizzle-neverthrow
 
             http-client:
                 target: 50%
@@ -327,6 +341,11 @@ flags:
     http-client:
         paths:
             - packages/http-client/
+        carryforward: true
+
+    drizzle-neverthrow:
+        paths:
+            - packages/drizzle-neverthrow/
         carryforward: true
 
     qup-api:

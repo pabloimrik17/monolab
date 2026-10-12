@@ -41,7 +41,12 @@
         // scoped intent: deliberate keep in apps/qup-web (mirrors knip decision)
         "@kobalte/core"
     ],
-    "publicPackages": ["@m0n0lab/qup-domain", "@m0n0lab/solid-clean", "@m0n0lab/react-clean"],
+    "publicPackages": [
+        "@m0n0lab/qup-domain",
+        "@m0n0lab/solid-clean",
+        "@m0n0lab/react-clean",
+        "@m0n0lab/drizzle-neverthrow"
+    ],
     "ignoreDecorators": ["injectable"],
     "duplicates": {
         // type-level test files are per-type assertion boilerplate; clone detection adds no signal there
