@@ -18,6 +18,17 @@ export default {
         "*.svg?react": ["node_modules/vite-plugin-svgr/client.d.ts"],
     },
     workspaces: {
+        // Varlock loads it from `.env.schema` (`@plugin`), which knip cannot see.
+        "apps/investlab": {
+            ignoreDependencies: ["@varlock/1password-plugin"],
+        },
+        "apps/investlab-api": {
+            ignoreDependencies: ["@varlock/1password-plugin"],
+        },
+        // Analyse drizzle.config.ts statically instead of executing it: it requires DATABASE_URL (Varlock).
+        "packages/investlab-data-server": {
+            drizzle: { config: [], entry: ["drizzle.config.ts"] },
+        },
         "apps/qup-api": {
             entry: ["src/index.ts"],
         },

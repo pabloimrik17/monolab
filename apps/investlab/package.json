@@ -8,7 +8,6 @@
         "dev": "react-router dev",
         "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 60 .",
         "lint:knip": "knip --max-issues 100",
-        "lint:prettier": "prettier . --check",
         "start": "varlock run -- react-router-serve ./build/server/index.js",
         "test": "vitest run",
         "test:changed": "vitest run --changed",
