@@ -3,6 +3,7 @@ export {
     DomainError,
     type DomainErrorCode,
     InstrumentNotFoundError,
+    NetworkError,
     PersistenceError,
     PortfolioItemNotFoundError,
     ValidationError,
