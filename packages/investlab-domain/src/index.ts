@@ -1,6 +1,7 @@
 // Errors
 export {
     DomainError,
+    type DomainErrorCode,
     InstrumentNotFoundError,
     PersistenceError,
     PortfolioItemNotFoundError,

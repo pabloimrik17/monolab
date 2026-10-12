@@ -8,6 +8,8 @@ import {
     type PortfolioItemRepository,
 } from "@m0n0lab/investlab-domain";
 
+export type PortfolioItemDeleteError = PortfolioItemNotFoundError | PersistenceError;
+
 @injectable()
 export class PortfolioItemDeleteUseCase {
     constructor(
@@ -15,7 +17,7 @@ export class PortfolioItemDeleteUseCase {
         private readonly portfolioItemRepo: PortfolioItemRepository,
     ) {}
 
-    execute(id: string): ResultAsync<void, PortfolioItemNotFoundError | PersistenceError> {
+    execute(id: string): ResultAsync<void, PortfolioItemDeleteError> {
         return this.portfolioItemRepo.findById(id).andThen((item) => {
             if (!item) {
                 return errAsync(new PortfolioItemNotFoundErrorClass(id));

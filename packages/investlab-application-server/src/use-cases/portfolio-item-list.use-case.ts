@@ -19,6 +19,8 @@ export interface PortfolioItemList {
     instruments: Instrument[];
 }
 
+export type PortfolioItemListError = PersistenceError;
+
 @injectable()
 export class PortfolioItemListUseCase {
     constructor(
@@ -28,7 +30,7 @@ export class PortfolioItemListUseCase {
         private readonly instrumentRepo: InstrumentRepository,
     ) {}
 
-    execute(): ResultAsync<PortfolioItemList, PersistenceError> {
+    execute(): ResultAsync<PortfolioItemList, PortfolioItemListError> {
         return ResultAsync.combine([
             this.portfolioItemRepo.findAll(),
             this.instrumentRepo.findAll(),

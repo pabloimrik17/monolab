@@ -1,6 +1,12 @@
 // fallow-ignore-file unused-class-member -- abstract code contract implemented by subclasses, read by use-cases pending
+export type DomainErrorCode =
+    | "PERSISTENCE_ERROR"
+    | "VALIDATION_ERROR"
+    | "INSTRUMENT_NOT_FOUND"
+    | "PORTFOLIO_ITEM_NOT_FOUND";
+
 export abstract class DomainError extends Error {
-    abstract readonly code: string;
+    abstract readonly code: DomainErrorCode;
 }
 
 export class PersistenceError extends DomainError {

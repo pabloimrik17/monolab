@@ -11,6 +11,8 @@ import {
     type ValidationError,
 } from "@m0n0lab/investlab-domain";
 
+export type PortfolioItemCreateError = ValidationError | InstrumentNotFoundError | PersistenceError;
+
 @injectable()
 export class PortfolioItemCreateUseCase {
     constructor(
@@ -26,7 +28,7 @@ export class PortfolioItemCreateUseCase {
         targetWeight: number;
         currentValue?: number;
         notes?: string;
-    }): ResultAsync<PortfolioItem, ValidationError | InstrumentNotFoundError | PersistenceError> {
+    }): ResultAsync<PortfolioItem, PortfolioItemCreateError> {
         return this.instrumentRepo.findById(props.instrumentId).andThen((instrument) => {
             if (!instrument) {
                 return errAsync(new InstrumentNotFoundErrorClass(props.instrumentId));

@@ -10,6 +10,11 @@ import {
     type ValidationError,
 } from "@m0n0lab/investlab-domain";
 
+export type PortfolioItemUpdateError =
+    | ValidationError
+    | PortfolioItemNotFoundError
+    | PersistenceError;
+
 @injectable()
 export class PortfolioItemUpdateUseCase {
     constructor(
@@ -25,7 +30,7 @@ export class PortfolioItemUpdateUseCase {
             currentValue?: number;
             notes?: string | undefined;
         },
-    ): ResultAsync<PortfolioItem, ValidationError | PortfolioItemNotFoundError | PersistenceError> {
+    ): ResultAsync<PortfolioItem, PortfolioItemUpdateError> {
         return this.portfolioItemRepo.findById(id).andThen((item) => {
             if (!item) {
                 return errAsync(new PortfolioItemNotFoundErrorClass(id));
