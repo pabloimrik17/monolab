@@ -6,7 +6,7 @@ import {
     type Quote,
     type QuotePoller,
     type TickerStore,
-} from "@m0n0lab/investlab-core";
+} from "@m0n0lab/investlab-core/client";
 
 let tickerStoreInstance: TickerStore | null = null;
 let finnhubClient: FinnhubClient | null = null;
@@ -36,4 +36,4 @@ export function createPoller(
     });
 }
 
-export type { Quote, Ticker } from "@m0n0lab/investlab-core";
+export type { Quote, Ticker } from "@m0n0lab/investlab-core/client";
