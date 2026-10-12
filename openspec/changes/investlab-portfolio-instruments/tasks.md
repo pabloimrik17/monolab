@@ -57,3 +57,60 @@
 - [x] 6.6 Verify `nx run investlab-application-server:test` passes — use case tests
 - [x] 6.7 Verify `nx run investlab:build` succeeds (app with new SSR route)
 - [x] 6.8 Manual test: create, view, edit, delete portfolio item end-to-end
+
+## 7. Specs reconciliation (before implementing §8–§13)
+
+- [ ] 7.1 Write MODIFIED deltas for `quote-polling`, `quote-fetching`, `investlab-quote-cache`, `ticker-management` (quotes server-side via API; browser polls a web resource route; code leaves `investlab-core`)
+- [ ] 7.2 Complete `investlab-http-api` delta scenarios against the final endpoint list
+
+## 8. Domain and naming
+
+- [ ] 8.1 Rename server use cases to entity-action: `portfolio-item-{create,update,delete,list}.use-case.ts`, classes `PortfolioItem{Create,Update,Delete,List}UseCase`, tokens accordingly
+- [ ] 8.2 Export a named error union per use case (`PortfolioItemUpdateError`, …)
+- [ ] 8.3 Type `DomainError.code` as a literal union of the existing SCREAMING_SNAKE codes
+- [ ] 8.4 Remove `PortfolioItemRepository.findByInstrumentId` (no callers) from port and PG impl
+- [ ] 8.5 Add portfolio read-query port + read-model type in `investlab-domain` (item + instrument); `PortfolioItemListUseCase` uses it instead of two `findAll()` + in-memory join
+- [ ] 8.6 Move quote port into `investlab-domain` if not already there; verify `nx run investlab-domain:test:unit`
+
+## 9. Data server
+
+- [ ] 9.1 Implement the portfolio read query in `investlab-data-server` with a single SQL JOIN; reuse `instrument.mapper.ts` (mappers stay non-exported modules)
+- [ ] 9.2 Dissolve `investlab-core`: Finnhub client → Finnhub datasource, `QuoteCacheImpl` → Redis datasource, quote repository combining both (cache first, then Finnhub, write-through)
+- [ ] 9.3 Adopt `@m0n0lab/drizzle-neverthrow` (change `drizzle-neverthrow-package`) in PG repositories and read query, removing copy-pasted `ResultAsync.fromPromise`
+- [ ] 9.4 Delete `packages/investlab-core`; update knip/tsconfig refs; `pnpm nx sync`
+
+## 10. API app
+
+- [ ] 10.1 Scaffold `apps/investlab-api` (Hono) mirroring `apps/qup-api`: `app.ts`, `container.ts`, `routes/`, `errors/error-mapping.ts`
+- [ ] 10.2 Error mapping keyed by `code` → HTTP status; body `{ code, message, statusCode }` (500s hide message)
+- [ ] 10.3 Bearer-token middleware (`INVESTLAB_API_TOKEN`)
+- [ ] 10.4 Routes: portfolio items CRUD + list (read model), instruments list, quotes; request bodies validated with `investlab-data-contracts` zod schemas
+- [ ] 10.5 Move Postgres/Redis/Finnhub wiring from `apps/investlab/app/lib/container.server.ts` into the API container; move drizzle config/migrations ownership to the API env
+- [ ] 10.6 Verify `nx run investlab-api:build` and `nx run investlab-api:typecheck`
+
+## 11. Client packages
+
+- [ ] 11.1 Create `packages/investlab-data-client`: HTTP repositories + portfolio read query + quote repository against the API using `investlab-data-contracts`; rebuild domain errors from `code`; network failure → client error
+- [ ] 11.2 Create `packages/investlab-application-client`: client use cases with entity-action names and their error unions (adds the network error)
+- [ ] 11.3 Exports validated (`attw --pack` if published); verify builds via `nx run-many -t build`
+
+## 12. Web app
+
+- [ ] 12.1 Replace server wiring in `container.server.ts` with client modules (API base URL + token)
+- [ ] 12.2 `/portfolio` loader/action call client use cases
+- [ ] 12.3 Add a web resource route for quotes; point the browser poller at it; move ticker store into `apps/investlab`; remove `VITE_FINNHUB_API_KEY`
+- [ ] 12.4 Dev: run web + API together (`nx run-many -t dev -p investlab investlab-api`)
+
+## 13. Environment (Varlock + 1Password)
+
+- [ ] 13.1 Add `.env.schema` for `apps/investlab-api` (DATABASE_URL, REDIS_URL, FINNHUB_API_KEY, INVESTLAB_API_TOKEN) and `apps/investlab` (API base URL, INVESTLAB_API_TOKEN); local values via `op(op://…)` with 1Password desktop app auth for dev; remove `.env.example`
+- [ ] 13.2 Load env through Varlock in both apps and in `drizzle.config.ts` (drop `process.loadEnvFile` of `../../apps/investlab/.env`)
+- [ ] 13.3 CI: no 1Password token; schema supplies test/CI values
+
+## 14. Tests (ADR 0006)
+
+- [ ] 14.1 Testcontainers setup (Postgres + Redis) in a separate integration test target for API-side packages; apply migrations per run
+- [ ] 14.2 Rewrite server use-case tests as integration tests with real repositories; Finnhub faked with MSW; delete mocked-repository use-case tests
+- [ ] 14.3 Client use-case integration tests: real `data-client` repositories, API faked with MSW
+- [ ] 14.4 Wire integration target into CI (GitHub Actions has Docker)
+- [ ] 14.5 Manual E2E: create, view, edit, delete portfolio item through web → API; live quotes refresh with no Finnhub key in the browser bundle

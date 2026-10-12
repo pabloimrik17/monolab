@@ -26,23 +26,19 @@ The system SHALL model PortfolioItem as an entity in `investlab-domain` with: id
 
 ### Requirement: PortfolioItem repository interface
 
-The system SHALL define a `PortfolioItemRepository` interface in `investlab-domain` with methods returning `ResultAsync`: `save(item)`, `findById(id)`, `findAll()`, `findByInstrumentId(instrumentId)`, `update(item)`, `delete(id)`.
+The system SHALL define a `PortfolioItemRepository` interface in `investlab-domain` with methods returning `ResultAsync`: `save(item)`, `findById(id)`, `findAll()`, `update(item)`, `delete(id)`. Further `findByX` methods SHALL be added only when a use case needs them; there SHALL be no generic `findBy(filters)`.
 
 #### Scenario: Find all portfolio items
 - **WHEN** `findAll()` is called
 - **THEN** it returns `Ok<PortfolioItem[]>` containing all items ordered by createdAt ascending
 
-#### Scenario: Find by instrument ID
-- **WHEN** `findByInstrumentId(instrumentId)` is called with a valid ID
-- **THEN** it returns `Ok<PortfolioItem[]>` containing only items referencing that instrument
-
 #### Scenario: Delete a portfolio item
 - **WHEN** `delete(id)` is called with a valid ID
 - **THEN** the item is removed and `Ok<void>` is returned
 
-### Requirement: CreatePortfolioItem use case
+### Requirement: PortfolioItemCreate use case
 
-The system SHALL provide a `CreatePortfolioItemUseCase` class decorated with `@injectable()`. It SHALL validate the referenced instrument exists via InstrumentRepository, create the PortfolioItem, persist via PortfolioItemRepository, and return the created item.
+The system SHALL provide a `PortfolioItemCreateUseCase` class (file `portfolio-item-create.use-case.ts`) decorated with `@injectable()`. It SHALL validate the referenced instrument exists via InstrumentRepository, create the PortfolioItem, persist via PortfolioItemRepository, and return the created item.
 
 #### Scenario: Create item with valid instrument
 - **WHEN** executed with a valid instrumentId that exists in the catalog
@@ -52,9 +48,9 @@ The system SHALL provide a `CreatePortfolioItemUseCase` class decorated with `@i
 - **WHEN** executed with an instrumentId that does not exist
 - **THEN** `Err<InstrumentNotFoundError>` is returned
 
-### Requirement: UpdatePortfolioItem use case
+### Requirement: PortfolioItemUpdate use case
 
-The system SHALL provide an `UpdatePortfolioItemUseCase` that updates mutable fields: broker, targetWeight, currentValue, notes.
+The system SHALL provide a `PortfolioItemUpdateUseCase` that updates mutable fields (broker, targetWeight, currentValue, notes) through `PortfolioItem.update(changes)`.
 
 #### Scenario: Update target weight
 - **WHEN** executed with a valid item ID and new targetWeight 25
@@ -64,9 +60,9 @@ The system SHALL provide an `UpdatePortfolioItemUseCase` that updates mutable fi
 - **WHEN** executed with an unknown item ID
 - **THEN** `Err<PortfolioItemNotFoundError>` is returned
 
-### Requirement: DeletePortfolioItem use case
+### Requirement: PortfolioItemDelete use case
 
-The system SHALL provide a `DeletePortfolioItemUseCase` that removes a portfolio item by ID.
+The system SHALL provide a `PortfolioItemDeleteUseCase` that removes a portfolio item by ID.
 
 #### Scenario: Delete existing item
 - **WHEN** executed with a valid item ID
@@ -76,9 +72,9 @@ The system SHALL provide a `DeletePortfolioItemUseCase` that removes a portfolio
 - **WHEN** executed with an unknown item ID
 - **THEN** `Err<PortfolioItemNotFoundError>` is returned
 
-### Requirement: ListPortfolioItems use case
+### Requirement: PortfolioItemList use case
 
-The system SHALL provide a `ListPortfolioItemsUseCase` that returns all portfolio items with their resolved Instrument data (name, symbol, type, assetClass, replicates).
+The system SHALL provide a `PortfolioItemListUseCase` that returns all portfolio items with their resolved Instrument data (name, symbol, type, assetClass, replicates) through a portfolio read-query port declared in `investlab-domain`. The server implementation SHALL resolve items and instruments in a single SQL query.
 
 #### Scenario: List all items with instrument data
 - **WHEN** executed
@@ -87,6 +83,14 @@ The system SHALL provide a `ListPortfolioItemsUseCase` that returns all portfoli
 #### Scenario: Empty portfolio
 - **WHEN** executed and no items exist
 - **THEN** returns `Ok` with empty array
+
+### Requirement: Use case error contract
+
+Every portfolio use case SHALL export a named error union (for example `PortfolioItemUpdateError`). Each domain error SHALL carry a SCREAMING_SNAKE `code` from a typed literal union, which identifies the error across HTTP.
+
+#### Scenario: Not-found error crosses HTTP
+- **WHEN** the API returns `{ "code": "PORTFOLIO_ITEM_NOT_FOUND", "statusCode": 404 }` to the web
+- **THEN** the client use case returns `Err<PortfolioItemNotFoundError>`
 
 ### Requirement: Drizzle portfolio_items table
 
@@ -98,7 +102,7 @@ The system SHALL define a `portfolio_items` table: `id` (UUID PK), `instrument_i
 
 ### Requirement: PortfolioItem domain-persistence mapping
 
-The system SHALL provide `toDomain(row)` and `toRow(entity)` mapper functions for PortfolioItem in `investlab-data`.
+The system SHALL provide `toDomain(row)` and `toRow(entity)` mapper functions for PortfolioItem in a non-exported module of `investlab-data-server`.
 
 #### Scenario: Round-trip mapping
 - **WHEN** a PortfolioItem entity is mapped to a row and back
