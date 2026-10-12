@@ -1,7 +1,7 @@
 // fallow-ignore-file unused-class-member -- port impl bound in DI, use-cases pending
 import { eq } from "drizzle-orm";
 import { inject, injectable } from "inversify";
-import { ResultAsync } from "neverthrow";
+import { err, ok, type ResultAsync } from "neverthrow";
 import {
     PersistenceError,
     type AssetClass,
@@ -12,98 +12,94 @@ import {
 import { instrumentToDomain, instrumentToRow } from "../mappers/instrument.mapper.ts";
 import { instruments } from "../schema/instruments.ts";
 import { DATA_TOKENS } from "../tokens.ts";
+import { wrapDb } from "../wrap-db.ts";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 @injectable()
 export class PgInstrumentRepository implements InstrumentRepository {
-    constructor(@inject(DATA_TOKENS.DrizzleDb) private readonly db: NodePgDatabase) {}
+    private readonly db: ReturnType<typeof wrapDb>;
+
+    constructor(@inject(DATA_TOKENS.DrizzleDb) db: NodePgDatabase) {
+        this.db = wrapDb(db);
+    }
 
     save(instrument: Instrument): ResultAsync<Instrument, PersistenceError> {
-        return ResultAsync.fromPromise(
-            this.db.insert(instruments).values(instrumentToRow(instrument)).returning(),
-            (e) => new PersistenceError(e),
-        ).map((rows) => instrumentToDomain(rows[0]!));
+        return this.db
+            .insert((tx) => tx.insert(instruments).values(instrumentToRow(instrument)).returning())
+            .map((rows) => instrumentToDomain(rows[0]!));
     }
 
     findById(id: string): ResultAsync<Instrument | null, PersistenceError> {
-        return ResultAsync.fromPromise(
-            this.db.select().from(instruments).where(eq(instruments.id, id)),
-            (e) => new PersistenceError(e),
-        ).map((rows) => (rows.length > 0 ? instrumentToDomain(rows[0]!) : null));
+        return this.db
+            .select((tx) => tx.select().from(instruments).where(eq(instruments.id, id)))
+            .map((rows) => (rows.length > 0 ? instrumentToDomain(rows[0]!) : null));
     }
 
     findBySymbol(symbol: string): ResultAsync<Instrument | null, PersistenceError> {
         const normalized = symbol.trim().toUpperCase();
-        return ResultAsync.fromPromise(
-            this.db.select().from(instruments).where(eq(instruments.symbol, normalized)),
-            (e) => new PersistenceError(e),
-        ).map((rows) => (rows.length > 0 ? instrumentToDomain(rows[0]!) : null));
+        return this.db
+            .select((tx) => tx.select().from(instruments).where(eq(instruments.symbol, normalized)))
+            .map((rows) => (rows.length > 0 ? instrumentToDomain(rows[0]!) : null));
     }
 
     findAll(): ResultAsync<Instrument[], PersistenceError> {
-        return ResultAsync.fromPromise(
-            this.db.select().from(instruments),
-            (e) => new PersistenceError(e),
-        ).map((rows) => rows.map(instrumentToDomain));
+        return this.db
+            .select((tx) => tx.select().from(instruments))
+            .map((rows) => rows.map(instrumentToDomain));
     }
 
     findByType(type: InstrumentType): ResultAsync<Instrument[], PersistenceError> {
-        return ResultAsync.fromPromise(
-            this.db.select().from(instruments).where(eq(instruments.type, type)),
-            (e) => new PersistenceError(e),
-        ).map((rows) => rows.map(instrumentToDomain));
+        return this.db
+            .select((tx) => tx.select().from(instruments).where(eq(instruments.type, type)))
+            .map((rows) => rows.map(instrumentToDomain));
     }
 
     findByAssetClass(assetClass: AssetClass): ResultAsync<Instrument[], PersistenceError> {
-        return ResultAsync.fromPromise(
-            this.db.select().from(instruments).where(eq(instruments.assetClass, assetClass)),
-            (e) => new PersistenceError(e),
-        ).map((rows) => rows.map(instrumentToDomain));
+        return this.db
+            .select((tx) =>
+                tx.select().from(instruments).where(eq(instruments.assetClass, assetClass)),
+            )
+            .map((rows) => rows.map(instrumentToDomain));
     }
 
     update(instrument: Instrument): ResultAsync<Instrument, PersistenceError> {
         const row = instrumentToRow(instrument);
-        return ResultAsync.fromPromise(
-            (async () => {
-                const rows = await this.db
+        return this.db
+            .update((tx) =>
+                tx
                     .update(instruments)
                     .set(row)
                     .where(eq(instruments.id, instrument.id))
-                    .returning();
-                if (rows.length === 0) {
-                    throw new PersistenceError(`Instrument not found: ${instrument.id}`);
-                }
-                return rows;
-            })(),
-            (e) => new PersistenceError(e),
-        ).map((rows) => instrumentToDomain(rows[0]!));
+                    .returning(),
+            )
+            .andThen((rows) =>
+                rows.length === 0
+                    ? err(new PersistenceError(`Instrument not found: ${instrument.id}`))
+                    : ok(instrumentToDomain(rows[0]!)),
+            );
     }
 
     delete(id: string): ResultAsync<void, PersistenceError> {
-        return ResultAsync.fromPromise(
-            (async () => {
-                await this.db.delete(instruments).where(eq(instruments.id, id));
-            })(),
-            (e) => new PersistenceError(e),
-        );
+        return this.db
+            .delete((tx) => tx.delete(instruments).where(eq(instruments.id, id)))
+            .map(() => undefined);
     }
 
     upsertBySymbol(instrument: Instrument): ResultAsync<Instrument, PersistenceError> {
         const normalized = instrument.symbol.trim().toUpperCase();
-        return ResultAsync.fromPromise(
-            (async () => {
-                const row = instrumentToRow(instrument);
-                await this.db
+        const row = instrumentToRow(instrument);
+        return this.db
+            .insert((tx) =>
+                tx
                     .insert(instruments)
                     .values({ ...row, symbol: normalized })
-                    .onConflictDoNothing({ target: instruments.symbol });
-                const rows = await this.db
-                    .select()
-                    .from(instruments)
-                    .where(eq(instruments.symbol, normalized));
-                return instrumentToDomain(rows[0]!);
-            })(),
-            (e) => new PersistenceError(e),
-        );
+                    .onConflictDoNothing({ target: instruments.symbol }),
+            )
+            .andThen(() =>
+                this.db.select((tx) =>
+                    tx.select().from(instruments).where(eq(instruments.symbol, normalized)),
+                ),
+            )
+            .map((rows) => instrumentToDomain(rows[0]!));
     }
 }

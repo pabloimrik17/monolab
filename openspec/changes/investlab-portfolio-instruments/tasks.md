@@ -76,7 +76,7 @@
 
 - [x] 9.1 Implement the portfolio read query in `investlab-data-server` with a single SQL JOIN; reuse `instrument.mapper.ts` (mappers stay non-exported modules)
 - [ ] 9.2 Dissolve `investlab-core`: Finnhub client → Finnhub datasource, `QuoteCacheImpl` → Redis datasource, quote repository combining both (cache first, then Finnhub, write-through)
-- [ ] 9.3 Adopt `@m0n0lab/drizzle-neverthrow` (change `drizzle-neverthrow-package`) in PG repositories and read query, removing copy-pasted `ResultAsync.fromPromise`
+- [x] 9.3 Adopt `@m0n0lab/drizzle-neverthrow` (change `drizzle-neverthrow-package`) in PG repositories and read query, removing copy-pasted `ResultAsync.fromPromise`
 - [ ] 9.4 Delete `packages/investlab-core`; update knip/tsconfig refs; `pnpm nx sync`
 
 ## 10. API app
