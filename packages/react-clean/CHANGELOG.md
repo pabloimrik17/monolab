@@ -15,6 +15,13 @@
 
 -   Pablo F. Guerra @pabloimrik17
 
+## [3.4.1](https://github.com/pabloimrik17/monolab/compare/react-clean-v3.4.0...react-clean-v3.4.1) (2026-10-04)
+
+
+### Code Refactoring
+
+* **nx:** keep commands in package scripts ([31f5f8a](https://github.com/pabloimrik17/monolab/commit/31f5f8a2ed5117bd53e866eefa0af63f1e2dda0c))
+
 ## [3.4.0](https://github.com/pabloimrik17/monolab/compare/react-clean-v3.3.1...react-clean-v3.4.0) (2026-07-12)
 
 

@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.7.0](https://github.com/pabloimrik17/monolab/compare/experiments--v1.6.0...experiments--v1.7.0) (2026-10-04)
+
+
+### Features
+
+* **experiments:** add knowledge commands and knowledge_root config ([f66b02a](https://github.com/pabloimrik17/monolab/commit/f66b02ac52346bcb8290b6dd6f09151a9a91324c))
+* **experiments:** add persist and recall run knowledge skills ([8f244f1](https://github.com/pabloimrik17/monolab/commit/8f244f191217a9298bfacbacd3fff20ea24e5293))
+* **experiments:** add run knowledge scripts ([c7dcb7b](https://github.com/pabloimrik17/monolab/commit/c7dcb7b0f143558d946c73fa9fad1fcf81c22f99))
+* **experiments:** persist applied deep runs as a reusable knowledge base ([9dc2aa2](https://github.com/pabloimrik17/monolab/commit/9dc2aa2d3ee1e0cf09da300bb0d8a93d05458e51))
+* **experiments:** wire run knowledge into the deep update flow ([8e4e528](https://github.com/pabloimrik17/monolab/commit/8e4e52827f6323f2194fc734dd14bf32b66105f1))
+
+
+### Bug Fixes
+
+* apply CodeRabbit auto-fixes ([73d1da5](https://github.com/pabloimrik17/monolab/commit/73d1da58262cf712f6159be9c1b3d189c5060d55))
+* apply CodeRabbit auto-fixes ([0076c96](https://github.com/pabloimrik17/monolab/commit/0076c96f18d427b57cf36ef7dbdb5dce6a1ad81f))
+* apply CodeRabbit auto-fixes ([507455c](https://github.com/pabloimrik17/monolab/commit/507455cac1490188da4cc00959febef66c0abeb8))
+* **experiments:** harden run knowledge workflow ([68931d1](https://github.com/pabloimrik17/monolab/commit/68931d10473492760211dabc1850a4246a77390d))
+
+
+### Documentation
+
+* **experiments:** clarify knowledge root setting ([91677d6](https://github.com/pabloimrik17/monolab/commit/91677d6ba80878a5631a20bd6c42bc15aecf79f3))
+
+
+### Code Refactoring
+
+* **experiments:** trim knowledge comments ([833fad2](https://github.com/pabloimrik17/monolab/commit/833fad22f2f49c6e57bbb7889d3799e20581ea61))
+
 ## [1.6.0](https://github.com/pabloimrik17/monolab/compare/experiments--v1.5.0...experiments--v1.6.0) (2026-09-16)
 
 
