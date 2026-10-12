@@ -168,6 +168,7 @@ Access the UI at `http://localhost:51204/__vitest__/`
 **All tests across monorepo:**
 
 ```bash
+pnpm run test                # Every test type
 pnpm run test:unit           # All unit tests
 pnpm run test:integration    # All integration tests
 pnpm run test:types          # All type tests
@@ -177,6 +178,7 @@ pnpm run test:browser        # All browser tests (React packages)
 **Affected tests only (based on git changes):**
 
 ```bash
+pnpm run test:affected
 pnpm run test:unit:affected
 pnpm run test:integration:affected
 pnpm run test:types:affected
@@ -185,9 +187,15 @@ pnpm run test:browser:affected
 
 **Per-package tests:**
 
+Each test type a package has comes with `:changed` (only tests related to
+uncommitted changes) and `:watch` variants, plus `:coverage` when it runs code
+(not type tests), e.g. `test:integration:changed`. `test`, `test:changed`,
+`test:coverage` and `test:watch` run every test type of the package at once.
+
 ```bash
-pnpm --filter @monolab/react-hooks run test:unit
-pnpm --filter @monolab/react-hooks run test:browser
+pnpm --filter @m0n0lab/react-hooks run test
+pnpm --filter @m0n0lab/react-hooks run test:unit:changed
+pnpm --filter @m0n0lab/react-hooks run test:browser
 ```
 
 ### Writing Tests
@@ -235,10 +243,11 @@ test("hook executes in real browser", () => {
 
 ### Configuration
 
-- **Workspace config**: `vitest.workspace.ts` (shared settings)
-- **Package configs**: `packages/*/vitest.config.ts` (per-package overrides)
-- **Shared settings**: `clearMocks`, `restoreMocks`, `unstubEnvs`,
-  `unstubGlobals`, `maxConcurrency: 10`
+- **Project configs**: `packages/*/vitest.config.ts`, `apps/*/vitest.config.ts`
+- **Shared settings**: `@m0n0lab/vitest-config` (`clearMocks`, `restoreMocks`,
+  `unstubEnvs`, `unstubGlobals`, `maxConcurrency: 10`), merged into every
+  config with `mergeConfig(sharedConfig, ...)`
+- **Browser mode**: `headlessChromium()` from `@m0n0lab/vitest-config/browser`
 
 ### CI Testing
 
@@ -444,7 +453,8 @@ When the Release PR is merged:
     - OIDC Trusted Publisher authentication
 2. **npm Publishing**: Packages are built and published to npm
     - Build generates `dist/` artifacts
-    - Uses `pnpm publish` which automatically transforms `workspace:*` → semver ranges
+    - Uses `pnpm publish`, which automatically transforms `workspace:*` into
+      semver ranges
     - Provenance attestation via OIDC authentication
 3. **GitHub Releases**: release-please creates GitHub releases with changelogs
    and tags

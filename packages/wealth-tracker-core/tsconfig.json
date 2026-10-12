@@ -8,6 +8,9 @@
     "exclude": ["**/*.test.ts", "**/*.test-d.ts", "**/*.spec.ts"],
     "references": [
         {
+            "path": "../vitest-config"
+        },
+        {
             "path": "./tsconfig.node.json"
         }
     ]

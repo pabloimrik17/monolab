@@ -10,6 +10,9 @@
         "apps/qup-web/src/routes/**/*.tsx",
         // type-level test files are entries for their assertions
         "**/*.test-d.ts",
+        // integration tests live in a vitest `projects` entry, whose include the fallow vitest plugin does not follow
+        "**/*.integration.ts",
+        "**/*.integration.tsx",
         // tool-loaded configs (oxfmt CLI, validate-branch-name via husky)
         "oxfmt.config.ts",
         "validate-branch-name.config.cjs"

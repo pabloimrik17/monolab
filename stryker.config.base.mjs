@@ -11,6 +11,8 @@ const config = {
         "!src/**/*.test.ts",
         "!src/**/*.test.tsx",
         "!src/**/*.test-d.ts",
+        "!src/**/*.integration.ts",
+        "!src/**/*.integration.tsx",
     ],
     ignorePatterns: [
         "target/**",

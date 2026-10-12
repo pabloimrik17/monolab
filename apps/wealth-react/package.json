@@ -10,7 +10,12 @@
         "lint:knip": "knip --max-issues 100",
         "lint:prettier": "prettier . --check",
         "start": "react-router-serve ./build/server/index.js",
+        "test": "vitest run",
+        "test:changed": "vitest run --changed",
+        "test:coverage": "vitest run --coverage",
+        "test:watch": "vitest",
         "test:unit": "vitest run",
+        "test:unit:changed": "vitest run --changed",
         "test:unit:watch": "vitest",
         "test:unit:coverage": "vitest run --coverage",
         "typecheck": "react-router typegen && tsc --noEmit && tsc --build tsconfig.node.json"
@@ -23,6 +28,7 @@
     },
     "devDependencies": {
         "@codecov/vite-plugin": "catalog:",
+        "@m0n0lab/vitest-config": "workspace:*",
         "@react-router/dev": "8.2.0",
         "@react-router/node": "8.2.0",
         "@react-router/serve": "8.2.0",

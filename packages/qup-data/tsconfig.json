@@ -18,6 +18,9 @@
             "path": "../qup-domain"
         },
         {
+            "path": "../vitest-config"
+        },
+        {
             "path": "./tsconfig.node.json"
         }
     ]

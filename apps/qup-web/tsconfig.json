@@ -24,6 +24,9 @@
             "path": "../../packages/solid-clean"
         },
         {
+            "path": "../../packages/vitest-config"
+        },
+        {
             "path": "./tsconfig.node.json"
         }
     ]

@@ -14,6 +14,9 @@
     "exclude": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
     "references": [
         {
+            "path": "../vitest-config"
+        },
+        {
             "path": "./tsconfig.node.json"
         }
     ]

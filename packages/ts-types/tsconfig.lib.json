@@ -3,5 +3,10 @@
     "compilerOptions": {
         "outDir": "./dist",
         "tsBuildInfoFile": "./tsconfig.lib.tsbuildinfo"
-    }
+    },
+    "references": [
+        {
+            "path": "../vitest-config/tsconfig.lib.json"
+        }
+    ]
 }
