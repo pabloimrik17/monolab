@@ -8,6 +8,50 @@ The system SHALL provide `apps/investlab-api`, a Hono app that is the only Inves
 - **WHEN** the `/portfolio` loader runs
 - **THEN** it calls the API's portfolio list endpoint and the web process opens no database connection
 
+### Requirement: Portfolio item endpoints
+
+The API SHALL expose `GET /portfolio-items` (200, items with their instrument data plus the instrument catalog), `POST /portfolio-items` (201, created item), `PUT /portfolio-items/:id` (200, updated item) and `DELETE /portfolio-items/:id` (204, no body). Bodies SHALL use `investlab-data-contracts` DTOs; entities never cross HTTP.
+
+#### Scenario: List portfolio items
+- **WHEN** `GET /portfolio-items` is called with a valid token
+- **THEN** the API responds 200 with each item paired with its instrument, ordered by `createdAt` ascending, and the instrument catalog
+
+#### Scenario: Create a portfolio item
+- **WHEN** `POST /portfolio-items` carries a valid body for an existing instrument
+- **THEN** the API responds 201 with the created item
+
+#### Scenario: Create for an unknown instrument
+- **WHEN** `POST /portfolio-items` references an instrument that does not exist
+- **THEN** the API responds 404 with `code` `INSTRUMENT_NOT_FOUND`
+
+#### Scenario: Update a portfolio item
+- **WHEN** `PUT /portfolio-items/:id` sets `targetWeight` 25 on an existing item
+- **THEN** the API responds 200 with the item carrying `targetWeight` 25
+
+#### Scenario: Delete a portfolio item
+- **WHEN** `DELETE /portfolio-items/:id` targets an existing item
+- **THEN** the API responds 204 with no body
+
+#### Scenario: Delete an unknown portfolio item
+- **WHEN** `DELETE /portfolio-items/:id` targets a non-existent item
+- **THEN** the API responds 404 with `code` `PORTFOLIO_ITEM_NOT_FOUND`
+
+### Requirement: Instrument and quote endpoints
+
+The API SHALL expose `GET /instruments` (200, the instrument catalog) and `GET /quotes?symbols=<comma-separated symbols>` (200, current quotes for the requested symbols). These, with the portfolio item endpoints, SHALL be the API's complete route list.
+
+#### Scenario: List instruments
+- **WHEN** `GET /instruments` is called with a valid token
+- **THEN** the API responds 200 with the instrument catalog
+
+#### Scenario: Fetch quotes
+- **WHEN** `GET /quotes?symbols=AAPL,MSFT` is called and only AAPL has data
+- **THEN** the API responds 200 with the AAPL quote and omits MSFT
+
+#### Scenario: Quotes without symbols
+- **WHEN** `GET /quotes` is called without a `symbols` parameter
+- **THEN** the API responds 422 with `code` `VALIDATION_ERROR`
+
 ### Requirement: Bearer token protection
 
 The API SHALL reject any request lacking `Authorization: Bearer <INVESTLAB_API_TOKEN>` with HTTP 401. Only the web server SHALL hold the token.

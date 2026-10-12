@@ -60,8 +60,8 @@
 
 ## 7. Specs reconciliation (before implementing §8–§13)
 
-- [ ] 7.1 Write MODIFIED deltas for `quote-polling`, `quote-fetching`, `investlab-quote-cache`, `ticker-management` (quotes server-side via API; browser polls a web resource route; code leaves `investlab-core`)
-- [ ] 7.2 Complete `investlab-http-api` delta scenarios against the final endpoint list
+- [x] 7.1 Write MODIFIED deltas for `quote-polling`, `quote-fetching`, `investlab-quote-cache`, `ticker-management` (quotes server-side via API; browser polls a web resource route; code leaves `investlab-core`)
+- [x] 7.2 Complete `investlab-http-api` delta scenarios against the final endpoint list
 
 ## 8. Domain and naming
 
