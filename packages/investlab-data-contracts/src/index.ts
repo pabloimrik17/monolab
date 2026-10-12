@@ -21,3 +21,9 @@ export {
     type PortfolioItemListDto,
     type PortfolioItemWithInstrumentDto,
 } from "./portfolio-item-list.dto.ts";
+export {
+    quoteDtoSchema,
+    quoteListQueryDtoSchema,
+    type QuoteDto,
+    type QuoteListQueryDto,
+} from "./quote.dto.ts";

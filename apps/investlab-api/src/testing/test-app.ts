@@ -6,6 +6,7 @@ import {
     InMemoryInstrumentRepository,
     InMemoryPortfolioItemQuery,
     InMemoryPortfolioItemRepository,
+    InMemoryQuoteRepository,
 } from "./in-memory-portfolio.ts";
 
 const TEST_TOKEN = "s3cret-token";
@@ -13,6 +14,7 @@ const TEST_TOKEN = "s3cret-token";
 export function createTestApp() {
     const instruments = new InMemoryInstrumentRepository();
     const items = new InMemoryPortfolioItemRepository();
+    const quotes = new InMemoryQuoteRepository();
 
     const container = new Container();
     container.bind(TOKENS.InstrumentRepository).toConstantValue(instruments);
@@ -20,6 +22,7 @@ export function createTestApp() {
     container
         .bind(TOKENS.PortfolioItemQuery)
         .toConstantValue(new InMemoryPortfolioItemQuery(items, instruments));
+    container.bind(TOKENS.QuoteRepository).toConstantValue(quotes);
     container.load(portfolioModule);
 
     const app = createApp(container, { token: TEST_TOKEN });
@@ -39,5 +42,5 @@ export function createTestApp() {
         });
     }
 
-    return { app, request, json, instruments, items };
+    return { app, request, json, instruments, items, quotes };
 }

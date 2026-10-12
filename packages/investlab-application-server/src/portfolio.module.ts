@@ -5,6 +5,7 @@ import { PortfolioItemCreateUseCase } from "./use-cases/portfolio-item-create.us
 import { PortfolioItemDeleteUseCase } from "./use-cases/portfolio-item-delete.use-case.ts";
 import { PortfolioItemListUseCase } from "./use-cases/portfolio-item-list.use-case.ts";
 import { PortfolioItemUpdateUseCase } from "./use-cases/portfolio-item-update.use-case.ts";
+import { QuoteListUseCase } from "./use-cases/quote-list.use-case.ts";
 
 export const portfolioModule = new ContainerModule(({ bind }) => {
     bind(APP_TOKENS.PortfolioItemCreateUseCase).to(PortfolioItemCreateUseCase);
@@ -12,4 +13,5 @@ export const portfolioModule = new ContainerModule(({ bind }) => {
     bind(APP_TOKENS.PortfolioItemDeleteUseCase).to(PortfolioItemDeleteUseCase);
     bind(APP_TOKENS.PortfolioItemListUseCase).to(PortfolioItemListUseCase);
     bind(APP_TOKENS.InstrumentListUseCase).to(InstrumentListUseCase);
+    bind(APP_TOKENS.QuoteListUseCase).to(QuoteListUseCase);
 });

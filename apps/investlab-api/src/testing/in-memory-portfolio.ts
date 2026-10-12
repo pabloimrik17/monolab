@@ -5,11 +5,13 @@ import {
     Instrument,
     InstrumentType,
     type InstrumentRepository,
-    type PersistenceError,
+    PersistenceError,
     type PortfolioItem,
     type PortfolioItemQuery,
     type PortfolioItemRepository,
     type PortfolioItemWithInstrument,
+    type Quote,
+    type QuoteRepository,
 } from "@m0n0lab/investlab-domain";
 
 export class InMemoryInstrumentRepository implements InstrumentRepository {
@@ -91,6 +93,29 @@ export class InMemoryPortfolioItemQuery implements PortfolioItemQuery {
                 })
                 .filter((row): row is PortfolioItemWithInstrument => row !== undefined)
                 .sort((a, b) => a.item.createdAt.getTime() - b.item.createdAt.getTime()),
+        );
+    }
+}
+
+export class InMemoryQuoteRepository implements QuoteRepository {
+    readonly store = new Map<string, Quote>();
+    readonly requested: string[][] = [];
+    failure: PersistenceError | undefined;
+
+    getQuote(symbol: string) {
+        const quote = this.store.get(symbol);
+        return quote ? okAsync(quote) : errAsync(new PersistenceError(new Error("No quote")));
+    }
+    getQuotes(symbols: string[]) {
+        this.requested.push(symbols);
+        if (this.failure) return errAsync(this.failure);
+        return okAsync(
+            new Map(
+                symbols.flatMap((symbol) => {
+                    const quote = this.store.get(symbol);
+                    return quote ? [[symbol, quote] as const] : [];
+                }),
+            ),
         );
     }
 }

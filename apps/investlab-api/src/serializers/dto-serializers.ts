@@ -3,8 +3,9 @@ import type {
     InstrumentDto,
     PortfolioItemDto,
     PortfolioItemListDto,
+    QuoteDto,
 } from "@m0n0lab/investlab-data-contracts";
-import type { Instrument, PortfolioItem } from "@m0n0lab/investlab-domain";
+import type { Instrument, PortfolioItem, Quote } from "@m0n0lab/investlab-domain";
 
 export function toPortfolioItemDto(item: PortfolioItem): PortfolioItemDto {
     return {
@@ -43,5 +44,15 @@ export function toPortfolioItemListDto({
             instrument: toInstrumentDto(instrument),
         })),
         instruments: instruments.map(toInstrumentDto),
+    };
+}
+
+export function toQuoteDto(quote: Quote): QuoteDto {
+    return {
+        symbol: quote.symbol,
+        price: quote.price,
+        change: quote.change,
+        changePercent: quote.changePercent,
+        updatedAt: quote.updatedAt.toISOString(),
     };
 }

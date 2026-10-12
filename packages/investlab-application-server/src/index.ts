@@ -21,3 +21,4 @@ export {
     InstrumentListUseCase,
     type InstrumentListError,
 } from "./use-cases/instrument-list.use-case.ts";
+export { QuoteListUseCase, type QuoteListError } from "./use-cases/quote-list.use-case.ts";

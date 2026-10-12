@@ -16,11 +16,13 @@ import type {
     PortfolioItemUpdateError,
     PortfolioItemUpdateUseCase,
 } from "./portfolio-item-update.use-case.ts";
+import type { QuoteListError, QuoteListUseCase } from "./quote-list.use-case.ts";
 import type {
     InstrumentNotFoundError,
     PersistenceError,
     PortfolioItem,
     PortfolioItemNotFoundError,
+    Quote,
     ValidationError,
 } from "@m0n0lab/investlab-domain";
 import type { ResultAsync } from "neverthrow";
@@ -57,6 +59,13 @@ describe("use case error unions", () => {
         expectTypeOf<PortfolioItemListError>().toEqualTypeOf<PersistenceError>();
         expectTypeOf<ReturnType<PortfolioItemListUseCase["execute"]>>().toEqualTypeOf<
             ResultAsync<PortfolioItemList, PortfolioItemListError>
+        >();
+    });
+
+    test("QuoteListError", () => {
+        expectTypeOf<QuoteListError>().toEqualTypeOf<PersistenceError>();
+        expectTypeOf<ReturnType<QuoteListUseCase["execute"]>>().toEqualTypeOf<
+            ResultAsync<Quote[], QuoteListError>
         >();
     });
 });
