@@ -1,10 +1,10 @@
 export { APP_TOKENS } from "./tokens.ts";
 export { portfolioModule } from "./portfolio.module.ts";
-export { CreatePortfolioItemUseCase } from "./use-cases/create-portfolio-item.use-case.ts";
-export { UpdatePortfolioItemUseCase } from "./use-cases/update-portfolio-item.use-case.ts";
-export { DeletePortfolioItemUseCase } from "./use-cases/delete-portfolio-item.use-case.ts";
+export { PortfolioItemCreateUseCase } from "./use-cases/portfolio-item-create.use-case.ts";
+export { PortfolioItemUpdateUseCase } from "./use-cases/portfolio-item-update.use-case.ts";
+export { PortfolioItemDeleteUseCase } from "./use-cases/portfolio-item-delete.use-case.ts";
 export {
-    ListPortfolioItemsUseCase,
+    PortfolioItemListUseCase,
     type PortfolioItemList,
     type PortfolioItemWithInstrument,
-} from "./use-cases/list-portfolio-items.use-case.ts";
+} from "./use-cases/portfolio-item-list.use-case.ts";

@@ -12,7 +12,7 @@ import {
 } from "@m0n0lab/investlab-domain";
 
 @injectable()
-export class CreatePortfolioItemUseCase {
+export class PortfolioItemCreateUseCase {
     constructor(
         @inject(TOKENS.InstrumentRepository)
         private readonly instrumentRepo: InstrumentRepository,

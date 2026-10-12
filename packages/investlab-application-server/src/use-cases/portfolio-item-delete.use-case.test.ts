@@ -1,7 +1,7 @@
 import { okAsync } from "neverthrow";
 import { describe, expect, it, vi } from "vitest";
 import { PortfolioItem, type PortfolioItemRepository } from "@m0n0lab/investlab-domain";
-import { DeletePortfolioItemUseCase } from "./delete-portfolio-item.use-case.ts";
+import { PortfolioItemDeleteUseCase } from "./portfolio-item-delete.use-case.ts";
 
 function makeRepo(overrides: Partial<PortfolioItemRepository> = {}): PortfolioItemRepository {
     return {
@@ -15,7 +15,7 @@ function makeRepo(overrides: Partial<PortfolioItemRepository> = {}): PortfolioIt
     };
 }
 
-describe("DeletePortfolioItemUseCase", () => {
+describe("PortfolioItemDeleteUseCase", () => {
     it("deletes existing item", async () => {
         const createResult = PortfolioItem.create({
             instrumentId: "instr-1",
@@ -30,7 +30,7 @@ describe("DeletePortfolioItemUseCase", () => {
             delete: vi.fn(() => okAsync(undefined)),
         });
 
-        const useCase = new DeletePortfolioItemUseCase(repo);
+        const useCase = new PortfolioItemDeleteUseCase(repo);
         const result = await useCase.execute(item.id);
 
         expect(result.isOk()).toBe(true);
@@ -42,7 +42,7 @@ describe("DeletePortfolioItemUseCase", () => {
             findById: vi.fn(() => okAsync(null)),
         });
 
-        const useCase = new DeletePortfolioItemUseCase(repo);
+        const useCase = new PortfolioItemDeleteUseCase(repo);
         const result = await useCase.execute("missing");
 
         expect(result.isErr()).toBe(true);

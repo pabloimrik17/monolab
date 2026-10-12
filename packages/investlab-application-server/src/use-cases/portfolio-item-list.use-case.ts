@@ -20,7 +20,7 @@ export interface PortfolioItemList {
 }
 
 @injectable()
-export class ListPortfolioItemsUseCase {
+export class PortfolioItemListUseCase {
     constructor(
         @inject(TOKENS.PortfolioItemRepository)
         private readonly portfolioItemRepo: PortfolioItemRepository,

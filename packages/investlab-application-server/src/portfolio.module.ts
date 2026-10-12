@@ -1,13 +1,13 @@
 import { ContainerModule } from "inversify";
 import { APP_TOKENS } from "./tokens.ts";
-import { CreatePortfolioItemUseCase } from "./use-cases/create-portfolio-item.use-case.ts";
-import { DeletePortfolioItemUseCase } from "./use-cases/delete-portfolio-item.use-case.ts";
-import { ListPortfolioItemsUseCase } from "./use-cases/list-portfolio-items.use-case.ts";
-import { UpdatePortfolioItemUseCase } from "./use-cases/update-portfolio-item.use-case.ts";
+import { PortfolioItemCreateUseCase } from "./use-cases/portfolio-item-create.use-case.ts";
+import { PortfolioItemDeleteUseCase } from "./use-cases/portfolio-item-delete.use-case.ts";
+import { PortfolioItemListUseCase } from "./use-cases/portfolio-item-list.use-case.ts";
+import { PortfolioItemUpdateUseCase } from "./use-cases/portfolio-item-update.use-case.ts";
 
 export const portfolioModule = new ContainerModule(({ bind }) => {
-    bind(APP_TOKENS.CreatePortfolioItemUseCase).to(CreatePortfolioItemUseCase);
-    bind(APP_TOKENS.UpdatePortfolioItemUseCase).to(UpdatePortfolioItemUseCase);
-    bind(APP_TOKENS.DeletePortfolioItemUseCase).to(DeletePortfolioItemUseCase);
-    bind(APP_TOKENS.ListPortfolioItemsUseCase).to(ListPortfolioItemsUseCase);
+    bind(APP_TOKENS.PortfolioItemCreateUseCase).to(PortfolioItemCreateUseCase);
+    bind(APP_TOKENS.PortfolioItemUpdateUseCase).to(PortfolioItemUpdateUseCase);
+    bind(APP_TOKENS.PortfolioItemDeleteUseCase).to(PortfolioItemDeleteUseCase);
+    bind(APP_TOKENS.PortfolioItemListUseCase).to(PortfolioItemListUseCase);
 });

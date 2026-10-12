@@ -65,7 +65,7 @@
 
 ## 8. Domain and naming
 
-- [ ] 8.1 Rename server use cases to entity-action: `portfolio-item-{create,update,delete,list}.use-case.ts`, classes `PortfolioItem{Create,Update,Delete,List}UseCase`, tokens accordingly
+- [x] 8.1 Rename server use cases to entity-action: `portfolio-item-{create,update,delete,list}.use-case.ts`, classes `PortfolioItem{Create,Update,Delete,List}UseCase`, tokens accordingly
 - [ ] 8.2 Export a named error union per use case (`PortfolioItemUpdateError`, …)
 - [ ] 8.3 Type `DomainError.code` as a literal union of the existing SCREAMING_SNAKE codes
 - [ ] 8.4 Remove `PortfolioItemRepository.findByInstrumentId` (no callers) from port and PG impl

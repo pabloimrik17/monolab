@@ -11,7 +11,7 @@ import {
 } from "@m0n0lab/investlab-domain";
 
 @injectable()
-export class UpdatePortfolioItemUseCase {
+export class PortfolioItemUpdateUseCase {
     constructor(
         @inject(TOKENS.PortfolioItemRepository)
         private readonly portfolioItemRepo: PortfolioItemRepository,

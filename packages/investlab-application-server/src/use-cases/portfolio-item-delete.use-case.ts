@@ -9,7 +9,7 @@ import {
 } from "@m0n0lab/investlab-domain";
 
 @injectable()
-export class DeletePortfolioItemUseCase {
+export class PortfolioItemDeleteUseCase {
     constructor(
         @inject(TOKENS.PortfolioItemRepository)
         private readonly portfolioItemRepo: PortfolioItemRepository,

@@ -9,7 +9,7 @@ import {
     type InstrumentRepository,
     type PortfolioItemRepository,
 } from "@m0n0lab/investlab-domain";
-import { ListPortfolioItemsUseCase } from "./list-portfolio-items.use-case.ts";
+import { PortfolioItemListUseCase } from "./portfolio-item-list.use-case.ts";
 
 function makeInstrumentRepo(overrides: Partial<InstrumentRepository> = {}): InstrumentRepository {
     return {
@@ -51,7 +51,7 @@ function makeInstrument(): Instrument {
     return result.value;
 }
 
-describe("ListPortfolioItemsUseCase", () => {
+describe("PortfolioItemListUseCase", () => {
     it("returns no items but still lists instruments when portfolio is empty", async () => {
         const instrument = makeInstrument();
         const portfolioRepo = makePortfolioItemRepo({
@@ -61,7 +61,7 @@ describe("ListPortfolioItemsUseCase", () => {
             findAll: vi.fn(() => okAsync([instrument])),
         });
 
-        const useCase = new ListPortfolioItemsUseCase(portfolioRepo, instrumentRepo);
+        const useCase = new PortfolioItemListUseCase(portfolioRepo, instrumentRepo);
         const result = await useCase.execute();
 
         expect(result.isOk()).toBe(true);
@@ -89,7 +89,7 @@ describe("ListPortfolioItemsUseCase", () => {
             findAll: vi.fn(() => okAsync([instrument])),
         });
 
-        const useCase = new ListPortfolioItemsUseCase(portfolioRepo, instrumentRepo);
+        const useCase = new PortfolioItemListUseCase(portfolioRepo, instrumentRepo);
         const result = await useCase.execute();
 
         expect(result.isOk()).toBe(true);
@@ -117,7 +117,7 @@ describe("ListPortfolioItemsUseCase", () => {
             findAll: vi.fn(() => okAsync([])),
         });
 
-        const useCase = new ListPortfolioItemsUseCase(portfolioRepo, instrumentRepo);
+        const useCase = new PortfolioItemListUseCase(portfolioRepo, instrumentRepo);
         const result = await useCase.execute();
 
         expect(result.isOk()).toBe(true);
@@ -135,7 +135,7 @@ describe("ListPortfolioItemsUseCase", () => {
             findAll: vi.fn(() => errAsync(failure)),
         });
 
-        const useCase = new ListPortfolioItemsUseCase(portfolioRepo, instrumentRepo);
+        const useCase = new PortfolioItemListUseCase(portfolioRepo, instrumentRepo);
         const result = await useCase.execute();
 
         expect(result.isErr()).toBe(true);

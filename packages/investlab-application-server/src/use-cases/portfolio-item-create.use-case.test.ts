@@ -9,7 +9,7 @@ import {
     type PortfolioItem,
     type PortfolioItemRepository,
 } from "@m0n0lab/investlab-domain";
-import { CreatePortfolioItemUseCase } from "./create-portfolio-item.use-case.ts";
+import { PortfolioItemCreateUseCase } from "./portfolio-item-create.use-case.ts";
 
 function makeInstrumentRepo(overrides: Partial<InstrumentRepository> = {}): InstrumentRepository {
     return {
@@ -40,7 +40,7 @@ function makePortfolioItemRepo(
     };
 }
 
-describe("CreatePortfolioItemUseCase", () => {
+describe("PortfolioItemCreateUseCase", () => {
     it("creates and persists when instrument exists", async () => {
         const instrumentResult = Instrument.create({
             symbol: "SPY",
@@ -58,7 +58,7 @@ describe("CreatePortfolioItemUseCase", () => {
             save: vi.fn((item: PortfolioItem) => okAsync(item)),
         });
 
-        const useCase = new CreatePortfolioItemUseCase(instrumentRepo, portfolioItemRepo);
+        const useCase = new PortfolioItemCreateUseCase(instrumentRepo, portfolioItemRepo);
         const result = await useCase.execute({
             instrumentId: instrument.id,
             broker: "MyInvestor",
@@ -79,7 +79,7 @@ describe("CreatePortfolioItemUseCase", () => {
         });
         const portfolioItemRepo = makePortfolioItemRepo();
 
-        const useCase = new CreatePortfolioItemUseCase(instrumentRepo, portfolioItemRepo);
+        const useCase = new PortfolioItemCreateUseCase(instrumentRepo, portfolioItemRepo);
         const result = await useCase.execute({
             instrumentId: "missing-id",
             broker: "MyInvestor",
@@ -107,7 +107,7 @@ describe("CreatePortfolioItemUseCase", () => {
         });
         const portfolioItemRepo = makePortfolioItemRepo();
 
-        const useCase = new CreatePortfolioItemUseCase(instrumentRepo, portfolioItemRepo);
+        const useCase = new PortfolioItemCreateUseCase(instrumentRepo, portfolioItemRepo);
         const result = await useCase.execute({
             instrumentId: instrumentResult.value.id,
             broker: "MyInvestor",
@@ -126,7 +126,7 @@ describe("CreatePortfolioItemUseCase", () => {
         });
         const portfolioItemRepo = makePortfolioItemRepo();
 
-        const useCase = new CreatePortfolioItemUseCase(instrumentRepo, portfolioItemRepo);
+        const useCase = new PortfolioItemCreateUseCase(instrumentRepo, portfolioItemRepo);
         const result = await useCase.execute({
             instrumentId: "any",
             broker: "MyInvestor",
