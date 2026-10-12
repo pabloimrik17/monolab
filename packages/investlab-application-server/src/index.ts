@@ -17,3 +17,7 @@ export {
     type PortfolioItemList,
     type PortfolioItemListError,
 } from "./use-cases/portfolio-item-list.use-case.ts";
+export {
+    InstrumentListUseCase,
+    type InstrumentListError,
+} from "./use-cases/instrument-list.use-case.ts";
