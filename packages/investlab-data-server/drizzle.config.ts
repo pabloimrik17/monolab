@@ -1,15 +1,19 @@
-import { existsSync } from "node:fs";
 import { defineConfig } from "drizzle-kit";
 
-// The API owns the database; migrations read its env.
-const appEnvFile = "../../apps/investlab-api/.env";
-if (existsSync(appEnvFile)) process.loadEnvFile(appEnvFile);
+// The API owns the database. Run via the package scripts: `varlock run` injects
+// DATABASE_URL from apps/investlab-api/.env.schema.
+const databaseUrl = process.env["DATABASE_URL"];
+if (!databaseUrl) {
+    throw new Error(
+        "DATABASE_URL is not set; run via `pnpm db:migrate` / `pnpm db:generate` (Varlock)",
+    );
+}
 
 export default defineConfig({
     dialect: "postgresql",
     schema: "./src/schema/index.ts",
     out: "./drizzle",
     dbCredentials: {
-        url: process.env["DATABASE_URL"]!,
+        url: databaseUrl,
     },
 });

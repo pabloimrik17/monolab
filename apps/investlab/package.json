@@ -9,7 +9,7 @@
         "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 60 .",
         "lint:knip": "knip --max-issues 100",
         "lint:prettier": "prettier . --check",
-        "start": "react-router-serve ./build/server/index.js",
+        "start": "varlock run -- react-router-serve ./build/server/index.js",
         "test": "vitest run",
         "test:changed": "vitest run --changed",
         "test:coverage": "vitest run --coverage",
@@ -27,6 +27,7 @@
         "@m0n0lab/investlab-domain": "workspace:*",
         "@react-router/node": "8.2.0",
         "@react-router/serve": "8.2.0",
+        "@varlock/1password-plugin": "catalog:",
         "drizzle-orm": "catalog:",
         "inversify": "catalog:",
         "ioredis": "catalog:",
@@ -34,6 +35,7 @@
         "react": "catalog:",
         "react-dom": "catalog:",
         "react-router": "8.2.0",
+        "varlock": "catalog:",
         "zod": "3.25.76"
     },
     "devDependencies": {
@@ -43,6 +45,7 @@
         "@types/pg": "8.20.0",
         "@types/react": "catalog:",
         "@types/react-dom": "19.2.3",
+        "@varlock/vite-integration": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "typescript": "catalog:",
         "vite": "catalog:",

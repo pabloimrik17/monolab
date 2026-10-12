@@ -25,12 +25,14 @@
         "@m0n0lab/investlab-data-contracts": "workspace:*",
         "@m0n0lab/investlab-data-server": "workspace:*",
         "@m0n0lab/investlab-domain": "workspace:*",
+        "@varlock/1password-plugin": "catalog:",
         "drizzle-orm": "catalog:",
         "hono": "4.12.30",
         "inversify": "catalog:",
         "ioredis": "catalog:",
         "neverthrow": "catalog:",
         "pg": "catalog:",
+        "varlock": "catalog:",
         "zod": "3.25.76"
     },
     "devDependencies": {

@@ -184,6 +184,9 @@ apps/investlab/build
 .env.test.local
 .env.production.local
 .env.local
+# Varlock: committed schema + CI placeholders (override global `.env*` ignores)
+!.env.schema
+!.env.ci
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
