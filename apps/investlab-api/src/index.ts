@@ -1,3 +1,4 @@
+import "varlock/auto-load";
 import { serve } from "@hono/node-server";
 import { createApp } from "./app.ts";
 import { createContainer, readApiEnv } from "./container.ts";

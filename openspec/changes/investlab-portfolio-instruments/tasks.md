@@ -103,9 +103,9 @@
 
 ## 13. Environment (Varlock + 1Password)
 
-- [ ] 13.1 Add `.env.schema` for `apps/investlab-api` (DATABASE_URL, REDIS_URL, FINNHUB_API_KEY, INVESTLAB_API_TOKEN) and `apps/investlab` (API base URL, INVESTLAB_API_TOKEN); local values via `op(op://…)` with 1Password desktop app auth for dev; remove `.env.example`
-- [ ] 13.2 Load env through Varlock in both apps and in `drizzle.config.ts` (drop `process.loadEnvFile` of `../../apps/investlab/.env`)
-- [ ] 13.3 CI: no 1Password token; schema supplies test/CI values
+- [x] 13.1 Add `.env.schema` for `apps/investlab-api` (DATABASE_URL, REDIS_URL, FINNHUB_API_KEY, INVESTLAB_API_TOKEN) and `apps/investlab` (API base URL, INVESTLAB_API_TOKEN); local values via `op(op://…)` with 1Password desktop app auth for dev; remove `.env.example`
+- [x] 13.2 Load env through Varlock in both apps and in `drizzle.config.ts` (drop `process.loadEnvFile` of `../../apps/investlab/.env`)
+- [x] 13.3 CI: no 1Password token; schema supplies test/CI values
 
 ## 14. Tests (ADR 0006)
 

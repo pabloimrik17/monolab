@@ -1,5 +1,6 @@
 import { codecovVitePlugin } from "@codecov/vite-plugin";
 import { reactRouter } from "@react-router/dev/vite";
+import { varlockVitePlugin } from "@varlock/vite-integration";
 import { defineConfig, type PluginOption } from "vite";
 
 // Cast: see note in apps/demo/vite.config.ts — drop once @codecov/vite-plugin
@@ -13,5 +14,5 @@ const codecovPlugin = codecovVitePlugin({
 }) as PluginOption;
 
 export default defineConfig({
-    plugins: [reactRouter(), codecovPlugin],
+    plugins: [varlockVitePlugin(), reactRouter(), codecovPlugin],
 });
