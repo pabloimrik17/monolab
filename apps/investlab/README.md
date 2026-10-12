@@ -11,7 +11,7 @@ Env is declared in `.env.schema` and loaded with [Varlock](https://varlock.dev);
 3. Create a vault `monolab-dev` with an item `investlab` with fields `finnhub-api-key` ([get one](https://finnhub.io/register)) and `api-token` (any random string; shared with `apps/investlab-api`).
 4. Check: `pnpm exec varlock load` (from `apps/investlab`).
 
-Non-secret defaults (DB/Redis/API URL) live in the schema. Override locally with a gitignored `.env.local`.
+Non-secret defaults (API URL) live in the schema. Override locally with a gitignored `.env.local`.
 
 CI needs no 1Password: `APP_ENV` resolves to `ci` and `.env.ci` supplies placeholders.
 

@@ -4,7 +4,7 @@ import {
     type PortfolioItemDeleteUseCase,
     type PortfolioItemListUseCase,
     type PortfolioItemUpdateUseCase,
-} from "@m0n0lab/investlab-application-server";
+} from "@m0n0lab/investlab-application-client";
 import { PortfolioPage } from "../components/portfolio/portfolio-page";
 import { getContainer } from "../lib/container.server";
 import {

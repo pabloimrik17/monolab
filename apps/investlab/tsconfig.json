@@ -34,13 +34,16 @@
         "path": "../../packages/investlab-domain"
       },
       {
-        "path": "../../packages/investlab-data-contracts"
-      },
-      {
         "path": "../../packages/investlab-data-server"
       },
       {
-        "path": "../../packages/investlab-application-server"
+        "path": "../../packages/investlab-data-contracts"
+      },
+      {
+        "path": "../../packages/investlab-data-client"
+      },
+      {
+        "path": "../../packages/investlab-application-client"
       }
     ]
 }

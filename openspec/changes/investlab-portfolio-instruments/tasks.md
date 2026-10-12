@@ -96,7 +96,7 @@
 
 ## 12. Web app
 
-- [ ] 12.1 Replace server wiring in `container.server.ts` with client modules (API base URL + token)
+- [x] 12.1 Replace server wiring in `container.server.ts` with client modules (API base URL + token)
 - [ ] 12.2 `/portfolio` loader/action call client use cases
 - [ ] 12.3 Add a web resource route for quotes; point the browser poller at it; move ticker store into `apps/investlab`; remove `VITE_FINNHUB_API_KEY`
 - [ ] 12.4 Dev: run web + API together (`nx run-many -t dev -p investlab investlab-api`)

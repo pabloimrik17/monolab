@@ -1,58 +1,42 @@
-import { drizzle } from "drizzle-orm/node-postgres";
 import { Container } from "inversify";
-import Redis from "ioredis";
-import pg from "pg";
-import { portfolioModule } from "@m0n0lab/investlab-application-server";
-import {
-    createFinnhubQuoteDatasource,
-    DATA_TOKENS,
-    dataModule,
-    portfolioDataModule,
-    quoteDataModule,
-} from "@m0n0lab/investlab-data-server";
+import { applicationClientModule } from "@m0n0lab/investlab-application-client";
+import { DATA_CLIENT_TOKENS, dataClientModule } from "@m0n0lab/investlab-data-client";
+
+interface WebEnv {
+    readonly apiUrl: string;
+    readonly apiToken: string;
+}
+
+const REQUIRED_VARS = ["INVESTLAB_API_URL", "INVESTLAB_API_TOKEN"] as const;
+
+export function readWebEnv(env: Record<string, string | undefined>): WebEnv {
+    const missing = REQUIRED_VARS.filter((name) => !env[name]);
+    if (missing.length > 0) {
+        throw new Error(`Missing env vars: ${missing.join(", ")}`);
+    }
+    return {
+        apiUrl: env["INVESTLAB_API_URL"]!,
+        apiToken: env["INVESTLAB_API_TOKEN"]!,
+    };
+}
+
+export function createContainer({ apiUrl, apiToken }: WebEnv): Container {
+    const container = new Container();
+
+    container.bind(DATA_CLIENT_TOKENS.ApiBaseUrl).toConstantValue(apiUrl);
+    container.bind(DATA_CLIENT_TOKENS.ApiToken).toConstantValue(apiToken);
+
+    container.load(dataClientModule);
+    container.load(applicationClientModule);
+
+    return container;
+}
 
 let singleton: Container | null = null;
 
 export function getContainer(): Container {
     if (singleton === null) {
-        singleton = createContainer();
+        singleton = createContainer(readWebEnv(process.env));
     }
     return singleton;
-}
-
-function createContainer(): Container {
-    const container = new Container();
-
-    // Database
-    const databaseUrl = process.env["DATABASE_URL"];
-    if (!databaseUrl) {
-        throw new Error("DATABASE_URL is required");
-    }
-    const pool = new pg.Pool({ connectionString: databaseUrl });
-    const db = drizzle(pool);
-    container.bind(DATA_TOKENS.DrizzleDb).toConstantValue(db);
-
-    // Redis
-    const redisUrl = process.env["REDIS_URL"];
-    if (!redisUrl) {
-        throw new Error("REDIS_URL is required");
-    }
-    const redis = new Redis(redisUrl);
-    container.bind(DATA_TOKENS.Redis).toConstantValue(redis);
-
-    // Finnhub
-    const finnhubApiKey = process.env["FINNHUB_API_KEY"];
-    if (!finnhubApiKey) {
-        throw new Error("FINNHUB_API_KEY is required");
-    }
-    const finnhub = createFinnhubQuoteDatasource(finnhubApiKey);
-    container.bind(DATA_TOKENS.FinnhubQuoteDatasource).toConstantValue(finnhub);
-
-    // Modules
-    container.load(dataModule);
-    container.load(quoteDataModule);
-    container.load(portfolioModule);
-    container.load(portfolioDataModule);
-
-    return container;
 }
