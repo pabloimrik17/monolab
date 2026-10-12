@@ -19,7 +19,7 @@
         {
             "name": "experiments",
             "source": "./claude-plugins/experiments",
-            "version": "1.6.0",
+            "version": "1.7.0",
             "description": "Beta skills and commands staging area for monolab"
         },
         {
@@ -31,7 +31,7 @@
         {
             "name": "prompt-presets",
             "source": "./claude-plugins/prompt-presets",
-            "version": "0.1.0",
+            "version": "0.2.0",
             "description": "Curated third-party prompts shipped verbatim as slash commands"
         }
     ]
