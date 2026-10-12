@@ -1,6 +1,9 @@
 {
     "name": "@m0n0lab/investlab",
     "targets": {
+        "build": {
+            "outputs": ["{projectRoot}/build"]
+        },
         "typecheck": {
             "dependsOn": ["^build"]
         }
