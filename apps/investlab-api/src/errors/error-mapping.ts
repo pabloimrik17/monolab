@@ -1,4 +1,5 @@
 import { DomainError, type DomainErrorCode } from "@m0n0lab/investlab-domain";
+import { RequestValidationError } from "./request-validation.error.ts";
 import type { ApiErrorDto } from "@m0n0lab/investlab-data-contracts";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
@@ -20,6 +21,7 @@ export function toApiError(error: DomainError): ApiErrorDto {
         code: error.code,
         message: statusCode >= 500 ? "Internal server error" : error.message,
         statusCode,
+        ...(error instanceof RequestValidationError && { issues: [...error.issues] }),
     };
 }
 

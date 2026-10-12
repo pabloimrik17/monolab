@@ -15,6 +15,9 @@
     "exclude": ["**/*.test.ts", "**/*.spec.ts"],
     "references": [
         {
+            "path": "../../packages/investlab-application-server"
+        },
+        {
             "path": "../../packages/investlab-data-contracts"
         },
         {

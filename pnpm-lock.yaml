@@ -364,6 +364,9 @@ importers:
       '@hono/node-server':
         specifier: 2.0.10
         version: 2.0.10(hono@4.12.30)
+      '@m0n0lab/investlab-application-server':
+        specifier: workspace:*
+        version: link:../../packages/investlab-application-server
       '@m0n0lab/investlab-data-contracts':
         specifier: workspace:*
         version: link:../../packages/investlab-data-contracts
@@ -376,6 +379,12 @@ importers:
       inversify:
         specifier: 'catalog:'
         version: 8.2.1(reflect-metadata@0.2.2)
+      neverthrow:
+        specifier: 'catalog:'
+        version: 8.2.0
+      zod:
+        specifier: 3.25.76
+        version: 3.25.76
     devDependencies:
       '@codecov/rollup-plugin':
         specifier: 'catalog:'

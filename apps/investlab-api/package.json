@@ -19,10 +19,13 @@
     },
     "dependencies": {
         "@hono/node-server": "2.0.10",
+        "@m0n0lab/investlab-application-server": "workspace:*",
         "@m0n0lab/investlab-data-contracts": "workspace:*",
         "@m0n0lab/investlab-domain": "workspace:*",
         "hono": "4.12.30",
-        "inversify": "catalog:"
+        "inversify": "catalog:",
+        "neverthrow": "catalog:",
+        "zod": "3.25.76"
     },
     "devDependencies": {
         "@codecov/rollup-plugin": "catalog:",
