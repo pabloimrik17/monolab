@@ -1,14 +1,14 @@
-import { batchExecute } from "./utils/batch.js";
-import type { Quote } from "./types.js";
+import { batchExecute } from "./batch.ts";
+import type { Quote } from "@m0n0lab/investlab-domain";
 
 const FINNHUB_BASE_URL = "https://finnhub.io/api/v1";
 const DEFAULT_CONCURRENCY = 10;
 
-export interface FinnhubClientOptions {
+export interface FinnhubQuoteDatasourceOptions {
     concurrency?: number;
 }
 
-export interface FinnhubClient {
+export interface FinnhubQuoteDatasource {
     getQuote(symbol: string): Promise<Quote>;
     getQuotes(symbols: string[]): Promise<Map<string, Quote>>;
 }
@@ -24,10 +24,10 @@ interface FinnhubQuoteResponse {
     t: number; // timestamp
 }
 
-export function createFinnhubClient(
+export function createFinnhubQuoteDatasource(
     apiKey: string,
-    options: FinnhubClientOptions = {},
-): FinnhubClient {
+    options: FinnhubQuoteDatasourceOptions = {},
+): FinnhubQuoteDatasource {
     if (!apiKey) {
         throw new Error("API key is required");
     }
