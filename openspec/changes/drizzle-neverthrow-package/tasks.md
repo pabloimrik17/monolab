@@ -5,12 +5,12 @@
 
 ## 2. Wrapper
 
-- [ ] 2.1 Implement `wrap(db, { toError })` with the operations `investlab-data-server` uses (select, insert/update/delete with `returning`; transactions only if used)
-- [ ] 2.2 Integration tests per operation against Postgres from Testcontainers
-- [ ] 2.3 README with usage and the "add operations on demand" rule
+- [x] 2.1 Implement `wrap(db, { toError })` with the operations `investlab-data-server` uses (select, insert/update/delete with `returning`; transactions only if used)
+- [x] 2.2 Integration tests per operation against Postgres from Testcontainers
+- [x] 2.3 README with usage and the "add operations on demand" rule
 
 ## 3. Adoption and verification
 
 - [ ] 3.1 `investlab-data-server` replaces `ResultAsync.fromPromise` calls (task 9.3 of `investlab-portfolio-instruments`)
-- [ ] 3.2 Verify `nx run drizzle-neverthrow:build`, `nx run drizzle-neverthrow:test`, `nx run drizzle-neverthrow:typecheck`
+- [x] 3.2 Verify `nx run drizzle-neverthrow:build`, `nx run drizzle-neverthrow:test`, `nx run drizzle-neverthrow:typecheck`
 - [ ] 3.3 `qup-data` adoption tracked in beads, not in this change
