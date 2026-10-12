@@ -91,7 +91,7 @@
 ## 11. Client packages
 
 - [x] 11.1 Create `packages/investlab-data-client`: HTTP repositories + portfolio read query + quote repository against the API using `investlab-data-contracts`; rebuild domain errors from `code`; network failure → client error
-- [ ] 11.2 Create `packages/investlab-application-client`: client use cases with entity-action names and their error unions (adds the network error)
+- [x] 11.2 Create `packages/investlab-application-client`: client use cases with entity-action names and their error unions (adds the network error)
 - [ ] 11.3 Exports validated (`attw --pack` if published); verify builds via `nx run-many -t build`
 
 ## 12. Web app

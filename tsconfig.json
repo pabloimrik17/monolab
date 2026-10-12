@@ -59,6 +59,9 @@
       },
       {
         "path": "./apps/investlab-api"
+      },
+      {
+        "path": "./packages/investlab-application-client"
       }
     ]
 }
