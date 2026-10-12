@@ -40,9 +40,6 @@
         "path": "./packages/investlab-domain"
       },
       {
-        "path": "./packages/investlab-core"
-      },
-      {
         "path": "./packages/investlab-data-server"
       },
       {
