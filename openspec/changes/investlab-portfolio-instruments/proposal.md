@@ -76,6 +76,8 @@ Apps:
 
 - `quote-polling`, `quote-fetching`, `investlab-quote-cache`, `ticker-management`: quotes are fetched server-side by the API (Redis cache + Finnhub datasources) and the browser polls a web resource route instead of Finnhub; code moves out of the dissolved `investlab-core`. Deltas are written before implementation (tasks §7).
 
+- `rename`: the naming requirement drops the dissolved `@m0n0lab/investlab-core` and names the layered `@m0n0lab/investlab-*` packages and `investlab-api`.
+
 ## Impact
 
 - **New entity**: `PortfolioItem` in `investlab-domain`
