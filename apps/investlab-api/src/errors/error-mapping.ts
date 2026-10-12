@@ -1,12 +1,7 @@
 import { DomainError, type DomainErrorCode } from "@m0n0lab/investlab-domain";
+import type { ApiErrorDto } from "@m0n0lab/investlab-data-contracts";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-
-export interface ApiError {
-    readonly code: string;
-    readonly message: string;
-    readonly statusCode: number;
-}
 
 const STATUS_BY_CODE = {
     PORTFOLIO_ITEM_NOT_FOUND: 404,
@@ -19,7 +14,7 @@ export function errorToHttp(error: DomainError): number {
     return STATUS_BY_CODE[error.code];
 }
 
-export function toApiError(error: DomainError): ApiError {
+export function toApiError(error: DomainError): ApiErrorDto {
     const statusCode = errorToHttp(error);
     return {
         code: error.code,
@@ -44,7 +39,7 @@ export function handleError(error: Error, c: Context): Response {
             code: "INTERNAL_ERROR",
             message: "Internal server error",
             statusCode: 500,
-        } satisfies ApiError,
+        } satisfies ApiErrorDto,
         500,
     );
 }
