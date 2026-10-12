@@ -175,6 +175,29 @@ describe("portfolio item routes", () => {
             expect(ctx.items.store.get(item.id)!.targetWeight).toBe(25);
         });
 
+        it("clears notes when the body sets notes to null", async () => {
+            const ctx = createTestApp();
+            const { item } = await seedItem(ctx);
+            item.update({ notes: "core" })._unsafeUnwrap();
+
+            const res = await ctx.json(`/portfolio-items/${item.id}`, "PUT", { notes: null });
+
+            expect(res.status).toBe(200);
+            expect(portfolioItemDtoSchema.parse(await res.json())).not.toHaveProperty("notes");
+            expect(ctx.items.store.get(item.id)!.notes).toBeUndefined();
+        });
+
+        it("keeps notes when the body omits them", async () => {
+            const ctx = createTestApp();
+            const { item } = await seedItem(ctx);
+            item.update({ notes: "core" })._unsafeUnwrap();
+
+            const res = await ctx.json(`/portfolio-items/${item.id}`, "PUT", { targetWeight: 25 });
+
+            expect(res.status).toBe(200);
+            expect(portfolioItemDtoSchema.parse(await res.json()).notes).toBe("core");
+        });
+
         it("answers 404 PORTFOLIO_ITEM_NOT_FOUND for an unknown item", async () => {
             const res = await createTestApp().json(`/portfolio-items/${MISSING_ID}`, "PUT", {
                 targetWeight: 25,

@@ -94,6 +94,12 @@ describe("updatePortfolioItemDtoSchema", () => {
         expect(updatePortfolioItemDtoSchema.safeParse(patch).success).toBe(false);
     });
 
+    it("accepts null notes as an explicit clear", () => {
+        const result = updatePortfolioItemDtoSchema.safeParse({ notes: null });
+        expect(result.success).toBe(true);
+        expect(result.data).toEqual({ notes: null });
+    });
+
     it("accepts boundary values and trims broker", () => {
         const result = updatePortfolioItemDtoSchema.safeParse({
             broker: ` ${"b".repeat(100)} `,

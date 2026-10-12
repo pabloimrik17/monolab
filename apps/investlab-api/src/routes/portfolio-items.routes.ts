@@ -45,7 +45,7 @@ export function portfolioItemRoutes(container: Container) {
             broker: body.broker,
             targetWeight: body.targetWeight,
             ...(body.currentValue !== undefined && { currentValue: body.currentValue }),
-            ...(body.notes !== undefined && { notes: body.notes }),
+            ...(body.notes !== undefined && { notes: body.notes ?? undefined }),
         });
 
         return result.match(
@@ -64,7 +64,7 @@ export function portfolioItemRoutes(container: Container) {
             ...(body.broker !== undefined && { broker: body.broker }),
             ...(body.targetWeight !== undefined && { targetWeight: body.targetWeight }),
             ...(body.currentValue !== undefined && { currentValue: body.currentValue }),
-            ...(body.notes !== undefined && { notes: body.notes }),
+            ...(body.notes !== undefined && { notes: body.notes ?? undefined }),
         });
 
         return result.match(

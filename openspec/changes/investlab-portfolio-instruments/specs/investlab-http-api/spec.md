@@ -10,7 +10,7 @@ The system SHALL provide `apps/investlab-api`, a Hono app that is the only Inves
 
 ### Requirement: Portfolio item endpoints
 
-The API SHALL expose `GET /portfolio-items` (200, items with their instrument data plus the instrument catalog), `POST /portfolio-items` (201, created item), `PUT /portfolio-items/:id` (200, updated item) and `DELETE /portfolio-items/:id` (204, no body). Bodies SHALL use `investlab-data-contracts` DTOs; entities never cross HTTP.
+The API SHALL expose `GET /portfolio-items` (200, items with their instrument data plus the instrument catalog), `POST /portfolio-items` (201, created item), `PUT /portfolio-items/:id` (200, updated item) and `DELETE /portfolio-items/:id` (204, no body). Bodies SHALL use `investlab-data-contracts` DTOs; entities never cross HTTP. In a `PUT` body an omitted field SHALL be left unchanged and `notes: null` SHALL clear the notes.
 
 #### Scenario: List portfolio items
 - **WHEN** `GET /portfolio-items` is called with a valid token
@@ -27,6 +27,10 @@ The API SHALL expose `GET /portfolio-items` (200, items with their instrument da
 #### Scenario: Update a portfolio item
 - **WHEN** `PUT /portfolio-items/:id` sets `targetWeight` 25 on an existing item
 - **THEN** the API responds 200 with the item carrying `targetWeight` 25
+
+#### Scenario: Clear notes
+- **WHEN** `PUT /portfolio-items/:id` sends `{ "notes": null }` for an item with notes
+- **THEN** the API responds 200 with the item without `notes`, and its other fields unchanged
 
 #### Scenario: Delete a portfolio item
 - **WHEN** `DELETE /portfolio-items/:id` targets an existing item

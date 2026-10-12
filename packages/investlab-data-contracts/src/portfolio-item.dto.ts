@@ -32,7 +32,8 @@ export const updatePortfolioItemDtoSchema = z.object({
     broker: brokerSchema.optional(),
     targetWeight: targetWeightSchema.optional(),
     currentValue: currentValueSchema.optional(),
-    notes: z.string().optional(),
+    // Omitted keeps the notes; `null` clears them (JSON has no `undefined`).
+    notes: z.string().nullable().optional(),
 });
 
 export type UpdatePortfolioItemDto = z.infer<typeof updatePortfolioItemDtoSchema>;

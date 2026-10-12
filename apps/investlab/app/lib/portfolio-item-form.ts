@@ -36,7 +36,8 @@ export const updatePortfolioItemFormSchema = z.object({
     broker: text(update.broker),
     targetWeight: numeric(update.targetWeight),
     currentValue: numeric(update.currentValue),
-    notes: text(update.notes),
+    // A blank field already maps to undefined (clear); forms never send the wire `null`.
+    notes: text(create.notes),
 });
 
 export const portfolioItemIdFormSchema = z.object({ id });
