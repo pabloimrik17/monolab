@@ -53,6 +53,9 @@
       },
       {
         "path": "./packages/vitest-config"
+      },
+      {
+        "path": "./packages/drizzle-neverthrow"
       }
     ]
 }

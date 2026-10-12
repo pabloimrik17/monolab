@@ -1,5 +1,6 @@
 {
     "packages/http-client": "0.2.3",
+    "packages/drizzle-neverthrow": "0.0.0",
     "packages/react-clean": "3.4.1",
     "packages/react-hooks": "1.4.1",
     "packages/ts-configs": "1.2.1",
