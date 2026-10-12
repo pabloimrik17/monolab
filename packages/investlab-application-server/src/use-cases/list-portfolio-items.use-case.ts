@@ -14,6 +14,11 @@ export interface PortfolioItemWithInstrument {
     instrument: Instrument;
 }
 
+export interface PortfolioItemList {
+    items: PortfolioItemWithInstrument[];
+    instruments: Instrument[];
+}
+
 @injectable()
 export class ListPortfolioItemsUseCase {
     constructor(
@@ -23,20 +28,21 @@ export class ListPortfolioItemsUseCase {
         private readonly instrumentRepo: InstrumentRepository,
     ) {}
 
-    execute(): ResultAsync<PortfolioItemWithInstrument[], PersistenceError> {
-        return this.portfolioItemRepo.findAll().andThen((items) => {
-            if (items.length === 0) {
-                return ResultAsync.fromSafePromise(Promise.resolve([]));
-            }
-            return this.instrumentRepo.findAll().map((instruments) => {
-                const instrumentMap = new Map(instruments.map((i) => [i.id, i]));
-                return items
+    execute(): ResultAsync<PortfolioItemList, PersistenceError> {
+        return ResultAsync.combine([
+            this.portfolioItemRepo.findAll(),
+            this.instrumentRepo.findAll(),
+        ] as const).map(([items, instruments]) => {
+            const instrumentMap = new Map(instruments.map((i) => [i.id, i]));
+            return {
+                items: items
                     .filter((item) => instrumentMap.has(item.instrumentId))
                     .map((item) => ({
                         item,
                         instrument: instrumentMap.get(item.instrumentId)!,
-                    }));
-            });
+                    })),
+                instruments,
+            };
         });
     }
 }

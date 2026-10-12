@@ -23,3 +23,12 @@ export interface InstrumentOption {
     type: string;
     assetClass: string;
 }
+
+export type PortfolioFormField =
+    | "instrumentId"
+    | "broker"
+    | "targetWeight"
+    | "currentValue"
+    | "notes";
+
+export type PortfolioFieldErrors = Partial<Record<PortfolioFormField, string>>;

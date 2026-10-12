@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { useFetcher } from "react-router";
-import type { InstrumentOption, PortfolioItemView } from "./types";
+import type {
+    InstrumentOption,
+    PortfolioFieldErrors,
+    PortfolioFormField,
+    PortfolioItemView,
+} from "./types";
 
 interface PortfolioItemFormProps {
     instruments: InstrumentOption[];
@@ -8,8 +13,7 @@ interface PortfolioItemFormProps {
     onDone: () => void;
 }
 
-type FormField = "instrumentId" | "broker" | "targetWeight" | "currentValue" | "notes";
-type FormValues = Record<FormField, string>;
+type FormValues = Record<PortfolioFormField, string>;
 
 const EMPTY_VALUES: FormValues = {
     instrumentId: "",
@@ -31,6 +35,16 @@ function valuesFrom(item: PortfolioItemView): FormValues {
 
 function hasKey<K extends string>(data: unknown, key: K): data is Record<K, unknown> {
     return typeof data === "object" && data !== null && key in data;
+}
+
+function fieldErrorsFrom(data: unknown): PortfolioFieldErrors {
+    return hasKey(data, "fieldErrors") && typeof data.fieldErrors === "object" && data.fieldErrors
+        ? (data.fieldErrors as PortfolioFieldErrors)
+        : {};
+}
+
+function FieldError({ message }: { message: string | undefined }) {
+    return message ? <span className="form-error">{message}</span> : null;
 }
 
 function submitLabel(isSubmitting: boolean, isEditing: boolean): string {
@@ -62,9 +76,11 @@ export function PortfolioItemForm({ instruments, editing, onDone }: PortfolioIte
     const [values, setValues] = useState<FormValues>(() =>
         editing ? valuesFrom(editing) : EMPTY_VALUES,
     );
-    const bind = (field: FormField) => ({
+    const fieldErrors = fieldErrorsFrom(fetcher.data);
+    const bind = (field: PortfolioFormField) => ({
         name: field,
         value: values[field],
+        "aria-invalid": fieldErrors[field] ? true : undefined,
         onChange: (e: { target: { value: string } }) =>
             setValues((current) => ({ ...current, [field]: e.target.value })),
     });
@@ -101,6 +117,7 @@ export function PortfolioItemForm({ instruments, editing, onDone }: PortfolioIte
                         </option>
                     ))}
                 </select>
+                <FieldError message={fieldErrors.instrumentId} />
             </label>
 
             <label>
@@ -111,6 +128,7 @@ export function PortfolioItemForm({ instruments, editing, onDone }: PortfolioIte
                     required
                     maxLength={100}
                 />
+                <FieldError message={fieldErrors.broker} />
             </label>
 
             <label>
@@ -123,6 +141,7 @@ export function PortfolioItemForm({ instruments, editing, onDone }: PortfolioIte
                     step={0.01}
                     required
                 />
+                <FieldError message={fieldErrors.targetWeight} />
             </label>
 
             <label>
@@ -131,8 +150,10 @@ export function PortfolioItemForm({ instruments, editing, onDone }: PortfolioIte
                     type="number"
                     {...bind("currentValue")}
                     min={0}
+                    max={9_999_999_999.99}
                     step={0.01}
                 />
+                <FieldError message={fieldErrors.currentValue} />
             </label>
 
             <label>
@@ -141,6 +162,7 @@ export function PortfolioItemForm({ instruments, editing, onDone }: PortfolioIte
                     {...bind("notes")}
                     rows={3}
                 />
+                <FieldError message={fieldErrors.notes} />
             </label>
 
             {error ? <p className="form-error">{error}</p> : null}

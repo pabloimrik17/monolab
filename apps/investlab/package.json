@@ -18,8 +18,8 @@
     "dependencies": {
         "@m0n0lab/investlab-application-server": "workspace:*",
         "@m0n0lab/investlab-core": "workspace:*",
+        "@m0n0lab/investlab-data-contracts": "workspace:*",
         "@m0n0lab/investlab-data-server": "workspace:*",
-        "@m0n0lab/investlab-domain": "workspace:*",
         "@react-router/node": "8.2.0",
         "@react-router/serve": "8.2.0",
         "drizzle-orm": "catalog:",
@@ -28,7 +28,8 @@
         "pg": "catalog:",
         "react": "catalog:",
         "react-dom": "catalog:",
-        "react-router": "8.2.0"
+        "react-router": "8.2.0",
+        "zod": "3.25.76"
     },
     "devDependencies": {
         "@codecov/vite-plugin": "catalog:",

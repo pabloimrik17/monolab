@@ -20,7 +20,7 @@
     },
     "references": [
       {
-        "path": "../../packages/investlab-domain"
+        "path": "../../packages/investlab-data-contracts"
       },
       {
         "path": "../../packages/investlab-data-server"

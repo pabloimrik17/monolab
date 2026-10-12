@@ -5,31 +5,28 @@ import {
     type ListPortfolioItemsUseCase,
     type UpdatePortfolioItemUseCase,
 } from "@m0n0lab/investlab-application-server";
-import { TOKENS, type InstrumentRepository } from "@m0n0lab/investlab-domain";
 import { PortfolioPage } from "../components/portfolio/portfolio-page";
 import { getContainer } from "../lib/container.server";
+import {
+    createPortfolioItemFormSchema,
+    portfolioItemIdFormSchema,
+    updatePortfolioItemFormSchema,
+} from "../lib/portfolio-item-form";
+import type { PortfolioFieldErrors } from "../components/portfolio/types";
 import type { Route } from "./+types/portfolio";
+import type { z } from "zod";
 
 export async function loader(_: Route.LoaderArgs) {
-    const container = getContainer();
-    const listUseCase = container.get<ListPortfolioItemsUseCase>(
+    const listUseCase = getContainer().get<ListPortfolioItemsUseCase>(
         APP_TOKENS.ListPortfolioItemsUseCase,
     );
-    const instrumentRepo = container.get<InstrumentRepository>(TOKENS.InstrumentRepository);
+    const result = await listUseCase.execute();
 
-    const [itemsResult, instrumentsResult] = await Promise.all([
-        listUseCase.execute(),
-        instrumentRepo.findAll(),
-    ]);
-
-    if (itemsResult.isErr()) {
-        throw new Response(itemsResult.error.message, { status: 500 });
-    }
-    if (instrumentsResult.isErr()) {
-        throw new Response(instrumentsResult.error.message, { status: 500 });
+    if (result.isErr()) {
+        throw new Response(result.error.message, { status: 500 });
     }
 
-    const items = itemsResult.value.map(({ item, instrument }) => ({
+    const items = result.value.items.map(({ item, instrument }) => ({
         id: item.id,
         instrumentId: item.instrumentId,
         broker: item.broker,
@@ -47,7 +44,7 @@ export async function loader(_: Route.LoaderArgs) {
         },
     }));
 
-    const instruments = instrumentsResult.value.map((instrument) => ({
+    const instruments = result.value.instruments.map((instrument) => ({
         id: instrument.id,
         symbol: instrument.symbol,
         name: instrument.name,
@@ -58,57 +55,49 @@ export async function loader(_: Route.LoaderArgs) {
     return { items, instruments };
 }
 
-type ActionResult = { ok: true } | { error: string };
+type ActionResult = { ok: true } | { error: string; fieldErrors?: PortfolioFieldErrors };
 
 const succeeded = (): ActionResult => ({ ok: true });
 const failed = (error: { message: string }): ActionResult => ({ error: error.message });
 
-function text(formData: FormData, key: string): string {
-    return String(formData.get(key) ?? "");
-}
-
-function amount(formData: FormData, key: string): number {
-    return Number(formData.get(key) ?? 0);
-}
-
-function notes(formData: FormData): string | undefined {
-    const value = formData.get("notes");
-    return value ? String(value) : undefined;
+function invalid(error: z.ZodError): ActionResult {
+    const fieldErrors = Object.fromEntries(
+        Object.entries(error.flatten().fieldErrors).map(([field, messages]) => [
+            field,
+            messages?.[0],
+        ]),
+    );
+    return { error: "Please fix the highlighted fields.", fieldErrors };
 }
 
 async function createItem(formData: FormData): Promise<ActionResult> {
+    const parsed = createPortfolioItemFormSchema.safeParse(Object.fromEntries(formData));
+    if (!parsed.success) return invalid(parsed.error);
     const useCase = getContainer().get<CreatePortfolioItemUseCase>(
         APP_TOKENS.CreatePortfolioItemUseCase,
     );
-    const itemNotes = notes(formData);
-    const result = await useCase.execute({
-        instrumentId: text(formData, "instrumentId"),
-        broker: text(formData, "broker"),
-        targetWeight: amount(formData, "targetWeight"),
-        currentValue: amount(formData, "currentValue"),
-        ...(itemNotes ? { notes: itemNotes } : {}),
-    });
+    const result = await useCase.execute(parsed.data);
     return result.match(succeeded, failed);
 }
 
 async function updateItem(formData: FormData): Promise<ActionResult> {
+    const parsed = updatePortfolioItemFormSchema.safeParse(Object.fromEntries(formData));
+    if (!parsed.success) return invalid(parsed.error);
+    const { id, ...changes } = parsed.data;
     const useCase = getContainer().get<UpdatePortfolioItemUseCase>(
         APP_TOKENS.UpdatePortfolioItemUseCase,
     );
-    const result = await useCase.execute(text(formData, "id"), {
-        broker: text(formData, "broker"),
-        targetWeight: amount(formData, "targetWeight"),
-        currentValue: amount(formData, "currentValue"),
-        notes: notes(formData),
-    });
+    const result = await useCase.execute(id, changes);
     return result.match(succeeded, failed);
 }
 
 async function deleteItem(formData: FormData): Promise<ActionResult> {
+    const parsed = portfolioItemIdFormSchema.safeParse(Object.fromEntries(formData));
+    if (!parsed.success) return invalid(parsed.error);
     const useCase = getContainer().get<DeletePortfolioItemUseCase>(
         APP_TOKENS.DeletePortfolioItemUseCase,
     );
-    const result = await useCase.execute(text(formData, "id"));
+    const result = await useCase.execute(parsed.data.id);
     return result.match(succeeded, failed);
 }
 
@@ -120,7 +109,7 @@ const intentHandlers = new Map<string, (formData: FormData) => Promise<ActionRes
 
 export async function action({ request }: Route.ActionArgs): Promise<ActionResult> {
     const formData = await request.formData();
-    const intent = text(formData, "intent");
+    const intent = String(formData.get("intent") ?? "");
     const handler = intentHandlers.get(intent);
     return handler ? handler(formData) : { error: `Unknown intent: ${intent}` };
 }

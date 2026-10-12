@@ -1,9 +1,10 @@
-import { okAsync } from "neverthrow";
+import { errAsync, okAsync } from "neverthrow";
 import { describe, expect, it, vi } from "vitest";
 import {
     AssetClass,
     Instrument,
     InstrumentType,
+    PersistenceError,
     PortfolioItem,
     type InstrumentRepository,
     type PortfolioItemRepository,
@@ -39,32 +40,39 @@ function makePortfolioItemRepo(
     };
 }
 
+function makeInstrument(): Instrument {
+    const result = Instrument.create({
+        symbol: "SPY",
+        name: "SPDR",
+        type: InstrumentType.ETF,
+        assetClass: AssetClass.Equity,
+    });
+    if (!result.isOk()) throw new Error("setup");
+    return result.value;
+}
+
 describe("ListPortfolioItemsUseCase", () => {
-    it("returns empty array when no items", async () => {
+    it("returns no items but still lists instruments when portfolio is empty", async () => {
+        const instrument = makeInstrument();
         const portfolioRepo = makePortfolioItemRepo({
             findAll: vi.fn(() => okAsync([])),
         });
-        const instrumentRepo = makeInstrumentRepo();
+        const instrumentRepo = makeInstrumentRepo({
+            findAll: vi.fn(() => okAsync([instrument])),
+        });
 
         const useCase = new ListPortfolioItemsUseCase(portfolioRepo, instrumentRepo);
         const result = await useCase.execute();
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
-            expect(result.value).toEqual([]);
+            expect(result.value.items).toEqual([]);
+            expect(result.value.instruments).toEqual([instrument]);
         }
-        expect(instrumentRepo.findAll).not.toHaveBeenCalled();
     });
 
     it("returns items joined with their instrument", async () => {
-        const instrumentResult = Instrument.create({
-            symbol: "SPY",
-            name: "SPDR",
-            type: InstrumentType.ETF,
-            assetClass: AssetClass.Equity,
-        });
-        if (!instrumentResult.isOk()) throw new Error("setup");
-        const instrument = instrumentResult.value;
+        const instrument = makeInstrument();
 
         const itemResult = PortfolioItem.create({
             instrumentId: instrument.id,
@@ -86,10 +94,12 @@ describe("ListPortfolioItemsUseCase", () => {
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
-            expect(result.value).toHaveLength(1);
-            expect(result.value[0]!.item.id).toBe(item.id);
-            expect(result.value[0]!.instrument.symbol).toBe("SPY");
+            expect(result.value.items).toHaveLength(1);
+            expect(result.value.items[0]!.item.id).toBe(item.id);
+            expect(result.value.items[0]!.instrument.symbol).toBe("SPY");
+            expect(result.value.instruments).toEqual([instrument]);
         }
+        expect(instrumentRepo.findAll).toHaveBeenCalledTimes(1);
     });
 
     it("filters out items whose instrument was not found", async () => {
@@ -112,7 +122,25 @@ describe("ListPortfolioItemsUseCase", () => {
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
-            expect(result.value).toEqual([]);
+            expect(result.value.items).toEqual([]);
+        }
+    });
+
+    it("propagates an instrument lookup failure", async () => {
+        const failure = new PersistenceError(new Error("connection lost"));
+        const portfolioRepo = makePortfolioItemRepo({
+            findAll: vi.fn(() => okAsync([])),
+        });
+        const instrumentRepo = makeInstrumentRepo({
+            findAll: vi.fn(() => errAsync(failure)),
+        });
+
+        const useCase = new ListPortfolioItemsUseCase(portfolioRepo, instrumentRepo);
+        const result = await useCase.execute();
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBe(failure);
         }
     });
 });

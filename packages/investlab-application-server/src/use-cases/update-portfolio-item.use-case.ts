@@ -23,7 +23,7 @@ export class UpdatePortfolioItemUseCase {
             broker?: string;
             targetWeight?: number;
             currentValue?: number;
-            notes?: string;
+            notes?: string | undefined;
         },
     ): ResultAsync<PortfolioItem, ValidationError | PortfolioItemNotFoundError | PersistenceError> {
         return this.portfolioItemRepo.findById(id).andThen((item) => {

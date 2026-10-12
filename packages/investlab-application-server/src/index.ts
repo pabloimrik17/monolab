@@ -5,5 +5,6 @@ export { UpdatePortfolioItemUseCase } from "./use-cases/update-portfolio-item.us
 export { DeletePortfolioItemUseCase } from "./use-cases/delete-portfolio-item.use-case.ts";
 export {
     ListPortfolioItemsUseCase,
+    type PortfolioItemList,
     type PortfolioItemWithInstrument,
 } from "./use-cases/list-portfolio-items.use-case.ts";
