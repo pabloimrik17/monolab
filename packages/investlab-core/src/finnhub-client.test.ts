@@ -91,6 +91,27 @@ describe("createFinnhubClient", () => {
             expect(fetch).toHaveBeenCalledWith(expect.stringContaining("symbol=AAPL"));
         });
 
+        it("throws on invalid symbol (real Finnhub shape: null change)", async () => {
+            vi.mocked(fetch).mockResolvedValueOnce(
+                mockFinnhubResponse({
+                    c: 0,
+                    d: null,
+                    dp: null,
+                    h: 0,
+                    l: 0,
+                    o: 0,
+                    pc: 0,
+                    t: 0,
+                }),
+            );
+
+            const client = createFinnhubClient("test-key");
+
+            await expect(client.getQuote("INVALID123")).rejects.toThrow(
+                "No data for symbol: INVALID123",
+            );
+        });
+
         it("throws on invalid symbol (zero data)", async () => {
             vi.mocked(fetch).mockResolvedValueOnce(
                 mockFinnhubResponse({
@@ -110,6 +131,25 @@ describe("createFinnhubClient", () => {
             await expect(client.getQuote("INVALID123")).rejects.toThrow(
                 "No data for symbol: INVALID123",
             );
+        });
+
+        it("throws when price is present but percent change is null", async () => {
+            vi.mocked(fetch).mockResolvedValueOnce(
+                mockFinnhubResponse({
+                    c: 150,
+                    d: null,
+                    dp: null,
+                    h: 0,
+                    l: 0,
+                    o: 0,
+                    pc: 0,
+                    t: 0,
+                }),
+            );
+
+            const client = createFinnhubClient("test-key");
+
+            await expect(client.getQuote("AAPL")).rejects.toThrow("No data for symbol: AAPL");
         });
 
         it("throws on HTTP error", async () => {
@@ -196,8 +236,8 @@ describe("createFinnhubClient", () => {
                 .mockResolvedValueOnce(
                     mockFinnhubResponse({
                         c: 0,
-                        d: 0,
-                        dp: 0,
+                        d: null,
+                        dp: null,
                         h: 0,
                         l: 0,
                         o: 0,

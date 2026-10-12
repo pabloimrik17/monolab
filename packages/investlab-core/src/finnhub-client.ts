@@ -15,8 +15,8 @@ export interface FinnhubClient {
 
 interface FinnhubQuoteResponse {
     c: number; // current price
-    d: number; // change
-    dp: number; // percent change
+    d: number | null; // change (null for unknown symbols)
+    dp: number | null; // percent change (null for unknown symbols)
     h: number; // high
     l: number; // low
     o: number; // open
@@ -49,15 +49,16 @@ export function createFinnhubClient(
 
         const data = (await response.json()) as FinnhubQuoteResponse;
 
-        if (data.c === 0 && data.d === 0 && data.dp === 0) {
+        const { c, d, dp } = data;
+        if (c === 0 || d == null || dp == null) {
             throw new Error(`No data for symbol: ${symbol}`);
         }
 
         return {
             symbol: symbol.toUpperCase(),
-            price: data.c,
-            change: data.d,
-            changePercent: data.dp,
+            price: c,
+            change: d,
+            changePercent: dp,
             updatedAt: new Date(),
         };
     };
