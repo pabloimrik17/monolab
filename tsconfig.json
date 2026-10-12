@@ -46,6 +46,9 @@
         "path": "./packages/investlab-application-server"
       },
       {
+        "path": "./packages/investlab-data-client"
+      },
+      {
         "path": "./packages/investlab-data-contracts"
       },
       {
