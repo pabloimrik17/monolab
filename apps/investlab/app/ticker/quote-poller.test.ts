@@ -1,11 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
-import { createQuotePoller } from "./quote-poller.js";
-import type { FinnhubClient } from "./finnhub-client.js";
-import type { Quote } from "./types.js";
+import { createQuotePoller, type QuoteSource } from "./quote-poller";
+import type { Quote } from "./types";
 
-function createMockClient(): FinnhubClient & { getQuotes: Mock } {
+function createMockClient(): QuoteSource & { getQuotes: Mock } {
     return {
-        getQuote: vi.fn(),
         getQuotes: vi.fn().mockResolvedValue(new Map()),
     };
 }

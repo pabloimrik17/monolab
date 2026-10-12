@@ -1,4 +1,4 @@
-import type { Storage, Ticker } from "./types.js";
+import type { Storage, Ticker } from "./types";
 
 const STORAGE_KEY = "wealth-tracker-tickers";
 

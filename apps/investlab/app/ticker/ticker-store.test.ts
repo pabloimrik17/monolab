@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createTickerStore } from "./ticker-store.js";
-import type { Storage } from "./types.js";
+import { createTickerStore } from "./ticker-store";
+import type { Storage } from "./types";
 
 function createMockStorage(): Storage & { data: Map<string, string> } {
     const data = new Map<string, string>();

@@ -82,13 +82,6 @@ coverage:
                 flags:
                     - solid-clean
 
-            investlab-core:
-                target: auto
-                threshold: 2%
-                informational: false
-                flags:
-                    - investlab-core
-
             investlab-domain:
                 target: auto
                 threshold: 2%
@@ -229,13 +222,6 @@ coverage:
                 informational: false
                 flags:
                     - solid-clean
-
-            investlab-core:
-                target: 50%
-                threshold: 10%
-                informational: false
-                flags:
-                    - investlab-core
 
             investlab-domain:
                 target: 50%
@@ -380,11 +366,6 @@ flags:
     solid-clean:
         paths:
             - packages/solid-clean/
-        carryforward: true
-
-    investlab-core:
-        paths:
-            - packages/investlab-core/
         carryforward: true
 
     investlab-domain:

@@ -1,4 +1,4 @@
-import type { Quote, Ticker } from "@m0n0lab/investlab-core";
+import type { Quote, Ticker } from "../ticker/types";
 
 interface TickerRowProps {
     ticker: Ticker;

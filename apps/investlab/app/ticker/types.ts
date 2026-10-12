@@ -1,12 +1,6 @@
-import type { Quote } from "@m0n0lab/investlab-domain";
-
 export interface Ticker {
     symbol: string;
     addedAt: Date;
-}
-
-export interface TickerWithQuote extends Ticker {
-    quote: Quote | null;
 }
 
 export interface Storage {

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { batchExecute } from "./batch.js";
+import { batchExecute } from "./batch.ts";
 
 describe("batchExecute", () => {
     it("throws if concurrency is zero", async () => {

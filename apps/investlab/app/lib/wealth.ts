@@ -1,15 +1,14 @@
+// Legacy ticker list: the browser still calls Finnhub directly until tasks §12.3 adds the web quotes resource route.
 import {
-    createFinnhubClient,
-    createQuotePoller,
-    createTickerStore,
-    type FinnhubClient,
-    type Quote,
-    type QuotePoller,
-    type TickerStore,
-} from "@m0n0lab/investlab-core/client";
+    createFinnhubQuoteDatasource,
+    type FinnhubQuoteDatasource,
+} from "@m0n0lab/investlab-data-server/finnhub";
+import { createQuotePoller, type QuotePoller } from "../ticker/quote-poller";
+import { createTickerStore, type TickerStore } from "../ticker/ticker-store";
+import type { Quote } from "../ticker/types";
 
 let tickerStoreInstance: TickerStore | null = null;
-let finnhubClient: FinnhubClient | null = null;
+let finnhubClient: FinnhubQuoteDatasource | null = null;
 
 export function getTickerStore(): TickerStore {
     if (tickerStoreInstance === null) {
@@ -18,9 +17,9 @@ export function getTickerStore(): TickerStore {
     return tickerStoreInstance;
 }
 
-function getFinnhubClient(): FinnhubClient {
+function getFinnhubClient(): FinnhubQuoteDatasource {
     if (finnhubClient === null) {
-        finnhubClient = createFinnhubClient(import.meta.env.VITE_FINNHUB_API_KEY);
+        finnhubClient = createFinnhubQuoteDatasource(import.meta.env.VITE_FINNHUB_API_KEY);
     }
     return finnhubClient;
 }
@@ -36,4 +35,4 @@ export function createPoller(
     });
 }
 
-export type { Quote, Ticker } from "@m0n0lab/investlab-core/client";
+export type { Quote, Ticker } from "../ticker/types";

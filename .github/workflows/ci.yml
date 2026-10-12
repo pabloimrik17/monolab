@@ -183,7 +183,7 @@ jobs:
               id: affected-codecov
               run: |
                   # name:path pairs — single source of truth for the upload-codecov matrix.
-                  PACKAGES="react-hooks:packages/react-hooks react-clean:packages/react-clean ts-configs:packages/ts-configs ts-types:packages/ts-types http-client:packages/http-client drizzle-neverthrow:packages/drizzle-neverthrow qup-api:apps/qup-api qup-data:packages/qup-data qup-domain:packages/qup-domain solid-clean:packages/solid-clean investlab-core:packages/investlab-core investlab-domain:packages/investlab-domain investlab-data-server:packages/investlab-data-server investlab-application-server:packages/investlab-application-server investlab-data-contracts:packages/investlab-data-contracts green-beard:apps/green-beard qup-web:apps/qup-web investlab:apps/investlab investlab-api:apps/investlab-api qup-shared:packages/qup-shared"
+                  PACKAGES="react-hooks:packages/react-hooks react-clean:packages/react-clean ts-configs:packages/ts-configs ts-types:packages/ts-types http-client:packages/http-client drizzle-neverthrow:packages/drizzle-neverthrow qup-api:apps/qup-api qup-data:packages/qup-data qup-domain:packages/qup-domain solid-clean:packages/solid-clean investlab-domain:packages/investlab-domain investlab-data-server:packages/investlab-data-server investlab-application-server:packages/investlab-application-server investlab-data-contracts:packages/investlab-data-contracts green-beard:apps/green-beard qup-web:apps/qup-web investlab:apps/investlab investlab-api:apps/investlab-api qup-shared:packages/qup-shared"
 
                   if [ "${{ github.event_name }}" = "pull_request" ]; then
                     AFFECTED_PROJECTS=$(pnpm exec nx show projects --affected)
@@ -262,7 +262,7 @@ jobs:
               run: |
                   # Analyze each published package
                   # Note: nx run-many with Nx cache avoids redundant rebuilds of non-affected packages
-                  for package in react-hooks react-clean ts-configs ts-types http-client drizzle-neverthrow solid-clean qup-shared investlab-core; do
+                  for package in react-hooks react-clean ts-configs ts-types http-client drizzle-neverthrow solid-clean qup-shared; do
                     if [ -d "packages/$package/dist" ]; then
                       echo "📦 Analyzing bundle for $package..."
                       pnpm exec bundle-analyzer packages/$package/dist \

@@ -28,6 +28,12 @@
     },
     "references": [
       {
+        "path": "../../packages/vitest-config"
+      },
+      {
+        "path": "../../packages/investlab-domain"
+      },
+      {
         "path": "../../packages/investlab-data-contracts"
       },
       {
@@ -35,12 +41,6 @@
       },
       {
         "path": "../../packages/investlab-application-server"
-      },
-      {
-        "path": "../../packages/investlab-core"
-      },
-      {
-        "path": "../../packages/vitest-config"
       }
     ]
 }

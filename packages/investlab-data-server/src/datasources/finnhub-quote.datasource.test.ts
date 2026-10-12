@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createFinnhubClient } from "./finnhub-client.js";
+import { createFinnhubQuoteDatasource } from "./finnhub-quote.datasource.ts";
 
 const mockFinnhubResponse = (data: object) =>
     new Response(JSON.stringify(data), {
@@ -7,7 +7,7 @@ const mockFinnhubResponse = (data: object) =>
         headers: { "Content-Type": "application/json" },
     });
 
-describe("createFinnhubClient", () => {
+describe("createFinnhubQuoteDatasource", () => {
     beforeEach(() => {
         vi.stubGlobal("fetch", vi.fn());
     });
@@ -17,29 +17,29 @@ describe("createFinnhubClient", () => {
     });
 
     it("throws if API key is empty", () => {
-        expect(() => createFinnhubClient("")).toThrow("API key is required");
+        expect(() => createFinnhubQuoteDatasource("")).toThrow("API key is required");
     });
 
     it("throws if concurrency is zero", () => {
-        expect(() => createFinnhubClient("test-key", { concurrency: 0 })).toThrow(
+        expect(() => createFinnhubQuoteDatasource("test-key", { concurrency: 0 })).toThrow(
             "Concurrency must be a positive integer",
         );
     });
 
     it("throws if concurrency is negative", () => {
-        expect(() => createFinnhubClient("test-key", { concurrency: -1 })).toThrow(
+        expect(() => createFinnhubQuoteDatasource("test-key", { concurrency: -1 })).toThrow(
             "Concurrency must be a positive integer",
         );
     });
 
     it("throws if concurrency is not an integer", () => {
-        expect(() => createFinnhubClient("test-key", { concurrency: 1.5 })).toThrow(
+        expect(() => createFinnhubQuoteDatasource("test-key", { concurrency: 1.5 })).toThrow(
             "Concurrency must be a positive integer",
         );
     });
 
     it("creates client with API key", () => {
-        const client = createFinnhubClient("test-key");
+        const client = createFinnhubQuoteDatasource("test-key");
         expect(client).toBeDefined();
         expect(client.getQuote).toBeTypeOf("function");
         expect(client.getQuotes).toBeTypeOf("function");
@@ -60,7 +60,7 @@ describe("createFinnhubClient", () => {
                 }),
             );
 
-            const client = createFinnhubClient("test-key");
+            const client = createFinnhubQuoteDatasource("test-key");
             const quote = await client.getQuote("AAPL");
 
             expect(quote.symbol).toBe("AAPL");
@@ -84,7 +84,7 @@ describe("createFinnhubClient", () => {
                 }),
             );
 
-            const client = createFinnhubClient("test-key");
+            const client = createFinnhubQuoteDatasource("test-key");
             const quote = await client.getQuote("aapl");
 
             expect(quote.symbol).toBe("AAPL");
@@ -105,7 +105,7 @@ describe("createFinnhubClient", () => {
                 }),
             );
 
-            const client = createFinnhubClient("test-key");
+            const client = createFinnhubQuoteDatasource("test-key");
 
             await expect(client.getQuote("INVALID123")).rejects.toThrow(
                 "No data for symbol: INVALID123",
@@ -126,7 +126,7 @@ describe("createFinnhubClient", () => {
                 }),
             );
 
-            const client = createFinnhubClient("test-key");
+            const client = createFinnhubQuoteDatasource("test-key");
 
             await expect(client.getQuote("INVALID123")).rejects.toThrow(
                 "No data for symbol: INVALID123",
@@ -147,7 +147,7 @@ describe("createFinnhubClient", () => {
                 }),
             );
 
-            const client = createFinnhubClient("test-key");
+            const client = createFinnhubQuoteDatasource("test-key");
 
             await expect(client.getQuote("AAPL")).rejects.toThrow("No data for symbol: AAPL");
         });
@@ -157,7 +157,7 @@ describe("createFinnhubClient", () => {
                 new Response(null, { status: 401, statusText: "Unauthorized" }),
             );
 
-            const client = createFinnhubClient("test-key");
+            const client = createFinnhubQuoteDatasource("test-key");
 
             await expect(client.getQuote("AAPL")).rejects.toThrow("Failed to fetch quote for AAPL");
         });
@@ -176,7 +176,7 @@ describe("createFinnhubClient", () => {
                 }),
             );
 
-            const client = createFinnhubClient("my-secret-key");
+            const client = createFinnhubQuoteDatasource("my-secret-key");
             await client.getQuote("AAPL");
 
             expect(fetch).toHaveBeenCalledWith(expect.stringContaining("token=my-secret-key"));
@@ -211,7 +211,7 @@ describe("createFinnhubClient", () => {
                     }),
                 );
 
-            const client = createFinnhubClient("test-key");
+            const client = createFinnhubQuoteDatasource("test-key");
             const quotes = await client.getQuotes(["AAPL", "MSFT"]);
 
             expect(quotes.size).toBe(2);
@@ -258,7 +258,7 @@ describe("createFinnhubClient", () => {
                     }),
                 );
 
-            const client = createFinnhubClient("test-key");
+            const client = createFinnhubQuoteDatasource("test-key");
             const quotes = await client.getQuotes(["AAPL", "INVALID", "MSFT"]);
 
             expect(quotes.size).toBe(2);
@@ -288,7 +288,7 @@ describe("createFinnhubClient", () => {
                 });
             });
 
-            const client = createFinnhubClient("test-key", { concurrency: 2 });
+            const client = createFinnhubQuoteDatasource("test-key", { concurrency: 2 });
             await client.getQuotes(["A", "B", "C", "D", "E"]);
 
             expect(maxConcurrent).toBeLessThanOrEqual(2);
@@ -315,7 +315,7 @@ describe("createFinnhubClient", () => {
                 });
             });
 
-            const client = createFinnhubClient("test-key");
+            const client = createFinnhubQuoteDatasource("test-key");
             const symbols = Array.from({ length: 15 }, (_, i) => `SYM${i}`);
             await client.getQuotes(symbols);
 
@@ -323,7 +323,7 @@ describe("createFinnhubClient", () => {
         });
 
         it("handles empty array", async () => {
-            const client = createFinnhubClient("test-key");
+            const client = createFinnhubQuoteDatasource("test-key");
             const quotes = await client.getQuotes([]);
 
             expect(quotes.size).toBe(0);

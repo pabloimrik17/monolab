@@ -3,8 +3,13 @@ import { Container } from "inversify";
 import Redis from "ioredis";
 import pg from "pg";
 import { portfolioModule } from "@m0n0lab/investlab-application-server";
-import { CORE_TOKENS, coreModule, createFinnhubClient } from "@m0n0lab/investlab-core";
-import { DATA_TOKENS, dataModule, portfolioDataModule } from "@m0n0lab/investlab-data-server";
+import {
+    createFinnhubQuoteDatasource,
+    DATA_TOKENS,
+    dataModule,
+    portfolioDataModule,
+    quoteDataModule,
+} from "@m0n0lab/investlab-data-server";
 
 let singleton: Container | null = null;
 
@@ -33,19 +38,19 @@ function createContainer(): Container {
         throw new Error("REDIS_URL is required");
     }
     const redis = new Redis(redisUrl);
-    container.bind(CORE_TOKENS.Redis).toConstantValue(redis);
+    container.bind(DATA_TOKENS.Redis).toConstantValue(redis);
 
     // Finnhub
     const finnhubApiKey = process.env["FINNHUB_API_KEY"];
     if (!finnhubApiKey) {
         throw new Error("FINNHUB_API_KEY is required");
     }
-    const finnhub = createFinnhubClient(finnhubApiKey);
-    container.bind(CORE_TOKENS.FinnhubClient).toConstantValue(finnhub);
+    const finnhub = createFinnhubQuoteDatasource(finnhubApiKey);
+    container.bind(DATA_TOKENS.FinnhubQuoteDatasource).toConstantValue(finnhub);
 
     // Modules
     container.load(dataModule);
-    container.load(coreModule);
+    container.load(quoteDataModule);
     container.load(portfolioModule);
     container.load(portfolioDataModule);
 

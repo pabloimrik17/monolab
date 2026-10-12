@@ -1,5 +1,4 @@
-import type { FinnhubClient } from "./finnhub-client.js";
-import type { Quote } from "./types.js";
+import type { Quote } from "./types";
 
 const MIN_INTERVAL = 15_000;
 const MAX_INTERVAL = 60_000;
@@ -19,7 +18,12 @@ export interface QuotePoller {
     isPolling(): boolean;
 }
 
-export function createQuotePoller(client: FinnhubClient, options: QuotePollerOptions): QuotePoller {
+/** Where the poller gets quotes from; tasks §12.3 swaps Finnhub for the web quotes resource route. */
+export interface QuoteSource {
+    getQuotes(symbols: string[]): Promise<Map<string, Quote>>;
+}
+
+export function createQuotePoller(client: QuoteSource, options: QuotePollerOptions): QuotePoller {
     let interval = clampInterval(options.interval ?? DEFAULT_INTERVAL);
     let tickers: string[] = [];
     let timerId: ReturnType<typeof setTimeout> | null = null;
