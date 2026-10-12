@@ -138,6 +138,13 @@ coverage:
                 flags:
                     - investlab
 
+            investlab-api:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - investlab-api
+
             qup-shared:
                 target: auto
                 threshold: 2%
@@ -279,6 +286,13 @@ coverage:
                 flags:
                     - investlab
 
+            investlab-api:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - investlab-api
+
             qup-shared:
                 target: 50%
                 threshold: 10%
@@ -406,6 +420,11 @@ flags:
     investlab:
         paths:
             - apps/investlab/
+        carryforward: true
+
+    investlab-api:
+        paths:
+            - apps/investlab-api/
         carryforward: true
 
     qup-shared:

@@ -1,0 +1,50 @@
+import { DomainError, type DomainErrorCode } from "@m0n0lab/investlab-domain";
+import type { Context } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
+
+export interface ApiError {
+    readonly code: string;
+    readonly message: string;
+    readonly statusCode: number;
+}
+
+const STATUS_BY_CODE = {
+    PORTFOLIO_ITEM_NOT_FOUND: 404,
+    INSTRUMENT_NOT_FOUND: 404,
+    VALIDATION_ERROR: 422,
+    PERSISTENCE_ERROR: 500,
+} as const satisfies Record<DomainErrorCode, number>;
+
+export function errorToHttp(error: DomainError): number {
+    return STATUS_BY_CODE[error.code];
+}
+
+export function toApiError(error: DomainError): ApiError {
+    const statusCode = errorToHttp(error);
+    return {
+        code: error.code,
+        message: statusCode >= 500 ? "Internal server error" : error.message,
+        statusCode,
+    };
+}
+
+export function errorJson(c: Context, error: DomainError): Response {
+    const dto = toApiError(error);
+    return c.json(dto, dto.statusCode as ContentfulStatusCode);
+}
+
+export function handleError(error: Error, c: Context): Response {
+    if (error instanceof DomainError) {
+        return errorJson(c, error);
+    }
+
+    console.error("Unhandled error:", error);
+    return c.json(
+        {
+            code: "INTERNAL_ERROR",
+            message: "Internal server error",
+            statusCode: 500,
+        } satisfies ApiError,
+        500,
+    );
+}

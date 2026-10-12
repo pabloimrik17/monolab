@@ -81,8 +81,8 @@
 
 ## 10. API app
 
-- [ ] 10.1 Scaffold `apps/investlab-api` (Hono) mirroring `apps/qup-api`: `app.ts`, `container.ts`, `routes/`, `errors/error-mapping.ts`
-- [ ] 10.2 Error mapping keyed by `code` → HTTP status; body `{ code, message, statusCode }` (500s hide message)
+- [x] 10.1 Scaffold `apps/investlab-api` (Hono) mirroring `apps/qup-api`: `app.ts`, `container.ts`, `routes/`, `errors/error-mapping.ts`
+- [x] 10.2 Error mapping keyed by `code` → HTTP status; body `{ code, message, statusCode }` (500s hide message)
 - [ ] 10.3 Bearer-token middleware (`INVESTLAB_API_TOKEN`)
 - [ ] 10.4 Routes: portfolio items CRUD + list (read model), instruments list, quotes; request bodies validated with `investlab-data-contracts` zod schemas
 - [ ] 10.5 Move Postgres/Redis/Finnhub wiring from `apps/investlab/app/lib/container.server.ts` into the API container; move drizzle config/migrations ownership to the API env
