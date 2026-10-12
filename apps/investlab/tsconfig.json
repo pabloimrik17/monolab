@@ -34,9 +34,6 @@
         "path": "../../packages/investlab-domain"
       },
       {
-        "path": "../../packages/investlab-data-server"
-      },
-      {
         "path": "../../packages/investlab-data-contracts"
       },
       {

@@ -18,7 +18,7 @@ export interface QuotePoller {
     isPolling(): boolean;
 }
 
-/** Where the poller gets quotes from; tasks §12.3 swaps Finnhub for the web quotes resource route. */
+/** Where the poller gets quotes from (the web quotes resource route in the app). */
 export interface QuoteSource {
     getQuotes(symbols: string[]): Promise<Map<string, Quote>>;
 }

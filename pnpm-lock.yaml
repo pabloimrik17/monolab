@@ -306,9 +306,6 @@ importers:
       '@m0n0lab/investlab-data-contracts':
         specifier: workspace:*
         version: link:../../packages/investlab-data-contracts
-      '@m0n0lab/investlab-data-server':
-        specifier: workspace:*
-        version: link:../../packages/investlab-data-server
       '@m0n0lab/investlab-domain':
         specifier: workspace:*
         version: link:../../packages/investlab-domain
