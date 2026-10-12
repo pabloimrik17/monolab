@@ -125,12 +125,11 @@ export async function action({ request }: Route.ActionArgs): Promise<ActionResul
     return handler ? handler(formData) : { error: `Unknown intent: ${intent}` };
 }
 
-export default function PortfolioRoute({ loaderData, actionData }: Route.ComponentProps) {
+export default function PortfolioRoute({ loaderData }: Route.ComponentProps) {
     return (
         <PortfolioPage
             items={loaderData.items}
             instruments={loaderData.instruments}
-            error={actionData && "error" in actionData ? actionData.error : undefined}
         />
     );
 }

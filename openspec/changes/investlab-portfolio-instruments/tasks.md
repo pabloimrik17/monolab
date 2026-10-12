@@ -22,7 +22,7 @@
 - [x] 3.3 Implement `DeletePortfolioItemUseCase` (@injectable) — find item, delete
 - [x] 3.4 Implement `ListPortfolioItemsUseCase` (@injectable) — return all items with resolved Instrument data
 - [x] 3.5 Write unit tests for use cases with mock repos
-- [x] 3.6 Create `portfolioApplicationModule` (ContainerModule) binding use cases
+- [x] 3.6 Create `portfolioModule` (ContainerModule) binding use cases
 - [x] 3.7 Export public API from application-server index.ts
 
 ## 4. Package refactor (canonical layering)

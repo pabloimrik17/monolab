@@ -5,6 +5,7 @@ export interface PortfolioViewModel {
     items: PortfolioItemView[];
     instruments: InstrumentOption[];
     editing: PortfolioItemView | undefined;
+    formKey: string;
     isFormOpen: boolean;
     openCreate: () => void;
     openEdit: (item: PortfolioItemView) => void;
@@ -22,6 +23,7 @@ export function usePortfolioViewModel(
         items,
         instruments,
         editing,
+        formKey: editing?.id ?? "new",
         isFormOpen,
         openCreate: () => {
             setEditing(undefined);

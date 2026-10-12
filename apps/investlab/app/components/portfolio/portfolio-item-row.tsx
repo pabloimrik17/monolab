@@ -7,6 +7,10 @@ const currency = new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 2,
 });
 
+function deleteErrorOf(data: unknown): string | null {
+    return typeof data === "object" && data !== null && "error" in data ? String(data.error) : null;
+}
+
 export interface PortfolioItemRowProps {
     item: PortfolioItemView;
     onEdit: (item: PortfolioItemView) => void;
@@ -15,6 +19,7 @@ export interface PortfolioItemRowProps {
 export function PortfolioItemRow({ item, onEdit }: PortfolioItemRowProps) {
     const fetcher = useFetcher();
     const isDeleting = fetcher.state !== "idle";
+    const deleteError = deleteErrorOf(fetcher.data);
 
     return (
         <tr>
@@ -65,6 +70,7 @@ export function PortfolioItemRow({ item, onEdit }: PortfolioItemRowProps) {
                         {isDeleting ? "Deleting…" : "Delete"}
                     </button>
                 </fetcher.Form>
+                {deleteError ? <p className="form-error">{deleteError}</p> : null}
             </td>
         </tr>
     );

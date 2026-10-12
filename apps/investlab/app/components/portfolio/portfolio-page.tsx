@@ -6,10 +6,9 @@ import type { InstrumentOption, PortfolioItemView } from "./types";
 export interface PortfolioPageProps {
     items: PortfolioItemView[];
     instruments: InstrumentOption[];
-    error?: string | undefined;
 }
 
-export function PortfolioPage({ items, instruments, error }: PortfolioPageProps) {
+export function PortfolioPage({ items, instruments }: PortfolioPageProps) {
     const vm = usePortfolioViewModel(items, instruments);
 
     return (
@@ -26,10 +25,9 @@ export function PortfolioPage({ items, instruments, error }: PortfolioPageProps)
                 ) : null}
             </header>
 
-            {error ? <p className="form-error">{error}</p> : null}
-
             {vm.isFormOpen ? (
                 <PortfolioItemForm
+                    key={vm.formKey}
                     instruments={vm.instruments}
                     editing={vm.editing}
                     onDone={vm.closeForm}

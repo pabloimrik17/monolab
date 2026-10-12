@@ -52,6 +52,18 @@ describe("PortfolioItem", () => {
             }
         });
 
+        it.each([
+            ["targetWeight", { targetWeight: Number.NaN }],
+            ["currentValue", { targetWeight: 10, currentValue: Number.NaN }],
+        ])("returns ValidationError for NaN %s", (_field, numbers) => {
+            const result = PortfolioItem.create({
+                instrumentId: validInstrumentId,
+                broker: "MyInvestor",
+                ...numbers,
+            });
+            expect(result.isErr()).toBe(true);
+        });
+
         it("returns ValidationError for targetWeight > 100", () => {
             const result = PortfolioItem.create({
                 instrumentId: validInstrumentId,
@@ -140,6 +152,22 @@ describe("PortfolioItem", () => {
             if (result.isOk()) {
                 const updateResult = result.value.update({ broker: "  " });
                 expect(updateResult.isErr()).toBe(true);
+            }
+        });
+
+        it.each([
+            ["targetWeight", { targetWeight: Number.NaN }],
+            ["currentValue", { currentValue: Number.NaN }],
+        ])("rejects NaN %s", (_field, changes) => {
+            const result = PortfolioItem.create({
+                instrumentId: validInstrumentId,
+                broker: "MyInvestor",
+                targetWeight: 10,
+            });
+            expect(result.isOk()).toBe(true);
+            if (result.isOk()) {
+                expect(result.value.update(changes).isErr()).toBe(true);
+                expect(result.value.targetWeight).toBe(10);
             }
         });
 

@@ -28,12 +28,6 @@ export default function Index() {
         );
         pollerRef.current = poller;
 
-        const symbols = initialTickers.map((t) => t.symbol);
-        if (symbols.length > 0) {
-            poller.start(symbols);
-            setIsPolling(true);
-        }
-
         return () => {
             poller.stop();
             setIsPolling(false);

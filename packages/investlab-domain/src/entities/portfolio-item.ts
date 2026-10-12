@@ -27,12 +27,18 @@ const CHANGE_RULES: ReadonlyArray<readonly [(props: PortfolioItemChanges) => boo
     [
         (props) =>
             props.targetWeight !== undefined &&
-            (props.targetWeight < 0 || props.targetWeight > 100),
-        "PortfolioItem targetWeight must be between 0 and 100",
+            !(
+                Number.isFinite(props.targetWeight) &&
+                props.targetWeight >= 0 &&
+                props.targetWeight <= 100
+            ),
+        "PortfolioItem targetWeight must be a number between 0 and 100",
     ],
     [
-        (props) => props.currentValue !== undefined && props.currentValue < 0,
-        "PortfolioItem currentValue cannot be negative",
+        (props) =>
+            props.currentValue !== undefined &&
+            !(Number.isFinite(props.currentValue) && props.currentValue >= 0),
+        "PortfolioItem currentValue must be a non-negative number",
     ],
 ];
 
@@ -92,29 +98,20 @@ export class PortfolioItem {
             return err(new ValidationError("PortfolioItem instrumentId cannot be empty"));
         }
         const broker = props.broker.trim();
-        if (!broker) {
-            return err(new ValidationError("PortfolioItem broker cannot be empty"));
-        }
-        if (props.targetWeight < 0 || props.targetWeight > 100) {
-            return err(new ValidationError("PortfolioItem targetWeight must be between 0 and 100"));
-        }
         const currentValue = props.currentValue ?? 0;
-        if (currentValue < 0) {
-            return err(new ValidationError("PortfolioItem currentValue cannot be negative"));
-        }
-
         const now = new Date();
-        return ok(
-            new PortfolioItem({
-                id: crypto.randomUUID(),
-                instrumentId,
-                broker,
-                targetWeight: props.targetWeight,
-                currentValue,
-                ...(props.notes != null && { notes: props.notes }),
-                createdAt: now,
-                updatedAt: now,
-            }),
+        return validateChanges({ broker, targetWeight: props.targetWeight, currentValue }).map(
+            () =>
+                new PortfolioItem({
+                    id: crypto.randomUUID(),
+                    instrumentId,
+                    broker,
+                    targetWeight: props.targetWeight,
+                    currentValue,
+                    ...(props.notes != null && { notes: props.notes }),
+                    createdAt: now,
+                    updatedAt: now,
+                }),
         );
     }
 
