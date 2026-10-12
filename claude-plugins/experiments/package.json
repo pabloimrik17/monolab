@@ -4,6 +4,7 @@
     "private": true,
     "description": "Beta skills and commands staging area for monolab",
     "scripts": {
+        "test": "vitest run",
         "test:unit": "vitest run"
     },
     "devDependencies": {

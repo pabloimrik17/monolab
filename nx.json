@@ -98,6 +98,34 @@
             "dependsOn": ["^lint:stylelint"],
             "inputs": ["default", "{workspaceRoot}/.stylelintrc*", "{projectRoot}/.stylelintrc*"]
         },
+        "test": {
+            "cache": true,
+            "dependsOn": ["^build", "^test"],
+            "inputs": [
+                "default",
+                "{workspaceRoot}/vitest.config.ts",
+                "{projectRoot}/vitest.config.ts"
+            ],
+            "outputs": ["{projectRoot}/html", "{projectRoot}/test-results.junit.xml"]
+        },
+        "test:coverage": {
+            "cache": true,
+            "dependsOn": ["^build", "^test:coverage"],
+            "inputs": [
+                "default",
+                "{workspaceRoot}/vitest.config.ts",
+                "{projectRoot}/vitest.config.ts"
+            ],
+            "outputs": [
+                "{projectRoot}/coverage",
+                "{projectRoot}/html",
+                "{projectRoot}/test-results.junit.xml"
+            ]
+        },
+        "test:watch": {
+            "continuous": true,
+            "dependsOn": ["^build", "^test:watch"]
+        },
         "test:types": {
             "cache": true,
             "dependsOn": ["^build", "^test:types"],

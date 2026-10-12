@@ -33,8 +33,12 @@
         "react-hooks:release": "nx release --skip-publish --projects @m0n0lab/react-hooks && pnpm run jsr:sync-version",
         "react-hooks:release:dry": "nx release --skip-publish --dry-run --projects @m0n0lab/react-hooks",
         "setup:browsers": "playwright install chromium",
+        "test": "nx run-many --target=test",
+        "test:affected": "nx affected --target=test",
         "test:browser": "nx run-many --target=test:browser",
         "test:browser:affected": "nx affected --target=test:browser",
+        "test:changed": "nx run-many --target=test:changed",
+        "test:coverage": "nx run-many --target=test:coverage",
         "test:integration": "nx run-many --target=test:integration",
         "test:integration:affected": "nx affected --target=test:integration",
         "test:integration:watch": "nx run-many --target=test:integration:watch",
@@ -45,6 +49,7 @@
         "test:unit": "nx run-many --target=test:unit",
         "test:unit:affected": "nx affected --target=test:unit",
         "test:unit:watch": "nx run-many --target=test:unit:watch",
+        "test:watch": "nx run-many --target=test:watch",
         "typecheck": "tsc --build tsconfig.node.json"
     },
     "devDependencies": {
