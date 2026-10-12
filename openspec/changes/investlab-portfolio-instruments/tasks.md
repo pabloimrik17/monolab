@@ -69,7 +69,7 @@
 - [x] 8.2 Export a named error union per use case (`PortfolioItemUpdateError`, …)
 - [x] 8.3 Type `DomainError.code` as a literal union of the existing SCREAMING_SNAKE codes
 - [x] 8.4 Remove `PortfolioItemRepository.findByInstrumentId` (no callers) from port and PG impl
-- [ ] 8.5 Add portfolio read-query port + read-model type in `investlab-domain` (item + instrument); `PortfolioItemListUseCase` uses it instead of two `findAll()` + in-memory join
+- [x] 8.5 Add portfolio read-query port + read-model type in `investlab-domain` (item + instrument); `PortfolioItemListUseCase` uses it instead of two `findAll()` + in-memory join
 - [ ] 8.6 Move quote port into `investlab-domain` if not already there; verify `nx run investlab-domain:test:unit`
 
 ## 9. Data server

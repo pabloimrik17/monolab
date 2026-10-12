@@ -5,14 +5,9 @@ import {
     type Instrument,
     type InstrumentRepository,
     type PersistenceError,
-    type PortfolioItem,
-    type PortfolioItemRepository,
+    type PortfolioItemQuery,
+    type PortfolioItemWithInstrument,
 } from "@m0n0lab/investlab-domain";
-
-export interface PortfolioItemWithInstrument {
-    item: PortfolioItem;
-    instrument: Instrument;
-}
 
 export interface PortfolioItemList {
     items: PortfolioItemWithInstrument[];
@@ -24,27 +19,16 @@ export type PortfolioItemListError = PersistenceError;
 @injectable()
 export class PortfolioItemListUseCase {
     constructor(
-        @inject(TOKENS.PortfolioItemRepository)
-        private readonly portfolioItemRepo: PortfolioItemRepository,
+        @inject(TOKENS.PortfolioItemQuery)
+        private readonly portfolioItemQuery: PortfolioItemQuery,
         @inject(TOKENS.InstrumentRepository)
         private readonly instrumentRepo: InstrumentRepository,
     ) {}
 
     execute(): ResultAsync<PortfolioItemList, PortfolioItemListError> {
         return ResultAsync.combine([
-            this.portfolioItemRepo.findAll(),
+            this.portfolioItemQuery.listWithInstruments(),
             this.instrumentRepo.findAll(),
-        ] as const).map(([items, instruments]) => {
-            const instrumentMap = new Map(instruments.map((i) => [i.id, i]));
-            return {
-                items: items
-                    .filter((item) => instrumentMap.has(item.instrumentId))
-                    .map((item) => ({
-                        item,
-                        instrument: instrumentMap.get(item.instrumentId)!,
-                    })),
-                instruments,
-            };
-        });
+        ] as const).map(([items, instruments]) => ({ items, instruments }));
     }
 }

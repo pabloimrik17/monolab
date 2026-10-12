@@ -23,6 +23,10 @@ export type { PortfolioItemProps } from "./entities/portfolio-item.ts";
 export type { InstrumentRepository } from "./ports/instrument.repository.ts";
 export type { Quote, QuoteCache } from "./ports/quote-cache.ts";
 export type { PortfolioItemRepository } from "./ports/portfolio-item.repository.ts";
+export type { PortfolioItemQuery } from "./ports/portfolio-item.query.ts";
+
+// Read models
+export type { PortfolioItemWithInstrument } from "./read-models/portfolio-item-with-instrument.ts";
 
 // Tokens
 export { TOKENS } from "./tokens.ts";

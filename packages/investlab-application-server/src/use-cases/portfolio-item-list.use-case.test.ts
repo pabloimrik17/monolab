@@ -7,7 +7,7 @@ import {
     PersistenceError,
     PortfolioItem,
     type InstrumentRepository,
-    type PortfolioItemRepository,
+    type PortfolioItemQuery,
 } from "@m0n0lab/investlab-domain";
 import { PortfolioItemListUseCase } from "./portfolio-item-list.use-case.ts";
 
@@ -26,15 +26,9 @@ function makeInstrumentRepo(overrides: Partial<InstrumentRepository> = {}): Inst
     };
 }
 
-function makePortfolioItemRepo(
-    overrides: Partial<PortfolioItemRepository> = {},
-): PortfolioItemRepository {
+function makePortfolioItemQuery(overrides: Partial<PortfolioItemQuery> = {}): PortfolioItemQuery {
     return {
-        save: vi.fn(),
-        findById: vi.fn(),
-        findAll: vi.fn(),
-        update: vi.fn(),
-        delete: vi.fn(),
+        listWithInstruments: vi.fn(),
         ...overrides,
     };
 }
@@ -53,14 +47,14 @@ function makeInstrument(): Instrument {
 describe("PortfolioItemListUseCase", () => {
     it("returns no items but still lists instruments when portfolio is empty", async () => {
         const instrument = makeInstrument();
-        const portfolioRepo = makePortfolioItemRepo({
-            findAll: vi.fn(() => okAsync([])),
+        const portfolioQuery = makePortfolioItemQuery({
+            listWithInstruments: vi.fn(() => okAsync([])),
         });
         const instrumentRepo = makeInstrumentRepo({
             findAll: vi.fn(() => okAsync([instrument])),
         });
 
-        const useCase = new PortfolioItemListUseCase(portfolioRepo, instrumentRepo);
+        const useCase = new PortfolioItemListUseCase(portfolioQuery, instrumentRepo);
         const result = await useCase.execute();
 
         expect(result.isOk()).toBe(true);
@@ -70,7 +64,7 @@ describe("PortfolioItemListUseCase", () => {
         }
     });
 
-    it("returns items joined with their instrument", async () => {
+    it("returns the items paired with their instrument by the read query", async () => {
         const instrument = makeInstrument();
 
         const itemResult = PortfolioItem.create({
@@ -81,14 +75,14 @@ describe("PortfolioItemListUseCase", () => {
         if (!itemResult.isOk()) throw new Error("setup");
         const item = itemResult.value;
 
-        const portfolioRepo = makePortfolioItemRepo({
-            findAll: vi.fn(() => okAsync([item])),
+        const portfolioQuery = makePortfolioItemQuery({
+            listWithInstruments: vi.fn(() => okAsync([{ item, instrument }])),
         });
         const instrumentRepo = makeInstrumentRepo({
             findAll: vi.fn(() => okAsync([instrument])),
         });
 
-        const useCase = new PortfolioItemListUseCase(portfolioRepo, instrumentRepo);
+        const useCase = new PortfolioItemListUseCase(portfolioQuery, instrumentRepo);
         const result = await useCase.execute();
 
         expect(result.isOk()).toBe(true);
@@ -101,40 +95,34 @@ describe("PortfolioItemListUseCase", () => {
         expect(instrumentRepo.findAll).toHaveBeenCalledTimes(1);
     });
 
-    it("filters out items whose instrument was not found", async () => {
-        const itemResult = PortfolioItem.create({
-            instrumentId: "missing-instrument",
-            broker: "MyInvestor",
-            targetWeight: 20,
-        });
-        if (!itemResult.isOk()) throw new Error("setup");
-
-        const portfolioRepo = makePortfolioItemRepo({
-            findAll: vi.fn(() => okAsync([itemResult.value])),
-        });
-        const instrumentRepo = makeInstrumentRepo({
-            findAll: vi.fn(() => okAsync([])),
-        });
-
-        const useCase = new PortfolioItemListUseCase(portfolioRepo, instrumentRepo);
-        const result = await useCase.execute();
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-            expect(result.value.items).toEqual([]);
-        }
-    });
-
     it("propagates an instrument lookup failure", async () => {
         const failure = new PersistenceError(new Error("connection lost"));
-        const portfolioRepo = makePortfolioItemRepo({
-            findAll: vi.fn(() => okAsync([])),
+        const portfolioQuery = makePortfolioItemQuery({
+            listWithInstruments: vi.fn(() => okAsync([])),
         });
         const instrumentRepo = makeInstrumentRepo({
             findAll: vi.fn(() => errAsync(failure)),
         });
 
-        const useCase = new PortfolioItemListUseCase(portfolioRepo, instrumentRepo);
+        const useCase = new PortfolioItemListUseCase(portfolioQuery, instrumentRepo);
+        const result = await useCase.execute();
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBe(failure);
+        }
+    });
+
+    it("propagates a read query failure", async () => {
+        const failure = new PersistenceError(new Error("connection lost"));
+        const portfolioQuery = makePortfolioItemQuery({
+            listWithInstruments: vi.fn(() => errAsync(failure)),
+        });
+        const instrumentRepo = makeInstrumentRepo({
+            findAll: vi.fn(() => okAsync([])),
+        });
+
+        const useCase = new PortfolioItemListUseCase(portfolioQuery, instrumentRepo);
         const result = await useCase.execute();
 
         expect(result.isErr()).toBe(true);
