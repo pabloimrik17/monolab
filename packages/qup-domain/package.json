@@ -15,7 +15,12 @@
     },
     "scripts": {
         "build": "tsdown",
+        "test": "vitest run",
+        "test:changed": "vitest run --changed",
+        "test:coverage": "vitest run --coverage",
+        "test:watch": "vitest",
         "test:unit": "vitest run",
+        "test:unit:changed": "vitest run --changed",
         "test:unit:watch": "vitest",
         "test:unit:coverage": "vitest run --coverage",
         "test:mutation": "stryker run",
@@ -27,6 +32,7 @@
         "neverthrow": "catalog:"
     },
     "devDependencies": {
+        "@m0n0lab/vitest-config": "workspace:*",
         "@stryker-mutator/core": "catalog:",
         "@stryker-mutator/typescript-checker": "catalog:",
         "@stryker-mutator/vitest-runner": "catalog:",

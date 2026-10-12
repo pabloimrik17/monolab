@@ -23,11 +23,16 @@
         "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
         "lint:eslint:fix": "eslint --cache --concurrency=auto --max-warnings 40 --fix .",
         "lint:knip": "knip --max-issues 70",
-        "test:mutation": "stryker run",
-        "test:mutation:report": "open reports/mutation/index.html",
+        "test": "vitest run",
+        "test:changed": "vitest run --changed",
+        "test:coverage": "vitest run --coverage",
+        "test:watch": "vitest",
         "test:unit": "vitest run",
+        "test:unit:changed": "vitest run --changed",
         "test:unit:coverage": "vitest run --coverage",
         "test:unit:watch": "vitest",
+        "test:mutation": "stryker run",
+        "test:mutation:report": "open reports/mutation/index.html",
         "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
     },
     "dependencies": {
@@ -37,6 +42,7 @@
         "neverthrow": "catalog:"
     },
     "devDependencies": {
+        "@m0n0lab/vitest-config": "workspace:*",
         "@stryker-mutator/core": "catalog:",
         "@stryker-mutator/typescript-checker": "catalog:",
         "@stryker-mutator/vitest-runner": "catalog:",

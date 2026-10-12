@@ -2,5 +2,31 @@
     "name": "@m0n0lab/http-client",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/http-client/src",
-    "projectType": "library"
+    "projectType": "library",
+    "targets": {
+        "test": {
+            "dependsOn": ["^build", "^test", "build"]
+        },
+        "test:changed": {
+            "dependsOn": ["^build", "build"]
+        },
+        "test:coverage": {
+            "dependsOn": ["^build", "^test:coverage", "build"]
+        },
+        "test:watch": {
+            "dependsOn": ["^build", "^test:watch", "build"]
+        },
+        "test:integration": {
+            "dependsOn": ["^build", "build"]
+        },
+        "test:integration:changed": {
+            "dependsOn": ["^build", "build"]
+        },
+        "test:integration:coverage": {
+            "dependsOn": ["^build", "build"]
+        },
+        "test:integration:watch": {
+            "dependsOn": ["^build", "build"]
+        }
+    }
 }

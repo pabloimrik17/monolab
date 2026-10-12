@@ -1,0 +1,24 @@
+{
+    "extends": "./tsconfig.node.base.json",
+    "compilerOptions": {
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Node.js Tooling Configuration
+         * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         * Extends the Node.js base config for tool config files
+         * (e.g. bundler, test runner or linter *.config.ts). Type-check only:
+         * declarations go to a throwaway dir so the project can be a
+         * composite reference.
+         *
+         * Paths use ${configDir}, so consumers only set "include".
+         */
+
+        /* Side-Effect Imports */
+        "noUncheckedSideEffectImports": true,
+
+        /* Build Output */
+        "emitDeclarationOnly": true,
+        "rootDir": "${configDir}",
+        "outDir": "${configDir}/out-tsc/tooling",
+        "tsBuildInfoFile": "${configDir}/out-tsc/tooling/tsconfig.tsbuildinfo"
+    }
+}

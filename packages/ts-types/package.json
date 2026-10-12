@@ -38,20 +38,27 @@
         "lint:knip:fix": "knip --fix",
         "lint:oxfmt": "oxfmt --check .",
         "lint:oxfmt:fix": "oxfmt .",
+        "test": "vitest run",
+        "test:changed": "vitest run --changed",
+        "test:coverage": "vitest run --coverage",
         "test:mutation": "stryker run",
         "test:mutation:report": "open reports/mutation/index.html",
-        "test:types": "vitest --typecheck.enabled --run",
-        "test:types:watch": "vitest --typecheck.enabled",
+        "test:types": "vitest run --project types",
+        "test:types:changed": "vitest run --project types --changed",
+        "test:types:watch": "vitest --project types",
         "test:ui": "vitest --ui",
-        "test:unit": "vitest run",
-        "test:unit:coverage": "vitest run --coverage",
-        "test:unit:watch": "vitest",
+        "test:unit": "vitest run --project unit",
+        "test:unit:changed": "vitest run --project unit --changed",
+        "test:unit:coverage": "vitest run --project unit --coverage",
+        "test:unit:watch": "vitest --project unit",
+        "test:watch": "vitest",
         "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
     },
     "dependencies": {
         "tslib": "catalog:"
     },
     "devDependencies": {
+        "@m0n0lab/vitest-config": "workspace:*",
         "@stryker-mutator/api": "catalog:",
         "typescript": "catalog:",
         "vitest": "catalog:"

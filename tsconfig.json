@@ -50,6 +50,9 @@
       },
       {
         "path": "./packages/investlab-data-contracts"
+      },
+      {
+        "path": "./packages/vitest-config"
       }
     ]
 }

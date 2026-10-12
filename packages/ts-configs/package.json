@@ -12,6 +12,7 @@
         "tsconfig.node.base.json",
         "tsconfig.node.app.json",
         "tsconfig.node.lib.json",
+        "tsconfig.node.tooling.json",
         "tsconfig.web.base.json",
         "tsconfig.web.app.json",
         "tsconfig.web.lib.json",
@@ -27,6 +28,7 @@
         "./tsconfig.node.base.json": "./tsconfig.node.base.json",
         "./tsconfig.node.app.json": "./tsconfig.node.app.json",
         "./tsconfig.node.lib.json": "./tsconfig.node.lib.json",
+        "./tsconfig.node.tooling.json": "./tsconfig.node.tooling.json",
         "./tsconfig.web.base.json": "./tsconfig.web.base.json",
         "./tsconfig.web.app.json": "./tsconfig.web.app.json",
         "./tsconfig.web.lib.json": "./tsconfig.web.lib.json",
@@ -47,6 +49,7 @@
         "lint:oxfmt:fix": "oxfmt ."
     },
     "devDependencies": {
+        "@m0n0lab/vitest-config": "workspace:*",
         "typescript": "catalog:"
     },
     "engines": {

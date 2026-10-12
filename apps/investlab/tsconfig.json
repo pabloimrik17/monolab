@@ -1,5 +1,13 @@
 {
     "include": ["**/*.ts", "**/*.tsx", ".react-router/types/**/*"],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "out-tsc",
+        "react-router.config.ts",
+        "vite.config.ts",
+        "vitest.config.ts"
+    ],
     "compilerOptions": {
         "lib": ["DOM", "DOM.Iterable", "ES2022"],
         "target": "ES2022",
@@ -14,7 +22,7 @@
         "noEmit": true,
         "isolatedModules": true,
         "resolveJsonModule": true,
-        "types": ["vite/client"],
+        "types": ["node", "vite/client"],
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true
     },
@@ -30,6 +38,9 @@
       },
       {
         "path": "../../packages/investlab-core"
+      },
+      {
+        "path": "../../packages/vitest-config"
       }
     ]
 }
