@@ -4,12 +4,12 @@ import {
     PersistenceError,
     PortfolioItemNotFoundError,
     ValidationError,
+    type RemotePortError,
 } from "@m0n0lab/investlab-domain";
-import type { ApiClientError } from "./api-client-error.ts";
 import type { ApiErrorDto } from "@m0n0lab/investlab-data-contracts";
 
 /** Rebuilds the domain error named by `dto.code` (ADR 0005); `resourceId` names the missing entity. */
-export function apiErrorToDomain(dto: ApiErrorDto, resourceId: string): ApiClientError {
+export function apiErrorToDomain(dto: ApiErrorDto, resourceId: string): RemotePortError {
     switch (dto.code) {
         case "PERSISTENCE_ERROR":
             return new PersistenceError(dto);

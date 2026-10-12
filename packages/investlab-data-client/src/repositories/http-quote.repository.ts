@@ -3,17 +3,21 @@ import { inject, injectable } from "inversify";
 import { errAsync, okAsync, type ResultAsync } from "neverthrow";
 import { z } from "zod";
 import { quoteDtoSchema } from "@m0n0lab/investlab-data-contracts";
-import { PersistenceError, type Quote, type QuoteRepository } from "@m0n0lab/investlab-domain";
+import {
+    PersistenceError,
+    type Quote,
+    type QuoteRepository,
+    type RemotePortError,
+} from "@m0n0lab/investlab-domain";
 import { ApiClient } from "../api-client.ts";
-import type { ApiClientError } from "../api-client-error.ts";
 
 const quoteListSchema = z.array(quoteDtoSchema);
 
 @injectable()
-export class HttpQuoteRepository implements QuoteRepository<ApiClientError> {
+export class HttpQuoteRepository implements QuoteRepository<RemotePortError> {
     constructor(@inject(ApiClient) private readonly api: ApiClient) {}
 
-    getQuote(symbol: string): ResultAsync<Quote, ApiClientError> {
+    getQuote(symbol: string): ResultAsync<Quote, RemotePortError> {
         return this.getQuotes([symbol]).andThen((quotes) => {
             const quote = quotes.get(symbol);
             return quote
@@ -22,7 +26,7 @@ export class HttpQuoteRepository implements QuoteRepository<ApiClientError> {
         });
     }
 
-    getQuotes(symbols: string[]): ResultAsync<Map<string, Quote>, ApiClientError> {
+    getQuotes(symbols: string[]): ResultAsync<Map<string, Quote>, RemotePortError> {
         if (symbols.length === 0) {
             return okAsync(new Map());
         }

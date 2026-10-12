@@ -1,4 +1,3 @@
-export type { ClientPortError } from "./client-port-error.ts";
 export { APP_TOKENS } from "./tokens.ts";
 export { applicationClientModule } from "./application-client.module.ts";
 export {

@@ -1,15 +1,19 @@
 import { inject, injectable } from "inversify";
-import { TOKENS, type Instrument, type InstrumentRepository } from "@m0n0lab/investlab-domain";
-import type { ClientPortError } from "../client-port-error.ts";
+import {
+    TOKENS,
+    type Instrument,
+    type InstrumentRepository,
+    type RemotePortError,
+} from "@m0n0lab/investlab-domain";
 import type { ResultAsync } from "neverthrow";
 
-export type InstrumentListError = ClientPortError;
+export type InstrumentListError = RemotePortError;
 
 @injectable()
 export class InstrumentListUseCase {
     constructor(
         @inject(TOKENS.InstrumentRepository)
-        private readonly instrumentRepo: InstrumentRepository<ClientPortError>,
+        private readonly instrumentRepo: InstrumentRepository<RemotePortError>,
     ) {}
 
     execute(): ResultAsync<Instrument[], InstrumentListError> {

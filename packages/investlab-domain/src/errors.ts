@@ -52,3 +52,11 @@ export class NetworkError extends Error {
         this.cause = cause;
     }
 }
+
+/** Every failure a remote (HTTP) port can return: server codes rebuilt as domain errors plus transport failure. */
+export type RemotePortError =
+    | PersistenceError
+    | ValidationError
+    | InstrumentNotFoundError
+    | PortfolioItemNotFoundError
+    | NetworkError;

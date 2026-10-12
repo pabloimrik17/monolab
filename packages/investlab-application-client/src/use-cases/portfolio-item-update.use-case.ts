@@ -5,16 +5,16 @@ import {
     TOKENS,
     type PortfolioItem,
     type PortfolioItemRepository,
+    type RemotePortError,
 } from "@m0n0lab/investlab-domain";
-import type { ClientPortError } from "../client-port-error.ts";
 
-export type PortfolioItemUpdateError = ClientPortError;
+export type PortfolioItemUpdateError = RemotePortError;
 
 @injectable()
 export class PortfolioItemUpdateUseCase {
     constructor(
         @inject(TOKENS.PortfolioItemRepository)
-        private readonly portfolioItemRepo: PortfolioItemRepository<ClientPortError>,
+        private readonly portfolioItemRepo: PortfolioItemRepository<RemotePortError>,
     ) {}
 
     execute(

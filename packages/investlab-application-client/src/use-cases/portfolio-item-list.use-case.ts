@@ -6,23 +6,23 @@ import {
     type InstrumentRepository,
     type PortfolioItemQuery,
     type PortfolioItemWithInstrument,
+    type RemotePortError,
 } from "@m0n0lab/investlab-domain";
-import type { ClientPortError } from "../client-port-error.ts";
 
 export interface PortfolioItemList {
     items: PortfolioItemWithInstrument[];
     instruments: Instrument[];
 }
 
-export type PortfolioItemListError = ClientPortError;
+export type PortfolioItemListError = RemotePortError;
 
 @injectable()
 export class PortfolioItemListUseCase {
     constructor(
         @inject(TOKENS.PortfolioItemQuery)
-        private readonly portfolioItemQuery: PortfolioItemQuery<ClientPortError>,
+        private readonly portfolioItemQuery: PortfolioItemQuery<RemotePortError>,
         @inject(TOKENS.InstrumentRepository)
-        private readonly instrumentRepo: InstrumentRepository<ClientPortError>,
+        private readonly instrumentRepo: InstrumentRepository<RemotePortError>,
     ) {}
 
     execute(): ResultAsync<PortfolioItemList, PortfolioItemListError> {

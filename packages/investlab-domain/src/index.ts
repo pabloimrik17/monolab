@@ -6,6 +6,7 @@ export {
     NetworkError,
     PersistenceError,
     PortfolioItemNotFoundError,
+    type RemotePortError,
     ValidationError,
 } from "./errors.ts";
 

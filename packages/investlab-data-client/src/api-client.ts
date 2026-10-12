@@ -1,10 +1,9 @@
 import { inject, injectable } from "inversify";
 import { err, ok, ResultAsync, type Result } from "neverthrow";
 import { apiErrorDtoSchema } from "@m0n0lab/investlab-data-contracts";
-import { NetworkError } from "@m0n0lab/investlab-domain";
+import { NetworkError, type RemotePortError } from "@m0n0lab/investlab-domain";
 import { apiErrorToDomain } from "./api-error.mapper.ts";
 import { DATA_CLIENT_TOKENS } from "./tokens.ts";
-import type { ApiClientError } from "./api-client-error.ts";
 import type { z } from "zod";
 
 interface RequestOptions {
@@ -32,7 +31,7 @@ export class ApiClient {
         path: string,
         schema: S,
         options: RequestOptions = {},
-    ): ResultAsync<z.infer<S>, ApiClientError> {
+    ): ResultAsync<z.infer<S>, RemotePortError> {
         return this.exchange(method, path, options).andThen((payload) =>
             parseWith(schema, payload),
         );
@@ -42,7 +41,7 @@ export class ApiClient {
         method: Method,
         path: string,
         options: RequestOptions = {},
-    ): ResultAsync<void, ApiClientError> {
+    ): ResultAsync<void, RemotePortError> {
         return this.exchange(method, path, options).map(() => undefined);
     }
 
@@ -50,7 +49,7 @@ export class ApiClient {
         method: Method,
         path: string,
         { body, resourceId = "" }: RequestOptions,
-    ): ResultAsync<unknown, ApiClientError> {
+    ): ResultAsync<unknown, RemotePortError> {
         return ResultAsync.fromPromise(
             fetch(`${this.baseUrl}${path}`, {
                 method,
@@ -68,7 +67,7 @@ export class ApiClient {
             return ResultAsync.fromPromise(
                 response.json() as Promise<unknown>,
                 (cause) => new NetworkError(cause),
-            ).andThen((payload): Result<unknown, ApiClientError> => {
+            ).andThen((payload): Result<unknown, RemotePortError> => {
                 if (response.ok) {
                     return ok(payload);
                 }

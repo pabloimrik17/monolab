@@ -1,6 +1,11 @@
 import { HttpResponse } from "msw";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { NetworkError, PersistenceError, TOKENS } from "@m0n0lab/investlab-domain";
+import {
+    NetworkError,
+    PersistenceError,
+    TOKENS,
+    type RemotePortError,
+} from "@m0n0lab/investlab-domain";
 import {
     apiError,
     createTestContainer,
@@ -9,7 +14,6 @@ import {
     portfolioItemDto,
     server,
 } from "../testing/api-server.ts";
-import type { ApiClientError } from "../api-client-error.ts";
 import type { PortfolioItemQuery } from "@m0n0lab/investlab-domain";
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
@@ -17,7 +21,7 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 function createQuery(...args: Parameters<typeof createTestContainer>) {
-    return createTestContainer(...args).get<PortfolioItemQuery<ApiClientError>>(
+    return createTestContainer(...args).get<PortfolioItemQuery<RemotePortError>>(
         TOKENS.PortfolioItemQuery,
     );
 }

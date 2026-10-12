@@ -7,6 +7,7 @@ import {
     TOKENS,
     ValidationError,
     type PortfolioItemRepository,
+    type RemotePortError,
 } from "@m0n0lab/investlab-domain";
 import {
     apiError,
@@ -18,14 +19,13 @@ import {
     portfolioItemDto,
     server,
 } from "../testing/api-server.ts";
-import type { ApiClientError } from "../api-client-error.ts";
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 function createRepository() {
-    return createTestContainer().get<PortfolioItemRepository<ApiClientError>>(
+    return createTestContainer().get<PortfolioItemRepository<RemotePortError>>(
         TOKENS.PortfolioItemRepository,
     );
 }

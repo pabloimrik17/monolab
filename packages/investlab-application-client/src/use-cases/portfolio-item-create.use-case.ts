@@ -1,15 +1,19 @@
 import { inject, injectable } from "inversify";
 import { errAsync, type ResultAsync } from "neverthrow";
-import { PortfolioItem, TOKENS, type PortfolioItemRepository } from "@m0n0lab/investlab-domain";
-import type { ClientPortError } from "../client-port-error.ts";
+import {
+    PortfolioItem,
+    TOKENS,
+    type PortfolioItemRepository,
+    type RemotePortError,
+} from "@m0n0lab/investlab-domain";
 
-export type PortfolioItemCreateError = ClientPortError;
+export type PortfolioItemCreateError = RemotePortError;
 
 @injectable()
 export class PortfolioItemCreateUseCase {
     constructor(
         @inject(TOKENS.PortfolioItemRepository)
-        private readonly portfolioItemRepo: PortfolioItemRepository<ClientPortError>,
+        private readonly portfolioItemRepo: PortfolioItemRepository<RemotePortError>,
     ) {}
 
     // Instrument existence is enforced by the API (INSTRUMENT_NOT_FOUND), not pre-checked here.

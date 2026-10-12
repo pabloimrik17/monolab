@@ -1,15 +1,19 @@
 import { inject, injectable } from "inversify";
-import { TOKENS, type Quote, type QuoteRepository } from "@m0n0lab/investlab-domain";
-import type { ClientPortError } from "../client-port-error.ts";
+import {
+    TOKENS,
+    type Quote,
+    type QuoteRepository,
+    type RemotePortError,
+} from "@m0n0lab/investlab-domain";
 import type { ResultAsync } from "neverthrow";
 
-export type QuoteListError = ClientPortError;
+export type QuoteListError = RemotePortError;
 
 @injectable()
 export class QuoteListUseCase {
     constructor(
         @inject(TOKENS.QuoteRepository)
-        private readonly quoteRepo: QuoteRepository<ClientPortError>,
+        private readonly quoteRepo: QuoteRepository<RemotePortError>,
     ) {}
 
     execute(symbols: string[]): ResultAsync<Quote[], QuoteListError> {
