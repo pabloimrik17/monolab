@@ -12,8 +12,10 @@ import {
     portfolioItemIdFormSchema,
     updatePortfolioItemFormSchema,
 } from "../lib/portfolio-item-form";
+import { remoteErrorMessage, remoteErrorStatus } from "../lib/remote-error";
 import type { PortfolioFieldErrors } from "../components/portfolio/types";
 import type { Route } from "./+types/portfolio";
+import type { RemotePortError } from "@m0n0lab/investlab-domain";
 import type { z } from "zod";
 
 export async function loader(_: Route.LoaderArgs) {
@@ -23,7 +25,9 @@ export async function loader(_: Route.LoaderArgs) {
     const result = await listUseCase.execute();
 
     if (result.isErr()) {
-        throw new Response(result.error.message, { status: 500 });
+        throw new Response(remoteErrorMessage(result.error), {
+            status: remoteErrorStatus(result.error),
+        });
     }
 
     const items = result.value.items.map(({ item, instrument }) => ({
@@ -58,7 +62,7 @@ export async function loader(_: Route.LoaderArgs) {
 type ActionResult = { ok: true } | { error: string; fieldErrors?: PortfolioFieldErrors };
 
 const succeeded = (): ActionResult => ({ ok: true });
-const failed = (error: { message: string }): ActionResult => ({ error: error.message });
+const failed = (error: RemotePortError): ActionResult => ({ error: remoteErrorMessage(error) });
 
 function invalid(error: z.ZodError): ActionResult {
     const fieldErrors = Object.fromEntries(
