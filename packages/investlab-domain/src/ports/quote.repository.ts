@@ -9,7 +9,7 @@ export interface Quote {
     updatedAt: Date;
 }
 
-export interface QuoteCache {
+export interface QuoteRepository {
     getQuote(symbol: string): ResultAsync<Quote, PersistenceError>;
     getQuotes(symbols: string[]): ResultAsync<Map<string, Quote>, PersistenceError>;
 }

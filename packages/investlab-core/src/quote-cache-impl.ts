@@ -1,6 +1,6 @@
 import { inject, injectable, optional } from "inversify";
 import { ResultAsync } from "neverthrow";
-import { PersistenceError, type Quote, type QuoteCache } from "@m0n0lab/investlab-domain";
+import { PersistenceError, type Quote, type QuoteRepository } from "@m0n0lab/investlab-domain";
 import { CORE_TOKENS } from "./tokens.ts";
 import type { FinnhubClient } from "./finnhub-client.ts";
 import type Redis from "ioredis";
@@ -17,7 +17,7 @@ function cacheKey(symbol: string): string {
 }
 
 @injectable()
-export class QuoteCacheImpl implements QuoteCache {
+export class QuoteCacheImpl implements QuoteRepository {
     private readonly ttl: number;
 
     constructor(
