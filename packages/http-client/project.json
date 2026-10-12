@@ -8,7 +8,7 @@
             "dependsOn": ["^build", "^test", "build"]
         },
         "test:changed": {
-            "dependsOn": ["build"]
+            "dependsOn": ["^build", "build"]
         },
         "test:coverage": {
             "dependsOn": ["^build", "^test:coverage", "build"]
@@ -17,16 +17,16 @@
             "dependsOn": ["^build", "^test:watch", "build"]
         },
         "test:integration": {
-            "dependsOn": ["build"]
+            "dependsOn": ["^build", "build"]
         },
         "test:integration:changed": {
-            "dependsOn": ["build"]
+            "dependsOn": ["^build", "build"]
         },
         "test:integration:coverage": {
-            "dependsOn": ["build"]
+            "dependsOn": ["^build", "build"]
         },
         "test:integration:watch": {
-            "dependsOn": ["build"]
+            "dependsOn": ["^build", "build"]
         }
     }
 }

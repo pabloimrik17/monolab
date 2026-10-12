@@ -103,6 +103,7 @@
             "dependsOn": ["^build", "^test"],
             "inputs": [
                 "default",
+                "^production",
                 "{workspaceRoot}/vitest.config.ts",
                 "{projectRoot}/vitest.config.ts"
             ],
@@ -113,6 +114,7 @@
             "dependsOn": ["^build", "^test:coverage"],
             "inputs": [
                 "default",
+                "^production",
                 "{workspaceRoot}/vitest.config.ts",
                 "{projectRoot}/vitest.config.ts"
             ],
@@ -126,11 +128,51 @@
             "continuous": true,
             "dependsOn": ["^build", "^test:watch"]
         },
+        "test:changed": {
+            "dependsOn": ["^build"]
+        },
+        "test:unit:changed": {
+            "dependsOn": ["^build"]
+        },
+        "test:types:changed": {
+            "dependsOn": ["^build"]
+        },
+        "test:integration": {
+            "dependsOn": ["^build"]
+        },
+        "test:integration:changed": {
+            "dependsOn": ["^build"]
+        },
+        "test:integration:coverage": {
+            "dependsOn": ["^build"]
+        },
+        "test:browser": {
+            "dependsOn": ["^build"]
+        },
+        "test:browser:changed": {
+            "dependsOn": ["^build"]
+        },
+        "test:browser:coverage": {
+            "dependsOn": ["^build"]
+        },
+        "test:types:watch": {
+            "continuous": true,
+            "dependsOn": ["^build"]
+        },
+        "test:integration:watch": {
+            "continuous": true,
+            "dependsOn": ["^build"]
+        },
+        "test:browser:watch": {
+            "continuous": true,
+            "dependsOn": ["^build"]
+        },
         "test:types": {
             "cache": true,
             "dependsOn": ["^build", "^test:types"],
             "inputs": [
                 "default",
+                "^production",
                 "{workspaceRoot}/vitest.config.ts",
                 "{projectRoot}/vitest.config.ts"
             ],
@@ -141,6 +183,7 @@
             "dependsOn": ["^build", "^test:unit"],
             "inputs": [
                 "default",
+                "^production",
                 "{workspaceRoot}/vitest.config.ts",
                 "{projectRoot}/vitest.config.ts"
             ],
@@ -151,6 +194,7 @@
             "dependsOn": ["^build", "^test:unit:coverage"],
             "inputs": [
                 "default",
+                "^production",
                 "{workspaceRoot}/vitest.config.ts",
                 "{projectRoot}/vitest.config.ts"
             ],
@@ -165,6 +209,7 @@
             "dependsOn": ["^build", "^test:unit:watch"],
             "inputs": [
                 "default",
+                "^production",
                 "{workspaceRoot}/vitest.config.ts",
                 "{projectRoot}/vitest.config.ts"
             ],
@@ -175,6 +220,7 @@
             "dependsOn": ["^build", "build"],
             "inputs": [
                 "default",
+                "^production",
                 "{workspaceRoot}/stryker.config.base.mjs",
                 "{projectRoot}/stryker.config.mjs",
                 "{projectRoot}/reports/stryker-incremental.json"
