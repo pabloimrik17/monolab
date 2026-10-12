@@ -8,7 +8,6 @@ function makeRepo(overrides: Partial<PortfolioItemRepository> = {}): PortfolioIt
         save: vi.fn(),
         findById: vi.fn(),
         findAll: vi.fn(),
-        findByInstrumentId: vi.fn(),
         update: vi.fn(),
         delete: vi.fn(),
         ...overrides,

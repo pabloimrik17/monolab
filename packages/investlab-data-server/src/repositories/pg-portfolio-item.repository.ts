@@ -36,17 +36,6 @@ export class PgPortfolioItemRepository implements PortfolioItemRepository {
         ).map((rows) => rows.map(portfolioItemToDomain));
     }
 
-    findByInstrumentId(instrumentId: string): ResultAsync<PortfolioItem[], PersistenceError> {
-        return ResultAsync.fromPromise(
-            this.db
-                .select()
-                .from(portfolioItems)
-                .where(eq(portfolioItems.instrumentId, instrumentId))
-                .orderBy(asc(portfolioItems.createdAt)),
-            (e) => new PersistenceError(e),
-        ).map((rows) => rows.map(portfolioItemToDomain));
-    }
-
     update(item: PortfolioItem): ResultAsync<PortfolioItem, PersistenceError> {
         const row = portfolioItemToRow(item);
         return ResultAsync.fromPromise(
