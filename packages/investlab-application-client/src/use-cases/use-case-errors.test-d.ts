@@ -21,6 +21,7 @@ import type { QuoteListError, QuoteListUseCase } from "./quote-list.use-case.ts"
 import type {
     Instrument,
     NetworkError,
+    UnauthorizedError,
     PortfolioItem,
     Quote,
     RemotePortError,
@@ -30,6 +31,10 @@ import type { ResultAsync } from "neverthrow";
 describe("client use case error unions add NetworkError", () => {
     test("RemotePortError includes NetworkError", () => {
         expectTypeOf<NetworkError>().toExtend<RemotePortError>();
+    });
+
+    test("RemotePortError includes UnauthorizedError", () => {
+        expectTypeOf<UnauthorizedError>().toExtend<RemotePortError>();
     });
 
     test("PortfolioItemCreateError", () => {

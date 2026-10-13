@@ -7,6 +7,7 @@ export {
     PersistenceError,
     PortfolioItemNotFoundError,
     type RemotePortError,
+    UnauthorizedError,
     ValidationError,
 } from "./errors.ts";
 
