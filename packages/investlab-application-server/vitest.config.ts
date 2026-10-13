@@ -24,8 +24,8 @@ export default mergeConfig(
                         name: "integration",
                         include: ["src/**/*.integration.ts"],
                         globalSetup: ["src/testing/containers.global-setup.ts"],
-                        // Files share one database and Redis, truncated between tests
-                        fileParallelism: false,
+                        // Each file clones its own database and takes its own Redis database
+                        setupFiles: ["src/testing/vitest-integration-setup.ts"],
                         // Container start-up (image pull) is slow on a cold machine
                         hookTimeout: 120_000,
                     },

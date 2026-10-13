@@ -6,6 +6,7 @@ import { RedisContainer } from "@testcontainers/redis";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import pg from "pg";
+import { TEMPLATE_DATABASE, withDatabase } from "./database-url.ts";
 import type { TestProject } from "vitest/node";
 
 declare module "vitest" {
@@ -20,21 +21,30 @@ const migrationsFolder = join(
     "drizzle",
 );
 
-/** Starts Postgres and Redis once per run and applies the data-server migrations. */
+/** Starts Postgres and Redis once per run and migrates the template database files clone. */
 export default async function setup(project: TestProject): Promise<() => Promise<void>> {
     const [postgres, redis] = await Promise.all([
         new PostgreSqlContainer("postgres:17-alpine").start(),
         new RedisContainer("redis:7-alpine").start(),
     ]);
 
-    const pool = new pg.Pool({ connectionString: postgres.getConnectionUri() });
+    const serverUrl = postgres.getConnectionUri();
+    const admin = new pg.Client({ connectionString: serverUrl });
+    await admin.connect();
+    try {
+        await admin.query(`CREATE DATABASE ${TEMPLATE_DATABASE}`);
+    } finally {
+        await admin.end();
+    }
+
+    const pool = new pg.Pool({ connectionString: withDatabase(serverUrl, TEMPLATE_DATABASE) });
     try {
         await migrate(drizzle(pool), { migrationsFolder });
     } finally {
         await pool.end();
     }
 
-    project.provide("databaseUrl", postgres.getConnectionUri());
+    project.provide("databaseUrl", serverUrl);
     project.provide("redisUrl", redis.getConnectionUrl());
 
     return async () => {

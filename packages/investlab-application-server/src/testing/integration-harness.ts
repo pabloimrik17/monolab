@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { Container, type ServiceIdentifier } from "inversify";
 import Redis from "ioredis";
 import pg from "pg";
-import { afterAll, beforeAll, beforeEach, inject } from "vitest";
+import { afterAll, beforeAll, beforeEach } from "vitest";
 import {
     createFinnhubQuoteDatasource,
     DATA_TOKENS,
@@ -20,6 +20,7 @@ import {
     type PortfolioItemRepository,
 } from "@m0n0lab/investlab-domain";
 import { portfolioModule } from "../portfolio.module.ts";
+import { fileUrls } from "./vitest-integration-setup.ts";
 import type { Result } from "neverthrow";
 
 /** Postgres URL nothing listens on, to drive the persistence-failure paths. */
@@ -51,7 +52,7 @@ function unwrap<T>(result: Result<T, Error>): T {
 /** Same wiring as the investlab-api composition root, against the Testcontainers services. */
 function createHarness(databaseUrl: string): OwnedHarness {
     const pool = new pg.Pool({ connectionString: databaseUrl });
-    const redis = new Redis(inject("redisUrl"), { lazyConnect: true });
+    const redis = new Redis(fileUrls.redisUrl, { lazyConnect: true });
 
     const container = new Container();
     container.bind(DATA_TOKENS.DrizzleDb).toConstantValue(drizzle(pool));
@@ -113,7 +114,7 @@ export function useIntegrationHarness(): IntegrationHarness {
     };
 
     beforeAll(() => {
-        harness = createHarness(inject("databaseUrl"));
+        harness = createHarness(fileUrls.databaseUrl);
     });
     beforeEach(() => current().reset());
     afterAll(() => harness?.close());
