@@ -5,9 +5,10 @@ export default mergeConfig(
     sharedConfig,
     defineConfig({
         test: {
-            typecheck: { enabled: true },
             // Stryker inPlace backups contain copies of all tests; never collect them
             exclude: [...configDefaults.exclude, "**/.stryker-tmp/**"],
+            // No pure-logic unit tests here: use cases are covered by the integration project
+            passWithNoTests: true,
             reporters: ["default", "junit"],
             outputFile: {
                 junit: "./test-results.junit.xml",
@@ -17,6 +18,17 @@ export default mergeConfig(
                 reporter: ["lcov", "text", "json", "html"],
                 reportsDirectory: "./coverage",
             },
+            projects: [
+                { extends: true, test: { name: "unit" } },
+                {
+                    extends: true,
+                    test: { name: "integration", include: ["src/**/*.integration.ts"] },
+                },
+                {
+                    extends: true,
+                    test: { name: "types", typecheck: { enabled: true, only: true } },
+                },
+            ],
         },
     }),
 );

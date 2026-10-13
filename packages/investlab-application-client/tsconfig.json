@@ -8,11 +8,18 @@
         "declaration": true,
         "composite": true,
         "experimentalDecorators": true,
-        "emitDecoratorMetadata": true
+        "emitDecoratorMetadata": true,
+        "types": ["node"]
     },
     "include": ["src/**/*"],
-    "exclude": ["**/*.test.ts", "**/*.spec.ts", "src/testing/**"],
+    "exclude": ["**/*.test.ts", "**/*.spec.ts"],
     "references": [
+        {
+            "path": "../investlab-data-client"
+        },
+        {
+            "path": "../investlab-data-contracts"
+        },
         {
             "path": "../investlab-domain"
         },
