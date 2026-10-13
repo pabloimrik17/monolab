@@ -5,7 +5,6 @@ export default mergeConfig(
     sharedConfig,
     defineConfig({
         test: {
-            typecheck: { enabled: true },
             // Stryker inPlace backups contain copies of all tests; never collect them
             exclude: [...configDefaults.exclude, "**/.stryker-tmp/**"],
             reporters: ["default", "junit"],
@@ -17,6 +16,21 @@ export default mergeConfig(
                 reporter: ["lcov", "text", "json", "html"],
                 reportsDirectory: "./coverage",
             },
+            projects: [
+                { extends: true, test: { name: "unit", typecheck: { enabled: true } } },
+                {
+                    extends: true,
+                    test: {
+                        name: "integration",
+                        include: ["src/**/*.integration.ts"],
+                        globalSetup: ["src/testing/containers.global-setup.ts"],
+                        // Files share one database and Redis, truncated between tests
+                        fileParallelism: false,
+                        // Container start-up (image pull) is slow on a cold machine
+                        hookTimeout: 120_000,
+                    },
+                },
+            ],
         },
     }),
 );
