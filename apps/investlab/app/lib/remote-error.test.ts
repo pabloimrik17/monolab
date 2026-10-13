@@ -4,6 +4,7 @@ import {
     NetworkError,
     PersistenceError,
     PortfolioItemNotFoundError,
+    UnauthorizedError,
     ValidationError,
 } from "@m0n0lab/investlab-domain";
 import { remoteErrorMessage, remoteErrorStatus } from "./remote-error";
@@ -12,6 +13,12 @@ describe("remoteErrorMessage", () => {
     it("tells the user the service is unavailable when the API cannot be reached", () => {
         expect(remoteErrorMessage(new NetworkError(new TypeError("fetch failed")))).toBe(
             "InvestLab service is unavailable. Please try again later.",
+        );
+    });
+
+    it("points the operator at the token when the API rejects it", () => {
+        expect(remoteErrorMessage(new UnauthorizedError({ code: "UNAUTHORIZED" }))).toBe(
+            "API token is not accepted by investlab-api; check INVESTLAB_API_TOKEN",
         );
     });
 
@@ -37,6 +44,7 @@ describe("remoteErrorStatus", () => {
 
     it.each([
         [new PersistenceError("db down"), 500],
+        [new UnauthorizedError({ code: "UNAUTHORIZED" }), 500],
         [new ValidationError("bad"), 422],
         [new InstrumentNotFoundError("instrument-1"), 404],
         [new PortfolioItemNotFoundError("item-1"), 404],

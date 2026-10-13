@@ -158,6 +158,14 @@ jobs:
               run: pnpm exec nx run-many -t test:unit:coverage
               if: ${{ github.event_name == 'push' }}
 
+            - name: 🧪 Execute integration test checks for affected files (Affected)
+              run: pnpm exec nx affected -t test:integration
+              if: ${{ github.event_name == 'pull_request' }}
+
+            - name: 🧪 Execute integration test checks for all files (All)
+              run: pnpm exec nx run-many -t test:integration
+              if: ${{ github.event_name == 'push' }}
+
             - name: 🔍 Execute type checks for affected files (Affected)
               run: pnpm exec nx affected -t typecheck
               if: ${{ github.event_name == 'pull_request' }}

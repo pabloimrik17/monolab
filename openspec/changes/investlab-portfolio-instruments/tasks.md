@@ -112,5 +112,5 @@
 - [x] 14.1 Testcontainers setup (Postgres + Redis) in a separate integration test target for API-side packages; apply migrations per run
 - [x] 14.2 Rewrite server use-case tests as integration tests with real repositories; Finnhub faked with MSW; delete mocked-repository use-case tests
 - [x] 14.3 Client use-case integration tests: real `data-client` repositories, API faked with MSW
-- [ ] 14.4 Wire integration target into CI (GitHub Actions has Docker)
+- [x] 14.4 Wire integration target into CI (GitHub Actions has Docker)
 - [ ] 14.5 Manual E2E: create, view, edit, delete portfolio item through web → API; live quotes refresh with no Finnhub key in the browser bundle

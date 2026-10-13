@@ -11,7 +11,7 @@
         "qup:test": "nx run-many -t test:unit -p @m0n0lab/qup-domain @m0n0lab/qup-data @m0n0lab/qup-api",
         "investlab:build": "nx run-many -t build -p @m0n0lab/investlab @m0n0lab/investlab-api @m0n0lab/investlab-domain @m0n0lab/investlab-data-server @m0n0lab/investlab-data-client @m0n0lab/investlab-data-contracts @m0n0lab/investlab-application-server @m0n0lab/investlab-application-client",
         "investlab:dev": "nx run-many -t dev -p @m0n0lab/investlab @m0n0lab/investlab-api",
-        "investlab:test": "nx run-many -t test:unit -p @m0n0lab/investlab-api @m0n0lab/investlab-domain @m0n0lab/investlab-data-server @m0n0lab/investlab-data-client @m0n0lab/investlab-data-contracts @m0n0lab/investlab-application-server @m0n0lab/investlab-application-client",
+        "investlab:test": "nx run-many -t test:unit -p @m0n0lab/investlab @m0n0lab/investlab-api @m0n0lab/investlab-domain @m0n0lab/investlab-data-server @m0n0lab/investlab-data-client @m0n0lab/investlab-data-contracts @m0n0lab/investlab-application-server @m0n0lab/investlab-application-client",
         "jsr:sync-version": "node tools/sync-jsr-version.js",
         "lint:fallow": "fallow dead-code --fail-on-issues",
         "lint:knip": "knip --max-issues 40",

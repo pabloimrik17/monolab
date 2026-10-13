@@ -11,5 +11,5 @@ In October 2026, once the web started calling `apps/investlab-api` ([ADR 0003](.
 ## Consequences
 
 - The API's error-to-HTTP-status map is keyed by `code`, not by class name.
-- Every use case exports a named error union next to it (for example `PortfolioItemUpdateError`); client use cases have their own union, which adds a network/API-unavailable error.
+- Every use case exports a named error union next to it (for example `PortfolioItemUpdateError`); client use cases have their own union, which adds network/API-unavailable and rejected-token errors.
 - Renaming a code is a breaking wire change.

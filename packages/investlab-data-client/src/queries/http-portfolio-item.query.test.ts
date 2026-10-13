@@ -5,6 +5,7 @@ import {
     PersistenceError,
     TOKENS,
     type RemotePortError,
+    UnauthorizedError,
 } from "@m0n0lab/investlab-domain";
 import {
     apiError,
@@ -60,7 +61,7 @@ describe("HttpPortfolioItemQuery", () => {
         expect(result._unsafeUnwrap()).toEqual([]);
     });
 
-    it("maps a wrong token (UNAUTHORIZED) to NetworkError", async () => {
+    it("maps a wrong token (UNAUTHORIZED) to UnauthorizedError", async () => {
         server.use(
             fakeApi("get", "/portfolio-items", () =>
                 HttpResponse.json({ items: [], instruments: [] }),
@@ -69,7 +70,7 @@ describe("HttpPortfolioItemQuery", () => {
 
         const result = await createQuery(undefined, "wrong").listWithInstruments();
 
-        expect(result._unsafeUnwrapErr()).toBeInstanceOf(NetworkError);
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(UnauthorizedError);
     });
 
     it("maps PERSISTENCE_ERROR to PersistenceError", async () => {

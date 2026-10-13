@@ -21,10 +21,6 @@ export function describeTransportFailures(
     { malformedBody }: TransportFailureOptions = {},
 ): void {
     const cases: Array<readonly [string, () => Response]> = [
-        [
-            "401 UNAUTHORIZED",
-            () => apiError(401, "UNAUTHORIZED", "Invalid or missing bearer token"),
-        ],
         ["500 INTERNAL_ERROR", () => apiError(500, "INTERNAL_ERROR", "Internal server error")],
         ["a non-JSON error body", () => new HttpResponse("<h1>Bad gateway</h1>", { status: 502 })],
         [
@@ -41,6 +37,21 @@ export function describeTransportFailures(
                   ] as const,
               ]),
     ];
+
+    describe("rejected token", () => {
+        it("returns UnauthorizedError on 401 UNAUTHORIZED", async () => {
+            stubApi(endpoint.method, endpoint.path, () =>
+                apiError(401, "UNAUTHORIZED", "Invalid or missing bearer token"),
+            );
+
+            const result = await run();
+
+            expect(result._unsafeUnwrapErr()).toMatchObject({
+                code: "UNAUTHORIZED",
+                name: "UnauthorizedError",
+            });
+        });
+    });
 
     describe("transport failures", () => {
         it.each(cases)("returns NetworkError on %s", async (_name, respond) => {

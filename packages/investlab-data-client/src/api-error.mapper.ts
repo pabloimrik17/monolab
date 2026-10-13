@@ -4,6 +4,7 @@ import {
     PersistenceError,
     PortfolioItemNotFoundError,
     ValidationError,
+    UnauthorizedError,
     type RemotePortError,
 } from "@m0n0lab/investlab-domain";
 import type { ApiErrorDto } from "@m0n0lab/investlab-data-contracts";
@@ -19,8 +20,10 @@ export function apiErrorToDomain(dto: ApiErrorDto, resourceId: string): RemotePo
             return new InstrumentNotFoundError(resourceId);
         case "PORTFOLIO_ITEM_NOT_FOUND":
             return new PortfolioItemNotFoundError(resourceId);
-        // The API is reachable but unusable for this client: not something the caller can act on per call.
+        // A rejected token is a client misconfiguration, distinct from an outage.
         case "UNAUTHORIZED":
+            return new UnauthorizedError(dto);
+        // The API is reachable but unusable for this client: not something the caller can act on per call.
         case "INTERNAL_ERROR":
             return new NetworkError(dto);
     }
