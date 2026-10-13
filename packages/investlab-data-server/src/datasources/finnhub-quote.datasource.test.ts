@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createFinnhubQuoteDatasource } from "./finnhub-quote.datasource.ts";
+import { createFinnhubQuoteDatasource, FinnhubAuthError } from "./finnhub-quote.datasource.ts";
 
 const mockFinnhubResponse = (data: object) =>
     new Response(JSON.stringify(data), {
@@ -154,12 +154,23 @@ describe("createFinnhubQuoteDatasource", () => {
 
         it("throws on HTTP error", async () => {
             vi.mocked(fetch).mockResolvedValueOnce(
-                new Response(null, { status: 401, statusText: "Unauthorized" }),
+                new Response(null, { status: 500, statusText: "Internal Server Error" }),
             );
 
             const client = createFinnhubQuoteDatasource("test-key");
 
             await expect(client.getQuote("AAPL")).rejects.toThrow("Failed to fetch quote for AAPL");
+        });
+
+        it.each([401, 403])("flags a rejected API key on HTTP %i", async (status) => {
+            vi.mocked(fetch).mockResolvedValueOnce(new Response(null, { status }));
+
+            const client = createFinnhubQuoteDatasource("test-key");
+            const failure = await client.getQuote("AAPL").catch((error: unknown) => error);
+
+            expect(failure).toBeInstanceOf(FinnhubAuthError);
+            expect((failure as Error).message).toContain("check FINNHUB_API_KEY");
+            expect((failure as Error).message).not.toContain("test-key");
         });
 
         it("includes API key in request", async () => {
@@ -265,6 +276,21 @@ describe("createFinnhubQuoteDatasource", () => {
             expect(quotes.has("AAPL")).toBe(true);
             expect(quotes.has("INVALID")).toBe(false);
             expect(quotes.has("MSFT")).toBe(true);
+        });
+
+        it("logs a rejected API key and omits the symbols", async () => {
+            const error = vi.spyOn(console, "error").mockImplementation(() => {});
+            vi.mocked(fetch).mockResolvedValue(new Response(null, { status: 401 }));
+
+            const client = createFinnhubQuoteDatasource("bad-key");
+            const quotes = await client.getQuotes(["AAPL"]);
+
+            expect(quotes.size).toBe(0);
+            expect(error).toHaveBeenCalledWith(
+                expect.stringContaining("AAPL"),
+                expect.stringContaining("check FINNHUB_API_KEY"),
+            );
+            error.mockRestore();
         });
 
         it("respects concurrency option", async () => {

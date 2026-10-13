@@ -20,9 +20,16 @@ export async function batchExecute<T, R>(
 
         batchResults.forEach((result, index) => {
             const item = batch[index];
-            if (result.status === "fulfilled" && item !== undefined) {
+            if (item === undefined) return;
+            if (result.status === "fulfilled") {
                 results.set(item, result.value);
+                return;
             }
+            const reason: unknown = result.reason;
+            console.error(
+                `[batchExecute] ${String(item)} failed:`,
+                reason instanceof Error ? reason.message : reason,
+            );
         });
     }
 
