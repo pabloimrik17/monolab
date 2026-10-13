@@ -132,3 +132,194 @@ body {
     color: #16a34a;
     font-size: 0.75rem;
 }
+
+/* Portfolio: scoped overrides intentionally mirror the ticker form rules */
+/* stylelint-disable no-descending-specificity */
+.portfolio {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    overflow-x: auto;
+}
+
+.portfolio-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.portfolio button {
+    padding: 0.35rem 0.75rem;
+    background: #fff;
+    color: #1a1a1a;
+    border: 1px solid #d4d4d4;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.portfolio button:hover:not(:disabled) {
+    background: #f5f5f5;
+}
+
+.portfolio button:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+.portfolio button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.portfolio-header button,
+.portfolio-form button[type="submit"] {
+    padding: 0.5rem 1rem;
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    font-size: 1rem;
+}
+
+.portfolio-header button:hover:not(:disabled),
+.portfolio-form button[type="submit"]:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+.portfolio-table {
+    width: 100%;
+    min-width: 52rem;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    font-size: 0.9rem;
+}
+
+.portfolio-table th,
+.portfolio-table td {
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e5e5;
+    vertical-align: middle;
+}
+
+.portfolio-table th {
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    background: #fafafa;
+}
+
+.portfolio-table tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.portfolio-table td:nth-child(6),
+.portfolio-table td:nth-child(7),
+.portfolio-table th:nth-child(6),
+.portfolio-table th:nth-child(7) {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.portfolio-table td:last-child {
+    white-space: nowrap;
+}
+
+.portfolio-table td:last-child button + form {
+    margin-left: 0.25rem;
+}
+
+.portfolio-table code {
+    font-weight: 600;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.badge-type {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.badge-asset {
+    background: #e5e5e5;
+    color: #1a1a1a;
+}
+
+.portfolio-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+}
+
+.portfolio-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.portfolio-form input,
+.portfolio-form select,
+.portfolio-form textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d4d4d4;
+    border-radius: 4px;
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.portfolio-form input:focus,
+.portfolio-form select:focus,
+.portfolio-form textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgb(59 130 246 / 20%);
+}
+
+.portfolio-form label:has(textarea),
+.portfolio-form .form-error,
+.portfolio-form .form-actions {
+    grid-column: 1 / -1;
+}
+
+.form-error {
+    color: #dc2626;
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.form-actions button[type="button"] {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+}
+/* stylelint-enable no-descending-specificity */
