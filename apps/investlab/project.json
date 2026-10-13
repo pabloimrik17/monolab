@@ -1,5 +1,6 @@
 {
     "name": "@m0n0lab/investlab",
+    "tags": ["investlab"],
     "targets": {
         "build": {
             "outputs": ["{projectRoot}/build"]
