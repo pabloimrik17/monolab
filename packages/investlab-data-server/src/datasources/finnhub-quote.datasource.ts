@@ -4,6 +4,13 @@ import type { Quote } from "@m0n0lab/investlab-domain";
 const FINNHUB_BASE_URL = "https://finnhub.io/api/v1";
 const DEFAULT_CONCURRENCY = 10;
 
+export class FinnhubAuthError extends Error {
+    constructor(symbol: string, status: number) {
+        super(`Finnhub rejected the API key (HTTP ${status}) for ${symbol}; check FINNHUB_API_KEY`);
+        this.name = "FinnhubAuthError";
+    }
+}
+
 export interface FinnhubQuoteDatasourceOptions {
     concurrency?: number;
 }
@@ -42,6 +49,10 @@ export function createFinnhubQuoteDatasource(
             symbol,
         )}&token=${apiKey}`;
         const response = await fetch(url);
+
+        if (response.status === 401 || response.status === 403) {
+            throw new FinnhubAuthError(symbol, response.status);
+        }
 
         if (!response.ok) {
             throw new Error(`Failed to fetch quote for ${symbol}: ${response.statusText}`);

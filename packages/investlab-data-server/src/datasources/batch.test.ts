@@ -68,6 +68,21 @@ describe("batchExecute", () => {
         expect(results.has("b")).toBe(false);
     });
 
+    it("logs each rejected item with its error message", async () => {
+        const error = vi.spyOn(console, "error").mockImplementation(() => {});
+        const fn = vi.fn(async (s: string) => {
+            if (s !== "a") throw new Error(`failed ${s}`);
+            return s;
+        });
+
+        await batchExecute(["a", "b", "c"], fn, { concurrency: 10 });
+
+        expect(error).toHaveBeenCalledTimes(2);
+        expect(error).toHaveBeenCalledWith(expect.stringContaining("b"), "failed b");
+        expect(error).toHaveBeenCalledWith(expect.stringContaining("c"), "failed c");
+        error.mockRestore();
+    });
+
     it("handles empty array", async () => {
         const fn = vi.fn(async (n: number) => n);
 
