@@ -1,4 +1,13 @@
-import { Link, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import {
+    isRouteErrorResponse,
+    Link,
+    Links,
+    Meta,
+    Outlet,
+    Scripts,
+    ScrollRestoration,
+} from "react-router";
+import type { Route } from "./+types/root";
 import "./app.css";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -29,4 +38,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function Root() {
     return <Outlet />;
+}
+
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+    if (isRouteErrorResponse(error)) {
+        const message =
+            typeof error.data === "string" && error.data !== "" ? error.data : error.statusText;
+        return (
+            <main className="empty-state">
+                <h1>{error.status}</h1>
+                <p>{message}</p>
+            </main>
+        );
+    }
+
+    return (
+        <main className="empty-state">
+            <h1>Something went wrong</h1>
+            {import.meta.env.DEV && error instanceof Error && <p>{error.message}</p>}
+        </main>
+    );
 }
