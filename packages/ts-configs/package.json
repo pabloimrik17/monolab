@@ -9,6 +9,7 @@
     },
     "files": [
         "tsconfig.base.json",
+        "tsconfig.test.json",
         "tsconfig.node.base.json",
         "tsconfig.node.app.json",
         "tsconfig.node.lib.json",
@@ -25,6 +26,7 @@
     "sideEffects": false,
     "exports": {
         "./tsconfig.base.json": "./tsconfig.base.json",
+        "./tsconfig.test.json": "./tsconfig.test.json",
         "./tsconfig.node.base.json": "./tsconfig.node.base.json",
         "./tsconfig.node.app.json": "./tsconfig.node.app.json",
         "./tsconfig.node.lib.json": "./tsconfig.node.lib.json",

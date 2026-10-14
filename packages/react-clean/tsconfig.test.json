@@ -1,0 +1,30 @@
+{
+    "extends": ["./tsconfig.json", "../ts-configs/tsconfig.test.json"],
+    "include": ["src/**/*"],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "out-tsc",
+        "**/.stryker-tmp/**",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/*.integration.ts",
+        "**/*.integration.tsx"
+    ],
+    "references": [
+        {
+            "path": "../react-hooks"
+        },
+        {
+            "path": "../ts-types"
+        },
+        {
+            "path": "../vitest-config"
+        },
+        {
+            "path": "./tsconfig.node.json"
+        }
+    ]
+}
