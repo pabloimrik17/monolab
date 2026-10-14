@@ -6,7 +6,7 @@ export function useViewModel<T extends BaseViewModel>(factory: () => T): T {
     const owner = getOwner();
 
     onMount(() => {
-        vm.didMount(owner ?? undefined);
+        vm.didMount?.(owner ?? undefined);
     });
 
     onCleanup(() => {
