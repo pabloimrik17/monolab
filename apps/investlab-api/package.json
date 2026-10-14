@@ -8,6 +8,8 @@
         "db:generate": "pnpm --filter @m0n0lab/investlab-database db:generate",
         "db:migrate": "pnpm --filter @m0n0lab/investlab-database db:migrate",
         "dev": "tsx watch src/index.ts",
+        "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
+        "lint:eslint:fix": "eslint --cache --concurrency=auto --max-warnings 40 --fix .",
         "start": "node dist/index.mjs",
         "test": "vitest run",
         "test:changed": "vitest run --changed",

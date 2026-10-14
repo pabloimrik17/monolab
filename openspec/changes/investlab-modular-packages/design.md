@@ -142,6 +142,22 @@ Only `data/server`, `data/client` and `module.*.ts` may import the platform entr
 
 **Mechanism.** fallow 3.6 (already in CI as `lint:fallow`, `fallow dead-code --fail-on-issues`) supports `boundaries` in `.fallowrc.json`: zones by path pattern (one per layer folder per module, one for core, one per platform entry, one for database, one per app) and `rules` with `allow`/`allowTypeOnly` lists, reported as `boundary-violation` (error by default). Banned third-party imports per zone go through fallow `rulePacks` (banned imports). Implementation verifies two things before relying on it: that imports through workspace `exports` (`@m0n0lab/investlab-portfolio/server`) resolve to source files in the right zone, and that a deliberate violation fails `pnpm lint:fallow`. If either fails, the fallback is ESLint `no-restricted-imports` with `patterns` per folder in the root `eslint.config.ts` (run through the `lint:eslint` targets), or `eslint-plugin-boundaries` if path patterns are not enough.
 
+**Enforcement as built.** ESLint holds every rule: `no-restricted-imports` with `regex` patterns per file group in the root `eslint.config.ts` (`investlabLayerRules`), run by the `lint:eslint` target that every InvestLab project now has (and by `lint:eslint:fix` in the pre-commit hook for the packages and the API). fallow 3.6.0 was tried first and dropped, for three reasons found in implementation:
+
+- `boundary-violation` findings are reported but never fail: `fallow dead-code --fail-on-issues` and `fallow audit` exit 0 on them, even with the rule set to `error`.
+- Zones see workspace `exports` imports only while the target package has no `dist/`: once built, `@m0n0lab/investlab-portfolio/server` resolves to `dist/server.js`, which sits in no zone, so cross-package rules pass silently, and the CI lint step builds the packages (`lint:eslint` depends on `^build`).
+- A `rulePacks` file that the audit base does not have yet makes `fallow audit` (pre-commit hook, PR gate) exit 2, because the base snapshot is analyzed with the current config.
+
+| Rule | Tool |
+|---|---|
+| Layer table (relative imports between `domain/`, `application/<side>`, `data/*`, `module.<side>.ts`, entries) | ESLint, regex on the relative specifier (`(^\|/)data/`, `(^\|/)application/`, `module.*`) |
+| No `server` ↔ `client` (folders and platform entries) | ESLint, `(^\|/)client(/\|$)` on server files and the reverse |
+| Core and database import nothing of ours; platform imports only core; modules never import each other | ESLint, `@m0n0lab/investlab-*` specifiers per package |
+| `apps/investlab` never imports `./server` entries or the database, imports `./client` entries only from `.server.ts` files; `apps/investlab-api` never imports `./client` entries | ESLint, entry specifiers per app |
+| `pg`, `drizzle-orm`, `ioredis`, `msw`, `varlock`, platform and database banned in `domain/` and `application/` | ESLint |
+
+Flat config replaces a rule's options per file, so each file group carries its whole ban list and the groups do not overlap. Edges allowed beyond the table, all needed by existing code: entries (`index.ts` → `domain/`, `data/contracts/`; `server.ts`/`client.ts` → `application/<side>`, `module.<side>.ts`); platform `src/shared/` (HTTP client, env reader) imported by both platform sides; `apps/investlab-api` may import the database package; web `*.server.test.ts` count as `.server.ts` files; unit tests (`*.test.ts`) follow their folder's rules; application side test files may import `pg` and `ioredis` (database truncation, Redis flush), only `drizzle-orm` and `varlock` stay banned there. Rules match the raw specifier, so an import that reaches a forbidden file through an allowed path (a re-export) is not caught; the entries export no repositories or datasources, which closes that path across packages.
+
 ### 5. Container model
 
 - **Static modules.** `platformServerModule`, `platformClientModule`, `portfolioServerModule`, `portfolioClientModule`, `quotesServerModule`, `quotesClientModule` are plain `ContainerModule` constants with no parameters. Configuration enters as a bound service (`PLATFORM.Config`); infrastructure is constructed by the platform module from it. Nothing else is passed in from outside.

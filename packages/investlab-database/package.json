@@ -17,6 +17,8 @@
         "build": "tsdown",
         "db:generate": "varlock run --path ../../apps/investlab-api/ -- drizzle-kit generate",
         "db:migrate": "varlock run --path ../../apps/investlab-api/ -- drizzle-kit migrate",
+        "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
+        "lint:eslint:fix": "eslint --cache --concurrency=auto --max-warnings 40 --fix .",
         "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
     },
     "dependencies": {
