@@ -31,7 +31,7 @@ expectTypeOf<UserWithoutEmailAndAge>().toEqualTypeOf<{
 
 // Test that StrictOmit works with all properties omitted
 type UserWithoutAll = StrictOmit<User, "id" | "name" | "email" | "age">;
-expectTypeOf<UserWithoutAll>().toEqualTypeOf<Record<string, never>>();
+expectTypeOf<UserWithoutAll>().toEqualTypeOf<{}>();
 
 // Test that StrictOmit preserves the remaining property types correctly
 type AddressWithoutCountry = StrictOmit<Address, "country">;
@@ -59,14 +59,17 @@ const user: User = {
     age: 30,
 };
 const userWithoutEmail: UserWithoutEmail = { id: "1", name: "John", age: 30 };
+expectTypeOf(user).toEqualTypeOf<User>();
+expectTypeOf(userWithoutEmail).toEqualTypeOf<UserWithoutEmail>();
 
-// @ts-expect-error - email property should not exist in UserWithoutEmail
 const invalidUser: UserWithoutEmail = {
     id: "1",
     name: "John",
+    // @ts-expect-error - email property should not exist in UserWithoutEmail
     email: "john@example.com",
     age: 30,
 };
+expectTypeOf(invalidUser).toEqualTypeOf<UserWithoutEmail>();
 
 // Test that StrictOmit is compatible with Omit for valid keys
 expectTypeOf<StrictOmit<User, "email">>().toEqualTypeOf<Omit<User, "email">>();

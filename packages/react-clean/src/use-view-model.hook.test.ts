@@ -1,3 +1,4 @@
+import { Subscription } from "rxjs";
 import { describe, expect, it, vi } from "vitest";
 import { renderHook } from "vitest-browser-react";
 import { BaseViewModel } from "./base.viewmodel.ts";
@@ -9,6 +10,25 @@ class TestViewModel extends BaseViewModel {
 }
 
 describe("useViewModel", () => {
+    it("should mount without didMount and unsubscribe on unmount", async () => {
+        class UnmountedViewModel extends BaseViewModel {}
+        const viewModel = new UnmountedViewModel();
+        const unsubscribe = vi.fn();
+        const subscription = new Subscription(unsubscribe);
+        viewModel.addSub(subscription);
+
+        const { result, unmount } = await renderHook(() => useViewModel(() => viewModel));
+
+        expect(result.current).toBe(viewModel);
+        expect(viewModel.didMount).toBeUndefined();
+        expect(subscription.closed).toBe(false);
+
+        await unmount();
+
+        expect(subscription.closed).toBe(true);
+        expect(unsubscribe).toHaveBeenCalledTimes(1);
+    });
+
     it("should create viewmodel instance on first render", async () => {
         const factory = vi.fn(() => new TestViewModel());
 

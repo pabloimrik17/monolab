@@ -7,7 +7,7 @@ import type { Nullable } from "@m0n0lab/ts-types";
  * A custom React hook for managing lifecycle events of a `BaseViewModel` instance.
  *
  * This hook initializes a `BaseViewModel` instance, invokes its `didMount` lifecycle method
- * during the component's mount phase, and ensures its `willUnmount` lifecycle method is
+ * during the component's mount phase if implemented, and ensures its `willUnmount` lifecycle method is
  * called during the component's unmount phase. It simplifies the integration of
  * `BaseViewModel` instances with React components.
  *
@@ -23,7 +23,7 @@ export const useViewModel = <T extends BaseViewModel>(viewModel: () => T): T => 
     }
 
     useDidMount(async () => {
-        await instanceRef.current!.didMount();
+        await instanceRef.current!.didMount?.();
     });
 
     useWillUnmount(() => {

@@ -12,11 +12,10 @@ describe("BaseViewModel", () => {
         expect(viewModel).toBeInstanceOf(BaseViewModel);
     });
 
-    it("should have lifecycle methods", () => {
+    it("should omit didMount and retain willUnmount by default", () => {
         const viewModel = new TestViewModel();
 
-        expect(viewModel.didMount).toBeDefined();
-        expect(typeof viewModel.didMount).toBe("function");
+        expect(viewModel.didMount).toBeUndefined();
         expect(viewModel.willUnmount).toBeDefined();
         expect(typeof viewModel.willUnmount).toBe("function");
     });
