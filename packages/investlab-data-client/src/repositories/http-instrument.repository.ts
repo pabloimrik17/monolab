@@ -2,7 +2,7 @@
 import { inject, injectable } from "inversify";
 import { z } from "zod";
 import { instrumentDtoSchema } from "@m0n0lab/investlab-data-contracts";
-import { ApiClient } from "../api-client.ts";
+import { PLATFORM, type InvestlabApiClient } from "@m0n0lab/investlab-platform/client";
 import { instrumentToDomain } from "../mappers/instrument.mapper.ts";
 import type {
     Instrument,
@@ -19,7 +19,7 @@ export class HttpInstrumentRepository implements Pick<
     InstrumentRepository<PortfolioRemoteError>,
     "findAll"
 > {
-    constructor(@inject(ApiClient) private readonly api: ApiClient) {}
+    constructor(@inject(PLATFORM.InvestlabApiClient) private readonly api: InvestlabApiClient) {}
 
     findAll(): ResultAsync<Instrument[], PortfolioRemoteError> {
         return this.api

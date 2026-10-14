@@ -38,6 +38,7 @@
     "devDependencies": {
         "@m0n0lab/investlab-data-client": "workspace:*",
         "@m0n0lab/investlab-data-contracts": "workspace:*",
+        "@m0n0lab/investlab-platform": "workspace:*",
         "@m0n0lab/vitest-config": "workspace:*",
         "@types/node": "catalog:",
         "msw": "catalog:",

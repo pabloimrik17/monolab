@@ -3,28 +3,33 @@ import {
     portfolioItemDtoSchema,
     portfolioItemListDtoSchema,
 } from "@m0n0lab/investlab-data-contracts";
-import { ApiClient } from "../api-client.ts";
+import {
+    InstrumentNotFoundError,
+    PortfolioItemConflictError,
+    PortfolioItemNotFoundError,
+    type PortfolioItem,
+    type PortfolioItemRepository,
+    type PortfolioRemoteError,
+} from "@m0n0lab/investlab-domain";
+import { PLATFORM, type InvestlabApiClient } from "@m0n0lab/investlab-platform/client";
 import {
     portfolioItemToCreateDto,
     portfolioItemToDomain,
     portfolioItemToUpdateDto,
 } from "../mappers/portfolio-item.mapper.ts";
-import type {
-    PortfolioItem,
-    PortfolioItemRepository,
-    PortfolioRemoteError,
-} from "@m0n0lab/investlab-domain";
 import type { ResultAsync } from "neverthrow";
 
 @injectable()
 export class HttpPortfolioItemRepository implements PortfolioItemRepository<PortfolioRemoteError> {
-    constructor(@inject(ApiClient) private readonly api: ApiClient) {}
+    constructor(@inject(PLATFORM.InvestlabApiClient) private readonly api: InvestlabApiClient) {}
 
     save(item: PortfolioItem): ResultAsync<PortfolioItem, PortfolioRemoteError> {
         return this.api
             .json("POST", "/portfolio-items", portfolioItemDtoSchema, {
                 body: portfolioItemToCreateDto(item),
-                resourceId: item.instrumentId,
+                errors: {
+                    INSTRUMENT_NOT_FOUND: () => new InstrumentNotFoundError(item.instrumentId),
+                },
             })
             .map(portfolioItemToDomain);
     }
@@ -45,14 +50,24 @@ export class HttpPortfolioItemRepository implements PortfolioItemRepository<Port
         expectedUpdatedAt: Date,
     ): ResultAsync<PortfolioItem, PortfolioRemoteError> {
         return this.api
-            .json("PUT", `/portfolio-items/${item.id}`, portfolioItemDtoSchema, {
-                body: portfolioItemToUpdateDto(item, expectedUpdatedAt),
-                resourceId: item.id,
-            })
+            .json<typeof portfolioItemDtoSchema, PortfolioRemoteError>(
+                "PUT",
+                `/portfolio-items/${item.id}`,
+                portfolioItemDtoSchema,
+                {
+                    body: portfolioItemToUpdateDto(item, expectedUpdatedAt),
+                    errors: {
+                        PORTFOLIO_ITEM_NOT_FOUND: () => new PortfolioItemNotFoundError(item.id),
+                        PORTFOLIO_ITEM_CONFLICT: () => new PortfolioItemConflictError(item.id),
+                    },
+                },
+            )
             .map(portfolioItemToDomain);
     }
 
     delete(id: string): ResultAsync<void, PortfolioRemoteError> {
-        return this.api.empty("DELETE", `/portfolio-items/${id}`, { resourceId: id });
+        return this.api.empty("DELETE", `/portfolio-items/${id}`, {
+            errors: { PORTFOLIO_ITEM_NOT_FOUND: () => new PortfolioItemNotFoundError(id) },
+        });
     }
 }

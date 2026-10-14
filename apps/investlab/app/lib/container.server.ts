@@ -1,34 +1,13 @@
 import { Container } from "inversify";
 import { applicationClientModule } from "@m0n0lab/investlab-application-client";
-import { DATA_CLIENT_TOKENS, dataClientModule } from "@m0n0lab/investlab-data-client";
+import { dataClientModule } from "@m0n0lab/investlab-data-client";
+import { PLATFORM, platformClientModule, SsrEnvConfig } from "@m0n0lab/investlab-platform/client";
 
-interface WebEnv {
-    readonly apiUrl: string;
-    readonly apiToken: string;
-}
-
-const REQUIRED_VARS = ["INVESTLAB_API_URL", "INVESTLAB_API_TOKEN"] as const;
-
-export function readWebEnv(env: Record<string, string | undefined>): WebEnv {
-    const missing = REQUIRED_VARS.filter((name) => !env[name]);
-    if (missing.length > 0) {
-        throw new Error(`Missing env vars: ${missing.join(", ")}`);
-    }
-    return {
-        apiUrl: env["INVESTLAB_API_URL"]!,
-        apiToken: env["INVESTLAB_API_TOKEN"]!,
-    };
-}
-
-export function createContainer({ apiUrl, apiToken }: WebEnv): Container {
+/** Composition root: `Config` from the SSR env, everything else from the modules. */
+export function createContainer(): Container {
     const container = new Container();
-
-    container.bind(DATA_CLIENT_TOKENS.ApiBaseUrl).toConstantValue(apiUrl);
-    container.bind(DATA_CLIENT_TOKENS.ApiToken).toConstantValue(apiToken);
-
-    container.load(dataClientModule);
-    container.load(applicationClientModule);
-
+    container.bind(PLATFORM.Config).to(SsrEnvConfig).inSingletonScope();
+    container.load(platformClientModule, dataClientModule, applicationClientModule);
     return container;
 }
 
@@ -36,7 +15,7 @@ let singleton: Container | null = null;
 
 export function getContainer(): Container {
     if (singleton === null) {
-        singleton = createContainer(readWebEnv(process.env));
+        singleton = createContainer();
     }
     return singleton;
 }

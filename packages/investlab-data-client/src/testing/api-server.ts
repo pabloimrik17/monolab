@@ -1,8 +1,8 @@
 import { Container } from "inversify";
 import { http, HttpResponse, type HttpResponseResolver } from "msw";
 import { setupServer } from "msw/node";
+import { PLATFORM, platformClientModule } from "@m0n0lab/investlab-platform/client";
 import { dataClientModule } from "../data-client.module.ts";
-import { DATA_CLIENT_TOKENS } from "../tokens.ts";
 import type { ApiErrorDto } from "@m0n0lab/investlab-core";
 import type { InstrumentDto, PortfolioItemDto, QuoteDto } from "@m0n0lab/investlab-data-contracts";
 
@@ -36,9 +36,8 @@ export function apiError(
 
 export function createTestContainer(baseUrl = API_URL, token = API_TOKEN): Container {
     const container = new Container();
-    container.bind(DATA_CLIENT_TOKENS.ApiBaseUrl).toConstantValue(baseUrl);
-    container.bind(DATA_CLIENT_TOKENS.ApiToken).toConstantValue(token);
-    container.load(dataClientModule);
+    container.bind(PLATFORM.Config).toConstantValue({ api: { baseUrl, token } });
+    container.load(platformClientModule, dataClientModule);
     return container;
 }
 

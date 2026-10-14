@@ -68,6 +68,9 @@
       },
       {
         "path": "./packages/investlab-database"
+      },
+      {
+        "path": "./packages/investlab-platform"
       }
     ]
 }

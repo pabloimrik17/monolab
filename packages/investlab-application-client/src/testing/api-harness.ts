@@ -2,7 +2,8 @@ import { Container } from "inversify";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll } from "vitest";
-import { DATA_CLIENT_TOKENS, dataClientModule } from "@m0n0lab/investlab-data-client";
+import { dataClientModule } from "@m0n0lab/investlab-data-client";
+import { PLATFORM, platformClientModule } from "@m0n0lab/investlab-platform/client";
 import { applicationClientModule } from "../application-client.module.ts";
 import type { ApiErrorDto } from "@m0n0lab/investlab-core";
 import type { InstrumentDto, PortfolioItemDto, QuoteDto } from "@m0n0lab/investlab-data-contracts";
@@ -20,13 +21,13 @@ export function useApiFake(): void {
     afterAll(() => server.close());
 }
 
-/** Same composition as the web's `container.server.ts`: real data-client + application-client modules. */
+/** Same composition as the web's `container.server.ts`, with a constant `Config` pointing at the fake. */
 export function createClientContainer(): Container {
     const container = new Container();
-    container.bind(DATA_CLIENT_TOKENS.ApiBaseUrl).toConstantValue(API_URL);
-    container.bind(DATA_CLIENT_TOKENS.ApiToken).toConstantValue(API_TOKEN);
-    container.load(dataClientModule);
-    container.load(applicationClientModule);
+    container
+        .bind(PLATFORM.Config)
+        .toConstantValue({ api: { baseUrl: API_URL, token: API_TOKEN } });
+    container.load(platformClientModule, dataClientModule, applicationClientModule);
     return container;
 }
 

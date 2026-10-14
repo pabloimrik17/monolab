@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
     APP_TOKENS,
     PortfolioItemCreateUseCase,
@@ -7,31 +7,24 @@ import {
     PortfolioItemUpdateUseCase,
     QuoteListUseCase,
 } from "@m0n0lab/investlab-application-client";
-import { createContainer, readWebEnv } from "./container.server";
+import { PLATFORM } from "@m0n0lab/investlab-platform/client";
+import { createContainer } from "./container.server";
 
-const ENV = {
-    INVESTLAB_API_URL: "http://localhost:3002",
-    INVESTLAB_API_TOKEN: "api-token",
-};
+describe("createContainer", () => {
+    beforeEach(() => {
+        vi.stubEnv("INVESTLAB_API_URL", "http://localhost:3002");
+        vi.stubEnv("INVESTLAB_API_TOKEN", "api-token");
+    });
 
-describe("readWebEnv", () => {
-    it("reads the API settings", () => {
-        expect(readWebEnv(ENV)).toEqual({
-            apiUrl: ENV.INVESTLAB_API_URL,
-            apiToken: ENV.INVESTLAB_API_TOKEN,
+    it("reads the API settings from the env", () => {
+        expect(createContainer().get(PLATFORM.Config).api).toEqual({
+            baseUrl: "http://localhost:3002",
+            token: "api-token",
         });
     });
 
-    it("names every missing variable at once", () => {
-        expect(() => readWebEnv({ INVESTLAB_API_TOKEN: "" })).toThrow(
-            "Missing env vars: INVESTLAB_API_URL, INVESTLAB_API_TOKEN",
-        );
-    });
-});
-
-describe("createContainer", () => {
     it("resolves the client use cases wired to the API", () => {
-        const container = createContainer(readWebEnv(ENV));
+        const container = createContainer();
 
         expect(container.get(APP_TOKENS.PortfolioItemListUseCase)).toBeInstanceOf(
             PortfolioItemListUseCase,
@@ -46,5 +39,13 @@ describe("createContainer", () => {
             PortfolioItemDeleteUseCase,
         );
         expect(container.get(APP_TOKENS.QuoteListUseCase)).toBeInstanceOf(QuoteListUseCase);
+    });
+
+    it("names every missing env var when a use case is first resolved", () => {
+        vi.stubEnv("INVESTLAB_API_URL", "");
+
+        expect(() => createContainer().get(APP_TOKENS.QuoteListUseCase)).toThrow(
+            "Missing env vars: INVESTLAB_API_URL",
+        );
     });
 });

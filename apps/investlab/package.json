@@ -25,6 +25,7 @@
         "@m0n0lab/investlab-data-client": "workspace:*",
         "@m0n0lab/investlab-data-contracts": "workspace:*",
         "@m0n0lab/investlab-domain": "workspace:*",
+        "@m0n0lab/investlab-platform": "workspace:*",
         "@react-router/node": "8.2.0",
         "@react-router/serve": "8.2.0",
         "@varlock/1password-plugin": "catalog:",

@@ -6,13 +6,13 @@
 
 ## 2. Platform package
 
-- [ ] 2.1 Scaffold `packages/investlab-platform` (`@m0n0lab/investlab-platform`): `package.json` with `exports` `./server` and `./client` only, no root entry (types + import), tsdown with two entries, depends on `@m0n0lab/investlab-core`, tsconfig references (a `project.json` only if a target needs one; Nx config only in `project.json`); `pnpm nx sync`
-- [ ] 2.2 `Config` port: `ServerConfig` (`database.url`, `redis.url`, `finnhub.apiKey`, `api.port`, `api.token`) and `ClientConfig` (`api.baseUrl`, `api.token`), keys matching the two `.env.schema` files
-- [ ] 2.3 Adapters: `ProcessEnvConfig` (`./server`, reads `process.env` after `varlock/auto-load`) and the web adapter (`./client`, reads what the Varlock Vite plugin exposes to the SSR server); unit-test the mapping from env keys to groups
-- [ ] 2.4 `HttpClient` on both sides: JSON, timeout, any status returned with its body, a response without a body (such as 204) returned without parsing; transport failure / timeout / present but unparsable body → `NetworkError`
-- [ ] 2.5 `InvestlabApiClient` (`./client`): base URL + bearer from `Config`, success body validated by the caller's schema (a bodyless success resolves without schema validation), error envelope → caller's code map, kernel codes from core, 401 → `UnauthorizedError`, the rest → `NetworkError`; replaces `investlab-data-client`'s `api-client.ts` and `api-error.mapper.ts`
-- [ ] 2.6 `Db` (drizzle over `pg.Pool`, wrapped with `@m0n0lab/drizzle-neverthrow`, singleton, `onDeactivation` ends the pool) and `Redis` (`lazyConnect`, singleton, `onDeactivation` calls `quit()` when connected and `disconnect()` when it never connected, status `"wait"`, so shutdown never opens a connection just to close it)
-- [ ] 2.7 `PLATFORM` tokens per side, typed with `ServiceIdentifier<…>`; static `platformServerModule` and `platformClientModule` building everything from `PLATFORM.Config`
+- [x] 2.1 Scaffold `packages/investlab-platform` (`@m0n0lab/investlab-platform`): `package.json` with `exports` `./server` and `./client` only, no root entry (types + import), tsdown with two entries, depends on `@m0n0lab/investlab-core`, tsconfig references (a `project.json` only if a target needs one; Nx config only in `project.json`); `pnpm nx sync`
+- [x] 2.2 `Config` port: `ServerConfig` (`database.url`, `redis.url`, `finnhub.apiKey`, `api.port`, `api.token`) and `ClientConfig` (`api.baseUrl`, `api.token`), keys matching the two `.env.schema` files
+- [x] 2.3 Adapters: `ProcessEnvConfig` (`./server`, reads `process.env` after `varlock/auto-load`) and the web adapter (`./client`, reads what the Varlock Vite plugin exposes to the SSR server); unit-test the mapping from env keys to groups
+- [x] 2.4 `HttpClient` on both sides: JSON, timeout, any status returned with its body, a response without a body (such as 204) returned without parsing; transport failure / timeout / present but unparsable body → `NetworkError`
+- [x] 2.5 `InvestlabApiClient` (`./client`): base URL + bearer from `Config`, success body validated by the caller's schema (a bodyless success resolves without schema validation), error envelope → caller's code map, kernel codes from core, 401 → `UnauthorizedError`, the rest → `NetworkError`; replaces `investlab-data-client`'s `api-client.ts` and `api-error.mapper.ts`
+- [x] 2.6 `Db` (drizzle over `pg.Pool`, wrapped with `@m0n0lab/drizzle-neverthrow`, singleton, `onDeactivation` ends the pool) and `Redis` (`lazyConnect`, singleton, `onDeactivation` calls `quit()` when connected and `disconnect()` when it never connected, status `"wait"`, so shutdown never opens a connection just to close it)
+- [x] 2.7 `PLATFORM` tokens per side, typed with `ServiceIdentifier<…>`; static `platformServerModule` and `platformClientModule` building everything from `PLATFORM.Config`
 - [ ] 2.8 Switch both apps to bind their `Config` adapter and load the platform module; old packages read `Db`, `Redis` and the API client from `PLATFORM` tokens; `nx run-many -t build,typecheck,test -p '@m0n0lab/investlab*'` green
 
 ## 3. Database package

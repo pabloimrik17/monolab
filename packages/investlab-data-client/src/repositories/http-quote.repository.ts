@@ -9,13 +9,13 @@ import {
     type QuoteRepository,
     type PortfolioRemoteError,
 } from "@m0n0lab/investlab-domain";
-import { ApiClient } from "../api-client.ts";
+import { PLATFORM, type InvestlabApiClient } from "@m0n0lab/investlab-platform/client";
 
 const quoteListSchema = z.array(quoteDtoSchema);
 
 @injectable()
 export class HttpQuoteRepository implements QuoteRepository<PortfolioRemoteError> {
-    constructor(@inject(ApiClient) private readonly api: ApiClient) {}
+    constructor(@inject(PLATFORM.InvestlabApiClient) private readonly api: InvestlabApiClient) {}
 
     getQuote(symbol: string): ResultAsync<Quote, PortfolioRemoteError> {
         return this.getQuotes([symbol]).andThen((quotes) => {
