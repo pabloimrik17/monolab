@@ -106,6 +106,6 @@
 
 ## 12. Verification
 
-- [ ] 12.1 `nx run-many -t build,typecheck -p '@m0n0lab/investlab*'`
-- [ ] 12.2 `nx run-many -t test:unit,test:integration -p '@m0n0lab/investlab*'`
+- [x] 12.1 `nx run-many -t build,typecheck -p '@m0n0lab/investlab*'`
+- [x] 12.2 `nx run-many -t test:unit,test:integration -p '@m0n0lab/investlab*'`
 - [ ] 12.3 Manual E2E (web + API, `pnpm investlab:dev`): seeded instruments appear in the portfolio form; create, view, edit and delete a portfolio item; create, update and delete an instrument through the API; deleting an instrument in use answers 409 `INSTRUMENT_IN_USE`; live quotes refresh on the ticker page; stopping the API releases Postgres and Redis connections
