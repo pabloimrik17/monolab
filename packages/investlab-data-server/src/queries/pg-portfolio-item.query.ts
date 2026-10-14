@@ -1,23 +1,17 @@
 import { asc, eq } from "drizzle-orm";
 import { inject, injectable } from "inversify";
+import { PLATFORM, type Db } from "@m0n0lab/investlab-platform/server";
 import { instrumentToDomain } from "../mappers/instrument.mapper.ts";
 import { portfolioItemToDomain } from "../mappers/portfolio-item.mapper.ts";
 import { instruments } from "../schema/instruments.ts";
 import { portfolioItems } from "../schema/portfolio-items.ts";
-import { DATA_TOKENS } from "../tokens.ts";
-import { wrapDb } from "../wrap-db.ts";
 import type { PersistenceError } from "@m0n0lab/investlab-core";
 import type { PortfolioItemQuery, PortfolioItemWithInstrument } from "@m0n0lab/investlab-domain";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { ResultAsync } from "neverthrow";
 
 @injectable()
 export class PgPortfolioItemQuery implements PortfolioItemQuery {
-    private readonly db: ReturnType<typeof wrapDb>;
-
-    constructor(@inject(DATA_TOKENS.DrizzleDb) db: NodePgDatabase) {
-        this.db = wrapDb(db);
-    }
+    constructor(@inject(PLATFORM.Db) private readonly db: Db) {}
 
     listWithInstruments(): ResultAsync<PortfolioItemWithInstrument[], PersistenceError> {
         return this.db

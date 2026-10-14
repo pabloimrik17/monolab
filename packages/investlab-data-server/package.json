@@ -26,9 +26,9 @@
         "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
     },
     "dependencies": {
-        "@m0n0lab/drizzle-neverthrow": "workspace:*",
         "@m0n0lab/investlab-core": "workspace:*",
         "@m0n0lab/investlab-domain": "workspace:*",
+        "@m0n0lab/investlab-platform": "workspace:*",
         "drizzle-orm": "catalog:",
         "inversify": "catalog:",
         "ioredis": "catalog:",
@@ -36,6 +36,7 @@
         "pg": "catalog:"
     },
     "devDependencies": {
+        "@m0n0lab/drizzle-neverthrow": "workspace:*",
         "@m0n0lab/vitest-config": "workspace:*",
         "tsdown": "catalog:",
         "typescript": "catalog:",

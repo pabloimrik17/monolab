@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { PersistenceError } from "@m0n0lab/investlab-core";
 import { Instrument, PortfolioItem } from "@m0n0lab/investlab-domain";
+import { asDb } from "../testing/as-db.ts";
 import { PgPortfolioItemQuery } from "./pg-portfolio-item.query.ts";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
@@ -42,7 +43,7 @@ describe("PgPortfolioItemQuery", () => {
             Promise.resolve([{ item: itemRow, instrument: instrumentRow }]),
         );
 
-        const result = await new PgPortfolioItemQuery(db).listWithInstruments();
+        const result = await new PgPortfolioItemQuery(asDb(db)).listWithInstruments();
 
         const rows = result._unsafeUnwrap();
         expect(rows).toHaveLength(1);
@@ -58,7 +59,7 @@ describe("PgPortfolioItemQuery", () => {
     it("orders by item creation date ascending", async () => {
         const { db, orderBy } = fakeDb(Promise.resolve([]));
 
-        await new PgPortfolioItemQuery(db).listWithInstruments();
+        await new PgPortfolioItemQuery(asDb(db)).listWithInstruments();
 
         expect(orderBy).toHaveBeenCalledOnce();
     });
@@ -66,7 +67,7 @@ describe("PgPortfolioItemQuery", () => {
     it("returns an empty list when there are no items", async () => {
         const { db } = fakeDb(Promise.resolve([]));
 
-        const result = await new PgPortfolioItemQuery(db).listWithInstruments();
+        const result = await new PgPortfolioItemQuery(asDb(db)).listWithInstruments();
 
         expect(result._unsafeUnwrap()).toEqual([]);
     });
@@ -75,7 +76,7 @@ describe("PgPortfolioItemQuery", () => {
         const cause = new Error("connection lost");
         const { db } = fakeDb(Promise.reject(cause));
 
-        const result = await new PgPortfolioItemQuery(db).listWithInstruments();
+        const result = await new PgPortfolioItemQuery(asDb(db)).listWithInstruments();
 
         const error = result._unsafeUnwrapErr();
         expect(error).toBeInstanceOf(PersistenceError);

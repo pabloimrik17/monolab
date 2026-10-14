@@ -13,7 +13,7 @@
 - [x] 2.5 `InvestlabApiClient` (`./client`): base URL + bearer from `Config`, success body validated by the caller's schema (a bodyless success resolves without schema validation), error envelope → caller's code map, kernel codes from core, 401 → `UnauthorizedError`, the rest → `NetworkError`; replaces `investlab-data-client`'s `api-client.ts` and `api-error.mapper.ts`
 - [x] 2.6 `Db` (drizzle over `pg.Pool`, wrapped with `@m0n0lab/drizzle-neverthrow`, singleton, `onDeactivation` ends the pool) and `Redis` (`lazyConnect`, singleton, `onDeactivation` calls `quit()` when connected and `disconnect()` when it never connected, status `"wait"`, so shutdown never opens a connection just to close it)
 - [x] 2.7 `PLATFORM` tokens per side, typed with `ServiceIdentifier<…>`; static `platformServerModule` and `platformClientModule` building everything from `PLATFORM.Config`
-- [ ] 2.8 Switch both apps to bind their `Config` adapter and load the platform module; old packages read `Db`, `Redis` and the API client from `PLATFORM` tokens; `nx run-many -t build,typecheck,test -p '@m0n0lab/investlab*'` green
+- [x] 2.8 Switch both apps to bind their `Config` adapter and load the platform module; old packages read `Db`, `Redis` and the API client from `PLATFORM` tokens; `nx run-many -t build,typecheck,test -p '@m0n0lab/investlab*'` green
 
 ## 3. Database package
 

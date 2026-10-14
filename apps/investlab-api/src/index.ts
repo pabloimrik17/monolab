@@ -1,22 +1,21 @@
 import "varlock/auto-load";
 import { serve } from "@hono/node-server";
+import { PLATFORM } from "@m0n0lab/investlab-platform/server";
 import { createApp } from "./app.ts";
-import { createContainer, readApiEnv } from "./container.ts";
+import { createContainer } from "./container.ts";
 
-const parsedPort = Number(process.env["PORT"] ?? 3002);
-if (!Number.isInteger(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
-    console.error(`Invalid PORT: ${process.env["PORT"]}`);
-    process.exit(1);
+const container = createContainer();
+const { api } = container.get(PLATFORM.Config);
+
+const server = serve({ fetch: createApp(container, { token: api.token }).fetch, port: api.port });
+console.log(`investlab-api listening on http://localhost:${api.port}`);
+
+// Unbinding releases the Postgres pool and the Redis connection.
+async function shutdown(): Promise<void> {
+    server.close();
+    await container.unbindAllAsync();
+    process.exit(0);
 }
-const port = parsedPort;
 
-const token = process.env["INVESTLAB_API_TOKEN"];
-if (!token) {
-    console.error("INVESTLAB_API_TOKEN env var is required");
-    process.exit(1);
-}
-
-const app = createApp(createContainer(readApiEnv(process.env)), { token });
-
-console.log(`investlab-api listening on http://localhost:${port}`);
-serve({ fetch: app.fetch, port });
+process.once("SIGTERM", () => void shutdown());
+process.once("SIGINT", () => void shutdown());

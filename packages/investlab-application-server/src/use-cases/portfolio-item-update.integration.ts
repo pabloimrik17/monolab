@@ -1,11 +1,11 @@
 import { eq, sql } from "drizzle-orm";
 import { beforeAll, describe, expect, it } from "vitest";
-import { DATA_TOKENS, portfolioItems } from "@m0n0lab/investlab-data-server";
+import { portfolioItems } from "@m0n0lab/investlab-data-server";
 import { TOKENS, type PortfolioItemRepository } from "@m0n0lab/investlab-domain";
+import { PLATFORM } from "@m0n0lab/investlab-platform/server";
 import { UNKNOWN_ID, useIntegrationHarness } from "../testing/integration-harness.ts";
 import { APP_TOKENS } from "../tokens.ts";
 import type { PortfolioItemUpdateUseCase } from "./portfolio-item-update.use-case.ts";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 describe("PortfolioItemUpdateUseCase", () => {
     const harness = useIntegrationHarness();
@@ -99,13 +99,16 @@ describe("PortfolioItemUpdateUseCase", () => {
     it("matches a database-stamped microsecond updated_at against its millisecond read", async () => {
         const instrument = await harness.seedInstrument();
         const seeded = await harness.seedPortfolioItem({ instrumentId: instrument.id });
-        await harness
-            .get<NodePgDatabase>(DATA_TOKENS.DrizzleDb)
-            .update(portfolioItems)
-            .set({
-                updatedAt: sql`date_trunc('milliseconds', now()) + interval '123 microseconds'`,
-            })
-            .where(eq(portfolioItems.id, seeded.id));
+        (
+            await harness.get(PLATFORM.Db).update((tx) =>
+                tx
+                    .update(portfolioItems)
+                    .set({
+                        updatedAt: sql`date_trunc('milliseconds', now()) + interval '123 microseconds'`,
+                    })
+                    .where(eq(portfolioItems.id, seeded.id)),
+            )
+        )._unsafeUnwrap();
         const item = (await storedItem(seeded.id))!;
 
         const result = await useCase.execute(item.id, { targetWeight: 35 }, item.updatedAt);

@@ -9,19 +9,13 @@ import {
     type InstrumentRepository,
     type InstrumentType,
 } from "@m0n0lab/investlab-domain";
+import { PLATFORM, type Db } from "@m0n0lab/investlab-platform/server";
 import { instrumentToDomain, instrumentToRow } from "../mappers/instrument.mapper.ts";
 import { instruments } from "../schema/instruments.ts";
-import { DATA_TOKENS } from "../tokens.ts";
-import { wrapDb } from "../wrap-db.ts";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 @injectable()
 export class PgInstrumentRepository implements InstrumentRepository {
-    private readonly db: ReturnType<typeof wrapDb>;
-
-    constructor(@inject(DATA_TOKENS.DrizzleDb) db: NodePgDatabase) {
-        this.db = wrapDb(db);
-    }
+    constructor(@inject(PLATFORM.Db) private readonly db: Db) {}
 
     save(instrument: Instrument): ResultAsync<Instrument, PersistenceError> {
         return this.db

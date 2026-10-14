@@ -38,6 +38,7 @@
     "devDependencies": {
         "@m0n0lab/investlab-data-server": "workspace:*",
         "@m0n0lab/investlab-database": "workspace:*",
+        "@m0n0lab/investlab-platform": "workspace:*",
         "@m0n0lab/vitest-config": "workspace:*",
         "@testcontainers/postgresql": "catalog:",
         "@testcontainers/redis": "catalog:",
