@@ -26,7 +26,7 @@ This layout is the reference for the other Clean Architecture projects in the mo
 - One package per business module, holding its domain, use cases and adapters for both sides
 - Entries that keep server code out of the web and client code out of the API
 - A layer rule inside each package, checked by lint in CI
-- A platform package that owns configuration and shared infrastructure, provided through the container
+- A core package for the shared kernel, a platform package that owns configuration and shared infrastructure provided through the container, and a database package that owns migrations
 - Apps reduced to composition roots and transport
 - Use-case tests that run the real composition, fake only what leaves the system and read as business scenarios
 - Instrument create, update and delete, with deletion refused while an instrument is in use
@@ -48,9 +48,13 @@ The package-per-module layout is recorded in [ADR 0007](../../../docs/adr/0007-i
 
 | Package | Owns | Depends on |
 |---|---|---|
-| `@m0n0lab/investlab-portfolio` | `PortfolioItem`, `Instrument` (catalog as portfolio reference data), their ports, the item + instrument read query, portfolio and instrument use cases, `portfolio_items` and `instruments` tables | platform |
-| `@m0n0lab/investlab-quotes` | `Quote`, quote port, Finnhub datasource, Redis cache datasource, `CachedQuoteRepository`, quote-list use cases | platform |
-| `@m0n0lab/investlab-platform` | `Config`, `HttpClient`, `InvestlabApiClient`, `Db`, `Redis`, kernel errors | none of the modules |
+| `@m0n0lab/investlab-portfolio` | `PortfolioItem`, `Instrument` (catalog as portfolio reference data), their ports, the item + instrument read query, portfolio and instrument use cases, `portfolio_items` and `instruments` tables | core, platform; database (tests only) |
+| `@m0n0lab/investlab-quotes` | `Quote`, quote port, Finnhub datasource, Redis cache datasource, `CachedQuoteRepository`, quote-list use cases | core, platform |
+| `@m0n0lab/investlab-core` | kernel errors, `RemotePortError`, API error envelope schema | nothing of ours |
+| `@m0n0lab/investlab-platform` | `Config`, `HttpClient`, `InvestlabApiClient`, `Db`, `Redis` | core |
+| `@m0n0lab/investlab-database` | `drizzle.config.ts`, `drizzle/` migrations (seed included), `migrate(databaseUrl)` | nothing of ours |
+
+Every package needs two real consumers. Core: both modules and the platform. Platform: both modules and both apps. Database: the API (its `db:*` scripts) and the module integration tests. A module only gets its own package for the same reason: it is used by both apps.
 
 Portfolio references instruments inside its own package. Quotes need only symbols (strings), so the two business modules never import each other. A second instrument consumer (Roger) would move the catalog into its own module; that is not needed now.
 
@@ -83,11 +87,12 @@ packages/investlab-portfolio/src/
 
 Names and folders are the target picture; small renames may follow in review.
 
-### 3. Platform package
+### 3. Core and platform packages
 
-`@m0n0lab/investlab-platform` has three entries:
+**Core.** `@m0n0lab/investlab-core` is the shared kernel, one root entry: `DomainError` base, `ValidationError`, `PersistenceError`, `NetworkError`, `UnauthorizedError`, the `RemotePortError` union, and the API error envelope schema (`apiErrorDtoSchema`). It depends on nothing but `zod` and `neverthrow` and imports no InvestLab package; every module layer and the platform may import it. The name previously belonged to a browser-only package that was dissolved; it is reused here.
 
-- `.` (kernel, pure): `DomainError` base, `ValidationError`, `PersistenceError`, `NetworkError`, `UnauthorizedError`, and the API error envelope schema (`apiErrorDtoSchema`). Domain and application code may import it; it depends on nothing but `zod` and `neverthrow`.
+**Platform.** `@m0n0lab/investlab-platform` has two entries and no root entry, so domain and application code cannot reach it by accident:
+
 - `./server`: `PLATFORM` tokens, `ServerConfig`, `ProcessEnvConfig`, `HttpClient`, `Db`, `Redis`, `platformServerModule`.
 - `./client`: `PLATFORM` tokens, `ClientConfig`, the web `Config` adapter, `HttpClient`, `InvestlabApiClient`, `platformClientModule`.
 
@@ -121,17 +126,18 @@ Inside a module package:
 
 | From | May import |
 |---|---|
-| `domain/` | `domain/`, platform `.` |
-| `application/server`, `application/client` | `domain/`, platform `.` (use-case inputs are domain types, never DTOs) |
-| `data/contracts/` | `domain/`, platform `.` |
-| `data/server/` | `domain/`, `data/contracts/`, platform `.` and `./server`, infrastructure libraries |
-| `data/client/` | `domain/`, `data/contracts/`, platform `.` and `./client` |
+| `domain/` | `domain/`, core |
+| `application/server`, `application/client` | `domain/`, core (use-case inputs are domain types, never DTOs) |
+| `data/contracts/` | `domain/`, core |
+| `data/server/` | `domain/`, `data/contracts/`, core, platform `./server`, infrastructure libraries |
+| `data/client/` | `domain/`, `data/contracts/`, core, platform `./client` |
 | `module.server.ts` | `application/server`, `data/server`, platform `./server` |
 | `module.client.ts` | `application/client`, `data/client`, platform `./client` |
+| test files of a side (`*.integration.ts`, `vitest-*-setup.ts`, `given.ts`) | what their folder may import, plus `module.<side>.ts`, platform `./<side>`, `data/contracts/`, database (server side), `msw`, Testcontainers |
 
-No file under `*/server/` imports `*/client/` and vice versa. Across packages: `apps/investlab` never imports `@m0n0lab/investlab-*/server`; `apps/investlab-api` never imports `@m0n0lab/investlab-*/client`; business modules never import each other. Domain and application code never imports `pg`, `drizzle-orm`, `ioredis`, `msw` or `varlock`.
+Core imports nothing of ours; the platform imports only core; the database package imports nothing of ours. No file under `*/server/` imports `*/client/` and vice versa. Across packages: `apps/investlab` never imports `@m0n0lab/investlab-*/server` nor the database package; `apps/investlab-api` never imports `@m0n0lab/investlab-*/client`; business modules never import each other. Domain and application code never imports `pg`, `drizzle-orm`, `ioredis`, `msw` or `varlock`.
 
-**Mechanism.** fallow 3.6 (already in CI as `lint:fallow`, `fallow dead-code --fail-on-issues`) supports `boundaries` in `.fallowrc.json`: zones by path pattern (one per layer folder per module, one per platform entry, one per app) and `rules` with `allow`/`allowTypeOnly` lists, reported as `boundary-violation` (error by default). Banned third-party imports per zone go through fallow `rulePacks` (banned imports). Implementation verifies two things before relying on it: that imports through workspace `exports` (`@m0n0lab/investlab-portfolio/server`) resolve to source files in the right zone, and that a deliberate violation fails `pnpm lint:fallow`. If either fails, the fallback is ESLint `no-restricted-imports` with `patterns` per folder in the root `eslint.config.ts` (run through the `lint:eslint` targets), or `eslint-plugin-boundaries` if path patterns are not enough.
+**Mechanism.** fallow 3.6 (already in CI as `lint:fallow`, `fallow dead-code --fail-on-issues`) supports `boundaries` in `.fallowrc.json`: zones by path pattern (one per layer folder per module, one for core, one per platform entry, one for database, one per app) and `rules` with `allow`/`allowTypeOnly` lists, reported as `boundary-violation` (error by default). Banned third-party imports per zone go through fallow `rulePacks` (banned imports). Implementation verifies two things before relying on it: that imports through workspace `exports` (`@m0n0lab/investlab-portfolio/server`) resolve to source files in the right zone, and that a deliberate violation fails `pnpm lint:fallow`. If either fails, the fallback is ESLint `no-restricted-imports` with `patterns` per folder in the root `eslint.config.ts` (run through the `lint:eslint` targets), or `eslint-plugin-boundaries` if path patterns are not enough.
 
 ### 5. Container model
 
@@ -154,12 +160,13 @@ The web does the same with its `Config` adapter, `platformClientModule`, `portfo
 
 ### 7. Errors across modules
 
-Kernel errors live in platform `.`; module errors in each module's `domain/errors.ts` (`InstrumentNotFoundError`, `PortfolioItemNotFoundError`, new `InstrumentInUseError`, new `InstrumentAlreadyExistsError`). Each module exports its code union (`PortfolioErrorCode`); the API's code → HTTP status map is typed over the union of kernel and module codes, so an unmapped code fails the type check. Codes stay SCREAMING_SNAKE without namespace, and `code` remains the wire discriminant ([ADR 0005](../../../docs/adr/0005-investlab-error-code-is-the-wire-discriminant.md)).
+Kernel errors live in core; module errors in each module's `domain/errors.ts` (`InstrumentNotFoundError`, `PortfolioItemNotFoundError`, new `InstrumentInUseError`, new `InstrumentAlreadyExistsError`). Each module exports its code union (`PortfolioErrorCode`); the API's code → HTTP status map is typed over the union of kernel and module codes, so an unmapped code fails the type check. Codes stay SCREAMING_SNAKE without namespace, and `code` remains the wire discriminant ([ADR 0005](../../../docs/adr/0005-investlab-error-code-is-the-wire-discriminant.md)).
 
 ### 8. Drizzle and the seed
 
 - Each module owns its tables in `data/server/schema.ts` (`portfolio_items` and `instruments` in portfolio; quotes has no table).
-- `drizzle.config.ts` and `drizzle/` (SQL files, `meta/` snapshots and `_journal.json`) move with `git mv` to `apps/investlab-api`, unchanged, so databases that already applied them do not re-run anything. `schema` lists every module's `data/server/schema.ts`; `db:generate`/`db:migrate` become the API's own scripts (through Varlock, as today).
+- `drizzle.config.ts` and `drizzle/` (SQL files, `meta/` snapshots and `_journal.json`) move with `git mv` to `packages/investlab-database`, unchanged, so databases that already applied them do not re-run anything. `schema` lists every module's `data/server/schema.ts` as path strings (`../investlab-portfolio/src/data/server/schema.ts`), not imports, so the database package has no Nx dependency on any module and no cycle forms. `db:generate`/`db:migrate` become the database package's scripts (drizzle-kit through Varlock with the API's `.env.schema`, as today); the API keeps same-named scripts that delegate with `pnpm --filter`.
+- The package exports `migrate(databaseUrl)`: it opens a `pg` pool, runs the drizzle-orm migrator over its own `drizzle/` folder (resolved relative to the package, not the caller) and closes the pool. Module integration setups call it for their template database and list `@m0n0lab/investlab-database` as a devDependency, so a new migration reaches their `test:integration` cache through the ordinary `^production` input; the `drizzle/` folder must be part of the package's `production` files.
 - After the move, `db:generate` must report no schema changes; that proves the split schema equals the snapshot.
 - A custom migration (`drizzle-kit generate --custom`) seeds the catalog with `INSERT … ON CONFLICT (symbol) DO NOTHING`:
 
@@ -202,7 +209,7 @@ src/data/server/mappers/portfolio-item.mapper.test.ts
 
 Setup files are named `vitest-<testtype>-setup.ts`. Each package's `vitest.config.ts` declares a project per side, `integration-server` (include `src/application/server/**/*.integration.ts`, `globalSetup` starting the containers, `setupFiles: [vitest-integration-setup.ts]`) and `integration-client` (include `src/application/client/**/*.integration.ts`, its own setup file), plus `unit` only where unit tests exist. The `test:integration` script runs both projects, so the Nx target and CI keep their names.
 
-**Server setup.** Testcontainers Postgres and Redis start once per run in `globalSetup`, which migrates a template database once with the API's migrations (seed included). Each test file clones the template (`CREATE DATABASE … TEMPLATE`, under an advisory lock), takes its own Redis logical database, and files run in parallel; this reuses the approach of `investlab-application-server/src/testing/` (commit eace306). The setup then builds the container from `platformServerModule` and the module under test, with a constant `Config` pointing to the file's database and Redis, and an MSW `setupServer` (`onUnhandledRequest: "error"`) for Finnhub. `afterAll` unbinds the container (releasing pool and Redis), drops the database and closes MSW.
+**Server setup.** Testcontainers Postgres and Redis start once per run in `globalSetup`, which migrates a template database once with `migrate` from `@m0n0lab/investlab-database` (seed included). Each test file clones the template (`CREATE DATABASE … TEMPLATE`, under an advisory lock), takes its own Redis logical database, and files run in parallel; this reuses the approach of `investlab-application-server/src/testing/` (commit eace306). The setup then builds the container from `platformServerModule` and the module under test, with a constant `Config` pointing to the file's database and Redis, and an MSW `setupServer` (`onUnhandledRequest: "error"`) for Finnhub. `afterAll` unbinds the container (releasing pool and Redis), drops the database and closes MSW.
 
 **Client setup.** MSW `setupServer` with `onUnhandledRequest: "error"` standing in for the InvestLab API; container from `platformClientModule` and the module under test, with a constant `Config` pointing to the fake base URL.
 
@@ -235,12 +242,14 @@ describe("adding a holding", () => {
 
 **Module by module, old packages alive until the end.** Each step leaves both apps building and every test target green:
 
-1. **Platform.** Create `investlab-platform` (kernel, `Config` + adapters, `HttpClient`, `InvestlabApiClient`, `Db`, `Redis`, static modules). Switch both apps' containers to bind `Config` and load the platform module; the old packages read `Db`/`Redis`/base URL from platform tokens instead of their own.
-2. **Quotes.** Create `investlab-quotes` from the quote parts of the old packages (smallest, no table, no dependency on portfolio). Move its tests to the new shape. Switch both apps to the quotes module; delete the quote code from the old packages.
-3. **Portfolio.** Create `investlab-portfolio` from the rest. Move the drizzle schema into it and `drizzle.config.ts` + `drizzle/` into the API. Rewrite its tests in the new shape. Switch both apps.
-4. **Remove the six old packages**, their references (tsconfig, knip, fallow, root scripts) and `pnpm nx sync`.
-5. **Instrument CRUD** on the new layout: seed migration, use cases, routes, tests.
-6. **Boundaries lint** turned on once the old packages are gone, so it never needs exceptions for them.
+1. **Core.** Create `investlab-core` with the kernel errors and the error envelope schema; the old packages re-point their imports to it.
+2. **Platform.** Create `investlab-platform` (`Config` + adapters, `HttpClient`, `InvestlabApiClient`, `Db`, `Redis`, static modules). Switch both apps' containers to bind `Config` and load the platform module; the old packages read `Db`/`Redis`/base URL from platform tokens instead of their own.
+3. **Database.** Create `investlab-database`: `git mv` `drizzle.config.ts` and `drizzle/` from `investlab-data-server`, add `migrate`, move the `db:*` scripts and point the API's scripts and the old server tests' global setup at it. The config lists the schema where it still lives until portfolio moves it.
+4. **Quotes.** Create `investlab-quotes` from the quote parts of the old packages (smallest, no table, no dependency on portfolio). Move its tests to the new shape. Switch both apps to the quotes module; delete the quote code from the old packages.
+5. **Portfolio.** Create `investlab-portfolio` from the rest. Move the drizzle schema into it and update the path in the database package's config. Rewrite its tests in the new shape. Switch both apps.
+6. **Remove the six old packages**, their references (tsconfig, knip, fallow, root scripts) and `pnpm nx sync`.
+7. **Instrument CRUD** on the new layout: seed migration (in the database package), use cases, routes, tests.
+8. **Boundaries lint** turned on once the old packages are gone, so it never needs exceptions for them.
 
 Big-bang was considered: one large move commit is simpler to write, but it cannot be bisected and breaks every test file at once. Module by module costs a short period of duplicated wiring and is reviewable step by step.
 
@@ -249,7 +258,7 @@ Big-bang was considered: one large move commit is simpler to write, but it canno
 - **Server code leaking into the web bundle.** A wrong import of `./server`, or of `./client` from a non-`.server.ts` route module, could pull `pg` or the API token toward the browser. Mitigation: the entries, the boundary lint on `apps/investlab`, and a check of the client build output for `pg`, `ioredis`, `drizzle-orm` and the token variable name.
 - **Lint enforcement depends on tooling not yet proven here.** fallow boundaries are new to this repo, and workspace `exports` resolution to zones is unverified. Mitigation: verify with a deliberate violation; ESLint fallback named in §4.
 - **Migrations folder move and the drizzle journal.** Moving `drizzle/` must keep file names, SQL and `_journal.json` byte-identical, or databases that already applied migrations re-run them. Snapshots must match the split schema, or the next `db:generate` emits a spurious migration. Mitigation: `git mv` only, then `db:generate` reports no changes and `db:migrate` against an existing local database applies only the seed.
-- **Module tests depend on the API's migrations.** The portfolio integration setup reads `apps/investlab-api/drizzle`, a folder owned by another project. Mitigation: declare it as an input of the modules' `test:integration` target (shared named input, not `{projectRoot}`) so a new migration invalidates the cache.
+- **The drizzle config reaches module files by path.** Without an import, Nx does not know the database package depends on the schema files, and a renamed or moved `schema.ts` is not a type error. Accepted: `db:generate` is a manual, uncached command; a schema move is followed by `db:generate` reporting no changes (task in the portfolio section), which fails visibly if a path is wrong.
 - **Two places per module for each side** (`application/` and `data/`) instead of one package each. Accepted: folders and lint carry the boundary; packages now match units of change.
-- **Platform could grow into a dumping ground.** Rule: platform holds only what more than one module needs and knows no business endpoint; anything module-specific (Finnhub) stays in the module.
+- **Shared packages could grow into dumping grounds.** Rule: core, platform and database hold only what more than one consumer needs; core stays free of runtime code; platform knows no business endpoint; anything module-specific (Finnhub) stays in the module.
 - **Black-box client tests depend on the faked API matching the real one.** MSW handlers in `given.ts` build bodies from the module's contracts, so a contract change breaks them at type-check time.

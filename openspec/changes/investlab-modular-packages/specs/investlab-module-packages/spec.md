@@ -1,6 +1,6 @@
 ## Purpose
 
-Defines how InvestLab code is packaged: one package per business module with its layers as folders and one entry per side, a layer rule checked in CI, static container modules with typed tokens, and apps reduced to composition roots.
+Defines how InvestLab code is packaged: one package per business module with its layers as folders and one entry per side, a shared kernel package, a layer rule checked in CI, static container modules with typed tokens, and apps reduced to composition roots.
 
 ## ADDED Requirements
 
@@ -16,7 +16,21 @@ InvestLab business code SHALL live in one package per module: `@m0n0lab/investla
 #### Scenario: Projects selected by tag
 
 - **WHEN** `nx show projects -p tag:investlab` runs
-- **THEN** it lists exactly `@m0n0lab/investlab`, `@m0n0lab/investlab-api`, `@m0n0lab/investlab-portfolio`, `@m0n0lab/investlab-quotes` and `@m0n0lab/investlab-platform`
+- **THEN** it lists exactly `@m0n0lab/investlab`, `@m0n0lab/investlab-api`, `@m0n0lab/investlab-core`, `@m0n0lab/investlab-platform`, `@m0n0lab/investlab-database`, `@m0n0lab/investlab-portfolio` and `@m0n0lab/investlab-quotes`
+
+### Requirement: Shared kernel package
+
+`@m0n0lab/investlab-core` SHALL hold the base errors (`DomainError`, `ValidationError`, `PersistenceError`, `NetworkError`, `UnauthorizedError`, the `RemotePortError` union) and the API error envelope schema, in a single root entry. It SHALL import no other InvestLab package and no infrastructure library. Every layer of a module package and the platform MAY import it.
+
+#### Scenario: Core depends on nothing of ours
+
+- **WHEN** the imports of `@m0n0lab/investlab-core` are listed
+- **THEN** none points to another `@m0n0lab/investlab-*` package, nor to `pg`, `drizzle-orm`, `ioredis`, `msw` or `varlock`
+
+#### Scenario: Domain error extends the kernel
+
+- **WHEN** the portfolio module declares `InstrumentInUseError`
+- **THEN** it extends `DomainError` imported from `@m0n0lab/investlab-core`
 
 ### Requirement: Layer folders inside a module package
 
@@ -38,7 +52,7 @@ A module package SHALL export exactly three entries: `.` (domain and contracts),
 
 ### Requirement: Apps import only their side
 
-`apps/investlab` SHALL import module and platform packages only through `.` and `./client`, and `./client` only from `.server.ts` files. `apps/investlab-api` SHALL import them only through `.` and `./server`. A lint check SHALL fail CI on any other import.
+`apps/investlab` SHALL import module packages only through `.` and `./client` and the platform only through `./client`, and any `./client` entry only from `.server.ts` files. `apps/investlab-api` SHALL import module packages only through `.` and `./server` and the platform only through `./server`. Both apps MAY import `@m0n0lab/investlab-core`; `apps/investlab` SHALL NOT import `@m0n0lab/investlab-database`. A lint check SHALL fail CI on any other import.
 
 #### Scenario: Web imports a server entry
 
@@ -52,7 +66,7 @@ A module package SHALL export exactly three entries: `.` (domain and contracts),
 
 ### Requirement: Layer rule enforced by lint
 
-Inside a package, `domain/` and `application/` SHALL NOT import `data/`, the platform's `./server` or `./client` entries, or infrastructure libraries; `data/*` and `module.*.ts` MAY. Code under a `server/` folder SHALL NOT import a `client/` folder, nor the reverse. A lint check in CI SHALL fail on a violation.
+Inside a package, `domain/` and `application/` SHALL NOT import `data/`, the platform, `@m0n0lab/investlab-database` or infrastructure libraries; they MAY import `@m0n0lab/investlab-core`. `data/*` and `module.*.ts` MAY import the platform entry of their side. Code under a `server/` folder SHALL NOT import a `client/` folder, nor the reverse. A lint check in CI SHALL fail on a violation.
 
 #### Scenario: Use case imports a repository implementation
 
@@ -63,6 +77,15 @@ Inside a package, `domain/` and `application/` SHALL NOT import `data/`, the pla
 
 - **WHEN** a file in `domain/` imports `drizzle-orm`
 - **THEN** the boundary lint check fails
+
+### Requirement: Test files may reach the composition
+
+Test files under `application/` (`*.integration.ts`, `vitest-*-setup.ts`, `given.ts`) SHALL be exempt from the `application/` import rule: they MAY import the module's container modules, the platform entry of their side, `@m0n0lab/investlab-database` (server side) and test libraries. Use-case files SHALL remain bound by it.
+
+#### Scenario: Server setup builds the container
+
+- **WHEN** `application/server/vitest-integration-setup.ts` imports `module.server.ts`, the platform `./server` entry and `@m0n0lab/investlab-database`
+- **THEN** the boundary lint check passes
 
 ### Requirement: Static container modules with typed tokens
 

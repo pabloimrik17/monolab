@@ -15,8 +15,11 @@ The port of InvestLab (change `investlab-portfolio-instruments`) split the code 
     - `@m0n0lab/investlab-portfolio`: portfolio items plus the instrument catalog (portfolio reference data)
     - `@m0n0lab/investlab-quotes`: market data (Finnhub datasource, Redis cache, cached quote repository, quote-list use cases)
 - **Package anatomy**: `domain/` (shared), `application/{server,client}/`, `data/contracts/` (shared), `data/{server,client}/`, `module.server.ts`, `module.client.ts`. `exports`: `.` (domain + contracts), `./server`, `./client`.
-- **Layer rule, enforced by lint**: `domain/` and `application/` never import `data/` nor platform runtime code; the web never imports `./server`, the API never imports `./client`.
-- **Platform package** `@m0n0lab/investlab-platform`: `Config` port and its per-runtime adapters, `HttpClient`, `InvestlabApiClient`, Postgres `Db` and `Redis` handles with deactivation, static container modules under `PLATFORM.*` tokens.
+- **Layer rule, enforced by lint**: `domain/` and `application/` never import `data/`, the platform or the database package; the web never imports `./server`, the API never imports `./client`.
+- **Core package** `@m0n0lab/investlab-core` (shared kernel): base errors (`DomainError`, `ValidationError`, `PersistenceError`, `NetworkError`, `UnauthorizedError`, the `RemotePortError` union) and the API error envelope schema. Imports nothing of ours; every module layer and the platform may import it. The name is reused from a dissolved browser-only package.
+- **Platform package** `@m0n0lab/investlab-platform`, entries `./server` and `./client` only: `Config` port and its per-runtime adapters, `HttpClient`, `InvestlabApiClient`, Postgres `Db` and `Redis` handles with deactivation, static container modules under `PLATFORM.*` tokens.
+- **Database package** `@m0n0lab/investlab-database`: `drizzle.config.ts`, the `drizzle/` migrations and a `migrate(databaseUrl)` helper (see Persistence).
+- **Two real consumers per package**: core (modules, platform), platform (modules, apps), database (API scripts, module integration tests).
 - **Static modules and typed tokens**: every module exposes static `ContainerModule`s and per-module use-case tokens typed with `ServiceIdentifier<…>`, so `container.get(PORTFOLIO.ItemCreate)` needs no cast.
 - **Thin apps**: each app binds its `Config` adapter, loads platform and business modules, and calls use cases from routes and loaders.
 - **Removed packages**: the six `investlab-*` layer packages.
@@ -24,8 +27,9 @@ The port of InvestLab (change `investlab-portfolio-instruments`) split the code 
 ### Persistence
 
 - Each module owns its drizzle table schema at `data/server/schema.ts`.
-- `drizzle.config.ts` and the `drizzle/` migrations folder move to `apps/investlab-api`; the config lists every module's schema file.
-- A data migration seeds the instrument catalog (AAPL, MSFT, NVDA, AMZN, GOOGL, META, TSLA, SPY, QQQ, VTI), idempotent.
+- `drizzle.config.ts` and the `drizzle/` migrations folder move to `@m0n0lab/investlab-database`; the config lists every module's schema file by path (a string, not an import: no Nx edge, no cycle).
+- The database package exports `migrate(databaseUrl)` (drizzle-orm migrator). The API's `db:generate`/`db:migrate` scripts delegate to the package; module integration setups migrate their template database with the helper, so module tests no longer read a folder owned by an app.
+- A data migration in the database package seeds the instrument catalog (AAPL, MSFT, NVDA, AMZN, GOOGL, META, TSLA, SPY, QQQ, VTI), idempotent.
 
 ### Feature
 
@@ -43,7 +47,7 @@ The port of InvestLab (change `investlab-portfolio-instruments`) split the code 
 
 ### New Capabilities
 
-- `investlab-module-packages`: one package per business module, layer folders, entries per side, layer rule enforced by lint, static modules with typed tokens, thin apps.
+- `investlab-module-packages`: one package per business module, the shared kernel package `investlab-core`, layer folders, entries per side, layer rule enforced by lint, static modules with typed tokens, thin apps.
 - `investlab-platform`: environment-backed `Config`, generic `HttpClient`, the InvestLab API client and the shared Postgres/Redis handles, all provided through static container modules.
 - `investlab-use-case-testing`: where use-case tests live, how they are set up and what they may fake, seed and assert.
 
@@ -51,14 +55,14 @@ The port of InvestLab (change `investlab-portfolio-instruments`) split the code 
 
 - `investlab-http-api`: instrument create/update/delete endpoints; delete of an instrument in use answers 409 `INSTRUMENT_IN_USE`; the complete route list grows accordingly.
 - `investlab-instrument-management`: CRUD is offered as use cases on both sides; delete is refused while the instrument is in use; the catalog is seeded.
-- `investlab-persistence`: purity and implementation rules move from packages to layer folders; migrations are owned by `apps/investlab-api` and cover every module's schema.
+- `investlab-persistence`: purity and implementation rules move from packages to layer folders; migrations are owned by `@m0n0lab/investlab-database`, cover every module's schema and are applied by its `migrate` helper.
 - `portfolio-holdings`, `investlab-quote-cache`, `quote-fetching`: requirements that named the removed packages now name the module and layer (`investlab-portfolio`, `investlab-quotes`); the Finnhub key comes from `Config`.
-- `rename`: the package list becomes `investlab-portfolio`, `investlab-quotes` and `investlab-platform`.
+- `rename`: the package list becomes `investlab-core`, `investlab-platform`, `investlab-database`, `investlab-portfolio` and `investlab-quotes`.
 
 ## Impact
 
-- **Packages**: create `packages/investlab-portfolio`, `packages/investlab-quotes`, `packages/investlab-platform`; delete the six layer packages. All keep the Nx tag `investlab`; Nx config only in `project.json`.
-- **Apps**: `apps/investlab-api/src/container.ts` and `apps/investlab/app/lib/container.server.ts` shrink to "bind `Config`, load modules"; imports move to the module entries; `apps/investlab-api` gains `drizzle.config.ts`, `drizzle/` and the `db:*` scripts.
+- **Packages**: create `packages/investlab-core`, `packages/investlab-platform`, `packages/investlab-database`, `packages/investlab-portfolio`, `packages/investlab-quotes`; delete the six layer packages. All keep the Nx tag `investlab`; Nx config only in `project.json`.
+- **Apps**: `apps/investlab-api/src/container.ts` and `apps/investlab/app/lib/container.server.ts` shrink to "bind `Config`, load modules"; imports move to the module entries; the API's `db:*` scripts delegate to `@m0n0lab/investlab-database` instead of `investlab-data-server`.
 - **API**: new routes `POST /instruments`, `PUT /instruments/:id`, `DELETE /instruments/:id`; new error code `INSTRUMENT_IN_USE` (409). Wire format of existing routes is unchanged.
 - **Tooling**: boundary rules in `.fallowrc.json` (or ESLint if fallow cannot express them, see design §4); vitest projects per side in the module packages; `.fallowrc.json` entries for the new setup files.
 - **Env**: no new variables; `.env.schema` files stay, now read only by the `Config` adapters.

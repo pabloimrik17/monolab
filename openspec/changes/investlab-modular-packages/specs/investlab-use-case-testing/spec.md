@@ -24,7 +24,7 @@ Vitest setup files SHALL be named `vitest-<testtype>-setup.ts` (for example `vit
 
 ### Requirement: Server setup isolates each test file
 
-The server setup SHALL start Postgres and Redis containers once per run and migrate a template database once with the API's migrations. Each test file SHALL get its own clone of the template and its own Redis logical database, so files run in parallel without sharing state.
+The server setup SHALL start Postgres and Redis containers once per run and migrate a template database once with the `migrate` helper of `@m0n0lab/investlab-database`, which carries every migration including the instrument seed. Each test file SHALL get its own clone of the template and its own Redis logical database, so files run in parallel without sharing state.
 
 #### Scenario: Parallel files do not see each other's data
 

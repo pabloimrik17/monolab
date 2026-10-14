@@ -6,12 +6,17 @@ Defines `@m0n0lab/investlab-platform`, the package that owns InvestLab's configu
 
 ### Requirement: Platform entries
 
-`@m0n0lab/investlab-platform` SHALL export `.` (kernel errors and the API error envelope schema, free of infrastructure libraries), `./server` and `./client`. It SHALL NOT import any business module.
+`@m0n0lab/investlab-platform` SHALL export exactly two entries, `./server` and `./client`, and no root entry. It MAY import `@m0n0lab/investlab-core`. It SHALL NOT import any business module or `@m0n0lab/investlab-database`.
 
-#### Scenario: Kernel is safe for domain code
+#### Scenario: No root entry
 
-- **WHEN** the dependencies of the platform `.` entry are listed
-- **THEN** they include no `pg`, `drizzle-orm`, `ioredis`, `msw` or `varlock`
+- **WHEN** code imports `@m0n0lab/investlab-platform` without a subpath
+- **THEN** the import fails to resolve
+
+#### Scenario: Kernel errors come from core
+
+- **WHEN** a domain file needs `ValidationError`
+- **THEN** it imports it from `@m0n0lab/investlab-core`, not from the platform
 
 ### Requirement: Config is the only reader of the environment
 
@@ -62,7 +67,7 @@ The platform SHALL provide on both sides an HTTP client that sends JSON requests
 
 ### Requirement: InvestLab API client
 
-The platform client side SHALL provide an API client built on the HTTP client that prefixes `api.baseUrl`, sends `Authorization: Bearer <api.token>` and turns error responses into errors from their `code`: module codes through a map the caller supplies, kernel codes by the platform, 401 as `UnauthorizedError`, anything unusable as `NetworkError`.
+The platform client side SHALL provide an API client built on the HTTP client that prefixes `api.baseUrl`, sends `Authorization: Bearer <api.token>` and turns error responses into errors from their `code`: module codes through a map the caller supplies, kernel codes (from `@m0n0lab/investlab-core`) by the platform, 401 as `UnauthorizedError`, anything unusable as `NetworkError`.
 
 #### Scenario: Module error rebuilt from code
 

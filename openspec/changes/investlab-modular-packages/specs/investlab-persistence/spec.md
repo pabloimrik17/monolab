@@ -10,12 +10,12 @@
 
 ### Requirement: Domain layer is pure
 
-The `domain/` folder of every InvestLab module package SHALL contain only entities, value objects, read models, errors and repository/query ports. It SHALL NOT import any infrastructure library (Drizzle, pg, ioredis, etc.), the module's `data/` folder or the platform's `./server` and `./client` entries. Allowed imports: `neverthrow`, the platform's kernel entry and the module's own `domain/`.
+The `domain/` folder of every InvestLab module package SHALL contain only entities, value objects, read models, errors and repository/query ports. It SHALL NOT import any infrastructure library (Drizzle, pg, ioredis, etc.), the module's `data/` folder, the platform or the database package. Allowed imports: `neverthrow`, `@m0n0lab/investlab-core` and the module's own `domain/`.
 
 #### Scenario: Domain package builds without infra deps
 
 - **WHEN** the boundary lint check runs over `packages/investlab-portfolio/src/domain/`
-- **THEN** it reports no import of drizzle, pg, ioredis, `data/` or a platform side entry
+- **THEN** it reports no import of drizzle, pg, ioredis, `data/`, the platform or the database package
 
 ### Requirement: Server data layer implements domain interfaces
 
@@ -29,12 +29,12 @@ The `data/server/` folder of each module package SHALL implement the repository 
 
 ### Requirement: Drizzle migrations
 
-Schema changes SHALL be managed via drizzle-kit migrations owned by `apps/investlab-api`. Each module SHALL declare its tables in its `data/server/schema.ts`, and the API's drizzle config SHALL list every module's schema file.
+Schema changes SHALL be managed via drizzle-kit migrations owned by `@m0n0lab/investlab-database`. Each module SHALL declare its tables in its `data/server/schema.ts`; the database package's drizzle config SHALL list every module's schema file by path, without importing it. The API's `db:generate` and `db:migrate` scripts SHALL delegate to the database package.
 
 #### Scenario: Generate migration
 
-- **WHEN** a module's Drizzle schema is modified and the API's `db:generate` runs
-- **THEN** a new SQL migration file is created in `apps/investlab-api/drizzle`
+- **WHEN** a module's Drizzle schema is modified and `db:generate` runs
+- **THEN** a new SQL migration file is created in `packages/investlab-database/drizzle`
 
 #### Scenario: Apply migration
 
@@ -43,5 +43,26 @@ Schema changes SHALL be managed via drizzle-kit migrations owned by `apps/invest
 
 #### Scenario: Moved migrations are not re-applied
 
-- **WHEN** `db:migrate` runs against a database that applied the migrations before they moved to `apps/investlab-api`
+- **WHEN** `db:migrate` runs against a database that applied the migrations before they moved to `packages/investlab-database`
 - **THEN** only migrations added after the move are applied
+
+## ADDED Requirements
+
+### Requirement: Database package
+
+`@m0n0lab/investlab-database` SHALL hold the drizzle config, the `drizzle/` migrations folder (including the instrument seed migration) and an exported `migrate(databaseUrl)` helper that applies every migration with the drizzle-orm migrator. It SHALL import no other InvestLab package, so no Nx dependency runs from it to a module. Its consumers are the API scripts and the modules' integration test setups.
+
+#### Scenario: Tests migrate through the package
+
+- **WHEN** a module's server integration setup prepares its template database
+- **THEN** it calls `migrate` from `@m0n0lab/investlab-database` and reads no file outside its own package and its dependencies
+
+#### Scenario: New migration invalidates module tests
+
+- **WHEN** a migration is added to `packages/investlab-database/drizzle`
+- **THEN** Nx considers the `test:integration` targets of the modules that depend on the database package affected
+
+#### Scenario: No dependency cycle
+
+- **WHEN** the Nx project graph is computed
+- **THEN** `@m0n0lab/investlab-database` has no dependency on any module package
