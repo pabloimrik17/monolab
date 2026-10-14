@@ -28,6 +28,17 @@ describe("platformServerModule", () => {
         expect(container.get(PLATFORM.Redis).status).toBe("wait");
     });
 
+    it("fails Redis commands at once while Redis is unreachable", async () => {
+        const container = createContainer();
+        const redis = container.get(PLATFORM.Redis);
+        const startedAt = Date.now();
+
+        await expect(redis.get("any-key")).rejects.toThrow();
+
+        expect(Date.now() - startedAt).toBeLessThan(1000);
+        await container.unbindAllAsync();
+    });
+
     it("releases the clients when the container is unbound", async () => {
         const container = createContainer();
         const redis = container.get(PLATFORM.Redis);
