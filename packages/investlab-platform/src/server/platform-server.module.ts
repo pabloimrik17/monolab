@@ -25,6 +25,7 @@ export const platformServerModule = new ContainerModule(({ bind }) => {
                 redis.disconnect();
                 return;
             }
-            await redis.quit();
+            // A Redis that refuses commands cannot be quit politely; drop the connection instead.
+            await redis.quit().catch(() => redis.disconnect());
         });
 });
