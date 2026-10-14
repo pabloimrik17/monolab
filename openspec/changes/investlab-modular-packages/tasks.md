@@ -81,14 +81,14 @@
 
 ## 9. Instrument CRUD
 
-- [ ] 9.1 Seed migration in `packages/investlab-database/drizzle` (`drizzle-kit generate --custom`) inserting the ten instruments of design §8 with `ON CONFLICT (symbol) DO NOTHING`
-- [ ] 9.2 Domain: `InstrumentInUseError` (`INSTRUMENT_IN_USE`), `InstrumentAlreadyExistsError` (`INSTRUMENT_ALREADY_EXISTS`); `PortfolioItemRepository.existsForInstrument(instrumentId)`
-- [ ] 9.3 Server use cases `InstrumentCreate`, `InstrumentUpdate`, `InstrumentDelete` with error unions; symbol normalized (trim + uppercase) on create and update; update fails with `INSTRUMENT_ALREADY_EXISTS` when another instrument has the symbol; delete of an unknown instrument fails with `INSTRUMENT_NOT_FOUND`; delete refused while referenced; the repository maps the foreign-key violation to `INSTRUMENT_IN_USE` and the `instruments_symbol_unique` violation (race backstop) to `INSTRUMENT_ALREADY_EXISTS`
-- [ ] 9.4 Contracts for instrument create/update bodies (omitted = unchanged, `null` clears `exchange`/`sector`/`replicates`)
-- [ ] 9.5 Client use cases and HTTP repository methods; portfolio error map gains the two codes
-- [ ] 9.6 `PORTFOLIO.InstrumentCreate`, `InstrumentUpdate`, `InstrumentDelete` on both sides
-- [ ] 9.7 API routes `POST /instruments`, `PUT /instruments/:id`, `DELETE /instruments/:id`; status map: `INSTRUMENT_IN_USE` and `INSTRUMENT_ALREADY_EXISTS` → 409, `INSTRUMENT_NOT_FOUND` → 404
-- [ ] 9.8 Integration tests per §4: create, duplicate symbol, update, update unknown, duplicate symbol on update, delete unused, delete unknown, delete in use, delete after the last item is gone (server); success, in use, API unavailable (client)
+- [x] 9.1 Seed migration in `packages/investlab-database/drizzle` (`drizzle-kit generate --custom`) inserting the ten instruments of design §8 with `ON CONFLICT (symbol) DO NOTHING`
+- [x] 9.2 Domain: `InstrumentInUseError` (`INSTRUMENT_IN_USE`), `InstrumentAlreadyExistsError` (`INSTRUMENT_ALREADY_EXISTS`); `PortfolioItemRepository.existsForInstrument(instrumentId)`
+- [x] 9.3 Server use cases `InstrumentCreate`, `InstrumentUpdate`, `InstrumentDelete` with error unions; symbol normalized (trim + uppercase) on create and update; update fails with `INSTRUMENT_ALREADY_EXISTS` when another instrument has the symbol; delete of an unknown instrument fails with `INSTRUMENT_NOT_FOUND`; delete refused while referenced; the repository maps the foreign-key violation to `INSTRUMENT_IN_USE` and the `instruments_symbol_unique` violation (race backstop) to `INSTRUMENT_ALREADY_EXISTS`
+- [x] 9.4 Contracts for instrument create/update bodies (omitted = unchanged, `null` clears `exchange`/`sector`/`replicates`)
+- [x] 9.5 Client use cases and HTTP repository methods; portfolio error map gains the two codes
+- [x] 9.6 `PORTFOLIO.InstrumentCreate`, `InstrumentUpdate`, `InstrumentDelete` on both sides
+- [x] 9.7 API routes `POST /instruments`, `PUT /instruments/:id`, `DELETE /instruments/:id`; status map: `INSTRUMENT_IN_USE` and `INSTRUMENT_ALREADY_EXISTS` → 409, `INSTRUMENT_NOT_FOUND` → 404
+- [x] 9.8 Integration tests per §4: create, duplicate symbol, update, update unknown, duplicate symbol on update, delete unused, delete unknown, delete in use, delete after the last item is gone (server); success, in use, API unavailable (client)
 
 ## 10. Layer boundaries lint
 

@@ -1,20 +1,13 @@
 import { Hono } from "hono";
-import { z } from "zod";
 import {
     createPortfolioItemDtoSchema,
     updatePortfolioItemDtoSchema,
 } from "@m0n0lab/investlab-portfolio";
 import { PORTFOLIO } from "@m0n0lab/investlab-portfolio/server";
-import { errorJson } from "../errors/error-mapping.ts";
-import { parseJsonBody, parseWith } from "../errors/parse-request.ts";
+import { parseId, parseJsonBody } from "../errors/parse-request.ts";
 import { toPortfolioItemDto, toPortfolioItemListDto } from "../serializers/dto-serializers.ts";
+import { replyEmpty, replyJson } from "./reply.ts";
 import type { Container } from "inversify";
-
-const idSchema = z.string().uuid();
-
-function parseId(c: { req: { param(name: "id"): string } }): string {
-    return parseWith(idSchema, c.req.param("id"), "id");
-}
 
 export function portfolioItemRoutes(container: Container) {
     const app = new Hono();
@@ -22,10 +15,7 @@ export function portfolioItemRoutes(container: Container) {
     app.get("/", async (c) => {
         const uc = container.get(PORTFOLIO.ItemList);
 
-        return (await uc.execute()).match(
-            (list) => c.json(toPortfolioItemListDto(list)),
-            (error) => errorJson(c, error),
-        );
+        return replyJson(c, await uc.execute(), toPortfolioItemListDto);
     });
 
     app.post("/", async (c) => {
@@ -40,10 +30,7 @@ export function portfolioItemRoutes(container: Container) {
             ...(body.notes !== undefined && { notes: body.notes ?? undefined }),
         });
 
-        return result.match(
-            (item) => c.json(toPortfolioItemDto(item), 201),
-            (error) => errorJson(c, error),
-        );
+        return replyJson(c, result, toPortfolioItemDto, 201);
     });
 
     app.put("/:id", async (c) => {
@@ -62,20 +49,14 @@ export function portfolioItemRoutes(container: Container) {
             new Date(body.expectedUpdatedAt),
         );
 
-        return result.match(
-            (item) => c.json(toPortfolioItemDto(item)),
-            (error) => errorJson(c, error),
-        );
+        return replyJson(c, result, toPortfolioItemDto);
     });
 
     app.delete("/:id", async (c) => {
         const id = parseId(c);
         const uc = container.get(PORTFOLIO.ItemDelete);
 
-        return (await uc.execute(id)).match(
-            () => c.body(null, 204),
-            (error) => errorJson(c, error),
-        );
+        return replyEmpty(c, await uc.execute(id));
     });
 
     return app;

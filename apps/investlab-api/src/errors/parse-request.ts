@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { RequestValidationError } from "./request-validation.error.ts";
 import type { Context } from "hono";
 import type { ZodType, ZodTypeDef } from "zod";
@@ -25,4 +26,11 @@ export async function parseJsonBody<T>(
         throw new RequestValidationError([{ path: "", message: "Body must be valid JSON" }]);
     }
     return parseWith(schema, body);
+}
+
+const idSchema = z.string().uuid();
+
+/** The `:id` route parameter, which must be a UUID. */
+export function parseId(c: { req: { param(name: "id"): string } }): string {
+    return parseWith(idSchema, c.req.param("id"), "id");
 }
