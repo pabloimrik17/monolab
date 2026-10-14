@@ -17,13 +17,13 @@
 
 ## 3. Database package
 
-- [ ] 3.1 Scaffold `packages/investlab-database` (`@m0n0lab/investlab-database`): root entry exporting `migrate(databaseUrl)`, tsconfig references; `pnpm nx sync`
-- [ ] 3.2 `git mv packages/investlab-data-server/drizzle packages/investlab-database/drizzle` and `drizzle.config.ts` likewise, without touching SQL, snapshots or `_journal.json`
-- [ ] 3.3 `drizzle.config.ts` `schema` lists the schema files by path string (for now the one still in `investlab-data-server`), never by import; the package imports no other InvestLab package
-- [ ] 3.4 Move `db:generate`/`db:migrate` (drizzle-kit through Varlock with the API's `.env.schema`) to the database package; the API's same-named scripts delegate to it with `pnpm --filter`
-- [ ] 3.5 `migrate(databaseUrl)`: `pg` pool + drizzle-orm migrator over the package's own `drizzle/` folder (resolved from the package, not the caller), pool closed afterwards
-- [ ] 3.6 Switch the old server integration global setup to `migrate` from the database package (devDependency); no test reads a migrations folder by relative path
-- [ ] 3.7 `pnpm --filter @m0n0lab/investlab-database db:generate` reports no schema changes; `db:migrate` against an existing local database (embedded Postgres on 5433 or Docker) applies nothing
+- [x] 3.1 Scaffold `packages/investlab-database` (`@m0n0lab/investlab-database`): root entry exporting `migrate(databaseUrl)`, tsconfig references; `pnpm nx sync`
+- [x] 3.2 `git mv packages/investlab-data-server/drizzle packages/investlab-database/drizzle` and `drizzle.config.ts` likewise, without touching SQL, snapshots or `_journal.json`
+- [x] 3.3 `drizzle.config.ts` `schema` lists the schema files by path string (for now the one still in `investlab-data-server`), never by import; the package imports no other InvestLab package
+- [x] 3.4 Move `db:generate`/`db:migrate` (drizzle-kit through Varlock with the API's `.env.schema`) to the database package; the API's same-named scripts delegate to it with `pnpm --filter`
+- [x] 3.5 `migrate(databaseUrl)`: `pg` pool + drizzle-orm migrator over the package's own `drizzle/` folder (resolved from the package, not the caller), pool closed afterwards
+- [x] 3.6 Switch the old server integration global setup to `migrate` from the database package (devDependency); no test reads a migrations folder by relative path
+- [x] 3.7 `pnpm --filter @m0n0lab/investlab-database db:generate` reports no schema changes; `db:migrate` against an existing local database (embedded Postgres on 5433 or Docker) applies nothing
 
 ## 4. Integration test conventions (apply to every module in §5 and §6)
 

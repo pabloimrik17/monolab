@@ -26,7 +26,7 @@ export default {
             ignoreDependencies: ["@varlock/1password-plugin"],
         },
         // Analyse drizzle.config.ts statically instead of executing it: it requires DATABASE_URL (Varlock).
-        "packages/investlab-data-server": {
+        "packages/investlab-database": {
             drizzle: { config: [], entry: ["drizzle.config.ts"] },
         },
         "apps/qup-api": {

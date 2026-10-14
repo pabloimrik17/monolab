@@ -23,6 +23,9 @@
         "path": "../vitest-config"
       },
       {
+        "path": "../investlab-database"
+      },
+      {
         "path": "../investlab-data-server"
       },
       {
