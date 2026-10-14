@@ -1,6 +1,9 @@
 import { Container } from "inversify";
 import {
+    InstrumentCreateUseCase,
+    InstrumentDeleteUseCase,
     InstrumentListUseCase,
+    InstrumentUpdateUseCase,
     PORTFOLIO,
     PortfolioItemCreateUseCase,
     PortfolioItemDeleteUseCase,
@@ -37,6 +40,15 @@ export function createTestApp() {
     container
         .bind(PORTFOLIO.InstrumentList)
         .toConstantValue(new InstrumentListUseCase(instruments));
+    container
+        .bind(PORTFOLIO.InstrumentCreate)
+        .toConstantValue(new InstrumentCreateUseCase(instruments));
+    container
+        .bind(PORTFOLIO.InstrumentUpdate)
+        .toConstantValue(new InstrumentUpdateUseCase(instruments));
+    container
+        .bind(PORTFOLIO.InstrumentDelete)
+        .toConstantValue(new InstrumentDeleteUseCase(instruments, items));
     container.bind(QUOTES.List).toConstantValue(new QuoteListUseCase(quotes));
 
     const app = createApp(container, { token: TEST_TOKEN });

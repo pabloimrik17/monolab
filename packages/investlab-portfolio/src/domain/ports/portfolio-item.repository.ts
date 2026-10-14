@@ -14,4 +14,6 @@ export interface PortfolioItemRepository<E extends Error = PersistenceError> {
         expectedUpdatedAt: Date,
     ): ResultAsync<PortfolioItem, E | PortfolioItemConflictError>;
     delete(id: string): ResultAsync<void, E>;
+    /** Whether any item holds the instrument. */
+    existsForInstrument(instrumentId: string): ResultAsync<boolean, E>;
 }

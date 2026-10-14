@@ -1,7 +1,10 @@
 import type { InstrumentRepository } from "../../domain/ports/instrument.repository.ts";
 import type { PortfolioItemQuery } from "../../domain/ports/portfolio-item.query.ts";
 import type { PortfolioItemRepository } from "../../domain/ports/portfolio-item.repository.ts";
+import type { InstrumentCreateUseCase } from "./instrument-create.use-case.ts";
+import type { InstrumentDeleteUseCase } from "./instrument-delete.use-case.ts";
 import type { InstrumentListUseCase } from "./instrument-list.use-case.ts";
+import type { InstrumentUpdateUseCase } from "./instrument-update.use-case.ts";
 import type { PortfolioItemCreateUseCase } from "./portfolio-item-create.use-case.ts";
 import type { PortfolioItemDeleteUseCase } from "./portfolio-item-delete.use-case.ts";
 import type { PortfolioItemListUseCase } from "./portfolio-item-list.use-case.ts";
@@ -25,6 +28,15 @@ export const PORTFOLIO = {
     InstrumentList: Symbol.for(
         "investlab.portfolio.server.InstrumentList",
     ) as ServiceIdentifier<InstrumentListUseCase>,
+    InstrumentCreate: Symbol.for(
+        "investlab.portfolio.server.InstrumentCreate",
+    ) as ServiceIdentifier<InstrumentCreateUseCase>,
+    InstrumentUpdate: Symbol.for(
+        "investlab.portfolio.server.InstrumentUpdate",
+    ) as ServiceIdentifier<InstrumentUpdateUseCase>,
+    InstrumentDelete: Symbol.for(
+        "investlab.portfolio.server.InstrumentDelete",
+    ) as ServiceIdentifier<InstrumentDeleteUseCase>,
 } as const;
 
 /** Ports the server use cases depend on; bound by `module.server.ts`, never exported. */

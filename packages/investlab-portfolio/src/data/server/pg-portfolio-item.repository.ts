@@ -62,4 +62,16 @@ export class PgPortfolioItemRepository implements PortfolioItemRepository {
             .delete((tx) => tx.delete(portfolioItems).where(eq(portfolioItems.id, id)))
             .map(() => undefined);
     }
+
+    existsForInstrument(instrumentId: string): ResultAsync<boolean, PersistenceError> {
+        return this.db
+            .select((tx) =>
+                tx
+                    .select({ id: portfolioItems.id })
+                    .from(portfolioItems)
+                    .where(eq(portfolioItems.instrumentId, instrumentId))
+                    .limit(1),
+            )
+            .map((rows) => rows.length > 0);
+    }
 }

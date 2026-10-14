@@ -1,36 +1,49 @@
 import { eq, sql } from "drizzle-orm";
 import { PLATFORM } from "@m0n0lab/investlab-platform/server";
 import { portfolioItems } from "../../data/server/schema.ts";
-import { Instrument } from "../../domain/entities/instrument.ts";
 import { AssetClass } from "../../domain/value-objects/asset-class.ts";
 import { InstrumentType } from "../../domain/value-objects/instrument-type.ts";
-import { PORTFOLIO, PORTFOLIO_PORTS } from "./tokens.ts";
+import { PORTFOLIO } from "./tokens.ts";
 import { container } from "./vitest-integration-setup.ts";
+import type { Instrument } from "../../domain/entities/instrument.ts";
 import type { PortfolioItem } from "../../domain/entities/portfolio-item.ts";
 import type { PortfolioItemWithInstrument } from "../../domain/read-models/portfolio-item-with-instrument.ts";
 
 /** A well-formed id nothing in the portfolio or the catalog has. */
 export const UNKNOWN_ID = "00000000-0000-4000-8000-000000000000";
 
-/**
- * The catalog has an equity ETF with this symbol. No public use case adds instruments yet,
- * so this is the one place that writes through the module's own repository.
- */
+/** Symbols the seeded catalog starts with. */
+export const SEEDED_SYMBOLS = [
+    "AAPL",
+    "MSFT",
+    "NVDA",
+    "AMZN",
+    "GOOGL",
+    "META",
+    "TSLA",
+    "SPY",
+    "QQQ",
+    "VTI",
+] as const;
+
+/** What the catalog holds now. */
+export async function catalog(): Promise<Instrument[]> {
+    return (await container.get(PORTFOLIO.InstrumentList).execute())._unsafeUnwrap();
+}
+
+/** The catalog has an instrument with this symbol: the seeded one, or an equity ETF added for the test. */
 export async function givenInstrument(symbol: string): Promise<Instrument> {
-    const catalog = (await container.get(PORTFOLIO.InstrumentList).execute())._unsafeUnwrap();
-    const known = catalog.find((instrument) => instrument.symbol === symbol);
+    const known = (await catalog()).find((instrument) => instrument.symbol === symbol);
     if (known) {
         return known;
     }
-    const instrument = Instrument.create({
+    const created = await container.get(PORTFOLIO.InstrumentCreate).execute({
         symbol,
         name: `${symbol} Fund`,
         type: InstrumentType.ETF,
         assetClass: AssetClass.Equity,
-    })._unsafeUnwrap();
-    return (
-        await container.get(PORTFOLIO_PORTS.InstrumentRepository).save(instrument)
-    )._unsafeUnwrap();
+    });
+    return created._unsafeUnwrap();
 }
 
 interface Holding {

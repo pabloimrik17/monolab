@@ -1,4 +1,3 @@
-// fallow-ignore-file unused-class-member -- update() is unit-tested and awaits the instrument update use case
 import { err, ok, type Result } from "neverthrow";
 import { ValidationError } from "@m0n0lab/investlab-core";
 import type { AssetClass } from "../value-objects/asset-class.ts";
@@ -15,6 +14,31 @@ export interface InstrumentProps {
     sector?: Sector | undefined;
     replicates?: string | undefined;
     quotable: boolean;
+}
+
+/** What a new instrument needs; `quotable` defaults to true. */
+export interface InstrumentDraft {
+    symbol: string;
+    name: string;
+    type: InstrumentType;
+    assetClass: AssetClass;
+    exchange?: string | undefined;
+    sector?: Sector | undefined;
+    replicates?: string | undefined;
+    quotable?: boolean | undefined;
+}
+
+/** `undefined` or an omitted key leaves a field unchanged, except the optional fields below. */
+export interface InstrumentChanges {
+    symbol?: string | undefined;
+    name?: string | undefined;
+    type?: InstrumentType | undefined;
+    assetClass?: AssetClass | undefined;
+    /** Explicitly `undefined` clears the field; omit the key to keep it. */
+    exchange?: string | undefined;
+    sector?: Sector | undefined;
+    replicates?: string | undefined;
+    quotable?: boolean | undefined;
 }
 
 export class Instrument {
@@ -71,16 +95,7 @@ export class Instrument {
         return this._quotable;
     }
 
-    static create(props: {
-        symbol: string;
-        name: string;
-        type: InstrumentType;
-        assetClass: AssetClass;
-        exchange?: string;
-        sector?: Sector;
-        replicates?: string;
-        quotable?: boolean;
-    }): Result<Instrument, ValidationError> {
+    static create(props: InstrumentDraft): Result<Instrument, ValidationError> {
         const symbol = props.symbol.trim().toUpperCase();
         if (!symbol) {
             return err(new ValidationError("Instrument symbol cannot be empty"));
@@ -109,42 +124,31 @@ export class Instrument {
         return new Instrument(props);
     }
 
-    // fallow-ignore-next-line complexity -- one guard per optional field, each unit-tested; CRAP is estimated without coverage
-    update(props: {
-        name?: string;
-        type?: InstrumentType;
-        assetClass?: AssetClass;
-        exchange?: string;
-        sector?: Sector;
-        replicates?: string;
-        quotable?: boolean;
-    }): Result<void, ValidationError> {
-        if (props.name !== undefined && !props.name.trim()) {
+    // fallow-ignore-next-line unused-class-member complexity -- the update use cases call it on the entity `findById` resolves, which fallow cannot type; one guard per field, each unit-tested
+    update(changes: InstrumentChanges): Result<void, ValidationError> {
+        const symbol = changes.symbol?.trim().toUpperCase();
+        if (symbol === "") {
+            return err(new ValidationError("Instrument symbol cannot be empty"));
+        }
+        const name = changes.name?.trim();
+        if (name === "") {
             return err(new ValidationError("Instrument name cannot be empty"));
         }
 
-        if (props.name !== undefined) {
-            this._name = props.name.trim();
+        this._symbol = symbol ?? this._symbol;
+        this._name = name ?? this._name;
+        this._type = changes.type ?? this._type;
+        this._assetClass = changes.assetClass ?? this._assetClass;
+        this._quotable = changes.quotable ?? this._quotable;
+        if ("exchange" in changes) {
+            this._exchange = changes.exchange;
         }
-        if (props.type !== undefined) {
-            this._type = props.type;
+        if ("sector" in changes) {
+            this._sector = changes.sector;
         }
-        if (props.assetClass !== undefined) {
-            this._assetClass = props.assetClass;
+        if ("replicates" in changes) {
+            this._replicates = changes.replicates;
         }
-        if ("exchange" in props) {
-            this._exchange = props.exchange;
-        }
-        if ("sector" in props) {
-            this._sector = props.sector;
-        }
-        if ("replicates" in props) {
-            this._replicates = props.replicates;
-        }
-        if (props.quotable !== undefined) {
-            this._quotable = props.quotable;
-        }
-
         return ok(undefined);
     }
 }
