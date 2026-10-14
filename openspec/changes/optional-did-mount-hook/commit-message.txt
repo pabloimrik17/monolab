@@ -1,0 +1,9 @@
+feat!: make React and Solid ViewModel mount hooks optional
+
+Declare didMount as optional and invoke it conditionally in both framework hooks.
+Preserve React awaiting, Solid owner forwarding, and cleanup without mount logic.
+Cover absent hooks and reconcile the Qup lifecycle specification.
+
+BREAKING CHANGE: BaseViewModel no longer supplies a didMount implementation.
+Guard base-typed calls with vm.didMount?.() and remove direct super.didMount() calls.
+Subclasses implementing didMount retain override.

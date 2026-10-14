@@ -5,7 +5,7 @@
 The system SHALL provide an abstract `BaseViewModel` class in `packages/solid-clean` with:
 - A private `cleanups` array of `(() => void)` functions
 - `addCleanup(...fns: (() => void)[]): void` — adds cleanup functions to the list
-- `didMount(owner?: Owner): Promise<void> | void` — lifecycle hook called on component mount, receives optional Solid Owner for reactive scope access
+- `didMount?(owner?: Owner): Promise<void> | void` — optional lifecycle hook without a base implementation, receives optional Solid Owner for reactive scope access when implemented
 - `willUnmount(): void` — executes all cleanup functions and resets the array
 
 `BaseViewModel` SHALL NOT depend on inversify, rxjs, or any DI framework. It SHALL NOT use `@injectable()` — concrete ViewModels in consuming apps add that decorator themselves.
@@ -19,19 +19,23 @@ The system SHALL provide an abstract `BaseViewModel` class in `packages/solid-cl
 - **THEN** only the newly added cleanups are executed on the second call
 
 #### Scenario: didMount receives owner
-- **WHEN** `didMount(owner)` is called with a Solid Owner
+- **WHEN** an implemented `didMount(owner)` is called with a Solid Owner
 - **THEN** the ViewModel can use `runWithOwner(owner, ...)` to create effects within the component's reactive scope
 
 #### Scenario: didMount without owner
-- **WHEN** `didMount()` is called without an owner
+- **WHEN** an implemented `didMount()` is called without an owner
 - **THEN** it executes normally (owner is optional)
+
+#### Scenario: No mount implementation
+- **WHEN** a concrete subclass omits `didMount`
+- **THEN** it can be instantiated and its inherited `didMount` value is undefined
 
 ### Requirement: useViewModel hook
 
 The system SHALL provide a `useViewModel<T extends BaseViewModel>(factory: () => T): T` function that:
 1. Calls the factory function once to create the ViewModel instance (no ref needed — Solid components execute once)
 2. Captures the current Solid owner via `getOwner()`
-3. Calls `vm.didMount(owner)` inside `onMount()`
+3. Calls `vm.didMount?.(owner ?? undefined)` inside `onMount()` without awaiting, preserving the ViewModel receiver and skipping invocation when absent
 4. Registers `vm.willUnmount()` via `onCleanup()`
 5. Returns the ViewModel instance
 
@@ -40,11 +44,15 @@ The system SHALL provide a `useViewModel<T extends BaseViewModel>(factory: () =>
 - **THEN** the factory is invoked exactly once and the VM instance is returned
 
 #### Scenario: Lifecycle wired to Solid
-- **WHEN** the component mounts
+- **WHEN** the component mounts and the ViewModel implements `didMount`
 - **THEN** `didMount` is called with the component's owner
 
+#### Scenario: Mount without a hook
+- **WHEN** the component mounts a ViewModel without `didMount`
+- **THEN** mounting succeeds and registered cleanups still execute on unmount
+
 #### Scenario: Cleanup on unmount
-- **WHEN** the component is unmounted
+- **WHEN** the component is unmounted, whether or not the ViewModel implements `didMount`
 - **THEN** `willUnmount()` is called, executing all registered cleanups
 
 ### Requirement: Package structure and exports
@@ -73,4 +81,4 @@ The system SHALL include unit tests for `BaseViewModel` (lifecycle, cleanup mana
 
 #### Scenario: useViewModel integration tests
 - **WHEN** the test suite runs with a Solid testing environment
-- **THEN** onMount→didMount and onCleanup→willUnmount wiring is verified
+- **THEN** onMount→didMount wiring is verified for implemented hooks, mounting without a hook succeeds, and onCleanup→willUnmount executes registered cleanups in both cases
