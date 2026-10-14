@@ -21,6 +21,30 @@ class TestViewModel extends BaseViewModel {
 }
 
 describe("useViewModel", () => {
+    it("should mount without didMount and run registered cleanup on disposal", async () => {
+        class UnmountedViewModel extends BaseViewModel {}
+        const cleanup = vi.fn();
+
+        await new Promise<void>((resolve) => {
+            createRoot((dispose) => {
+                const viewModel = new UnmountedViewModel();
+                viewModel.addCleanup(cleanup);
+                const vm = useViewModel(() => viewModel);
+
+                expect(vm).toBe(viewModel);
+                expect(vm.didMount).toBeUndefined();
+
+                queueMicrotask(() => {
+                    expect(cleanup).not.toHaveBeenCalled();
+                    dispose();
+                    resolve();
+                });
+            });
+        });
+
+        expect(cleanup).toHaveBeenCalledOnce();
+    });
+
     it("should call factory once and return the viewmodel", () => {
         createRoot((dispose) => {
             const factory = vi.fn(() => new TestViewModel());

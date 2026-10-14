@@ -7,7 +7,7 @@ export abstract class BaseViewModel {
         this.cleanups.push(...fns);
     }
 
-    didMount(_owner?: Owner): Promise<void> | void {}
+    didMount?(owner?: Owner): Promise<void> | void;
 
     willUnmount(): void {
         const errors: unknown[] = [];
