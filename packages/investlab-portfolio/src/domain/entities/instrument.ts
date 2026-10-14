@@ -124,7 +124,7 @@ export class Instrument {
         return new Instrument(props);
     }
 
-    // fallow-ignore-next-line unused-class-member complexity -- the update use cases call it on the entity `findById` resolves, which fallow cannot type; one guard per field, each unit-tested
+    // fallow-ignore-next-line complexity -- one guard per field, each unit-tested
     update(changes: InstrumentChanges): Result<void, ValidationError> {
         const symbol = changes.symbol?.trim().toUpperCase();
         if (symbol === "") {
