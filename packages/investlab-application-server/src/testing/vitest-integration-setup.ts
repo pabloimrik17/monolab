@@ -1,4 +1,3 @@
-// fallow-ignore-file unused-file -- loaded by the integration project's `setupFiles` in vitest.config.ts, which the fallow vitest plugin does not follow
 import { randomUUID } from "node:crypto";
 import Redis from "ioredis";
 import pg from "pg";
