@@ -16,9 +16,12 @@ export const finnhub = setupServer();
 export const container = new Container();
 container.load(platformServerModule, quotesServerModule);
 
-/** The same composition with a Redis that refuses every command. */
+/** The same composition with a Redis that cannot be reached, as when its server is down. */
 export const containerWithCacheDown = new Container();
 containerWithCacheDown.load(platformServerModule, quotesServerModule);
+
+/** Nothing listens on port 1: connections are refused. */
+const UNREACHABLE_REDIS_URL = "redis://127.0.0.1:1";
 
 function testConfig(redisUrl: string): ServerConfig {
     return {
@@ -39,20 +42,10 @@ async function fileRedisUrl(): Promise<string> {
     return url.toString();
 }
 
-/** Same Redis, credentials it rejects: every command fails at once. */
-function withRejectedCredentials(redisUrl: string): string {
-    const url = new URL(redisUrl);
-    url.username = "nobody";
-    url.password = "rejected";
-    return url.toString();
-}
-
 beforeAll(async () => {
     const redisUrl = await fileRedisUrl();
     container.bind(PLATFORM.Config).toConstantValue(testConfig(redisUrl));
-    containerWithCacheDown
-        .bind(PLATFORM.Config)
-        .toConstantValue(testConfig(withRejectedCredentials(redisUrl)));
+    containerWithCacheDown.bind(PLATFORM.Config).toConstantValue(testConfig(UNREACHABLE_REDIS_URL));
     finnhub.listen({ onUnhandledRequest: "error" });
 });
 
