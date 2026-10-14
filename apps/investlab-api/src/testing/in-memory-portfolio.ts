@@ -1,4 +1,3 @@
-// fallow-ignore-file unused-class-member -- fakes implement domain port interfaces, called through them by the use cases
 import { errAsync, okAsync, type ResultAsync } from "neverthrow";
 import { PersistenceError } from "@m0n0lab/investlab-core";
 import {
