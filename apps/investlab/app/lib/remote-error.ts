@@ -1,4 +1,4 @@
-import type { PortfolioRemoteError } from "@m0n0lab/investlab-domain";
+import type { PortfolioRemoteError } from "@m0n0lab/investlab-portfolio";
 
 /** What the user reads when a client use case fails; server-side details never reach the page. */
 export function remoteErrorMessage(error: PortfolioRemoteError): string {

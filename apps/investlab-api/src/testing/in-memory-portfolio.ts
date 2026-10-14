@@ -10,7 +10,7 @@ import {
     type PortfolioItemQuery,
     type PortfolioItemRepository,
     type PortfolioItemWithInstrument,
-} from "@m0n0lab/investlab-domain";
+} from "@m0n0lab/investlab-portfolio";
 import type { Quote, QuoteRepository } from "@m0n0lab/investlab-quotes";
 
 export class InMemoryInstrumentRepository implements InstrumentRepository {
@@ -23,27 +23,8 @@ export class InMemoryInstrumentRepository implements InstrumentRepository {
     findById(id: string) {
         return okAsync(this.store.get(id) ?? null);
     }
-    findBySymbol(symbol: string) {
-        return okAsync([...this.store.values()].find((i) => i.symbol === symbol) ?? null);
-    }
     findAll() {
         return okAsync([...this.store.values()]);
-    }
-    findByType(type: InstrumentType) {
-        return okAsync([...this.store.values()].filter((i) => i.type === type));
-    }
-    findByAssetClass(assetClass: AssetClass) {
-        return okAsync([...this.store.values()].filter((i) => i.assetClass === assetClass));
-    }
-    update(instrument: Instrument) {
-        return this.save(instrument);
-    }
-    delete(id: string) {
-        this.store.delete(id);
-        return okAsync(undefined);
-    }
-    upsertBySymbol(instrument: Instrument) {
-        return this.save(instrument);
     }
 }
 

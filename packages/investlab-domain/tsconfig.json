@@ -15,12 +15,6 @@
     "exclude": ["**/*.test.ts", "**/*.spec.ts"],
     "references": [
       {
-        "path": "../investlab-core"
-      },
-      {
-        "path": "../vitest-config"
-      },
-      {
         "path": "./tsconfig.node.json"
       }
     ]

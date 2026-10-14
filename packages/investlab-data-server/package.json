@@ -15,31 +15,11 @@
     },
     "scripts": {
         "build": "tsdown",
-        "test": "vitest run",
-        "test:changed": "vitest run --changed",
-        "test:coverage": "vitest run --coverage",
-        "test:watch": "vitest",
-        "test:unit": "vitest run",
-        "test:unit:changed": "vitest run --changed",
-        "test:unit:watch": "vitest",
-        "test:unit:coverage": "vitest run --coverage",
         "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
     },
-    "dependencies": {
-        "@m0n0lab/investlab-core": "workspace:*",
-        "@m0n0lab/investlab-domain": "workspace:*",
-        "@m0n0lab/investlab-platform": "workspace:*",
-        "drizzle-orm": "catalog:",
-        "inversify": "catalog:",
-        "neverthrow": "catalog:",
-        "pg": "catalog:"
-    },
     "devDependencies": {
-        "@m0n0lab/drizzle-neverthrow": "workspace:*",
-        "@m0n0lab/vitest-config": "workspace:*",
         "tsdown": "catalog:",
-        "typescript": "catalog:",
-        "vitest": "catalog:"
+        "typescript": "catalog:"
     },
     "engines": {
         "node": ">=22.0.0",

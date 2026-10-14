@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-    APP_TOKENS,
-    InstrumentListUseCase,
-    PortfolioItemListUseCase,
-} from "@m0n0lab/investlab-application-server";
 import { PLATFORM } from "@m0n0lab/investlab-platform/server";
+import {
+    InstrumentListUseCase,
+    PORTFOLIO,
+    PortfolioItemListUseCase,
+} from "@m0n0lab/investlab-portfolio/server";
 import { QUOTES, QuoteListUseCase } from "@m0n0lab/investlab-quotes/server";
 import { createContainer } from "./container.ts";
 
@@ -33,12 +33,8 @@ describe("createContainer", () => {
     it("resolves the use cases wired to Postgres, Redis and Finnhub without connecting", () => {
         const container = createContainer();
 
-        expect(container.get(APP_TOKENS.PortfolioItemListUseCase)).toBeInstanceOf(
-            PortfolioItemListUseCase,
-        );
-        expect(container.get(APP_TOKENS.InstrumentListUseCase)).toBeInstanceOf(
-            InstrumentListUseCase,
-        );
+        expect(container.get(PORTFOLIO.ItemList)).toBeInstanceOf(PortfolioItemListUseCase);
+        expect(container.get(PORTFOLIO.InstrumentList)).toBeInstanceOf(InstrumentListUseCase);
         expect(container.get(QUOTES.List)).toBeInstanceOf(QuoteListUseCase);
         expect(container.get(PLATFORM.Redis).status).toBe("wait");
     });

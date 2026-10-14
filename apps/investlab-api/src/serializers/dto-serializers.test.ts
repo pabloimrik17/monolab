@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { instrumentDtoSchema, portfolioItemDtoSchema } from "@m0n0lab/investlab-data-contracts";
 import {
     AssetClass,
     Instrument,
+    instrumentDtoSchema,
     InstrumentType,
     PortfolioItem,
+    portfolioItemDtoSchema,
     Sector,
-} from "@m0n0lab/investlab-domain";
+} from "@m0n0lab/investlab-portfolio";
 import { toInstrumentDto, toPortfolioItemDto } from "./dto-serializers.ts";
 
 describe("toInstrumentDto", () => {

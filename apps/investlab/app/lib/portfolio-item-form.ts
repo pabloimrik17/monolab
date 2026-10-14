@@ -3,7 +3,7 @@ import {
     createPortfolioItemDtoSchema,
     portfolioItemDtoSchema,
     updatePortfolioItemDtoSchema,
-} from "@m0n0lab/investlab-data-contracts";
+} from "@m0n0lab/investlab-portfolio";
 
 // Bounds come from the DTO schemas; this layer only adapts FormData strings to them.
 function blankToUndefined(value: unknown): unknown {

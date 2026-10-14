@@ -14,21 +14,6 @@
     "exclude": ["**/*.test.ts", "**/*.spec.ts"],
     "references": [
       {
-        "path": "../investlab-platform"
-      },
-      {
-        "path": "../investlab-domain"
-      },
-      {
-        "path": "../investlab-core"
-      },
-      {
-        "path": "../vitest-config"
-      },
-      {
-        "path": "../drizzle-neverthrow"
-      },
-      {
         "path": "./tsconfig.node.json"
       }
     ]

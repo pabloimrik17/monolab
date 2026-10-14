@@ -1,18 +1,22 @@
-import { DomainError, type ApiErrorDto } from "@m0n0lab/investlab-core";
+import { DomainError, type ApiErrorDto, type KernelErrorCode } from "@m0n0lab/investlab-core";
 import { RequestValidationError } from "./request-validation.error.ts";
-import type { DomainErrorCode } from "@m0n0lab/investlab-domain";
+import type { PortfolioErrorCode } from "@m0n0lab/investlab-portfolio";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
-type ApiDomainError = DomainError<DomainErrorCode>;
+/** Every code a use case can fail with: the kernel's plus each module's. Quotes declare none. */
+type ApiDomainErrorCode = KernelErrorCode | PortfolioErrorCode;
 
+type ApiDomainError = DomainError<ApiDomainErrorCode>;
+
+// `satisfies Record<…>` makes an unmapped code a type error.
 const STATUS_BY_CODE = {
     PORTFOLIO_ITEM_NOT_FOUND: 404,
     INSTRUMENT_NOT_FOUND: 404,
     PORTFOLIO_ITEM_CONFLICT: 409,
     VALIDATION_ERROR: 422,
     PERSISTENCE_ERROR: 500,
-} as const satisfies Record<DomainErrorCode, number>;
+} as const satisfies Record<ApiDomainErrorCode, number>;
 
 export function errorToHttp(error: ApiDomainError): number {
     return STATUS_BY_CODE[error.code];

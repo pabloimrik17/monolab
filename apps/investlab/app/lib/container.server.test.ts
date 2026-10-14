@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { PLATFORM } from "@m0n0lab/investlab-platform/client";
 import {
-    APP_TOKENS,
+    PORTFOLIO,
     PortfolioItemCreateUseCase,
     PortfolioItemDeleteUseCase,
     PortfolioItemListUseCase,
     PortfolioItemUpdateUseCase,
-} from "@m0n0lab/investlab-application-client";
-import { PLATFORM } from "@m0n0lab/investlab-platform/client";
+} from "@m0n0lab/investlab-portfolio/client";
 import { QUOTES, QuoteListUseCase } from "@m0n0lab/investlab-quotes/client";
 import { createContainer } from "./container.server";
 
@@ -26,18 +26,10 @@ describe("createContainer", () => {
     it("resolves the client use cases wired to the API", () => {
         const container = createContainer();
 
-        expect(container.get(APP_TOKENS.PortfolioItemListUseCase)).toBeInstanceOf(
-            PortfolioItemListUseCase,
-        );
-        expect(container.get(APP_TOKENS.PortfolioItemCreateUseCase)).toBeInstanceOf(
-            PortfolioItemCreateUseCase,
-        );
-        expect(container.get(APP_TOKENS.PortfolioItemUpdateUseCase)).toBeInstanceOf(
-            PortfolioItemUpdateUseCase,
-        );
-        expect(container.get(APP_TOKENS.PortfolioItemDeleteUseCase)).toBeInstanceOf(
-            PortfolioItemDeleteUseCase,
-        );
+        expect(container.get(PORTFOLIO.ItemList)).toBeInstanceOf(PortfolioItemListUseCase);
+        expect(container.get(PORTFOLIO.ItemCreate)).toBeInstanceOf(PortfolioItemCreateUseCase);
+        expect(container.get(PORTFOLIO.ItemUpdate)).toBeInstanceOf(PortfolioItemUpdateUseCase);
+        expect(container.get(PORTFOLIO.ItemDelete)).toBeInstanceOf(PortfolioItemDeleteUseCase);
         expect(container.get(QUOTES.List)).toBeInstanceOf(QuoteListUseCase);
     });
 

@@ -20,12 +20,9 @@
         "typecheck": "react-router typegen && tsc --noEmit && tsc --build tsconfig.node.json"
     },
     "dependencies": {
-        "@m0n0lab/investlab-application-client": "workspace:*",
         "@m0n0lab/investlab-core": "workspace:*",
-        "@m0n0lab/investlab-data-client": "workspace:*",
-        "@m0n0lab/investlab-data-contracts": "workspace:*",
-        "@m0n0lab/investlab-domain": "workspace:*",
         "@m0n0lab/investlab-platform": "workspace:*",
+        "@m0n0lab/investlab-portfolio": "workspace:*",
         "@m0n0lab/investlab-quotes": "workspace:*",
         "@react-router/node": "8.2.0",
         "@react-router/serve": "8.2.0",

@@ -1,16 +1,10 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import {
-    APP_TOKENS,
-    type PortfolioItemCreateUseCase,
-    type PortfolioItemDeleteUseCase,
-    type PortfolioItemListUseCase,
-    type PortfolioItemUpdateUseCase,
-} from "@m0n0lab/investlab-application-server";
-import {
     createPortfolioItemDtoSchema,
     updatePortfolioItemDtoSchema,
-} from "@m0n0lab/investlab-data-contracts";
+} from "@m0n0lab/investlab-portfolio";
+import { PORTFOLIO } from "@m0n0lab/investlab-portfolio/server";
 import { errorJson } from "../errors/error-mapping.ts";
 import { parseJsonBody, parseWith } from "../errors/parse-request.ts";
 import { toPortfolioItemDto, toPortfolioItemListDto } from "../serializers/dto-serializers.ts";
@@ -26,7 +20,7 @@ export function portfolioItemRoutes(container: Container) {
     const app = new Hono();
 
     app.get("/", async (c) => {
-        const uc = container.get<PortfolioItemListUseCase>(APP_TOKENS.PortfolioItemListUseCase);
+        const uc = container.get(PORTFOLIO.ItemList);
 
         return (await uc.execute()).match(
             (list) => c.json(toPortfolioItemListDto(list)),
@@ -36,7 +30,7 @@ export function portfolioItemRoutes(container: Container) {
 
     app.post("/", async (c) => {
         const body = await parseJsonBody(c, createPortfolioItemDtoSchema);
-        const uc = container.get<PortfolioItemCreateUseCase>(APP_TOKENS.PortfolioItemCreateUseCase);
+        const uc = container.get(PORTFOLIO.ItemCreate);
 
         const result = await uc.execute({
             instrumentId: body.instrumentId,
@@ -55,7 +49,7 @@ export function portfolioItemRoutes(container: Container) {
     app.put("/:id", async (c) => {
         const id = parseId(c);
         const body = await parseJsonBody(c, updatePortfolioItemDtoSchema);
-        const uc = container.get<PortfolioItemUpdateUseCase>(APP_TOKENS.PortfolioItemUpdateUseCase);
+        const uc = container.get(PORTFOLIO.ItemUpdate);
 
         const result = await uc.execute(
             id,
@@ -76,7 +70,7 @@ export function portfolioItemRoutes(container: Container) {
 
     app.delete("/:id", async (c) => {
         const id = parseId(c);
-        const uc = container.get<PortfolioItemDeleteUseCase>(APP_TOKENS.PortfolioItemDeleteUseCase);
+        const uc = container.get(PORTFOLIO.ItemDelete);
 
         return (await uc.execute(id)).match(
             () => c.body(null, 204),

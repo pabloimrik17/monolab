@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { Container } from "inversify";
 import { describe, expect, it } from "vitest";
 import { DomainError, PersistenceError } from "@m0n0lab/investlab-core";
-import { PortfolioItemNotFoundError } from "@m0n0lab/investlab-domain";
+import { PortfolioItemNotFoundError } from "@m0n0lab/investlab-portfolio";
 import { createApp } from "./app.ts";
 import { handleError } from "./errors/error-mapping.ts";
 

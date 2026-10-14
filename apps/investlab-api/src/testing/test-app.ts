@@ -1,6 +1,12 @@
 import { Container } from "inversify";
-import { portfolioModule } from "@m0n0lab/investlab-application-server";
-import { TOKENS } from "@m0n0lab/investlab-domain";
+import {
+    InstrumentListUseCase,
+    PORTFOLIO,
+    PortfolioItemCreateUseCase,
+    PortfolioItemDeleteUseCase,
+    PortfolioItemListUseCase,
+    PortfolioItemUpdateUseCase,
+} from "@m0n0lab/investlab-portfolio/server";
 import { QUOTES, QuoteListUseCase } from "@m0n0lab/investlab-quotes/server";
 import { createApp } from "../app.ts";
 import {
@@ -16,15 +22,22 @@ export function createTestApp() {
     const instruments = new InMemoryInstrumentRepository();
     const items = new InMemoryPortfolioItemRepository();
     const quotes = new InMemoryQuoteRepository();
+    const query = new InMemoryPortfolioItemQuery(items, instruments);
 
+    // The real use cases over in-memory ports; the modules keep their repository tokens internal.
     const container = new Container();
-    container.bind(TOKENS.InstrumentRepository).toConstantValue(instruments);
-    container.bind(TOKENS.PortfolioItemRepository).toConstantValue(items);
     container
-        .bind(TOKENS.PortfolioItemQuery)
-        .toConstantValue(new InMemoryPortfolioItemQuery(items, instruments));
+        .bind(PORTFOLIO.ItemCreate)
+        .toConstantValue(new PortfolioItemCreateUseCase(instruments, items));
+    container.bind(PORTFOLIO.ItemUpdate).toConstantValue(new PortfolioItemUpdateUseCase(items));
+    container.bind(PORTFOLIO.ItemDelete).toConstantValue(new PortfolioItemDeleteUseCase(items));
+    container
+        .bind(PORTFOLIO.ItemList)
+        .toConstantValue(new PortfolioItemListUseCase(query, instruments));
+    container
+        .bind(PORTFOLIO.InstrumentList)
+        .toConstantValue(new InstrumentListUseCase(instruments));
     container.bind(QUOTES.List).toConstantValue(new QuoteListUseCase(quotes));
-    container.load(portfolioModule);
 
     const app = createApp(container, { token: TEST_TOKEN });
 
