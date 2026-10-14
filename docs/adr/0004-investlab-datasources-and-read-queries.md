@@ -1,3 +1,7 @@
+---
+status: amended by ADR-0007
+---
+
 # InvestLab datasources only for multi-source repositories; cross-aggregate reads are queries
 
 In October 2026 we narrowed [ADR 0001](./0001-investlab-package-layering.md): a repository talks to its driver (Drizzle on the server, `fetch` in `investlab-data-client`) directly while it has one source, and a datasource per entity × source is introduced only when a second source appears (cache, another API, storage); the repository then decides order and combination. Reads that combine several aggregates, such as a PortfolioItem with its Instrument, are read queries with their own port and read-model type, not repository methods. This keeps repositories one-per-aggregate and avoids a pass-through file per entity and side.

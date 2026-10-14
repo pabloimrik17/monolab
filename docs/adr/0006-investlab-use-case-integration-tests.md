@@ -1,3 +1,7 @@
+---
+status: amended by ADR-0007
+---
+
 # InvestLab use cases are tested through real adapters, faking only the far edge
 
 In October 2026 we replaced InvestLab's use-case tests with mocked repositories by integration tests that run the real adapters and fake only the outermost dependency, with real behaviour. API use cases run against Postgres and Redis started by Testcontainers, and external HTTP APIs such as Finnhub are faked with MSW; web (client) use cases run the real `investlab-data-client` repositories against `investlab-api` faked with MSW. Unit tests remain only for entities, mappers and other pure logic. Mocked repositories only proved that the use case called the mock; the bugs that matter live in queries, mapping and wire contracts.

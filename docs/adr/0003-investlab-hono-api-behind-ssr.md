@@ -1,3 +1,7 @@
+---
+status: amended by ADR-0007
+---
+
 # InvestLab web talks to a separate Hono API
 
 In October 2026 we chose a separate Hono app, `apps/investlab-api`, as the only owner of Postgres, Redis and Finnhub. The React Router SSR app `apps/investlab` calls that API over HTTP from its loaders, actions and resource routes; the browser never calls the API. This supersedes [ADR 0002](./0002-investlab-ssr-over-spa-api.md), which recorded "no separate API" by mistake: the intent was always a clean-architecture backend that the web consumes, and it is built now rather than when a second consumer appears.
