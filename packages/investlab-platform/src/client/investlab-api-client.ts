@@ -1,4 +1,3 @@
-// fallow-ignore-file unused-class-member -- `json`/`empty` are called by every module's HTTP repositories through `PLATFORM.InvestlabApiClient` (type-only import fallow does not follow)
 import { inject, injectable } from "inversify";
 import { err, ok, type Result, type ResultAsync } from "neverthrow";
 import {
