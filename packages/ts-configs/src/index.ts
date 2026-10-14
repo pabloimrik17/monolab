@@ -1,5 +1,6 @@
 export const tsConfigs = {
     base: "@m0n0lab/ts-configs/tsconfig.base.json",
+    test: "@m0n0lab/ts-configs/tsconfig.test.json",
     nodeBase: "@m0n0lab/ts-configs/tsconfig.node.base.json",
     nodeApp: "@m0n0lab/ts-configs/tsconfig.node.app.json",
     nodeLib: "@m0n0lab/ts-configs/tsconfig.node.lib.json",

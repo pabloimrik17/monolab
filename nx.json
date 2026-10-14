@@ -9,6 +9,7 @@
             "{workspaceRoot}/pnpm-lock.yaml",
             "{workspaceRoot}/tsconfig.base.json",
             "{workspaceRoot}/packages/ts-configs/tsconfig.base.json",
+            "{workspaceRoot}/packages/ts-configs/tsconfig.test.json",
             "{workspaceRoot}/packages/ts-configs/tsconfig.node.*.json",
             "{workspaceRoot}/packages/ts-configs/tsconfig.web.*.json",
             "{workspaceRoot}/nx.json",

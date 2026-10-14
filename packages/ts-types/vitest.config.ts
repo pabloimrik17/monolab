@@ -20,7 +20,10 @@ export default mergeConfig(
                 { extends: true, test: { name: "unit" } },
                 {
                     extends: true,
-                    test: { name: "types", typecheck: { enabled: true, only: true } },
+                    test: {
+                        name: "types",
+                        typecheck: { enabled: true, only: true, tsconfig: "./tsconfig.test.json" },
+                    },
                 },
             ],
         },

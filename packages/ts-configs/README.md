@@ -182,6 +182,28 @@ tsconfig.base.json (platform-agnostic foundation)
 }
 ```
 
+### `tsconfig.test.json`
+
+Test configuration overlay for checking types without emitting files. Apply it after your
+project's production configuration to preserve platform settings and strict checks while
+disabling emission, composite builds and incremental compilation.
+
+Keep file patterns and project references in the consuming configuration. TypeScript does
+not inherit `references` through `extends`; copy any required references explicitly.
+
+**Usage** (`tsconfig.test.json`):
+
+```json
+{
+    "extends": ["./tsconfig.json", "@m0n0lab/ts-configs/tsconfig.test.json"],
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist", "out-tsc", "**/*.test.ts", "**/*.spec.ts"]
+}
+```
+
+For Vitest type tests, point `test.typecheck.tsconfig` at this configuration and ensure
+`*.test-d.ts` files are included. Continue using the production configuration for builds.
+
 ### Node.js Configs
 
 - **`tsconfig.node.base.json`**: Base for Node.js projects (adds `module: "NodeNext"`)
