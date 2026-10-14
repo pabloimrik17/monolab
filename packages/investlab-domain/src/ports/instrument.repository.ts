@@ -1,7 +1,7 @@
 import type { Instrument } from "../entities/instrument.ts";
-import type { PersistenceError } from "../errors.ts";
 import type { AssetClass } from "../value-objects/asset-class.ts";
 import type { InstrumentType } from "../value-objects/instrument-type.ts";
+import type { PersistenceError } from "@m0n0lab/investlab-core";
 import type { ResultAsync } from "neverthrow";
 
 // `E` defaults to the server-side failure; HTTP implementations widen it (NotFound, Network, ...).

@@ -1,7 +1,8 @@
 import { Hono } from "hono";
 import { Container } from "inversify";
 import { describe, expect, it } from "vitest";
-import { PersistenceError, PortfolioItemNotFoundError } from "@m0n0lab/investlab-domain";
+import { PersistenceError } from "@m0n0lab/investlab-core";
+import { PortfolioItemNotFoundError } from "@m0n0lab/investlab-domain";
 import { createApp } from "./app.ts";
 import { handleError } from "./errors/error-mapping.ts";
 

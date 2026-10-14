@@ -1,5 +1,6 @@
 import { describe, expectTypeOf, test } from "vitest";
-import type { DomainError, DomainErrorCode } from "./errors.ts";
+import type { DomainErrorCode } from "./errors.ts";
+import type { DomainError } from "@m0n0lab/investlab-core";
 
 describe("DomainError code", () => {
     test("is the literal union of known codes", () => {
@@ -13,6 +14,6 @@ describe("DomainError code", () => {
     });
 
     test("types DomainError.code with that union", () => {
-        expectTypeOf<DomainError["code"]>().toEqualTypeOf<DomainErrorCode>();
+        expectTypeOf<DomainError<DomainErrorCode>["code"]>().toEqualTypeOf<DomainErrorCode>();
     });
 });

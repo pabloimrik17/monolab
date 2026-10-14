@@ -1,8 +1,10 @@
-import { DomainError, type DomainErrorCode } from "@m0n0lab/investlab-domain";
+import { DomainError, type ApiErrorDto } from "@m0n0lab/investlab-core";
 import { RequestValidationError } from "./request-validation.error.ts";
-import type { ApiErrorDto } from "@m0n0lab/investlab-data-contracts";
+import type { DomainErrorCode } from "@m0n0lab/investlab-domain";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
+
+type ApiDomainError = DomainError<DomainErrorCode>;
 
 const STATUS_BY_CODE = {
     PORTFOLIO_ITEM_NOT_FOUND: 404,
@@ -12,11 +14,11 @@ const STATUS_BY_CODE = {
     PERSISTENCE_ERROR: 500,
 } as const satisfies Record<DomainErrorCode, number>;
 
-export function errorToHttp(error: DomainError): number {
+export function errorToHttp(error: ApiDomainError): number {
     return STATUS_BY_CODE[error.code];
 }
 
-export function toApiError(error: DomainError): ApiErrorDto {
+export function toApiError(error: ApiDomainError): ApiErrorDto {
     const statusCode = errorToHttp(error);
     return {
         code: error.code,
@@ -26,7 +28,7 @@ export function toApiError(error: DomainError): ApiErrorDto {
     };
 }
 
-export function errorJson(c: Context, error: DomainError): Response {
+export function errorJson(c: Context, error: ApiDomainError): Response {
     const dto = toApiError(error);
     if (dto.statusCode >= 500) {
         // The response hides the cause, so the log is the only place it survives.
@@ -36,8 +38,9 @@ export function errorJson(c: Context, error: DomainError): Response {
 }
 
 export function handleError(error: Error, c: Context): Response {
+    // Every DomainError the API raises carries a code mapped in STATUS_BY_CODE.
     if (error instanceof DomainError) {
-        return errorJson(c, error);
+        return errorJson(c, error as ApiDomainError);
     }
 
     console.error("Unhandled error:", error);

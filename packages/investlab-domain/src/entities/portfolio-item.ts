@@ -1,5 +1,5 @@
 import { err, ok, type Result } from "neverthrow";
-import { ValidationError } from "../errors.ts";
+import { ValidationError } from "@m0n0lab/investlab-core";
 
 export interface PortfolioItemProps {
     id: string;

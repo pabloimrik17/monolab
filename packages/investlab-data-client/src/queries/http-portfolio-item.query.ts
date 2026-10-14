@@ -7,15 +7,15 @@ import { portfolioItemToDomain } from "../mappers/portfolio-item.mapper.ts";
 import type {
     PortfolioItemList,
     PortfolioItemListQuery,
-    RemotePortError,
+    PortfolioRemoteError,
 } from "@m0n0lab/investlab-domain";
 import type { ResultAsync } from "neverthrow";
 
 @injectable()
-export class HttpPortfolioItemQuery implements PortfolioItemListQuery<RemotePortError> {
+export class HttpPortfolioItemQuery implements PortfolioItemListQuery<PortfolioRemoteError> {
     constructor(@inject(ApiClient) private readonly api: ApiClient) {}
 
-    list(): ResultAsync<PortfolioItemList, RemotePortError> {
+    list(): ResultAsync<PortfolioItemList, PortfolioRemoteError> {
         return this.api
             .json("GET", "/portfolio-items", portfolioItemListDtoSchema)
             .map(({ items, instruments }) => ({

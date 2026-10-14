@@ -26,6 +26,7 @@
         "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
     },
     "dependencies": {
+        "@m0n0lab/investlab-core": "workspace:*",
         "neverthrow": "catalog:"
     },
     "devDependencies": {

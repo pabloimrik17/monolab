@@ -1,5 +1,6 @@
 import type { PortfolioItem } from "../entities/portfolio-item.ts";
-import type { PersistenceError, PortfolioItemConflictError } from "../errors.ts";
+import type { PortfolioItemConflictError } from "../errors.ts";
+import type { PersistenceError } from "@m0n0lab/investlab-core";
 import type { ResultAsync } from "neverthrow";
 
 // `E` defaults to the server-side failure; HTTP implementations widen it (NotFound, Network, ...).

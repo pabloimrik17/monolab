@@ -1,4 +1,4 @@
-import type { PersistenceError } from "../errors.ts";
+import type { PersistenceError } from "@m0n0lab/investlab-core";
 import type { ResultAsync } from "neverthrow";
 
 export interface Quote {

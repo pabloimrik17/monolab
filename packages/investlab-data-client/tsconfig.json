@@ -14,17 +14,20 @@
     "include": ["src/**/*"],
     "exclude": ["**/*.test.ts", "**/*.spec.ts"],
     "references": [
-        {
-            "path": "../investlab-data-contracts"
-        },
-        {
-            "path": "../investlab-domain"
-        },
-        {
-            "path": "../vitest-config"
-        },
-        {
-            "path": "./tsconfig.node.json"
-        }
+      {
+        "path": "../investlab-domain"
+      },
+      {
+        "path": "../investlab-data-contracts"
+      },
+      {
+        "path": "../investlab-core"
+      },
+      {
+        "path": "../vitest-config"
+      },
+      {
+        "path": "./tsconfig.node.json"
+      }
     ]
 }

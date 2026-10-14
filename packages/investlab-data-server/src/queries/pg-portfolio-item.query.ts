@@ -6,11 +6,8 @@ import { instruments } from "../schema/instruments.ts";
 import { portfolioItems } from "../schema/portfolio-items.ts";
 import { DATA_TOKENS } from "../tokens.ts";
 import { wrapDb } from "../wrap-db.ts";
-import type {
-    PersistenceError,
-    PortfolioItemQuery,
-    PortfolioItemWithInstrument,
-} from "@m0n0lab/investlab-domain";
+import type { PersistenceError } from "@m0n0lab/investlab-core";
+import type { PortfolioItemQuery, PortfolioItemWithInstrument } from "@m0n0lab/investlab-domain";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { ResultAsync } from "neverthrow";
 

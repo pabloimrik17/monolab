@@ -4,10 +4,10 @@ import {
     TOKENS,
     type Instrument,
     type InstrumentRepository,
-    type PersistenceError,
     type PortfolioItemQuery,
     type PortfolioItemWithInstrument,
 } from "@m0n0lab/investlab-domain";
+import type { PersistenceError } from "@m0n0lab/investlab-core";
 
 export interface PortfolioItemList {
     items: PortfolioItemWithInstrument[];

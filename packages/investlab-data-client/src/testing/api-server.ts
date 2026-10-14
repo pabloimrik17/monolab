@@ -3,12 +3,8 @@ import { http, HttpResponse, type HttpResponseResolver } from "msw";
 import { setupServer } from "msw/node";
 import { dataClientModule } from "../data-client.module.ts";
 import { DATA_CLIENT_TOKENS } from "../tokens.ts";
-import type {
-    ApiErrorDto,
-    InstrumentDto,
-    PortfolioItemDto,
-    QuoteDto,
-} from "@m0n0lab/investlab-data-contracts";
+import type { ApiErrorDto } from "@m0n0lab/investlab-core";
+import type { InstrumentDto, PortfolioItemDto, QuoteDto } from "@m0n0lab/investlab-data-contracts";
 
 const API_URL = "http://api.test";
 const API_TOKEN = "s3cret-token";

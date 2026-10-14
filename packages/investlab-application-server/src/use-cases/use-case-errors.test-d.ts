@@ -17,14 +17,13 @@ import type {
     PortfolioItemUpdateUseCase,
 } from "./portfolio-item-update.use-case.ts";
 import type { QuoteListError, QuoteListUseCase } from "./quote-list.use-case.ts";
+import type { PersistenceError, ValidationError } from "@m0n0lab/investlab-core";
 import type {
     InstrumentNotFoundError,
-    PersistenceError,
     PortfolioItem,
     PortfolioItemConflictError,
     PortfolioItemNotFoundError,
     Quote,
-    ValidationError,
 } from "@m0n0lab/investlab-domain";
 import type { ResultAsync } from "neverthrow";
 

@@ -4,13 +4,12 @@ import {
     PortfolioItemConflictError as PortfolioItemConflictErrorClass,
     PortfolioItemNotFoundError as PortfolioItemNotFoundErrorClass,
     TOKENS,
-    type PersistenceError,
     type PortfolioItem,
     type PortfolioItemConflictError,
     type PortfolioItemNotFoundError,
     type PortfolioItemRepository,
-    type ValidationError,
 } from "@m0n0lab/investlab-domain";
+import type { PersistenceError, ValidationError } from "@m0n0lab/investlab-core";
 
 export type PortfolioItemUpdateError =
     | ValidationError

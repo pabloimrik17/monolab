@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { Instrument, PersistenceError, PortfolioItem } from "@m0n0lab/investlab-domain";
+import { PersistenceError } from "@m0n0lab/investlab-core";
+import { Instrument, PortfolioItem } from "@m0n0lab/investlab-domain";
 import { PgPortfolioItemQuery } from "./pg-portfolio-item.query.ts";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 

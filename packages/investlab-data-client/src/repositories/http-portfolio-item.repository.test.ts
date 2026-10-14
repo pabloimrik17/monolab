@@ -1,14 +1,14 @@
 import { HttpResponse } from "msw";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { ValidationError } from "@m0n0lab/investlab-core";
 import {
     InstrumentNotFoundError,
     PortfolioItem,
     PortfolioItemConflictError,
     PortfolioItemNotFoundError,
     TOKENS,
-    ValidationError,
     type PortfolioItemRepository,
-    type RemotePortError,
+    type PortfolioRemoteError,
 } from "@m0n0lab/investlab-domain";
 import {
     apiError,
@@ -26,7 +26,7 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 function createRepository() {
-    return createTestContainer().get<PortfolioItemRepository<RemotePortError>>(
+    return createTestContainer().get<PortfolioItemRepository<PortfolioRemoteError>>(
         TOKENS.PortfolioItemRepository,
     );
 }

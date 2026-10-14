@@ -1,12 +1,7 @@
 import { HttpResponse } from "msw";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import {
-    NetworkError,
-    PersistenceError,
-    TOKENS,
-    type RemotePortError,
-    UnauthorizedError,
-} from "@m0n0lab/investlab-domain";
+import { NetworkError, PersistenceError, UnauthorizedError } from "@m0n0lab/investlab-core";
+import { TOKENS, type PortfolioRemoteError } from "@m0n0lab/investlab-domain";
 import {
     apiError,
     createTestContainer,
@@ -22,7 +17,7 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 function createQuery(...args: Parameters<typeof createTestContainer>) {
-    return createTestContainer(...args).get<PortfolioItemListQuery<RemotePortError>>(
+    return createTestContainer(...args).get<PortfolioItemListQuery<PortfolioRemoteError>>(
         TOKENS.PortfolioItemListQuery,
     );
 }

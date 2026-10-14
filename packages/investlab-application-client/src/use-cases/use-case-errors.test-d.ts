@@ -18,62 +18,61 @@ import type {
     PortfolioItemUpdateUseCase,
 } from "./portfolio-item-update.use-case.ts";
 import type { QuoteListError, QuoteListUseCase } from "./quote-list.use-case.ts";
+import type { NetworkError, UnauthorizedError } from "@m0n0lab/investlab-core";
 import type {
     Instrument,
-    NetworkError,
-    UnauthorizedError,
     PortfolioItem,
     Quote,
-    RemotePortError,
+    PortfolioRemoteError,
 } from "@m0n0lab/investlab-domain";
 import type { ResultAsync } from "neverthrow";
 
 describe("client use case error unions add NetworkError", () => {
-    test("RemotePortError includes NetworkError", () => {
-        expectTypeOf<NetworkError>().toExtend<RemotePortError>();
+    test("PortfolioRemoteError includes NetworkError", () => {
+        expectTypeOf<NetworkError>().toExtend<PortfolioRemoteError>();
     });
 
-    test("RemotePortError includes UnauthorizedError", () => {
-        expectTypeOf<UnauthorizedError>().toExtend<RemotePortError>();
+    test("PortfolioRemoteError includes UnauthorizedError", () => {
+        expectTypeOf<UnauthorizedError>().toExtend<PortfolioRemoteError>();
     });
 
     test("PortfolioItemCreateError", () => {
-        expectTypeOf<PortfolioItemCreateError>().toEqualTypeOf<RemotePortError>();
+        expectTypeOf<PortfolioItemCreateError>().toEqualTypeOf<PortfolioRemoteError>();
         expectTypeOf<ReturnType<PortfolioItemCreateUseCase["execute"]>>().toEqualTypeOf<
             ResultAsync<PortfolioItem, PortfolioItemCreateError>
         >();
     });
 
     test("PortfolioItemUpdateError", () => {
-        expectTypeOf<PortfolioItemUpdateError>().toEqualTypeOf<RemotePortError>();
+        expectTypeOf<PortfolioItemUpdateError>().toEqualTypeOf<PortfolioRemoteError>();
         expectTypeOf<ReturnType<PortfolioItemUpdateUseCase["execute"]>>().toEqualTypeOf<
             ResultAsync<PortfolioItem, PortfolioItemUpdateError>
         >();
     });
 
     test("PortfolioItemDeleteError", () => {
-        expectTypeOf<PortfolioItemDeleteError>().toEqualTypeOf<RemotePortError>();
+        expectTypeOf<PortfolioItemDeleteError>().toEqualTypeOf<PortfolioRemoteError>();
         expectTypeOf<ReturnType<PortfolioItemDeleteUseCase["execute"]>>().toEqualTypeOf<
             ResultAsync<void, PortfolioItemDeleteError>
         >();
     });
 
     test("PortfolioItemListError", () => {
-        expectTypeOf<PortfolioItemListError>().toEqualTypeOf<RemotePortError>();
+        expectTypeOf<PortfolioItemListError>().toEqualTypeOf<PortfolioRemoteError>();
         expectTypeOf<ReturnType<PortfolioItemListUseCase["execute"]>>().toEqualTypeOf<
             ResultAsync<PortfolioItemList, PortfolioItemListError>
         >();
     });
 
     test("InstrumentListError", () => {
-        expectTypeOf<InstrumentListError>().toEqualTypeOf<RemotePortError>();
+        expectTypeOf<InstrumentListError>().toEqualTypeOf<PortfolioRemoteError>();
         expectTypeOf<ReturnType<InstrumentListUseCase["execute"]>>().toEqualTypeOf<
             ResultAsync<Instrument[], InstrumentListError>
         >();
     });
 
     test("QuoteListError", () => {
-        expectTypeOf<QuoteListError>().toEqualTypeOf<RemotePortError>();
+        expectTypeOf<QuoteListError>().toEqualTypeOf<PortfolioRemoteError>();
         expectTypeOf<ReturnType<QuoteListUseCase["execute"]>>().toEqualTypeOf<
             ResultAsync<Quote[], QuoteListError>
         >();
