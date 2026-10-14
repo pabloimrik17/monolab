@@ -3,9 +3,9 @@ import {
     APP_TOKENS,
     InstrumentListUseCase,
     PortfolioItemListUseCase,
-    QuoteListUseCase,
 } from "@m0n0lab/investlab-application-server";
 import { PLATFORM } from "@m0n0lab/investlab-platform/server";
+import { QUOTES, QuoteListUseCase } from "@m0n0lab/investlab-quotes/server";
 import { createContainer } from "./container.ts";
 
 const ENV = {
@@ -39,7 +39,7 @@ describe("createContainer", () => {
         expect(container.get(APP_TOKENS.InstrumentListUseCase)).toBeInstanceOf(
             InstrumentListUseCase,
         );
-        expect(container.get(APP_TOKENS.QuoteListUseCase)).toBeInstanceOf(QuoteListUseCase);
+        expect(container.get(QUOTES.List)).toBeInstanceOf(QuoteListUseCase);
         expect(container.get(PLATFORM.Redis).status).toBe("wait");
     });
 
@@ -47,7 +47,7 @@ describe("createContainer", () => {
         vi.stubEnv("DATABASE_URL", "");
         vi.stubEnv("FINNHUB_API_KEY", undefined);
 
-        expect(() => createContainer().get(APP_TOKENS.QuoteListUseCase)).toThrow(
+        expect(() => createContainer().get(QUOTES.List)).toThrow(
             "Missing env vars: DATABASE_URL, FINNHUB_API_KEY",
         );
     });

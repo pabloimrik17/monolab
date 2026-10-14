@@ -31,7 +31,6 @@
         "@m0n0lab/investlab-platform": "workspace:*",
         "drizzle-orm": "catalog:",
         "inversify": "catalog:",
-        "ioredis": "catalog:",
         "neverthrow": "catalog:",
         "pg": "catalog:"
     },

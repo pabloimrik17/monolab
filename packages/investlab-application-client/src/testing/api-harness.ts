@@ -6,7 +6,7 @@ import { dataClientModule } from "@m0n0lab/investlab-data-client";
 import { PLATFORM, platformClientModule } from "@m0n0lab/investlab-platform/client";
 import { applicationClientModule } from "../application-client.module.ts";
 import type { ApiErrorDto } from "@m0n0lab/investlab-core";
-import type { InstrumentDto, PortfolioItemDto, QuoteDto } from "@m0n0lab/investlab-data-contracts";
+import type { InstrumentDto, PortfolioItemDto } from "@m0n0lab/investlab-data-contracts";
 
 const API_URL = "http://investlab-api.test";
 export const API_TOKEN = "s3cret-token";
@@ -103,17 +103,6 @@ export function portfolioItemDto(overrides: Partial<PortfolioItemDto> = {}): Por
         notes: "core holding",
         createdAt: "2026-10-01T10:00:00.000Z",
         updatedAt: "2026-10-02T11:30:00.000Z",
-        ...overrides,
-    };
-}
-
-export function quoteDto(symbol: string, overrides: Partial<QuoteDto> = {}): QuoteDto {
-    return {
-        symbol,
-        price: 101.25,
-        change: 1.25,
-        changePercent: 1.25,
-        updatedAt: "2026-10-12T09:30:00.000Z",
         ...overrides,
     };
 }

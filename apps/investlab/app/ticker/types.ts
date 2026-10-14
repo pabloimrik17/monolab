@@ -9,4 +9,4 @@ export interface Storage {
     removeItem(key: string): void;
 }
 
-export type { Quote } from "@m0n0lab/investlab-domain";
+export type { Quote } from "@m0n0lab/investlab-quotes";

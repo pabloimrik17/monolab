@@ -5,7 +5,6 @@ import {
     instruments,
     portfolioDataModule,
     portfolioItems,
-    quoteDataModule,
 } from "@m0n0lab/investlab-data-server";
 import {
     AssetClass,
@@ -65,13 +64,7 @@ function testConfig(databaseUrl: string): ServerConfig {
 function createHarness(databaseUrl: string): OwnedHarness {
     const container = new Container();
     container.bind(PLATFORM.Config).toConstantValue(testConfig(databaseUrl));
-    container.load(
-        platformServerModule,
-        dataModule,
-        portfolioDataModule,
-        quoteDataModule,
-        portfolioModule,
-    );
+    container.load(platformServerModule, dataModule, portfolioDataModule, portfolioModule);
 
     return {
         get: (id) => container.get(id),

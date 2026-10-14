@@ -1,10 +1,10 @@
 import { inject, injectable } from "inversify";
 import { errAsync, ResultAsync } from "neverthrow";
 import { PersistenceError } from "@m0n0lab/investlab-core";
-import { type Quote, type QuoteRepository } from "@m0n0lab/investlab-domain";
-import { DATA_TOKENS } from "../tokens.ts";
-import type { FinnhubQuoteDatasource } from "../datasources/finnhub-quote.datasource.ts";
-import type { RedisQuoteDatasource } from "../datasources/redis-quote.datasource.ts";
+import { QUOTES_DATA } from "./tokens.ts";
+import type { Quote, QuoteRepository } from "../../domain/quote.ts";
+import type { FinnhubQuoteDatasource } from "./finnhub-quote.datasource.ts";
+import type { RedisQuoteDatasource } from "./redis-quote.datasource.ts";
 
 function normalizeSymbol(symbol: string): string {
     return symbol.trim().toUpperCase();
@@ -14,8 +14,8 @@ function normalizeSymbol(symbol: string): string {
 @injectable()
 export class CachedQuoteRepository implements QuoteRepository {
     constructor(
-        @inject(DATA_TOKENS.RedisQuoteDatasource) private readonly cache: RedisQuoteDatasource,
-        @inject(DATA_TOKENS.FinnhubQuoteDatasource)
+        @inject(QUOTES_DATA.RedisQuoteDatasource) private readonly cache: RedisQuoteDatasource,
+        @inject(QUOTES_DATA.FinnhubQuoteDatasource)
         private readonly finnhub: FinnhubQuoteDatasource,
     ) {}
 

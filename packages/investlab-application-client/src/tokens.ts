@@ -4,5 +4,4 @@ export const APP_TOKENS = {
     PortfolioItemDeleteUseCase: Symbol.for("PortfolioItemDeleteUseCase"),
     PortfolioItemListUseCase: Symbol.for("PortfolioItemListUseCase"),
     InstrumentListUseCase: Symbol.for("InstrumentListUseCase"),
-    QuoteListUseCase: Symbol.for("QuoteListUseCase"),
 } as const;

@@ -13,6 +13,8 @@
         // integration tests live in a vitest `projects` entry, whose include the fallow vitest plugin does not follow
         "**/*.integration.ts",
         "**/*.integration.tsx",
+        // module test setups, loaded by vitest `setupFiles`/`globalSetup`, which the fallow vitest plugin does not follow
+        "packages/*/src/application/*/vitest-*-setup.ts",
         // tool-loaded configs (oxfmt CLI, validate-branch-name via husky)
         "oxfmt.config.ts",
         "validate-branch-name.config.cjs"
@@ -69,7 +71,8 @@
         { "implements": "MenuItemRepository", "members": ["*"] },
         { "implements": "OrderRepository", "members": ["*"] },
         { "implements": "SessionRepository", "members": ["*"] },
-        { "implements": "PortfolioItemRepository", "members": ["*"] }
+        { "implements": "PortfolioItemRepository", "members": ["*"] },
+        { "implements": "QuoteRepository", "members": ["*"] }
     ],
     "rules": {
         "require-suppression-reason": "warn"

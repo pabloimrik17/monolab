@@ -41,16 +41,16 @@
 
 ## 5. Quotes module
 
-- [ ] 5.1 Scaffold `packages/investlab-quotes` (`@m0n0lab/investlab-quotes`) with the anatomy of design §2, entries `.`, `./server`, `./client`, `project.json` with `tags: ["docker"]`
-- [ ] 5.2 `domain/`: `Quote`, quote port, quotes error codes (if any)
-- [ ] 5.3 `data/contracts/`: quote DTOs and the quote-list query schema
-- [ ] 5.4 `data/server/`: Finnhub datasource on `HttpClient` + `config.finnhub.apiKey`, Redis cache datasource on `PLATFORM.Redis`, `CachedQuoteRepository`, batching helper
-- [ ] 5.5 `data/client/`: HTTP quote repository on `InvestlabApiClient`
-- [ ] 5.6 `application/server` and `application/client`: quote-list use cases with their error unions
-- [ ] 5.7 `module.server.ts`, `module.client.ts` and `QUOTES` tokens per side
-- [ ] 5.8 Integration tests per §4: server (cache hit, cache miss, Finnhub without data, Redis unavailable) and client (quotes returned, API unavailable, token rejected)
-- [ ] 5.9 Keep unit tests for pure logic only (batching, mappers, DTO schemas); delete the datasource/repository tests that stub `fetch` or mock Redis once §5.8 covers them
-- [ ] 5.10 Switch the API (`/quotes` route) and the web (`api.quotes` resource route) to `QUOTES.List`; delete quote code from the old packages; `nx run @m0n0lab/investlab-quotes:test:integration` green
+- [x] 5.1 Scaffold `packages/investlab-quotes` (`@m0n0lab/investlab-quotes`) with the anatomy of design §2, entries `.`, `./server`, `./client`, `project.json` with `tags: ["docker"]`
+- [x] 5.2 `domain/`: `Quote`, quote port, quotes error codes (if any)
+- [x] 5.3 `data/contracts/`: quote DTOs and the quote-list query schema
+- [x] 5.4 `data/server/`: Finnhub datasource on `HttpClient` + `config.finnhub.apiKey`, Redis cache datasource on `PLATFORM.Redis`, `CachedQuoteRepository`, batching helper
+- [x] 5.5 `data/client/`: HTTP quote repository on `InvestlabApiClient`
+- [x] 5.6 `application/server` and `application/client`: quote-list use cases with their error unions
+- [x] 5.7 `module.server.ts`, `module.client.ts` and `QUOTES` tokens per side
+- [x] 5.8 Integration tests per §4: server (cache hit, cache miss, Finnhub without data, Redis unavailable) and client (quotes returned, API unavailable, token rejected)
+- [x] 5.9 Keep unit tests for pure logic only (batching, mappers, DTO schemas); delete the datasource/repository tests that stub `fetch` or mock Redis once §5.8 covers them
+- [x] 5.10 Switch the API (`/quotes` route) and the web (`api.quotes` resource route) to `QUOTES.List`; delete quote code from the old packages; `nx run @m0n0lab/investlab-quotes:test:integration` green
 
 ## 6. Portfolio module
 

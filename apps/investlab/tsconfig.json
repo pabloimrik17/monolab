@@ -43,6 +43,9 @@
         "path": "../../packages/investlab-data-client"
       },
       {
+        "path": "../../packages/investlab-quotes"
+      },
+      {
         "path": "../../packages/investlab-platform"
       },
       {

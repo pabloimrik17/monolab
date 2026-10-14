@@ -10,9 +10,8 @@ import {
     type PortfolioItemQuery,
     type PortfolioItemRepository,
     type PortfolioItemWithInstrument,
-    type Quote,
-    type QuoteRepository,
 } from "@m0n0lab/investlab-domain";
+import type { Quote, QuoteRepository } from "@m0n0lab/investlab-quotes";
 
 export class InMemoryInstrumentRepository implements InstrumentRepository {
     readonly store = new Map<string, Instrument>();

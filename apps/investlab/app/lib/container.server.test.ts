@@ -5,9 +5,9 @@ import {
     PortfolioItemDeleteUseCase,
     PortfolioItemListUseCase,
     PortfolioItemUpdateUseCase,
-    QuoteListUseCase,
 } from "@m0n0lab/investlab-application-client";
 import { PLATFORM } from "@m0n0lab/investlab-platform/client";
+import { QUOTES, QuoteListUseCase } from "@m0n0lab/investlab-quotes/client";
 import { createContainer } from "./container.server";
 
 describe("createContainer", () => {
@@ -38,13 +38,13 @@ describe("createContainer", () => {
         expect(container.get(APP_TOKENS.PortfolioItemDeleteUseCase)).toBeInstanceOf(
             PortfolioItemDeleteUseCase,
         );
-        expect(container.get(APP_TOKENS.QuoteListUseCase)).toBeInstanceOf(QuoteListUseCase);
+        expect(container.get(QUOTES.List)).toBeInstanceOf(QuoteListUseCase);
     });
 
     it("names every missing env var when a use case is first resolved", () => {
         vi.stubEnv("INVESTLAB_API_URL", "");
 
-        expect(() => createContainer().get(APP_TOKENS.QuoteListUseCase)).toThrow(
+        expect(() => createContainer().get(QUOTES.List)).toThrow(
             "Missing env vars: INVESTLAB_API_URL",
         );
     });

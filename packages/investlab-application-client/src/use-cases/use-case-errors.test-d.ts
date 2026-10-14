@@ -17,14 +17,8 @@ import type {
     PortfolioItemUpdateError,
     PortfolioItemUpdateUseCase,
 } from "./portfolio-item-update.use-case.ts";
-import type { QuoteListError, QuoteListUseCase } from "./quote-list.use-case.ts";
 import type { NetworkError, UnauthorizedError } from "@m0n0lab/investlab-core";
-import type {
-    Instrument,
-    PortfolioItem,
-    Quote,
-    PortfolioRemoteError,
-} from "@m0n0lab/investlab-domain";
+import type { Instrument, PortfolioItem, PortfolioRemoteError } from "@m0n0lab/investlab-domain";
 import type { ResultAsync } from "neverthrow";
 
 describe("client use case error unions add NetworkError", () => {
@@ -68,13 +62,6 @@ describe("client use case error unions add NetworkError", () => {
         expectTypeOf<InstrumentListError>().toEqualTypeOf<PortfolioRemoteError>();
         expectTypeOf<ReturnType<InstrumentListUseCase["execute"]>>().toEqualTypeOf<
             ResultAsync<Instrument[], InstrumentListError>
-        >();
-    });
-
-    test("QuoteListError", () => {
-        expectTypeOf<QuoteListError>().toEqualTypeOf<PortfolioRemoteError>();
-        expectTypeOf<ReturnType<QuoteListUseCase["execute"]>>().toEqualTypeOf<
-            ResultAsync<Quote[], QuoteListError>
         >();
     });
 });

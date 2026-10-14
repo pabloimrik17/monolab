@@ -1,10 +1,9 @@
-import { inject, injectable, optional } from "inversify";
+import { inject, injectable } from "inversify";
 import { PLATFORM } from "@m0n0lab/investlab-platform/server";
-import { DATA_TOKENS } from "../tokens.ts";
-import type { Quote } from "@m0n0lab/investlab-domain";
+import type { Quote } from "../../domain/quote.ts";
 import type Redis from "ioredis";
 
-const DEFAULT_TTL_SECONDS = 3600;
+const TTL_SECONDS = 3600;
 const KEY_PREFIX = "investlab:quote:";
 
 function cacheKey(symbol: string): string {
@@ -26,14 +25,7 @@ function parseQuote(raw: string | null): Quote | null {
 /** Quotes cached by normalized symbol. Redis failures reject; the repository decides how to degrade. */
 @injectable()
 export class RedisQuoteDatasource {
-    private readonly ttl: number;
-
-    constructor(
-        @inject(PLATFORM.Redis) private readonly redis: Redis,
-        @inject(DATA_TOKENS.QuoteCacheTtl) @optional() ttl?: number,
-    ) {
-        this.ttl = ttl != null && Number.isInteger(ttl) && ttl > 0 ? ttl : DEFAULT_TTL_SECONDS;
-    }
+    constructor(@inject(PLATFORM.Redis) private readonly redis: Redis) {}
 
     async get(symbol: string): Promise<Quote | null> {
         return parseQuote(await this.redis.get(cacheKey(symbol)));
@@ -55,6 +47,6 @@ export class RedisQuoteDatasource {
     }
 
     async set(symbol: string, quote: Quote): Promise<void> {
-        await this.redis.set(cacheKey(symbol), JSON.stringify(quote), "EX", this.ttl);
+        await this.redis.set(cacheKey(symbol), JSON.stringify(quote), "EX", TTL_SECONDS);
     }
 }
