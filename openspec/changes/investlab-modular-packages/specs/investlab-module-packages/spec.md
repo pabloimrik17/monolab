@@ -25,7 +25,7 @@ InvestLab business code SHALL live in one package per module: `@m0n0lab/investla
 #### Scenario: Module names its remote error union
 
 - **WHEN** the portfolio module declares the errors its client ports return
-- **THEN** it defines `PortfolioRemoteError = RemotePortError<InstrumentNotFoundError | PortfolioItemNotFoundError | PortfolioItemConflictError>` and core imports none of these errors
+- **THEN** it defines `PortfolioRemoteError = RemotePortError<InstrumentNotFoundError | PortfolioItemNotFoundError | PortfolioItemConflictError | InstrumentInUseError | InstrumentAlreadyExistsError>` and core imports none of these errors
 
 #### Scenario: Core depends on nothing of ours
 

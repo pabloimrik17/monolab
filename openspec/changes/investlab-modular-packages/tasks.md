@@ -41,7 +41,7 @@
 
 ## 5. Quotes module
 
-- [ ] 5.1 Scaffold `packages/investlab-quotes` (`@m0n0lab/investlab-quotes`) with the anatomy of design §2, entries `.`, `./server`, `./client`
+- [ ] 5.1 Scaffold `packages/investlab-quotes` (`@m0n0lab/investlab-quotes`) with the anatomy of design §2, entries `.`, `./server`, `./client`, `project.json` with `tags: ["docker"]`
 - [ ] 5.2 `domain/`: `Quote`, quote port, quotes error codes (if any)
 - [ ] 5.3 `data/contracts/`: quote DTOs and the quote-list query schema
 - [ ] 5.4 `data/server/`: Finnhub datasource on `HttpClient` + `config.finnhub.apiKey`, Redis cache datasource on `PLATFORM.Redis`, `CachedQuoteRepository`, batching helper
@@ -54,7 +54,7 @@
 
 ## 6. Portfolio module
 
-- [ ] 6.1 Scaffold `packages/investlab-portfolio` (`@m0n0lab/investlab-portfolio`) with the anatomy of design §2, entries `.`, `./server`, `./client`
+- [ ] 6.1 Scaffold `packages/investlab-portfolio` (`@m0n0lab/investlab-portfolio`) with the anatomy of design §2, entries `.`, `./server`, `./client`, `project.json` with `tags: ["docker"]`
 - [ ] 6.2 `domain/`: `Instrument`, `PortfolioItem`, value objects, ports, read model, module errors and `PortfolioErrorCode`; move `GLOSSARY.md` here
 - [ ] 6.3 `data/contracts/`: instrument, portfolio item and list DTOs
 - [ ] 6.4 `data/server/`: `schema.ts` (`instruments`, `portfolio_items`), Postgres repositories, read query and mappers on `PLATFORM.Db`; update the path in the database package's `drizzle.config.ts`, then `db:generate` reports no schema changes
@@ -99,7 +99,7 @@
 
 ## 11. CI and workspace
 
-- [ ] 11.1 CI `test:integration` runs the new projects (`nx affected -t test:integration` picks the module packages)
+- [ ] 11.1 CI `test:integration` runs the new projects (`nx affected -t test:integration` picks the module packages, which carry `tag:docker` so the non-distributed step runs them)
 - [ ] 11.2 Root scripts `investlab:*` keep naming the two apps
 - [ ] 11.3 `pnpm lint:fallow`, `pnpm lint:knip`, markdownlint and oxfmt green
 - [ ] 11.4 Check the web's client build output contains no `pg`, `ioredis`, `drizzle-orm` and no `INVESTLAB_API_TOKEN` value
