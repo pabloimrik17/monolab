@@ -30,7 +30,6 @@ export type { PortfolioItemRepository } from "./ports/portfolio-item.repository.
 export type { PortfolioItemQuery } from "./ports/portfolio-item.query.ts";
 export type { PortfolioItemListQuery } from "./ports/portfolio-item-list.query.ts";
 
-// Read models
 export type { PortfolioItemWithInstrument } from "./read-models/portfolio-item-with-instrument.ts";
 export type { PortfolioItemList } from "./read-models/portfolio-item-list.ts";
 

@@ -158,8 +158,6 @@ jobs:
               run: pnpm exec nx run-many -t test:unit:coverage
               if: ${{ github.event_name == 'push' }}
 
-            # Testcontainers need a Docker daemon, which Nx agents lack: `tag:docker` projects
-            # run on this runner (NX_CLOUD_DISTRIBUTED_EXECUTION=false), the rest on the agents.
             - name: 🧪 Execute integration test checks for affected files (Affected)
               run: |
                   pnpm exec nx affected -t test:integration --exclude=tag:docker

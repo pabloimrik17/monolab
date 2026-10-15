@@ -26,7 +26,7 @@ export function apiErrorToDomain(dto: ApiErrorDto, resourceId: string): RemotePo
         // A rejected token is a client misconfiguration, distinct from an outage.
         case "UNAUTHORIZED":
             return new UnauthorizedError(dto);
-        // The API is reachable but unusable for this client: not something the caller can act on per call.
+        // API reachable but unusable for this client; not actionable per call.
         case "INTERNAL_ERROR":
             return new NetworkError(dto);
     }

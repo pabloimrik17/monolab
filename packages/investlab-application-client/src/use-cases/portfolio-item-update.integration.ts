@@ -62,7 +62,6 @@ describe("PortfolioItemUpdateUseCase against the faked API", () => {
                 query: {},
                 authorization: `Bearer ${API_TOKEN}`,
                 contentType: "application/json",
-                // Untouched fields travel with the change; notes are kept.
                 body: {
                     broker: "Degiro",
                     targetWeight: 25,

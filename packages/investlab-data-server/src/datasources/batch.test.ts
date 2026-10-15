@@ -104,8 +104,6 @@ describe("batchExecute", () => {
 
         await batchExecute(items, fn, { concurrency: 2 });
 
-        // First batch [1,2] starts, then second batch [3,4]
-        // Within a batch, order may vary, but batches are sequential
         expect(order.slice(0, 2).sort()).toEqual([1, 2]);
         expect(order.slice(2, 4).sort()).toEqual([3, 4]);
     });

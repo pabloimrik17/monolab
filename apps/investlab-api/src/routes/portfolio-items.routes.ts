@@ -25,7 +25,6 @@ function parseId(c: { req: { param(name: "id"): string } }): string {
 export function portfolioItemRoutes(container: Container) {
     const app = new Hono();
 
-    // GET /portfolio-items
     app.get("/", async (c) => {
         const uc = container.get<PortfolioItemListUseCase>(APP_TOKENS.PortfolioItemListUseCase);
 
@@ -35,7 +34,6 @@ export function portfolioItemRoutes(container: Container) {
         );
     });
 
-    // POST /portfolio-items
     app.post("/", async (c) => {
         const body = await parseJsonBody(c, createPortfolioItemDtoSchema);
         const uc = container.get<PortfolioItemCreateUseCase>(APP_TOKENS.PortfolioItemCreateUseCase);
@@ -54,7 +52,6 @@ export function portfolioItemRoutes(container: Container) {
         );
     });
 
-    // PUT /portfolio-items/:id
     app.put("/:id", async (c) => {
         const id = parseId(c);
         const body = await parseJsonBody(c, updatePortfolioItemDtoSchema);
@@ -77,7 +74,6 @@ export function portfolioItemRoutes(container: Container) {
         );
     });
 
-    // DELETE /portfolio-items/:id
     app.delete("/:id", async (c) => {
         const id = parseId(c);
         const uc = container.get<PortfolioItemDeleteUseCase>(APP_TOKENS.PortfolioItemDeleteUseCase);

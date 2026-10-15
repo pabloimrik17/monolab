@@ -9,7 +9,6 @@ class FakeError extends Error {
 
 const toError = (cause: unknown) => new FakeError(cause);
 
-// Minimal stand-in for a Drizzle database: only what each operation hands to the callback.
 const fakeDb = {
     select: () => Promise.resolve([{ id: 1 }, { id: 2 }]),
     insert: () => Promise.resolve([{ id: 3 }]),

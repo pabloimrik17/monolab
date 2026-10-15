@@ -153,19 +153,15 @@ describe("createQuotePoller", () => {
                 interval: 15000,
             });
 
-            // Start first poll (will hang on firstCallPromise)
             poller.start(["AAPL"]);
 
-            // Stop and start again while first poll is in-flight
             poller.stop();
             poller.start(["MSFT"]);
             await vi.advanceTimersByTimeAsync(0);
 
-            // Resolve the stale first poll
             resolveFirst!(new Map([["AAPL", createMockQuote("AAPL")]]));
             await vi.advanceTimersByTimeAsync(0);
 
-            // onUpdate should only be called with MSFT (new poll), not AAPL (stale)
             expect(onUpdate).toHaveBeenCalledTimes(1);
             expect(onUpdate).toHaveBeenCalledWith(msftQuotes);
             poller.stop();
@@ -186,12 +182,11 @@ describe("createQuotePoller", () => {
             client.getQuotes.mockClear();
 
             poller.setInterval(20000);
-            // First poll was scheduled with 30s, need to wait for that
+            // the in-flight timer was armed with the old 30s interval
             await vi.advanceTimersByTimeAsync(30000);
             expect(client.getQuotes).toHaveBeenCalledTimes(1);
 
             client.getQuotes.mockClear();
-            // Now next poll should be at 20s interval
             await vi.advanceTimersByTimeAsync(20000);
             expect(client.getQuotes).toHaveBeenCalledTimes(1);
             poller.stop();
@@ -225,11 +220,9 @@ describe("createQuotePoller", () => {
             await vi.advanceTimersByTimeAsync(0);
             client.getQuotes.mockClear();
 
-            // After 60s should have polled (clamped to max)
             await vi.advanceTimersByTimeAsync(60000);
             expect(client.getQuotes).toHaveBeenCalledTimes(1);
 
-            // After another 60s should have polled again
             await vi.advanceTimersByTimeAsync(60000);
             expect(client.getQuotes).toHaveBeenCalledTimes(2);
         });
@@ -282,16 +275,13 @@ describe("createQuotePoller", () => {
             await vi.advanceTimersByTimeAsync(0);
             expect(client.getQuotes).toHaveBeenCalledTimes(1);
 
-            // Set tickers to empty - should not stop polling loop
             poller.setTickers([]);
             client.getQuotes.mockClear();
             await vi.advanceTimersByTimeAsync(15000);
 
-            // Should not have called getQuotes (no tickers)
             expect(client.getQuotes).not.toHaveBeenCalled();
             expect(poller.isPolling()).toBe(true);
 
-            // Re-add tickers - should resume fetching
             poller.setTickers(["MSFT"]);
             await vi.advanceTimersByTimeAsync(15000);
 

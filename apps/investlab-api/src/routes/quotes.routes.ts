@@ -7,7 +7,6 @@ import { toQuoteDto } from "../serializers/dto-serializers.ts";
 import type { Container } from "inversify";
 
 export function quoteRoutes(container: Container) {
-    // GET /quotes?symbols=AAPL,MSFT
     return new Hono().get("/", async (c) => {
         const { symbols } = parseWith(quoteListQueryDtoSchema, c.req.query());
         const uc = container.get<QuoteListUseCase>(APP_TOKENS.QuoteListUseCase);
