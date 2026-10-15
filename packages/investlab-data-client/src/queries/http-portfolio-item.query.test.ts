@@ -15,20 +15,20 @@ import {
     portfolioItemDto,
     server,
 } from "../testing/api-server.ts";
-import type { PortfolioItemQuery } from "@m0n0lab/investlab-domain";
+import type { PortfolioItemListQuery } from "@m0n0lab/investlab-domain";
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 function createQuery(...args: Parameters<typeof createTestContainer>) {
-    return createTestContainer(...args).get<PortfolioItemQuery<RemotePortError>>(
-        TOKENS.PortfolioItemQuery,
+    return createTestContainer(...args).get<PortfolioItemListQuery<RemotePortError>>(
+        TOKENS.PortfolioItemListQuery,
     );
 }
 
 describe("HttpPortfolioItemQuery", () => {
-    it("rebuilds items paired with their instruments from the API list", async () => {
+    it("rebuilds items paired with their instruments, and the catalog, from the API list", async () => {
         const instrument = instrumentDto();
         server.use(
             fakeApi("get", "/portfolio-items", () =>
@@ -39,9 +39,11 @@ describe("HttpPortfolioItemQuery", () => {
             ),
         );
 
-        const result = await createQuery().listWithInstruments();
+        const result = await createQuery().list();
 
-        const [row] = result._unsafeUnwrap();
+        const { items, instruments } = result._unsafeUnwrap();
+        expect(instruments.map((catalogEntry) => catalogEntry.symbol)).toEqual(["VWCE"]);
+        const [row] = items;
         expect(row?.item.id).toBe(portfolioItemDto().id);
         expect(row?.item.currentValue).toBe(1500.5);
         expect(row?.item.createdAt).toEqual(new Date("2026-10-01T10:00:00.000Z"));
@@ -56,9 +58,9 @@ describe("HttpPortfolioItemQuery", () => {
             ),
         );
 
-        const result = await createQuery("http://api.test/").listWithInstruments();
+        const result = await createQuery("http://api.test/").list();
 
-        expect(result._unsafeUnwrap()).toEqual([]);
+        expect(result._unsafeUnwrap()).toEqual({ items: [], instruments: [] });
     });
 
     it("maps a wrong token (UNAUTHORIZED) to UnauthorizedError", async () => {
@@ -68,7 +70,7 @@ describe("HttpPortfolioItemQuery", () => {
             ),
         );
 
-        const result = await createQuery(undefined, "wrong").listWithInstruments();
+        const result = await createQuery(undefined, "wrong").list();
 
         expect(result._unsafeUnwrapErr()).toBeInstanceOf(UnauthorizedError);
     });
@@ -80,7 +82,7 @@ describe("HttpPortfolioItemQuery", () => {
             ),
         );
 
-        const result = await createQuery().listWithInstruments();
+        const result = await createQuery().list();
 
         expect(result._unsafeUnwrapErr()).toBeInstanceOf(PersistenceError);
     });
@@ -88,7 +90,7 @@ describe("HttpPortfolioItemQuery", () => {
     it("maps a dropped connection to NetworkError", async () => {
         server.use(fakeApi("get", "/portfolio-items", () => HttpResponse.error()));
 
-        const result = await createQuery().listWithInstruments();
+        const result = await createQuery().list();
 
         expect(result._unsafeUnwrapErr()).toBeInstanceOf(NetworkError);
     });
@@ -96,7 +98,7 @@ describe("HttpPortfolioItemQuery", () => {
     it("maps a body that breaks the contract to NetworkError", async () => {
         server.use(fakeApi("get", "/portfolio-items", () => HttpResponse.json({ items: "nope" })));
 
-        const result = await createQuery().listWithInstruments();
+        const result = await createQuery().list();
 
         expect(result._unsafeUnwrapErr()).toBeInstanceOf(NetworkError);
     });
@@ -108,7 +110,7 @@ describe("HttpPortfolioItemQuery", () => {
             ),
         );
 
-        const result = await createQuery().listWithInstruments();
+        const result = await createQuery().list();
 
         expect(result._unsafeUnwrapErr()).toBeInstanceOf(NetworkError);
     });

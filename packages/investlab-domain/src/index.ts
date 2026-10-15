@@ -27,9 +27,11 @@ export type { InstrumentRepository } from "./ports/instrument.repository.ts";
 export type { Quote, QuoteRepository } from "./ports/quote.repository.ts";
 export type { PortfolioItemRepository } from "./ports/portfolio-item.repository.ts";
 export type { PortfolioItemQuery } from "./ports/portfolio-item.query.ts";
+export type { PortfolioItemListQuery } from "./ports/portfolio-item-list.query.ts";
 
 // Read models
 export type { PortfolioItemWithInstrument } from "./read-models/portfolio-item-with-instrument.ts";
+export type { PortfolioItemList } from "./read-models/portfolio-item-list.ts";
 
 // Tokens
 export { TOKENS } from "./tokens.ts";

@@ -1,34 +1,25 @@
 import { inject, injectable } from "inversify";
-import { ResultAsync } from "neverthrow";
 import {
     TOKENS,
-    type Instrument,
-    type InstrumentRepository,
-    type PortfolioItemQuery,
-    type PortfolioItemWithInstrument,
+    type PortfolioItemList,
+    type PortfolioItemListQuery,
     type RemotePortError,
 } from "@m0n0lab/investlab-domain";
+import type { ResultAsync } from "neverthrow";
 
-export interface PortfolioItemList {
-    items: PortfolioItemWithInstrument[];
-    instruments: Instrument[];
-}
+export type { PortfolioItemList };
 
 export type PortfolioItemListError = RemotePortError;
 
 @injectable()
 export class PortfolioItemListUseCase {
     constructor(
-        @inject(TOKENS.PortfolioItemQuery)
-        private readonly portfolioItemQuery: PortfolioItemQuery<RemotePortError>,
-        @inject(TOKENS.InstrumentRepository)
-        private readonly instrumentRepo: InstrumentRepository<RemotePortError>,
+        @inject(TOKENS.PortfolioItemListQuery)
+        private readonly portfolioItemListQuery: PortfolioItemListQuery<RemotePortError>,
     ) {}
 
+    // `/portfolio-items` already carries the catalog, so one request serves both.
     execute(): ResultAsync<PortfolioItemList, PortfolioItemListError> {
-        return ResultAsync.combine([
-            this.portfolioItemQuery.listWithInstruments(),
-            this.instrumentRepo.findAll(),
-        ] as const).map(([items, instruments]) => ({ items, instruments }));
+        return this.portfolioItemListQuery.list();
     }
 }

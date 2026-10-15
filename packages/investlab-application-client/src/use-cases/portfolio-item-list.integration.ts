@@ -22,44 +22,34 @@ function useCase(): PortfolioItemListUseCase {
     );
 }
 
+const btc = () =>
+    instrumentDto({
+        id: "0c9e8d7b-6a5f-4e3d-8c2b-1a0f9e8d7c6b",
+        symbol: "BTC",
+        name: "Bitcoin",
+        type: "crypto",
+        assetClass: "crypto",
+        quotable: false,
+    });
+
 const listBody = () => ({
     items: [{ item: portfolioItemDto(), instrument: instrumentDto() }],
-    instruments: [instrumentDto()],
+    instruments: [instrumentDto(), btc()],
 });
 
 describe("PortfolioItemListUseCase against the faked API", () => {
-    it("combines GET /portfolio-items and GET /instruments into entities", async () => {
-        const itemRequests = stubApi("get", "/portfolio-items", () =>
-            HttpResponse.json(listBody()),
-        );
-        const instrumentRequests = stubApi("get", "/instruments", () =>
-            HttpResponse.json([
-                instrumentDto(),
-                instrumentDto({
-                    id: "0c9e8d7b-6a5f-4e3d-8c2b-1a0f9e8d7c6b",
-                    symbol: "BTC",
-                    name: "Bitcoin",
-                    type: "crypto",
-                    assetClass: "crypto",
-                    quotable: false,
-                }),
-            ]),
-        );
+    it("builds items and the catalog from a single GET /portfolio-items", async () => {
+        const requests = stubApi("get", "/portfolio-items", () => HttpResponse.json(listBody()));
 
         const list = (await useCase().execute())._unsafeUnwrap();
 
-        for (const [requests, path] of [
-            [itemRequests, "/portfolio-items"],
-            [instrumentRequests, "/instruments"],
-        ] as const) {
-            expect(requests).toEqual([
-                expect.objectContaining({
-                    method: "GET",
-                    path,
-                    authorization: `Bearer ${API_TOKEN}`,
-                }),
-            ]);
-        }
+        expect(requests).toEqual([
+            expect.objectContaining({
+                method: "GET",
+                path: "/portfolio-items",
+                authorization: `Bearer ${API_TOKEN}`,
+            }),
+        ]);
         expect(list.items).toHaveLength(1);
         expect(list.items[0]?.item).toMatchObject({
             id: ITEM_ID,
@@ -76,7 +66,6 @@ describe("PortfolioItemListUseCase against the faked API", () => {
 
     it("returns empty lists", async () => {
         stubApi("get", "/portfolio-items", () => HttpResponse.json({ items: [], instruments: [] }));
-        stubApi("get", "/instruments", () => HttpResponse.json([]));
 
         expect((await useCase().execute())._unsafeUnwrap()).toEqual({ items: [], instruments: [] });
     });
@@ -85,38 +74,20 @@ describe("PortfolioItemListUseCase against the faked API", () => {
         stubApi("get", "/portfolio-items", () =>
             apiError(500, "PERSISTENCE_ERROR", "Internal server error"),
         );
-        stubApi("get", "/instruments", () => HttpResponse.json([]));
 
         expect((await useCase().execute())._unsafeUnwrapErr()).toMatchObject({
             code: "PERSISTENCE_ERROR",
         });
     });
 
-    it("fails when only the instrument catalog is unreachable", async () => {
-        stubApi("get", "/portfolio-items", () => HttpResponse.json(listBody()));
-        stubApi("get", "/instruments", () => HttpResponse.error());
-
-        expect((await useCase().execute())._unsafeUnwrapErr()).toMatchObject({
-            code: "NETWORK_ERROR",
-        });
-    });
-
-    describe("with a healthy instrument catalog", () => {
-        const respondWithCatalog = () =>
-            stubApi("get", "/instruments", () => HttpResponse.json([]));
-
-        describeTransportFailures(
-            { method: "get", path: "/portfolio-items" },
-            () => {
-                respondWithCatalog();
-                return useCase().execute();
+    describeTransportFailures(
+        { method: "get", path: "/portfolio-items" },
+        () => useCase().execute(),
+        {
+            malformedBody: {
+                items: [{ item: { ...portfolioItemDto(), targetWeight: 250 }, instrument: {} }],
+                instruments: [],
             },
-            {
-                malformedBody: {
-                    items: [{ item: { ...portfolioItemDto(), targetWeight: 250 }, instrument: {} }],
-                    instruments: [],
-                },
-            },
-        );
-    });
+        },
+    );
 });

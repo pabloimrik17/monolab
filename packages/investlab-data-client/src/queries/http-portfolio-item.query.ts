@@ -5,24 +5,25 @@ import { ApiClient } from "../api-client.ts";
 import { instrumentToDomain } from "../mappers/instrument.mapper.ts";
 import { portfolioItemToDomain } from "../mappers/portfolio-item.mapper.ts";
 import type {
-    PortfolioItemQuery,
-    PortfolioItemWithInstrument,
+    PortfolioItemList,
+    PortfolioItemListQuery,
     RemotePortError,
 } from "@m0n0lab/investlab-domain";
 import type { ResultAsync } from "neverthrow";
 
 @injectable()
-export class HttpPortfolioItemQuery implements PortfolioItemQuery<RemotePortError> {
+export class HttpPortfolioItemQuery implements PortfolioItemListQuery<RemotePortError> {
     constructor(@inject(ApiClient) private readonly api: ApiClient) {}
 
-    listWithInstruments(): ResultAsync<PortfolioItemWithInstrument[], RemotePortError> {
+    list(): ResultAsync<PortfolioItemList, RemotePortError> {
         return this.api
             .json("GET", "/portfolio-items", portfolioItemListDtoSchema)
-            .map(({ items }) =>
-                items.map(({ item, instrument }) => ({
+            .map(({ items, instruments }) => ({
+                items: items.map(({ item, instrument }) => ({
                     item: portfolioItemToDomain(item),
                     instrument: instrumentToDomain(instrument),
                 })),
-            );
+                instruments: instruments.map(instrumentToDomain),
+            }));
     }
 }

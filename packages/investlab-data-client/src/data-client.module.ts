@@ -11,6 +11,6 @@ export const dataClientModule = new ContainerModule(({ bind }) => {
     bind(ApiClient).toSelf().inSingletonScope();
     bind(TOKENS.InstrumentRepository).to(HttpInstrumentRepository);
     bind(TOKENS.PortfolioItemRepository).to(HttpPortfolioItemRepository);
-    bind(TOKENS.PortfolioItemQuery).to(HttpPortfolioItemQuery);
+    bind(TOKENS.PortfolioItemListQuery).to(HttpPortfolioItemQuery);
     bind(TOKENS.QuoteRepository).to(HttpQuoteRepository);
 });
