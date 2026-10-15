@@ -6,21 +6,26 @@ Defines how InvestLab code is packaged: one package per business module with its
 
 ### Requirement: One package per business module
 
-InvestLab business code SHALL live in one package per module: `@m0n0lab/investlab-portfolio` (portfolio items and the instrument catalog) and `@m0n0lab/investlab-quotes` (market data). A business module SHALL NOT import another business module. Every InvestLab project SHALL carry the Nx tag `investlab`, declared in `project.json`.
+InvestLab business code SHALL live in one package per module: `@m0n0lab/investlab-portfolio` (portfolio items and the instrument catalog) and `@m0n0lab/investlab-quotes` (market data). A business module SHALL NOT import another business module.
 
 #### Scenario: Modules are independent
 
 - **WHEN** the imports of `@m0n0lab/investlab-quotes` are listed
 - **THEN** none points to `@m0n0lab/investlab-portfolio`, and the reverse also holds
 
-#### Scenario: Projects selected by tag
+#### Scenario: Projects selected by name pattern
 
-- **WHEN** `nx show projects -p tag:investlab` runs
+- **WHEN** `nx show projects -p '@m0n0lab/investlab*'` runs
 - **THEN** it lists exactly `@m0n0lab/investlab`, `@m0n0lab/investlab-api`, `@m0n0lab/investlab-core`, `@m0n0lab/investlab-platform`, `@m0n0lab/investlab-database`, `@m0n0lab/investlab-portfolio` and `@m0n0lab/investlab-quotes`
 
 ### Requirement: Shared kernel package
 
-`@m0n0lab/investlab-core` SHALL hold the base errors (`DomainError`, `ValidationError`, `PersistenceError`, `NetworkError`, `UnauthorizedError`, the `RemotePortError` union) and the API error envelope schema, in a single root entry. It SHALL import no other InvestLab package and no infrastructure library. Every layer of a module package and the platform MAY import it.
+`@m0n0lab/investlab-core` SHALL hold, in a single root entry, the base errors (`DomainError`, `ValidationError`, `PersistenceError`, `NetworkError`, `UnauthorizedError`), their `KernelError` union, the generic `RemotePortError<E extends DomainError = never>` (`KernelError | E`) and the API error envelope schema. Core SHALL NOT know module errors. It SHALL import no other InvestLab package and no infrastructure library. Every layer of a module package and the platform MAY import it.
+
+#### Scenario: Module names its remote error union
+
+- **WHEN** the portfolio module declares the errors its client ports return
+- **THEN** it defines `PortfolioRemoteError = RemotePortError<InstrumentNotFoundError | PortfolioItemNotFoundError | PortfolioItemConflictError>` and core imports none of these errors
 
 #### Scenario: Core depends on nothing of ours
 
@@ -66,7 +71,7 @@ A module package SHALL export exactly three entries: `.` (domain and contracts),
 
 ### Requirement: Layer rule enforced by lint
 
-Inside a package, `domain/` and `application/` SHALL NOT import `data/`, the platform, `@m0n0lab/investlab-database` or infrastructure libraries; they MAY import `@m0n0lab/investlab-core`. `data/*` and `module.*.ts` MAY import the platform entry of their side. Code under a `server/` folder SHALL NOT import a `client/` folder, nor the reverse. A lint check in CI SHALL fail on a violation.
+Inside a package, `domain/` and `application/` SHALL NOT import `data/`, the platform, `@m0n0lab/investlab-database` or infrastructure libraries; they MAY import `@m0n0lab/investlab-core`. Only `data/server/`, `data/client/` and `module.*.ts` MAY import the platform entry of their side; `data/contracts/` SHALL NOT. Code under a `server/` folder SHALL NOT import a `client/` folder, nor the reverse. A lint check in CI SHALL fail on a violation.
 
 #### Scenario: Use case imports a repository implementation
 
@@ -76,6 +81,20 @@ Inside a package, `domain/` and `application/` SHALL NOT import `data/`, the pla
 #### Scenario: Domain imports an infrastructure library
 
 - **WHEN** a file in `domain/` imports `drizzle-orm`
+- **THEN** the boundary lint check fails
+
+### Requirement: Container module and entry imports
+
+`module.server.ts` MAY import `domain/`, `application/server/`, `data/server/` and the platform `./server` entry; `module.client.ts` mirrors it for the client side. The entry files MAY import: `index.ts` → `domain/` and `data/contracts/`; `server.ts` → `domain/`, `application/server/` and `module.server.ts`; `client.ts` → `domain/`, `application/client/` and `module.client.ts`. The boundary lint check SHALL fail on any other import from these files.
+
+#### Scenario: Module file binds domain tokens
+
+- **WHEN** `module.server.ts` imports a repository port token from `domain/`
+- **THEN** the boundary lint check passes
+
+#### Scenario: Root entry reaches server code
+
+- **WHEN** `index.ts` imports a file from `data/server/`
 - **THEN** the boundary lint check fails
 
 ### Requirement: Test files may reach the composition

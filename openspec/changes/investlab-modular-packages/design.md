@@ -50,7 +50,7 @@ The package-per-module layout is recorded in [ADR 0007](../../../docs/adr/0007-i
 |---|---|---|
 | `@m0n0lab/investlab-portfolio` | `PortfolioItem`, `Instrument` (catalog as portfolio reference data), their ports, the item + instrument read query, portfolio and instrument use cases, `portfolio_items` and `instruments` tables | core, platform; database (tests only) |
 | `@m0n0lab/investlab-quotes` | `Quote`, quote port, Finnhub datasource, Redis cache datasource, `CachedQuoteRepository`, quote-list use cases | core, platform |
-| `@m0n0lab/investlab-core` | kernel errors, `RemotePortError`, API error envelope schema | nothing of ours |
+| `@m0n0lab/investlab-core` | kernel errors, `KernelError` union, generic `RemotePortError<E>`, API error envelope schema | nothing of ours |
 | `@m0n0lab/investlab-platform` | `Config`, `HttpClient`, `InvestlabApiClient`, `Db`, `Redis` | core |
 | `@m0n0lab/investlab-database` | `drizzle.config.ts`, `drizzle/` migrations (seed included), `migrate(databaseUrl)` | nothing of ours |
 
@@ -89,7 +89,7 @@ Names and folders are the target picture; small renames may follow in review.
 
 ### 3. Core and platform packages
 
-**Core.** `@m0n0lab/investlab-core` is the shared kernel, one root entry: `DomainError` base, `ValidationError`, `PersistenceError`, `NetworkError`, `UnauthorizedError`, the `RemotePortError` union, and the API error envelope schema (`apiErrorDtoSchema`). It depends on nothing but `zod` and `neverthrow` and imports no InvestLab package; every module layer and the platform may import it. The name previously belonged to a browser-only package that was dissolved; it is reused here.
+**Core.** `@m0n0lab/investlab-core` is the shared kernel, one root entry: `DomainError` base, `ValidationError`, `PersistenceError`, `NetworkError`, `UnauthorizedError`, the `KernelError` union of those four, a generic `RemotePortError<E extends DomainError = never>` (kernel errors | `E`), and the API error envelope schema (`apiErrorDtoSchema`). Core cannot know module errors, so each module names its own union, e.g. `PortfolioRemoteError = RemotePortError<InstrumentNotFoundError | PortfolioItemNotFoundError | PortfolioItemConflictError | …>`. It depends on nothing but `zod` and `neverthrow` and imports no InvestLab package; every module layer and the platform may import it. The name previously belonged to a browser-only package that was dissolved; it is reused here.
 
 **Platform.** `@m0n0lab/investlab-platform` has two entries and no root entry, so domain and application code cannot reach it by accident:
 
@@ -112,11 +112,11 @@ interface ClientConfig {
 
 One adapter per runtime hides the source: `ProcessEnvConfig` reads `process.env` after `varlock/auto-load` has validated it (API); the web adapter reads what the Varlock Vite plugin exposes to the SSR server. The app binds only its adapter (`bind(PLATFORM.Config).to(ProcessEnvConfig)`); tests bind a constant `Config` with Testcontainers and MSW URLs. No other code reads the environment.
 
-**`HttpClient`** (both sides): generic requests only. JSON in and out, a timeout, and transport failures (network error, timeout, unparsable body) as `NetworkError`. Any HTTP status is returned to the caller with its body; it knows no endpoint, base URL or token.
+**`HttpClient`** (both sides): generic requests only. JSON in and out, a timeout, and transport failures (network error, timeout, present but unparsable body) as `NetworkError`. Any HTTP status is returned to the caller with its body; a response without a body (such as 204) is returned without parsing and is not an error. It knows no endpoint, base URL or token.
 
-**`InvestlabApiClient`** (client side): built on `HttpClient`; adds `config.api.baseUrl` and `Authorization: Bearer config.api.token`, validates success bodies with the caller's zod schema and turns error envelopes into errors: the caller passes its module's code → error factory map, kernel codes (`VALIDATION_ERROR`, `PERSISTENCE_ERROR`) are built by the platform, HTTP 401 becomes `UnauthorizedError`, transport failures, unknown codes and bodies that fail their schema become `NetworkError`. Every module's HTTP repositories use it; none builds URLs or headers itself.
+**`InvestlabApiClient`** (client side): built on `HttpClient`; adds `config.api.baseUrl` and `Authorization: Bearer config.api.token`, validates success bodies with the caller's zod schema (a bodyless success resolves without validation) and turns error envelopes into errors: the caller passes its module's code → error factory map, kernel codes (`VALIDATION_ERROR`, `PERSISTENCE_ERROR`) are built by the platform, HTTP 401 becomes `UnauthorizedError`, transport failures, unknown codes and bodies that fail their schema become `NetworkError`. Every module's HTTP repositories use it; none builds URLs or headers itself.
 
-**`Db` and `Redis`** (server side): built inside the container from the injected `Config`. `Db` is the drizzle client over a `pg.Pool`, wrapped with `@m0n0lab/drizzle-neverthrow` as today, singleton, with `onDeactivation` ending the pool. `Redis` is an `ioredis` client with `lazyConnect`, singleton, with `onDeactivation` calling `quit()`. Neither connects until first use.
+**`Db` and `Redis`** (server side): built inside the container from the injected `Config`. `Db` is the drizzle client over a `pg.Pool`, wrapped with `@m0n0lab/drizzle-neverthrow` as today, singleton, with `onDeactivation` ending the pool. `Redis` is an `ioredis` client with `lazyConnect`, singleton, with `onDeactivation` calling `quit()` when connected and `disconnect()` when it never connected (status `"wait"`), so shutdown never opens a connection just to close it. Neither connects until first use.
 
 **`FinnhubClient` is not platform**: it is the quotes module's datasource in `data/server`, built on `HttpClient` and `config.finnhub.apiKey`.
 
@@ -131,11 +131,14 @@ Inside a module package:
 | `data/contracts/` | `domain/`, core |
 | `data/server/` | `domain/`, `data/contracts/`, core, platform `./server`, infrastructure libraries |
 | `data/client/` | `domain/`, `data/contracts/`, core, platform `./client` |
-| `module.server.ts` | `application/server`, `data/server`, platform `./server` |
-| `module.client.ts` | `application/client`, `data/client`, platform `./client` |
+| `module.server.ts` | `domain/`, `application/server`, `data/server`, platform `./server` |
+| `module.client.ts` | `domain/`, `application/client`, `data/client`, platform `./client` |
+| `index.ts` | `domain/`, `data/contracts/` |
+| `server.ts` | `domain/`, `application/server`, `module.server.ts` |
+| `client.ts` | `domain/`, `application/client`, `module.client.ts` |
 | test files of a side (`*.integration.ts`, `vitest-*-setup.ts`, `given.ts`) | what their folder may import, plus `module.<side>.ts`, platform `./<side>`, `data/contracts/`, database (server side), `msw`, Testcontainers |
 
-Core imports nothing of ours; the platform imports only core; the database package imports nothing of ours. No file under `*/server/` imports `*/client/` and vice versa. Across packages: `apps/investlab` never imports `@m0n0lab/investlab-*/server` nor the database package; `apps/investlab-api` never imports `@m0n0lab/investlab-*/client`; business modules never import each other. Domain and application code never imports `pg`, `drizzle-orm`, `ioredis`, `msw` or `varlock`.
+Only `data/server`, `data/client` and `module.*.ts` may import the platform entry of their side; `data/contracts/` may not. Core imports nothing of ours; the platform imports only core; the database package imports nothing of ours. No file under `*/server/` imports `*/client/` and vice versa. Across packages: `apps/investlab` never imports `@m0n0lab/investlab-*/server` nor the database package; `apps/investlab-api` never imports `@m0n0lab/investlab-*/client`; business modules never import each other. Domain and application code never imports `pg`, `drizzle-orm`, `ioredis`, `msw` or `varlock`.
 
 **Mechanism.** fallow 3.6 (already in CI as `lint:fallow`, `fallow dead-code --fail-on-issues`) supports `boundaries` in `.fallowrc.json`: zones by path pattern (one per layer folder per module, one for core, one per platform entry, one for database, one per app) and `rules` with `allow`/`allowTypeOnly` lists, reported as `boundary-violation` (error by default). Banned third-party imports per zone go through fallow `rulePacks` (banned imports). Implementation verifies two things before relying on it: that imports through workspace `exports` (`@m0n0lab/investlab-portfolio/server`) resolve to source files in the right zone, and that a deliberate violation fails `pnpm lint:fallow`. If either fails, the fallback is ESLint `no-restricted-imports` with `patterns` per folder in the root `eslint.config.ts` (run through the `lint:eslint` targets), or `eslint-plugin-boundaries` if path patterns are not enough.
 
@@ -144,7 +147,7 @@ Core imports nothing of ours; the platform imports only core; the database packa
 - **Static modules.** `platformServerModule`, `platformClientModule`, `portfolioServerModule`, `portfolioClientModule`, `quotesServerModule`, `quotesClientModule` are plain `ContainerModule` constants with no parameters. Configuration enters as a bound service (`PLATFORM.Config`); infrastructure is constructed by the platform module from it. Nothing else is passed in from outside.
 - **Explicit bindings.** No Inversify autobinding: each module file lists its bindings and is the record of the wiring. Use cases are `@injectable()` classes with `@inject` on their ports, as today.
 - **Typed tokens per module and side.** `./server` exports `PORTFOLIO = { ItemCreate, ItemUpdate, ItemDelete, ItemList, InstrumentCreate, InstrumentUpdate, InstrumentDelete, InstrumentList }`, each a `ServiceIdentifier<…UseCase>` of the server class; `./client` exports the same names typed with the client classes. `QUOTES = { List }` likewise. `container.get(PORTFOLIO.ItemCreate)` is typed without a cast. Repository and datasource tokens stay internal to the module.
-- **Lifecycle.** `Db` and `Redis` release their connections on deactivation. The API calls `await container.unbindAll()` on `SIGTERM`/`SIGINT` before exiting; test setups call it in `afterAll`.
+- **Lifecycle.** `Db` and `Redis` release their connections on deactivation. The API calls `await container.unbindAllAsync()` on `SIGTERM`/`SIGINT` before exiting; test setups call it in `afterEach`. Never the sync `unbindAll()`: it throws on async deactivation (`pool.end()` and the Redis close return promises).
 - **Client use cases stay.** For CRUD they are thin pass-throughs to the HTTP repositories ([ADR 0003](../../../docs/adr/0003-investlab-hono-api-behind-ssr.md)); loaders and actions call use cases and never touch repositories.
 
 ### 6. Apps as composition roots
@@ -160,13 +163,13 @@ The web does the same with its `Config` adapter, `platformClientModule`, `portfo
 
 ### 7. Errors across modules
 
-Kernel errors live in core; module errors in each module's `domain/errors.ts` (`InstrumentNotFoundError`, `PortfolioItemNotFoundError`, new `InstrumentInUseError`, new `InstrumentAlreadyExistsError`). Each module exports its code union (`PortfolioErrorCode`); the API's code → HTTP status map is typed over the union of kernel and module codes, so an unmapped code fails the type check. Codes stay SCREAMING_SNAKE without namespace, and `code` remains the wire discriminant ([ADR 0005](../../../docs/adr/0005-investlab-error-code-is-the-wire-discriminant.md)).
+Kernel errors live in core; module errors in each module's `domain/errors.ts` (`InstrumentNotFoundError`, `PortfolioItemNotFoundError`, new `InstrumentInUseError`, new `InstrumentAlreadyExistsError`). Each module names its remote-port union from core's generic (`PortfolioRemoteError = RemotePortError<…>`) and exports its code union (`PortfolioErrorCode`); the API's code → HTTP status map is typed over the union of kernel and module codes, so an unmapped code fails the type check. Codes stay SCREAMING_SNAKE without namespace, and `code` remains the wire discriminant ([ADR 0005](../../../docs/adr/0005-investlab-error-code-is-the-wire-discriminant.md)).
 
 ### 8. Drizzle and the seed
 
 - Each module owns its tables in `data/server/schema.ts` (`portfolio_items` and `instruments` in portfolio; quotes has no table).
 - `drizzle.config.ts` and `drizzle/` (SQL files, `meta/` snapshots and `_journal.json`) move with `git mv` to `packages/investlab-database`, unchanged, so databases that already applied them do not re-run anything. `schema` lists every module's `data/server/schema.ts` as path strings (`../investlab-portfolio/src/data/server/schema.ts`), not imports, so the database package has no Nx dependency on any module and no cycle forms. `db:generate`/`db:migrate` become the database package's scripts (drizzle-kit through Varlock with the API's `.env.schema`, as today); the API keeps same-named scripts that delegate with `pnpm --filter`.
-- The package exports `migrate(databaseUrl)`: it opens a `pg` pool, runs the drizzle-orm migrator over its own `drizzle/` folder (resolved relative to the package, not the caller) and closes the pool. Module integration setups call it for their template database and list `@m0n0lab/investlab-database` as a devDependency, so a new migration reaches their `test:integration` cache through the ordinary `^production` input; the `drizzle/` folder must be part of the package's `production` files.
+- The package exports `migrate(databaseUrl)`: it opens a `pg` pool, runs the drizzle-orm migrator over its own `drizzle/` folder (resolved relative to the package, not the caller) and closes the pool. Module integration setups call it for their template database and list `@m0n0lab/investlab-database` as a devDependency, so a new migration makes their `test:integration` targets affected through the Nx dependency.
 - After the move, `db:generate` must report no schema changes; that proves the split schema equals the snapshot.
 - A custom migration (`drizzle-kit generate --custom`) seeds the catalog with `INSERT … ON CONFLICT (symbol) DO NOTHING`:
 
@@ -188,8 +191,9 @@ All are `quotable`. Integration tests get the seed for free, because the templat
 ### 9. Instrument CRUD
 
 - Use cases on both sides: `InstrumentCreate`, `InstrumentUpdate`, `InstrumentDelete` next to the existing `InstrumentList`, entity-action naming and a named error union each.
-- Create normalizes the symbol (trim + uppercase); a symbol already in the catalog fails with `INSTRUMENT_ALREADY_EXISTS`. Update follows the item rules: an omitted field is unchanged, `null` clears an optional field (`exchange`, `sector`, `replicates`).
+- Create normalizes the symbol (trim + uppercase); a symbol already in the catalog fails with `INSTRUMENT_ALREADY_EXISTS`. Update follows the item rules: an omitted field is unchanged, `null` clears an optional field (`exchange`, `sector`, `replicates`); it normalizes the symbol like create and fails with `INSTRUMENT_ALREADY_EXISTS` when another instrument has it. The unique constraint (`instruments_symbol_unique`) is the race backstop; the repository maps its violation to `INSTRUMENT_ALREADY_EXISTS`, as it maps the FK violation to `INSTRUMENT_IN_USE`.
 - Delete is refused while any portfolio item references the instrument: the use case asks the portfolio item repository (`existsForInstrument(instrumentId)`, a named method because a use case needs it) and fails with `INSTRUMENT_IN_USE`. The existing foreign key (`ON DELETE no action`) is the backstop for a race; the repository maps its violation to the same error.
+- Deleting an unknown instrument fails with `INSTRUMENT_NOT_FOUND`.
 - API: `POST /instruments` (201), `PUT /instruments/:id` (200), `DELETE /instruments/:id` (204). `INSTRUMENT_IN_USE` and `INSTRUMENT_ALREADY_EXISTS` map to 409, `INSTRUMENT_NOT_FOUND` to 404, validation to 422. Bodies validated with the module's contracts.
 - No UI in this change.
 
@@ -209,7 +213,7 @@ src/data/server/mappers/portfolio-item.mapper.test.ts
 
 Setup files are named `vitest-<testtype>-setup.ts`. Each package's `vitest.config.ts` declares a project per side, `integration-server` (include `src/application/server/**/*.integration.ts`, `globalSetup` starting the containers, `setupFiles: [vitest-integration-setup.ts]`) and `integration-client` (include `src/application/client/**/*.integration.ts`, its own setup file), plus `unit` only where unit tests exist. The `test:integration` script runs both projects, so the Nx target and CI keep their names.
 
-**Server setup.** Testcontainers Postgres and Redis start once per run in `globalSetup`, which migrates a template database once with `migrate` from `@m0n0lab/investlab-database` (seed included). Each test file clones the template (`CREATE DATABASE … TEMPLATE`, under an advisory lock), takes its own Redis logical database, and files run in parallel; this reuses the approach of `investlab-application-server/src/testing/` (commit eace306). The setup then builds the container from `platformServerModule` and the module under test, with a constant `Config` pointing to the file's database and Redis, and an MSW `setupServer` (`onUnhandledRequest: "error"`) for Finnhub. `afterAll` unbinds the container (releasing pool and Redis), drops the database and closes MSW.
+**Server setup.** Testcontainers Postgres and Redis start once per run in `globalSetup`, which migrates a template database once with `migrate` from `@m0n0lab/investlab-database` (seed included). Each test (not each file) clones the template (`CREATE DATABASE … TEMPLATE`, under an advisory lock; seed included) and takes its own Redis logical database, flushed; files still run in parallel. This extends the per-file approach of `investlab-application-server/src/testing/` (commit eace306) to per test. `beforeEach` builds the container from `platformServerModule` and the module under test, with a constant `Config` pointing to the test's database and Redis; `afterEach` unbinds it with `await container.unbindAllAsync()` (releasing pool and Redis) and drops the cloned database. An MSW `setupServer` (`onUnhandledRequest: "error"`) for Finnhub starts once per file and closes in `afterAll`. Tests in one file do not see each other's data. Tests resolve use cases with `container.get(<token>)` in `beforeEach`.
 
 **Client setup.** MSW `setupServer` with `onUnhandledRequest: "error"` standing in for the InvestLab API; container from `platformClientModule` and the module under test, with a constant `Config` pointing to the fake base URL.
 

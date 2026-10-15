@@ -19,6 +19,11 @@ The portfolio module SHALL provide instrument create, update, delete and list us
 - **WHEN** the server instrument create use case creates `VWCE` and the list use case runs
 - **THEN** the list contains `VWCE`
 
+#### Scenario: Delete an unknown instrument
+
+- **WHEN** the server instrument delete use case runs with an id that does not exist
+- **THEN** it returns `Err<InstrumentNotFoundError>` with `code` `INSTRUMENT_NOT_FOUND`
+
 ### Requirement: Instrument in use cannot be deleted
 
 Deleting an instrument SHALL fail with a domain error whose `code` is `INSTRUMENT_IN_USE` while any portfolio item references it, and the instrument SHALL remain in the catalog.
@@ -40,12 +45,17 @@ Deleting an instrument SHALL fail with a domain error whose `code` is `INSTRUMEN
 
 ### Requirement: Instrument symbols are unique
 
-Creating an instrument, or updating one, with a symbol that another instrument already has (after trimming and uppercasing) SHALL fail with a domain error whose `code` is `INSTRUMENT_ALREADY_EXISTS`.
+Creating an instrument, or updating one, with a symbol that another instrument already has (after trimming and uppercasing) SHALL fail with a domain error whose `code` is `INSTRUMENT_ALREADY_EXISTS`. A unique-constraint violation on the symbol (`instruments_symbol_unique`), such as one raised by a concurrent write, SHALL map to the same error.
 
 #### Scenario: Duplicate symbol on create
 
 - **WHEN** the server instrument create use case runs with symbol ` aapl ` and `AAPL` is in the catalog
 - **THEN** it returns an error with `code` `INSTRUMENT_ALREADY_EXISTS` and the catalog is unchanged
+
+#### Scenario: Duplicate symbol on update
+
+- **WHEN** the server instrument update use case sets the symbol of `MSFT` to ` aapl ` and `AAPL` is in the catalog
+- **THEN** it returns an error with `code` `INSTRUMENT_ALREADY_EXISTS` and `MSFT` is unchanged
 
 ### Requirement: Seeded instrument catalog
 

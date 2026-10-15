@@ -39,7 +39,7 @@ The platform SHALL define a `Config` port per side, typed from the `.env.schema`
 
 ### Requirement: Infrastructure built from Config inside the container
 
-The platform server module SHALL provide a Postgres client and a Redis client, each built once from the bound `Config` and connecting on first use. Unbinding the container SHALL close the Postgres pool and quit the Redis client. Only `Config` SHALL be supplied from outside the container.
+The platform server module SHALL provide a Postgres client and a Redis client, each built once from the bound `Config` and connecting on first use. Unbinding the container with `await container.unbindAllAsync()` SHALL close the Postgres pool and close the Redis client: `quit()` when it connected, `disconnect()` when it never connected, so shutdown opens no connection just to close it. Only `Config` SHALL be supplied from outside the container.
 
 #### Scenario: Building the container opens no connection
 
@@ -48,12 +48,17 @@ The platform server module SHALL provide a Postgres client and a Redis client, e
 
 #### Scenario: Shutdown releases connections
 
-- **WHEN** the API receives `SIGTERM` and unbinds its container
-- **THEN** the Postgres pool is ended and the Redis client has quit before the process exits
+- **WHEN** the API receives `SIGTERM` or `SIGINT` and runs `await container.unbindAllAsync()`
+- **THEN** the Postgres pool is ended and the Redis client is closed before the process exits
+
+#### Scenario: Shutdown without a connection
+
+- **WHEN** the container is unbound with `unbindAllAsync()` and the Redis client never connected
+- **THEN** the Redis client is disconnected without opening a connection
 
 ### Requirement: Generic HTTP client
 
-The platform SHALL provide on both sides an HTTP client that sends JSON requests with a timeout and returns any HTTP status with its body. Network failures, timeouts and unparsable bodies SHALL fail with `NetworkError`. It SHALL know no endpoint, base URL or credential.
+The platform SHALL provide on both sides an HTTP client that sends JSON requests with a timeout and returns any HTTP status with its body. A response without a body (such as 204) SHALL be returned without parsing. Network failures, timeouts and present but unparsable bodies SHALL fail with `NetworkError`. It SHALL know no endpoint, base URL or credential.
 
 #### Scenario: Timeout
 
@@ -65,9 +70,14 @@ The platform SHALL provide on both sides an HTTP client that sends JSON requests
 - **WHEN** a request is answered with HTTP 404 and a JSON body
 - **THEN** the caller receives status 404 and the parsed body
 
+#### Scenario: Success without body
+
+- **WHEN** a request is answered with HTTP 204
+- **THEN** the caller receives status 204 and no body, and no `NetworkError`
+
 ### Requirement: InvestLab API client
 
-The platform client side SHALL provide an API client built on the HTTP client that prefixes `api.baseUrl`, sends `Authorization: Bearer <api.token>` and turns error responses into errors from their `code`: module codes through a map the caller supplies, kernel codes (from `@m0n0lab/investlab-core`) by the platform, 401 as `UnauthorizedError`, anything unusable as `NetworkError`.
+The platform client side SHALL provide an API client built on the HTTP client that prefixes `api.baseUrl`, sends `Authorization: Bearer <api.token>` and turns error responses into errors from their `code`: module codes through a map the caller supplies, kernel codes (from `@m0n0lab/investlab-core`) by the platform, 401 as `UnauthorizedError`, anything unusable as `NetworkError`. A success without a body SHALL resolve without schema validation.
 
 #### Scenario: Module error rebuilt from code
 

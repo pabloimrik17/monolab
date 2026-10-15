@@ -25,7 +25,28 @@ The `data/server/` folder of each module package SHALL implement the repository 
 
 - **WHEN** the Postgres instrument repository is instantiated
 - **THEN** it implements the `InstrumentRepository` port of the portfolio module
-- **AND** all methods return `ResultAsync<T, PersistenceError>`
+- **AND** all methods return `ResultAsync<T, PersistenceError | E>`, `E` being the domain errors the port names
+
+### Requirement: All repo methods return ResultAsync
+
+Every repository method SHALL return `ResultAsync<T, PersistenceError | E>` from neverthrow, `E` being the domain errors the port names. Database errors are wrapped in `PersistenceError`, except a constraint violation the port names: a foreign key violation on instrument delete becomes `InstrumentInUseError` and a unique symbol violation becomes `InstrumentAlreadyExistsError`.
+
+#### Scenario: Successful query
+
+- **WHEN** a repository query succeeds
+- **THEN** `ResultAsync` contains the `Ok` value
+
+#### Scenario: Database error
+
+- **WHEN** a database operation fails
+- **THEN** `ResultAsync` contains `Err(PersistenceError)` wrapping the original error
+- **AND** no exception is thrown
+
+#### Scenario: Foreign key violation on delete
+
+- **WHEN** an instrument delete violates a foreign key because portfolio items reference it
+- **THEN** `ResultAsync` contains `Err(InstrumentInUseError)`
+- **AND** no exception is thrown
 
 ### Requirement: Drizzle migrations
 
@@ -60,7 +81,7 @@ Schema changes SHALL be managed via drizzle-kit migrations owned by `@m0n0lab/in
 #### Scenario: New migration invalidates module tests
 
 - **WHEN** a migration is added to `packages/investlab-database/drizzle`
-- **THEN** Nx considers the `test:integration` targets of the modules that depend on the database package affected
+- **THEN** the `test:integration` targets of the modules are affected through their devDependency on `@m0n0lab/investlab-database`
 
 #### Scenario: No dependency cycle
 

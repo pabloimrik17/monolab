@@ -22,14 +22,19 @@ Vitest setup files SHALL be named `vitest-<testtype>-setup.ts` (for example `vit
 - **WHEN** the setup files of the module packages are listed
 - **THEN** every one matches `vitest-<testtype>-setup.ts`
 
-### Requirement: Server setup isolates each test file
+### Requirement: Server setup isolates each test
 
-The server setup SHALL start Postgres and Redis containers once per run and migrate a template database once with the `migrate` helper of `@m0n0lab/investlab-database`, which carries every migration including the instrument seed. Each test file SHALL get its own clone of the template and its own Redis logical database, so files run in parallel without sharing state.
+The server setup SHALL start Postgres and Redis containers once per run and migrate a template database once with the `migrate` helper of `@m0n0lab/investlab-database`, seed included. Each test SHALL get its own clone of the template and a flushed Redis logical database, dropped after the test, so tests share no state and files run in parallel.
 
 #### Scenario: Parallel files do not see each other's data
 
 - **WHEN** two server integration files create portfolio items at the same time
 - **THEN** each file's list use case returns only the items that file created
+
+#### Scenario: Tests in one file do not see each other's data
+
+- **WHEN** one test creates a portfolio item and a later test in the same file lists portfolio items
+- **THEN** the later test sees none of the first test's items
 
 #### Scenario: Seeded catalog available
 
@@ -38,7 +43,7 @@ The server setup SHALL start Postgres and Redis containers once per run and migr
 
 ### Requirement: Setup builds the real composition
 
-Each side's setup SHALL build the container from the platform module and the module under test, binding only a constant `Config` that points to the test infrastructure. Tests SHALL resolve the use case with `container.get(<token>)` in `beforeEach` into a `let` variable, with no helper function wrapping the resolution.
+Each side's setup SHALL build the container (on the server side per test: built in `beforeEach`, released with `await container.unbindAllAsync()` in `afterEach`) from the platform module and the module under test, binding only a constant `Config` that points to the test infrastructure. Tests SHALL resolve the use case with `container.get(<token>)` in `beforeEach` into a `let` variable, with no helper function wrapping the resolution.
 
 #### Scenario: Test resolves the use case per test
 
