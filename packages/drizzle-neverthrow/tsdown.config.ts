@@ -6,10 +6,6 @@ export default defineConfig({
     format: ["esm"],
     fixedExtension: false,
     outDir: "dist",
-    // Prevent bundling peer deps; rely on consumer to provide them.
-    deps: {
-        neverBundle: [/^drizzle-orm($|\/)/, /^neverthrow($|\/)/],
-    },
     dts: {
         compilerOptions: {
             composite: false,

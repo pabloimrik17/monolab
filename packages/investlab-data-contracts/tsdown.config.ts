@@ -6,7 +6,6 @@ export default defineConfig({
     format: ["esm"],
     fixedExtension: false,
     outDir: "dist",
-    deps: { neverBundle: [/^zod($|\/)/] },
     dts: {
         compilerOptions: {
             composite: false,
