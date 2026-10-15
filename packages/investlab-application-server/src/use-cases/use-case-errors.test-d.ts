@@ -21,6 +21,7 @@ import type {
     InstrumentNotFoundError,
     PersistenceError,
     PortfolioItem,
+    PortfolioItemConflictError,
     PortfolioItemNotFoundError,
     Quote,
     ValidationError,
@@ -39,7 +40,10 @@ describe("use case error unions", () => {
 
     test("PortfolioItemUpdateError", () => {
         expectTypeOf<PortfolioItemUpdateError>().toEqualTypeOf<
-            ValidationError | PortfolioItemNotFoundError | PersistenceError
+            | ValidationError
+            | PortfolioItemNotFoundError
+            | PortfolioItemConflictError
+            | PersistenceError
         >();
         expectTypeOf<ReturnType<PortfolioItemUpdateUseCase["execute"]>>().toEqualTypeOf<
             ResultAsync<PortfolioItem, PortfolioItemUpdateError>

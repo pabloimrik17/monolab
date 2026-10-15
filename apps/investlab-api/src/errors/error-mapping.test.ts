@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
     InstrumentNotFoundError,
     PersistenceError,
+    PortfolioItemConflictError,
     PortfolioItemNotFoundError,
     ValidationError,
 } from "@m0n0lab/investlab-domain";
@@ -12,6 +13,7 @@ describe("errorToHttp", () => {
     it.each([
         [new PortfolioItemNotFoundError("x"), 404],
         [new InstrumentNotFoundError("x"), 404],
+        [new PortfolioItemConflictError("x"), 409],
         [new ValidationError("bad"), 422],
         [new PersistenceError(new Error("db")), 500],
     ])("maps %s to %i", (error, expected) => {

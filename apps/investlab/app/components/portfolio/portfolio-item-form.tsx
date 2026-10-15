@@ -61,11 +61,18 @@ function IntentFields({ editing }: { editing: PortfolioItemView | undefined }) {
                 value={editing ? "update" : "create"}
             />
             {editing ? (
-                <input
-                    type="hidden"
-                    name="id"
-                    value={editing.id}
-                />
+                <>
+                    <input
+                        type="hidden"
+                        name="id"
+                        value={editing.id}
+                    />
+                    <input
+                        type="hidden"
+                        name="expectedUpdatedAt"
+                        value={editing.updatedAt}
+                    />
+                </>
             ) : null}
         </>
     );

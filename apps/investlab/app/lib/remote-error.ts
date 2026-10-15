@@ -12,6 +12,7 @@ export function remoteErrorMessage(error: RemotePortError): string {
         case "VALIDATION_ERROR":
         case "INSTRUMENT_NOT_FOUND":
         case "PORTFOLIO_ITEM_NOT_FOUND":
+        case "PORTFOLIO_ITEM_CONFLICT":
             return error.message;
     }
 }
@@ -29,5 +30,7 @@ export function remoteErrorStatus(error: RemotePortError): number {
         case "INSTRUMENT_NOT_FOUND":
         case "PORTFOLIO_ITEM_NOT_FOUND":
             return 404;
+        case "PORTFOLIO_ITEM_CONFLICT":
+            return 409;
     }
 }

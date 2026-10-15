@@ -1,10 +1,12 @@
 import { inject, injectable } from "inversify";
 import { errAsync, type ResultAsync } from "neverthrow";
 import {
+    PortfolioItemConflictError as PortfolioItemConflictErrorClass,
     PortfolioItemNotFoundError as PortfolioItemNotFoundErrorClass,
     TOKENS,
     type PersistenceError,
     type PortfolioItem,
+    type PortfolioItemConflictError,
     type PortfolioItemNotFoundError,
     type PortfolioItemRepository,
     type ValidationError,
@@ -13,6 +15,7 @@ import {
 export type PortfolioItemUpdateError =
     | ValidationError
     | PortfolioItemNotFoundError
+    | PortfolioItemConflictError
     | PersistenceError;
 
 @injectable()
@@ -30,16 +33,20 @@ export class PortfolioItemUpdateUseCase {
             currentValue?: number;
             notes?: string | undefined;
         },
+        expectedUpdatedAt: Date,
     ): ResultAsync<PortfolioItem, PortfolioItemUpdateError> {
         return this.portfolioItemRepo.findById(id).andThen((item) => {
             if (!item) {
                 return errAsync(new PortfolioItemNotFoundErrorClass(id));
             }
+            if (item.updatedAt.getTime() !== expectedUpdatedAt.getTime()) {
+                return errAsync(new PortfolioItemConflictErrorClass(id));
+            }
             const updateResult = item.update(props);
             if (updateResult.isErr()) {
                 return errAsync(updateResult.error);
             }
-            return this.portfolioItemRepo.update(item);
+            return this.portfolioItemRepo.update(item, expectedUpdatedAt);
         });
     }
 }

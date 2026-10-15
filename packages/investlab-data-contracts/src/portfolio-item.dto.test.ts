@@ -81,9 +81,18 @@ describe("createPortfolioItemDtoSchema", () => {
 });
 
 describe("updatePortfolioItemDtoSchema", () => {
-    it("accepts an empty patch", () => {
-        expect(updatePortfolioItemDtoSchema.safeParse({}).success).toBe(true);
+    const expectedUpdatedAt = "2026-01-01T00:00:00.000Z";
+
+    it("accepts a patch carrying only the expected version", () => {
+        expect(updatePortfolioItemDtoSchema.safeParse({ expectedUpdatedAt }).success).toBe(true);
     });
+
+    it.each([{}, { expectedUpdatedAt: "yesterday" }])(
+        "rejects a missing or malformed expected version %o",
+        (patch) => {
+            expect(updatePortfolioItemDtoSchema.safeParse(patch).success).toBe(false);
+        },
+    );
 
     it.each([
         { targetWeight: 200 },
@@ -91,19 +100,22 @@ describe("updatePortfolioItemDtoSchema", () => {
         { broker: "   " },
         { broker: "b".repeat(101) },
     ])("rejects %o", (patch) => {
-        expect(updatePortfolioItemDtoSchema.safeParse(patch).success).toBe(false);
+        expect(
+            updatePortfolioItemDtoSchema.safeParse({ ...patch, expectedUpdatedAt }).success,
+        ).toBe(false);
     });
 
     it("accepts null notes as an explicit clear", () => {
-        const result = updatePortfolioItemDtoSchema.safeParse({ notes: null });
+        const result = updatePortfolioItemDtoSchema.safeParse({ notes: null, expectedUpdatedAt });
         expect(result.success).toBe(true);
-        expect(result.data).toEqual({ notes: null });
+        expect(result.data).toEqual({ notes: null, expectedUpdatedAt });
     });
 
     it("accepts boundary values and trims broker", () => {
         const result = updatePortfolioItemDtoSchema.safeParse({
             broker: ` ${"b".repeat(100)} `,
             currentValue: 9_999_999_999.99,
+            expectedUpdatedAt,
         });
         expect(result.success).toBe(true);
         expect(result.data?.broker).toBe("b".repeat(100));

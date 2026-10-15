@@ -7,6 +7,7 @@ import type { ContentfulStatusCode } from "hono/utils/http-status";
 const STATUS_BY_CODE = {
     PORTFOLIO_ITEM_NOT_FOUND: 404,
     INSTRUMENT_NOT_FOUND: 404,
+    PORTFOLIO_ITEM_CONFLICT: 409,
     VALIDATION_ERROR: 422,
     PERSISTENCE_ERROR: 500,
 } as const satisfies Record<DomainErrorCode, number>;

@@ -5,6 +5,7 @@ export {
     InstrumentNotFoundError,
     NetworkError,
     PersistenceError,
+    PortfolioItemConflictError,
     PortfolioItemNotFoundError,
     type RemotePortError,
     UnauthorizedError,

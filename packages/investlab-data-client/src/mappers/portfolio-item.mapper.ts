@@ -29,11 +29,15 @@ export function portfolioItemToCreateDto(item: PortfolioItem): CreatePortfolioIt
 }
 
 /** `notes: null` is how the wire says "clear them"; an entity without notes always clears. */
-export function portfolioItemToUpdateDto(item: PortfolioItem): UpdatePortfolioItemDto {
+export function portfolioItemToUpdateDto(
+    item: PortfolioItem,
+    expectedUpdatedAt: Date,
+): UpdatePortfolioItemDto {
     return {
         broker: item.broker,
         targetWeight: item.targetWeight,
         currentValue: item.currentValue,
         notes: item.notes ?? null,
+        expectedUpdatedAt: expectedUpdatedAt.toISOString(),
     };
 }

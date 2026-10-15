@@ -40,10 +40,13 @@ export class HttpPortfolioItemRepository implements PortfolioItemRepository<Remo
             .map(({ items }) => items.map(({ item }) => portfolioItemToDomain(item)));
     }
 
-    update(item: PortfolioItem): ResultAsync<PortfolioItem, RemotePortError> {
+    update(
+        item: PortfolioItem,
+        expectedUpdatedAt: Date,
+    ): ResultAsync<PortfolioItem, RemotePortError> {
         return this.api
             .json("PUT", `/portfolio-items/${item.id}`, portfolioItemDtoSchema, {
-                body: portfolioItemToUpdateDto(item),
+                body: portfolioItemToUpdateDto(item, expectedUpdatedAt),
                 resourceId: item.id,
             })
             .map(portfolioItemToDomain);

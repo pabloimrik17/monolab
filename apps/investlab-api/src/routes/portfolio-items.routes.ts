@@ -60,12 +60,16 @@ export function portfolioItemRoutes(container: Container) {
         const body = await parseJsonBody(c, updatePortfolioItemDtoSchema);
         const uc = container.get<PortfolioItemUpdateUseCase>(APP_TOKENS.PortfolioItemUpdateUseCase);
 
-        const result = await uc.execute(id, {
-            ...(body.broker !== undefined && { broker: body.broker }),
-            ...(body.targetWeight !== undefined && { targetWeight: body.targetWeight }),
-            ...(body.currentValue !== undefined && { currentValue: body.currentValue }),
-            ...(body.notes !== undefined && { notes: body.notes ?? undefined }),
-        });
+        const result = await uc.execute(
+            id,
+            {
+                ...(body.broker !== undefined && { broker: body.broker }),
+                ...(body.targetWeight !== undefined && { targetWeight: body.targetWeight }),
+                ...(body.currentValue !== undefined && { currentValue: body.currentValue }),
+                ...(body.notes !== undefined && { notes: body.notes ?? undefined }),
+            },
+            new Date(body.expectedUpdatedAt),
+        );
 
         return result.match(
             (item) => c.json(toPortfolioItemDto(item)),

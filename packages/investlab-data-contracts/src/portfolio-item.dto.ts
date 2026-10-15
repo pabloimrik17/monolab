@@ -34,6 +34,8 @@ export const updatePortfolioItemDtoSchema = z.object({
     currentValue: currentValueSchema.optional(),
     // Omitted keeps the notes; `null` clears them (JSON has no `undefined`).
     notes: z.string().nullable().optional(),
+    // Optimistic lock: the `updatedAt` the caller last read; a mismatch answers 409.
+    expectedUpdatedAt: z.string().datetime(),
 });
 
 export type UpdatePortfolioItemDto = z.infer<typeof updatePortfolioItemDtoSchema>;

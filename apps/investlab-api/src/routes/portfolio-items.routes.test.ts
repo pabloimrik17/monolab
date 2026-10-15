@@ -165,7 +165,10 @@ describe("portfolio item routes", () => {
             const ctx = createTestApp();
             const { item } = await seedItem(ctx);
 
-            const res = await ctx.json(`/portfolio-items/${item.id}`, "PUT", { targetWeight: 25 });
+            const res = await ctx.json(`/portfolio-items/${item.id}`, "PUT", {
+                targetWeight: 25,
+                expectedUpdatedAt: item.updatedAt.toISOString(),
+            });
 
             expect(res.status).toBe(200);
             const body = portfolioItemDtoSchema.parse(await res.json());
@@ -180,7 +183,10 @@ describe("portfolio item routes", () => {
             const { item } = await seedItem(ctx);
             item.update({ notes: "core" })._unsafeUnwrap();
 
-            const res = await ctx.json(`/portfolio-items/${item.id}`, "PUT", { notes: null });
+            const res = await ctx.json(`/portfolio-items/${item.id}`, "PUT", {
+                notes: null,
+                expectedUpdatedAt: item.updatedAt.toISOString(),
+            });
 
             expect(res.status).toBe(200);
             expect(portfolioItemDtoSchema.parse(await res.json())).not.toHaveProperty("notes");
@@ -192,7 +198,10 @@ describe("portfolio item routes", () => {
             const { item } = await seedItem(ctx);
             item.update({ notes: "core" })._unsafeUnwrap();
 
-            const res = await ctx.json(`/portfolio-items/${item.id}`, "PUT", { targetWeight: 25 });
+            const res = await ctx.json(`/portfolio-items/${item.id}`, "PUT", {
+                targetWeight: 25,
+                expectedUpdatedAt: item.updatedAt.toISOString(),
+            });
 
             expect(res.status).toBe(200);
             expect(portfolioItemDtoSchema.parse(await res.json()).notes).toBe("core");
@@ -201,6 +210,7 @@ describe("portfolio item routes", () => {
         it("answers 404 PORTFOLIO_ITEM_NOT_FOUND for an unknown item", async () => {
             const res = await createTestApp().json(`/portfolio-items/${MISSING_ID}`, "PUT", {
                 targetWeight: 25,
+                expectedUpdatedAt: new Date().toISOString(),
             });
 
             expect(res.status).toBe(404);
@@ -210,6 +220,7 @@ describe("portfolio item routes", () => {
         it("answers 422 for an id that is not a UUID", async () => {
             const res = await createTestApp().json("/portfolio-items/not-a-uuid", "PUT", {
                 targetWeight: 25,
+                expectedUpdatedAt: new Date().toISOString(),
             });
 
             expect(res.status).toBe(422);
@@ -222,10 +233,40 @@ describe("portfolio item routes", () => {
             const ctx = createTestApp();
             const { item } = await seedItem(ctx);
 
-            const res = await ctx.json(`/portfolio-items/${item.id}`, "PUT", { broker: "" });
+            const res = await ctx.json(`/portfolio-items/${item.id}`, "PUT", {
+                broker: "",
+                expectedUpdatedAt: item.updatedAt.toISOString(),
+            });
 
             expect(res.status).toBe(422);
             expect(ctx.items.store.get(item.id)!.broker).toBe("MyInvestor");
+        });
+
+        it("answers 409 PORTFOLIO_ITEM_CONFLICT for a stale version and leaves the item untouched", async () => {
+            const ctx = createTestApp();
+            const { item } = await seedItem(ctx);
+            const stale = new Date(item.updatedAt.getTime() - 1).toISOString();
+
+            const res = await ctx.json(`/portfolio-items/${item.id}`, "PUT", {
+                targetWeight: 25,
+                expectedUpdatedAt: stale,
+            });
+
+            expect(res.status).toBe(409);
+            expect(apiErrorDtoSchema.parse(await res.json()).code).toBe("PORTFOLIO_ITEM_CONFLICT");
+            expect(ctx.items.store.get(item.id)!.targetWeight).toBe(10);
+        });
+
+        it("answers 422 when the body omits expectedUpdatedAt", async () => {
+            const ctx = createTestApp();
+            const { item } = await seedItem(ctx);
+
+            const res = await ctx.json(`/portfolio-items/${item.id}`, "PUT", { targetWeight: 25 });
+
+            expect(res.status).toBe(422);
+            const body = apiErrorDtoSchema.parse(await res.json());
+            expect(body.code).toBe("VALIDATION_ERROR");
+            expect(body.issues?.[0]?.path).toBe("expectedUpdatedAt");
         });
     });
 

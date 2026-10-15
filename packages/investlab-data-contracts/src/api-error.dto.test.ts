@@ -11,6 +11,15 @@ describe("apiErrorDtoSchema", () => {
         expect(result.success).toBe(true);
     });
 
+    it("accepts the optimistic-lock conflict code", () => {
+        const result = apiErrorDtoSchema.safeParse({
+            code: "PORTFOLIO_ITEM_CONFLICT",
+            message: "Portfolio item p1 was changed by another request; reload and try again",
+            statusCode: 409,
+        });
+        expect(result.success).toBe(true);
+    });
+
     it("accepts validation issues", () => {
         const result = apiErrorDtoSchema.safeParse({
             code: "VALIDATION_ERROR",

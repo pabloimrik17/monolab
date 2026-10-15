@@ -67,7 +67,13 @@ describe("updatePortfolioItemFormSchema", () => {
         targetWeight: "20",
         currentValue: "500",
         notes: "",
+        expectedUpdatedAt: "2026-10-02T11:30:00.123Z",
     };
+
+    it("parses the expected version into a Date", () => {
+        const result = updatePortfolioItemFormSchema.safeParse(formData(validUpdate));
+        expect(result.data?.expectedUpdatedAt).toEqual(new Date("2026-10-02T11:30:00.123Z"));
+    });
 
     it("keeps a blank notes field as an explicit clear", () => {
         const result = updatePortfolioItemFormSchema.safeParse(formData(validUpdate));
@@ -81,6 +87,8 @@ describe("updatePortfolioItemFormSchema", () => {
         ["currentValue", { currentValue: "abc" }],
         ["currentValue", { currentValue: "" }],
         ["id", { id: "not-a-uuid" }],
+        ["expectedUpdatedAt", { expectedUpdatedAt: "" }],
+        ["expectedUpdatedAt", { expectedUpdatedAt: "yesterday" }],
     ])("reports a field error on %s for %o", (field, override) => {
         const result = updatePortfolioItemFormSchema.safeParse(
             formData({ ...validUpdate, ...override }),

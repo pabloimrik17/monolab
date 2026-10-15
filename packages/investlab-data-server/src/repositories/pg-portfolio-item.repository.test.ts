@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PersistenceError, PortfolioItem } from "@m0n0lab/investlab-domain";
+import { PortfolioItem, PortfolioItemConflictError } from "@m0n0lab/investlab-domain";
 import { PgPortfolioItemRepository } from "./pg-portfolio-item.repository.ts";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
@@ -25,16 +25,16 @@ const item = PortfolioItem.reconstitute({
 });
 
 describe("PgPortfolioItemRepository", () => {
-    it("update fails with PersistenceError when no row matched", async () => {
+    it("update fails with PortfolioItemConflictError when no row matched the expected version", async () => {
         const db = {
             update: () => ({
                 set: () => ({ where: () => ({ returning: () => Promise.resolve([]) }) }),
             }),
         } as unknown as NodePgDatabase;
 
-        const result = await new PgPortfolioItemRepository(db).update(item);
+        const result = await new PgPortfolioItemRepository(db).update(item, row.updatedAt);
 
-        expect(result._unsafeUnwrapErr()).toBeInstanceOf(PersistenceError);
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(PortfolioItemConflictError);
     });
 
     it("update returns the updated item", async () => {
@@ -44,7 +44,7 @@ describe("PgPortfolioItemRepository", () => {
             }),
         } as unknown as NodePgDatabase;
 
-        const result = await new PgPortfolioItemRepository(db).update(item);
+        const result = await new PgPortfolioItemRepository(db).update(item, row.updatedAt);
 
         expect(result._unsafeUnwrap().id).toBe("p-1");
     });

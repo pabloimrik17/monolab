@@ -42,6 +42,7 @@ export const updatePortfolioItemFormSchema = z.object({
     currentValue: numeric(update.currentValue),
     // A blank field already maps to undefined (clear); forms never send the wire `null`.
     notes: text(create.notes),
+    expectedUpdatedAt: text(update.expectedUpdatedAt).transform((iso) => new Date(iso)),
 });
 
 export const portfolioItemIdFormSchema = z.object({ id });

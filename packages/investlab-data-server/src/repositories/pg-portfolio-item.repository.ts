@@ -1,8 +1,9 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { inject, injectable } from "inversify";
 import { err, ok, type ResultAsync } from "neverthrow";
 import {
-    PersistenceError,
+    PortfolioItemConflictError,
+    type PersistenceError,
     type PortfolioItem,
     type PortfolioItemRepository,
 } from "@m0n0lab/investlab-domain";
@@ -38,19 +39,28 @@ export class PgPortfolioItemRepository implements PortfolioItemRepository {
             .map((rows) => rows.map(portfolioItemToDomain));
     }
 
-    update(item: PortfolioItem): ResultAsync<PortfolioItem, PersistenceError> {
+    update(
+        item: PortfolioItem,
+        expectedUpdatedAt: Date,
+    ): ResultAsync<PortfolioItem, PersistenceError | PortfolioItemConflictError> {
         const row = portfolioItemToRow(item);
         return this.db
             .update((tx) =>
                 tx
                     .update(portfolioItems)
                     .set(row)
-                    .where(eq(portfolioItems.id, item.id))
+                    .where(
+                        and(
+                            eq(portfolioItems.id, item.id),
+                            // defaultNow() stores microseconds; JS Dates carry milliseconds.
+                            sql`date_trunc('milliseconds', ${portfolioItems.updatedAt}) = ${expectedUpdatedAt.toISOString()}::timestamptz`,
+                        ),
+                    )
                     .returning(),
             )
             .andThen((rows) =>
                 rows.length === 0
-                    ? err(new PersistenceError(`PortfolioItem not found: ${item.id}`))
+                    ? err(new PortfolioItemConflictError(item.id))
                     : ok(portfolioItemToDomain(rows[0]!)),
             );
     }

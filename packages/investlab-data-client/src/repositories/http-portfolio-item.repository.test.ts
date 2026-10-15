@@ -3,6 +3,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
     InstrumentNotFoundError,
     PortfolioItem,
+    PortfolioItemConflictError,
     PortfolioItemNotFoundError,
     TOKENS,
     ValidationError,
@@ -43,6 +44,8 @@ function entity(props: Partial<Parameters<typeof PortfolioItem.reconstitute>[0]>
         ...props,
     });
 }
+
+const EXPECTED_UPDATED_AT = new Date("2026-10-02T11:30:00.000Z");
 
 const SERVER_ID = "c1d2e3f4-0a1b-4c2d-8e3f-5a6b7c8d9e0f";
 
@@ -135,7 +138,7 @@ describe("HttpPortfolioItemRepository", () => {
     });
 
     describe("update", () => {
-        it("puts the editable fields and returns the updated entity", async () => {
+        it("puts the editable fields with the expected version and returns the updated entity", async () => {
             let sent: unknown;
             server.use(
                 fakeApi("put", `/portfolio-items/${ITEM_ID}`, async ({ request }) => {
@@ -144,13 +147,17 @@ describe("HttpPortfolioItemRepository", () => {
                 }),
             );
 
-            const result = await createRepository().update(entity({ broker: "IBKR" }));
+            const result = await createRepository().update(
+                entity({ broker: "IBKR" }),
+                EXPECTED_UPDATED_AT,
+            );
 
             expect(sent).toEqual({
                 broker: "IBKR",
                 targetWeight: 60,
                 currentValue: 1500.5,
                 notes: "core holding",
+                expectedUpdatedAt: "2026-10-02T11:30:00.000Z",
             });
             expect(result._unsafeUnwrap().broker).toBe("IBKR");
         });
@@ -165,7 +172,10 @@ describe("HttpPortfolioItemRepository", () => {
                 }),
             );
 
-            const result = await createRepository().update(entity({ notes: undefined }));
+            const result = await createRepository().update(
+                entity({ notes: undefined }),
+                EXPECTED_UPDATED_AT,
+            );
 
             expect(sent["notes"]).toBeNull();
             expect(result._unsafeUnwrap().notes).toBeUndefined();
@@ -178,9 +188,26 @@ describe("HttpPortfolioItemRepository", () => {
                 ),
             );
 
-            const error = (await createRepository().update(entity()))._unsafeUnwrapErr();
+            const error = (
+                await createRepository().update(entity(), EXPECTED_UPDATED_AT)
+            )._unsafeUnwrapErr();
 
             expect(error).toBeInstanceOf(PortfolioItemNotFoundError);
+            expect(error.message).toContain(ITEM_ID);
+        });
+
+        it("maps PORTFOLIO_ITEM_CONFLICT to PortfolioItemConflictError for that id", async () => {
+            server.use(
+                fakeApi("put", `/portfolio-items/${ITEM_ID}`, () =>
+                    apiError(409, "PORTFOLIO_ITEM_CONFLICT", "Portfolio item changed"),
+                ),
+            );
+
+            const error = (
+                await createRepository().update(entity(), EXPECTED_UPDATED_AT)
+            )._unsafeUnwrapErr();
+
+            expect(error).toBeInstanceOf(PortfolioItemConflictError);
             expect(error.message).toContain(ITEM_ID);
         });
     });

@@ -3,6 +3,7 @@ import {
     InstrumentNotFoundError,
     NetworkError,
     PersistenceError,
+    PortfolioItemConflictError,
     PortfolioItemNotFoundError,
     UnauthorizedError,
     ValidationError,
@@ -32,6 +33,7 @@ describe("remoteErrorMessage", () => {
         new ValidationError("Target weight must be between 0 and 100"),
         new InstrumentNotFoundError("instrument-1"),
         new PortfolioItemNotFoundError("item-1"),
+        new PortfolioItemConflictError("item-1"),
     ])("keeps the message of $code", (error) => {
         expect(remoteErrorMessage(error)).toBe(error.message);
     });
@@ -48,6 +50,7 @@ describe("remoteErrorStatus", () => {
         [new ValidationError("bad"), 422],
         [new InstrumentNotFoundError("instrument-1"), 404],
         [new PortfolioItemNotFoundError("item-1"), 404],
+        [new PortfolioItemConflictError("item-1"), 409],
     ])("maps %o to %i", (error, status) => {
         expect(remoteErrorStatus(error)).toBe(status);
     });

@@ -6,6 +6,7 @@ export interface PortfolioItemView {
     currentValue: number;
     notes?: string;
     createdAt: string;
+    updatedAt: string;
     instrument: {
         id: string;
         symbol: string;

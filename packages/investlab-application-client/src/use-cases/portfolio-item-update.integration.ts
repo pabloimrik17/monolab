@@ -24,6 +24,9 @@ function useCase(): PortfolioItemUpdateUseCase {
 
 const putPath = `/portfolio-items/${ITEM_ID}`;
 
+/** The `updatedAt` of the listed `portfolioItemDto()`: the version the caller last read. */
+const READ_VERSION = new Date("2026-10-02T11:30:00.000Z");
+
 /** The API has no single-item read: the use case finds the item through the list endpoint. */
 function stubList(items = [portfolioItemDto()]) {
     return stubApi("get", "/portfolio-items", () =>
@@ -41,7 +44,9 @@ describe("PortfolioItemUpdateUseCase against the faked API", () => {
             HttpResponse.json(portfolioItemDto({ targetWeight: 25 })),
         );
 
-        const item = (await useCase().execute(ITEM_ID, { targetWeight: 25 }))._unsafeUnwrap();
+        const item = (
+            await useCase().execute(ITEM_ID, { targetWeight: 25 }, READ_VERSION)
+        )._unsafeUnwrap();
 
         expect(listRequests).toEqual([
             expect.objectContaining({
@@ -63,6 +68,7 @@ describe("PortfolioItemUpdateUseCase against the faked API", () => {
                     targetWeight: 25,
                     currentValue: 1500.5,
                     notes: "core holding",
+                    expectedUpdatedAt: "2026-10-02T11:30:00.000Z",
                 },
             },
         ]);
@@ -76,7 +82,9 @@ describe("PortfolioItemUpdateUseCase against the faked API", () => {
             return HttpResponse.json(withoutNotes);
         });
 
-        const item = (await useCase().execute(ITEM_ID, { notes: undefined }))._unsafeUnwrap();
+        const item = (
+            await useCase().execute(ITEM_ID, { notes: undefined }, READ_VERSION)
+        )._unsafeUnwrap();
 
         expect(putRequests[0]?.body).toMatchObject({ notes: null });
         expect(item.notes).toBeUndefined();
@@ -86,7 +94,9 @@ describe("PortfolioItemUpdateUseCase against the faked API", () => {
         stubList([]);
         const putRequests = stubApi("put", putPath, () => HttpResponse.json(portfolioItemDto()));
 
-        const error = (await useCase().execute(ITEM_ID, { targetWeight: 5 }))._unsafeUnwrapErr();
+        const error = (
+            await useCase().execute(ITEM_ID, { targetWeight: 5 }, READ_VERSION)
+        )._unsafeUnwrapErr();
 
         expect(error).toMatchObject({
             code: "PORTFOLIO_ITEM_NOT_FOUND",
@@ -95,11 +105,28 @@ describe("PortfolioItemUpdateUseCase against the faked API", () => {
         expect(putRequests).toHaveLength(0);
     });
 
+    it("returns PortfolioItemConflictError without a PUT when the read version is stale", async () => {
+        stubList([portfolioItemDto({ updatedAt: "2026-10-03T08:00:00.000Z" })]);
+        const putRequests = stubApi("put", putPath, () => HttpResponse.json(portfolioItemDto()));
+
+        const error = (
+            await useCase().execute(ITEM_ID, { targetWeight: 5 }, READ_VERSION)
+        )._unsafeUnwrapErr();
+
+        expect(error).toMatchObject({
+            code: "PORTFOLIO_ITEM_CONFLICT",
+            message: `Portfolio item ${ITEM_ID} was changed by another request; reload and try again`,
+        });
+        expect(putRequests).toHaveLength(0);
+    });
+
     it("returns ValidationError without a PUT when the change is invalid", async () => {
         stubList();
         const putRequests = stubApi("put", putPath, () => HttpResponse.json(portfolioItemDto()));
 
-        const error = (await useCase().execute(ITEM_ID, { targetWeight: -5 }))._unsafeUnwrapErr();
+        const error = (
+            await useCase().execute(ITEM_ID, { targetWeight: -5 }, READ_VERSION)
+        )._unsafeUnwrapErr();
 
         expect(error.code).toBe("VALIDATION_ERROR");
         expect(putRequests).toHaveLength(0);
@@ -111,11 +138,29 @@ describe("PortfolioItemUpdateUseCase against the faked API", () => {
             apiError(404, "PORTFOLIO_ITEM_NOT_FOUND", `Portfolio item not found: ${ITEM_ID}`),
         );
 
-        const error = (await useCase().execute(ITEM_ID, { targetWeight: 5 }))._unsafeUnwrapErr();
+        const error = (
+            await useCase().execute(ITEM_ID, { targetWeight: 5 }, READ_VERSION)
+        )._unsafeUnwrapErr();
 
         expect(error).toMatchObject({
             code: "PORTFOLIO_ITEM_NOT_FOUND",
             message: `Portfolio item not found: ${ITEM_ID}`,
+        });
+    });
+
+    it("maps 409 PORTFOLIO_ITEM_CONFLICT on the PUT (item changed meanwhile)", async () => {
+        stubList();
+        stubApi("put", putPath, () =>
+            apiError(409, "PORTFOLIO_ITEM_CONFLICT", "Portfolio item changed by another request"),
+        );
+
+        const error = (
+            await useCase().execute(ITEM_ID, { targetWeight: 5 }, READ_VERSION)
+        )._unsafeUnwrapErr();
+
+        expect(error).toMatchObject({
+            code: "PORTFOLIO_ITEM_CONFLICT",
+            message: `Portfolio item ${ITEM_ID} was changed by another request; reload and try again`,
         });
     });
 
@@ -127,7 +172,9 @@ describe("PortfolioItemUpdateUseCase against the faked API", () => {
             ]),
         );
 
-        const error = (await useCase().execute(ITEM_ID, { targetWeight: 5 }))._unsafeUnwrapErr();
+        const error = (
+            await useCase().execute(ITEM_ID, { targetWeight: 5 }, READ_VERSION)
+        )._unsafeUnwrapErr();
 
         expect(error).toMatchObject({ code: "VALIDATION_ERROR", message: "Invalid request body" });
     });
@@ -135,7 +182,7 @@ describe("PortfolioItemUpdateUseCase against the faked API", () => {
     describe("when reading the list fails", () => {
         describeTransportFailures(
             { method: "get", path: "/portfolio-items" },
-            () => useCase().execute(ITEM_ID, { targetWeight: 5 }),
+            () => useCase().execute(ITEM_ID, { targetWeight: 5 }, READ_VERSION),
             { malformedBody: { items: "nope", instruments: [] } },
         );
     });
@@ -145,7 +192,7 @@ describe("PortfolioItemUpdateUseCase against the faked API", () => {
             { method: "put", path: putPath },
             () => {
                 stubList();
-                return useCase().execute(ITEM_ID, { targetWeight: 5 });
+                return useCase().execute(ITEM_ID, { targetWeight: 5 }, READ_VERSION);
             },
             { malformedBody: { ...portfolioItemDto(), targetWeight: 250 } },
         );

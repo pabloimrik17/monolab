@@ -8,6 +8,7 @@ describe("DomainError code", () => {
             | "VALIDATION_ERROR"
             | "INSTRUMENT_NOT_FOUND"
             | "PORTFOLIO_ITEM_NOT_FOUND"
+            | "PORTFOLIO_ITEM_CONFLICT"
         >();
     });
 

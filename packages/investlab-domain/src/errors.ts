@@ -3,7 +3,8 @@ export type DomainErrorCode =
     | "PERSISTENCE_ERROR"
     | "VALIDATION_ERROR"
     | "INSTRUMENT_NOT_FOUND"
-    | "PORTFOLIO_ITEM_NOT_FOUND";
+    | "PORTFOLIO_ITEM_NOT_FOUND"
+    | "PORTFOLIO_ITEM_CONFLICT";
 
 export abstract class DomainError extends Error {
     abstract readonly code: DomainErrorCode;
@@ -42,6 +43,14 @@ export class PortfolioItemNotFoundError extends DomainError {
     }
 }
 
+export class PortfolioItemConflictError extends DomainError {
+    readonly code = "PORTFOLIO_ITEM_CONFLICT";
+    constructor(id: string) {
+        super(`Portfolio item ${id} was changed by another request; reload and try again`);
+        this.name = "PortfolioItemConflictError";
+    }
+}
+
 // Client-side transport failure (API unreachable or unusable response).
 // Deliberately not a DomainError: it never crosses the wire, so the API's code→status map stays total.
 export class NetworkError extends Error {
@@ -70,5 +79,6 @@ export type RemotePortError =
     | ValidationError
     | InstrumentNotFoundError
     | PortfolioItemNotFoundError
+    | PortfolioItemConflictError
     | NetworkError
     | UnauthorizedError;

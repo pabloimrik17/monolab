@@ -38,6 +38,7 @@ export async function loader(_: Route.LoaderArgs) {
         currentValue: item.currentValue,
         notes: item.notes,
         createdAt: item.createdAt.toISOString(),
+        updatedAt: item.updatedAt.toISOString(),
         instrument: {
             id: instrument.id,
             symbol: instrument.symbol,
@@ -87,11 +88,11 @@ async function createItem(formData: FormData): Promise<ActionResult> {
 async function updateItem(formData: FormData): Promise<ActionResult> {
     const parsed = updatePortfolioItemFormSchema.safeParse(Object.fromEntries(formData));
     if (!parsed.success) return invalid(parsed.error);
-    const { id, ...changes } = parsed.data;
+    const { id, expectedUpdatedAt, ...changes } = parsed.data;
     const useCase = getContainer().get<PortfolioItemUpdateUseCase>(
         APP_TOKENS.PortfolioItemUpdateUseCase,
     );
-    const result = await useCase.execute(id, changes);
+    const result = await useCase.execute(id, changes, expectedUpdatedAt);
     return result.match(succeeded, failed);
 }
 

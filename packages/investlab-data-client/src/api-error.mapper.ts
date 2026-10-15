@@ -2,6 +2,7 @@ import {
     InstrumentNotFoundError,
     NetworkError,
     PersistenceError,
+    PortfolioItemConflictError,
     PortfolioItemNotFoundError,
     ValidationError,
     UnauthorizedError,
@@ -20,6 +21,8 @@ export function apiErrorToDomain(dto: ApiErrorDto, resourceId: string): RemotePo
             return new InstrumentNotFoundError(resourceId);
         case "PORTFOLIO_ITEM_NOT_FOUND":
             return new PortfolioItemNotFoundError(resourceId);
+        case "PORTFOLIO_ITEM_CONFLICT":
+            return new PortfolioItemConflictError(resourceId);
         // A rejected token is a client misconfiguration, distinct from an outage.
         case "UNAUTHORIZED":
             return new UnauthorizedError(dto);
