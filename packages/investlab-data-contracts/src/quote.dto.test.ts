@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { quoteDtoSchema, quoteListQueryDtoSchema } from "./quote.dto.ts";
+import {
+    QUOTE_LIST_MAX_SYMBOLS,
+    quoteDtoSchema,
+    quoteListQueryDtoSchema,
+    quoteSymbolSchema,
+} from "./quote.dto.ts";
+
+const symbolsOf = (count: number) =>
+    Array.from({ length: count }, (_, index) => `S${index}`).join(",");
 
 describe("quoteDtoSchema", () => {
     it("accepts a quote with an ISO timestamp", () => {
@@ -41,4 +49,47 @@ describe("quoteListQueryDtoSchema", () => {
         const result = quoteListQueryDtoSchema.safeParse({ symbols: " , " });
         expect(result.success).toBe(false);
     });
+
+    it("upper-cases symbols and drops duplicates", () => {
+        const result = quoteListQueryDtoSchema.parse({ symbols: "aapl,AAPL,msft,Aapl" });
+        expect(result.symbols).toEqual(["AAPL", "MSFT"]);
+    });
+
+    it("accepts exactly the maximum number of symbols", () => {
+        const result = quoteListQueryDtoSchema.safeParse({
+            symbols: symbolsOf(QUOTE_LIST_MAX_SYMBOLS),
+        });
+        expect(result.success).toBe(true);
+    });
+
+    it("rejects more than the maximum number of distinct symbols", () => {
+        const result = quoteListQueryDtoSchema.safeParse({
+            symbols: symbolsOf(QUOTE_LIST_MAX_SYMBOLS + 1),
+        });
+        expect(result.success).toBe(false);
+        expect(result.error?.issues[0]?.path).toEqual(["symbols"]);
+    });
+
+    it("counts duplicates once towards the maximum", () => {
+        const result = quoteListQueryDtoSchema.safeParse({
+            symbols: `${symbolsOf(QUOTE_LIST_MAX_SYMBOLS)},s0,S1`,
+        });
+        expect(result.success).toBe(true);
+    });
+
+    it.each(["AAPL;DROP", "BAD SYMBOL", "../etc", "A".repeat(16), "caf\u00e9"])(
+        "rejects the malformed symbol %j",
+        (symbol) => {
+            const result = quoteListQueryDtoSchema.safeParse({ symbols: `AAPL,${symbol}` });
+            expect(result.success).toBe(false);
+            expect(result.error?.issues[0]?.path).toEqual(["symbols", 1]);
+        },
+    );
+
+    it.each(["AAPL", "BRK.B", "BTC-USD", "7203.T", "A".repeat(15)])(
+        "accepts the symbol %j",
+        (symbol) => {
+            expect(quoteSymbolSchema.safeParse(symbol).success).toBe(true);
+        },
+    );
 });

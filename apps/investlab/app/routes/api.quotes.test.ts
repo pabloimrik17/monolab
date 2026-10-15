@@ -1,5 +1,6 @@
 import { createServer, type Server } from "node:http";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { QUOTE_LIST_MAX_SYMBOLS } from "@m0n0lab/investlab-data-contracts";
 import type { Route } from "./+types/api.quotes";
 
 const TOKEN = "test-token";
@@ -57,6 +58,19 @@ describe("quotes resource route", () => {
         const response = await loader(get(""));
 
         expect(response.status).toBe(422);
+        expect(apiRequests).toHaveLength(callsBefore);
+    });
+
+    it("rejects too many or malformed symbols with 422 and never calls the API", async () => {
+        const { loader } = await import("./api.quotes");
+        const callsBefore = apiRequests.length;
+        const tooMany = Array.from({ length: QUOTE_LIST_MAX_SYMBOLS + 1 }, (_, i) => `S${i}`);
+
+        const manyResponse = await loader(get(`?symbols=${tooMany.join(",")}`));
+        const badResponse = await loader(get("?symbols=AAPL,BAD%20SYMBOL"));
+
+        expect(manyResponse.status).toBe(422);
+        expect(badResponse.status).toBe(422);
         expect(apiRequests).toHaveLength(callsBefore);
     });
 

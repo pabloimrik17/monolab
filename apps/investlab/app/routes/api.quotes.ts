@@ -10,7 +10,10 @@ export async function loader({ request }: Route.LoaderArgs): Promise<Response> {
         symbols: new URL(request.url).searchParams.get("symbols") ?? undefined,
     });
     if (!query.success) {
-        return Response.json({ message: "At least one symbol is required" }, { status: 422 });
+        return Response.json(
+            { message: query.error.issues[0]?.message ?? "Invalid symbols" },
+            { status: 422 },
+        );
     }
 
     const useCase = getContainer().get<QuoteListUseCase>(APP_TOKENS.QuoteListUseCase);
