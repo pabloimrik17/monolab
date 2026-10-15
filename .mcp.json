@@ -8,7 +8,7 @@
         "context7": {
             "type": "stdio",
             "command": "npx",
-            "args": ["-y", "@upstash/context7-mcp@2.1.2"]
+            "args": ["-y", "@upstash/context7-mcp@4.1.1"]
         },
         "knip": {
             "type": "stdio",
