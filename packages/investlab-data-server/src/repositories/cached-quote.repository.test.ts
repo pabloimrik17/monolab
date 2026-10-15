@@ -114,6 +114,14 @@ describe("CachedQuoteRepository", () => {
             expect(warn).toHaveBeenCalled();
         });
 
+        it("answers without waiting for the cache write", async () => {
+            redis.set.mockReturnValueOnce(new Promise(() => {}));
+
+            const result = await repository.getQuote("AAPL");
+
+            expect(result._unsafeUnwrap().symbol).toBe("AAPL");
+        });
+
         it("fails with a PersistenceError when Finnhub fails", async () => {
             finnhub.getQuote.mockRejectedValueOnce(new Error("No data for symbol: NOPE"));
 
@@ -167,6 +175,14 @@ describe("CachedQuoteRepository", () => {
             expect(result.isOk()).toBe(true);
             expect(finnhub.getQuotes).toHaveBeenCalledWith(["AAPL"]);
             expect(warn).toHaveBeenCalled();
+        });
+
+        it("answers without waiting for the cache writes", async () => {
+            redis.set.mockReturnValue(new Promise(() => {}));
+
+            const result = (await repository.getQuotes(["AAPL", "GOOGL"]))._unsafeUnwrap();
+
+            expect(result.size).toBe(2);
         });
 
         it("still returns fetched quotes when cache writes fail", async () => {

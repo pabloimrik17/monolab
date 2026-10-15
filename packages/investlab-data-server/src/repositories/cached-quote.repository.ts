@@ -46,7 +46,7 @@ export class CachedQuoteRepository implements QuoteRepository {
             return cached;
         }
         const quote = await this.finnhub.getQuote(symbol);
-        await this.writeThrough(symbol, quote);
+        void this.writeThrough(symbol, quote);
         return quote;
     }
 
@@ -60,15 +60,14 @@ export class CachedQuoteRepository implements QuoteRepository {
             return result;
         }
         const fetched = await this.finnhub.getQuotes(uncached);
-        await Promise.all(
-            [...fetched].map(([symbol, quote]) => {
-                result.set(symbol, quote);
-                return this.writeThrough(symbol, quote);
-            }),
-        );
+        for (const [symbol, quote] of fetched) {
+            result.set(symbol, quote);
+            void this.writeThrough(symbol, quote);
+        }
         return result;
     }
 
+    // Best effort and off the response path: never rejects, and the caller never awaits it.
     private async writeThrough(symbol: string, quote: Quote): Promise<void> {
         try {
             await this.cache.set(symbol, quote);
