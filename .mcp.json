@@ -23,7 +23,7 @@
         "chrome-devtools": {
             "type": "stdio",
             "command": "npx",
-            "args": ["-y", "chrome-devtools-mcp@0.18.1"]
+            "args": ["-y", "chrome-devtools-mcp@1.10.1"]
         },
         "gh_grep": {
             "type": "http",
