@@ -79,6 +79,7 @@ describe("updatePortfolioItemFormSchema", () => {
         ["broker", { broker: "" }],
         ["targetWeight", { targetWeight: "" }],
         ["currentValue", { currentValue: "abc" }],
+        ["currentValue", { currentValue: "" }],
         ["id", { id: "not-a-uuid" }],
     ])("reports a field error on %s for %o", (field, override) => {
         const result = updatePortfolioItemFormSchema.safeParse(

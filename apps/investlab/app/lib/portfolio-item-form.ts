@@ -20,7 +20,11 @@ const numeric = <T extends z.ZodTypeAny>(schema: T) => z.preprocess(toNumber, sc
 
 const create = createPortfolioItemDtoSchema.shape;
 // The edit form always submits every field, so only notes may be left blank (to clear them).
-const update = updatePortfolioItemDtoSchema.required({ broker: true, targetWeight: true }).shape;
+const update = updatePortfolioItemDtoSchema.required({
+    broker: true,
+    targetWeight: true,
+    currentValue: true,
+}).shape;
 const id = text(portfolioItemDtoSchema.shape.id);
 
 export const createPortfolioItemFormSchema = z.object({
