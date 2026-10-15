@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
     InstrumentNotFoundError,
     PersistenceError,
@@ -60,6 +60,33 @@ describe("errorJson", () => {
             code: "INSTRUMENT_NOT_FOUND",
             message: "Instrument not found: i1",
             statusCode: 404,
+        });
+    });
+
+    describe("logging", () => {
+        afterEach(() => {
+            vi.restoreAllMocks();
+        });
+
+        it("logs a 5xx error with its cause before hiding it", async () => {
+            const log = vi.spyOn(console, "error").mockImplementation(() => {});
+            const error = new PersistenceError(new Error("connection refused"));
+            const app = new Hono();
+            app.get("/", (c) => errorJson(c, error));
+
+            await app.request("/");
+
+            expect(log).toHaveBeenCalledWith(expect.any(String), error);
+        });
+
+        it("does not log a 4xx error", async () => {
+            const log = vi.spyOn(console, "error").mockImplementation(() => {});
+            const app = new Hono();
+            app.get("/", (c) => errorJson(c, new InstrumentNotFoundError("i1")));
+
+            await app.request("/");
+
+            expect(log).not.toHaveBeenCalled();
         });
     });
 });
