@@ -11,6 +11,8 @@ export function remoteErrorMessage(error: PortfolioRemoteError): string {
             return "InvestLab could not complete the request. Please try again later.";
         case "VALIDATION_ERROR":
         case "INSTRUMENT_NOT_FOUND":
+        case "INSTRUMENT_IN_USE":
+        case "INSTRUMENT_ALREADY_EXISTS":
         case "PORTFOLIO_ITEM_NOT_FOUND":
         case "PORTFOLIO_ITEM_CONFLICT":
             return error.message;
@@ -31,6 +33,8 @@ export function remoteErrorStatus(error: PortfolioRemoteError): number {
         case "PORTFOLIO_ITEM_NOT_FOUND":
             return 404;
         case "PORTFOLIO_ITEM_CONFLICT":
+        case "INSTRUMENT_IN_USE":
+        case "INSTRUMENT_ALREADY_EXISTS":
             return 409;
     }
 }

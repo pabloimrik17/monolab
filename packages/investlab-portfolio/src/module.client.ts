@@ -1,6 +1,9 @@
 // fallow-ignore-file code-duplication -- each side binds the same use-case tokens; the module file is the record of its wiring
 import { ContainerModule } from "inversify";
+import { InstrumentCreateUseCase } from "./application/client/instrument-create.use-case.ts";
+import { InstrumentDeleteUseCase } from "./application/client/instrument-delete.use-case.ts";
 import { InstrumentListUseCase } from "./application/client/instrument-list.use-case.ts";
+import { InstrumentUpdateUseCase } from "./application/client/instrument-update.use-case.ts";
 import { PortfolioItemCreateUseCase } from "./application/client/portfolio-item-create.use-case.ts";
 import { PortfolioItemDeleteUseCase } from "./application/client/portfolio-item-delete.use-case.ts";
 import { PortfolioItemListUseCase } from "./application/client/portfolio-item-list.use-case.ts";
@@ -20,4 +23,7 @@ export const portfolioClientModule = new ContainerModule(({ bind }) => {
     bind(PORTFOLIO.ItemDelete).to(PortfolioItemDeleteUseCase);
     bind(PORTFOLIO.ItemList).to(PortfolioItemListUseCase);
     bind(PORTFOLIO.InstrumentList).to(InstrumentListUseCase);
+    bind(PORTFOLIO.InstrumentCreate).to(InstrumentCreateUseCase);
+    bind(PORTFOLIO.InstrumentUpdate).to(InstrumentUpdateUseCase);
+    bind(PORTFOLIO.InstrumentDelete).to(InstrumentDeleteUseCase);
 });

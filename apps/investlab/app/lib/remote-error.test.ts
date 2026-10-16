@@ -6,6 +6,8 @@ import {
     ValidationError,
 } from "@m0n0lab/investlab-core";
 import {
+    InstrumentAlreadyExistsError,
+    InstrumentInUseError,
     InstrumentNotFoundError,
     PortfolioItemConflictError,
     PortfolioItemNotFoundError,
@@ -34,6 +36,8 @@ describe("remoteErrorMessage", () => {
     it.each([
         new ValidationError("Target weight must be between 0 and 100"),
         new InstrumentNotFoundError("instrument-1"),
+        new InstrumentInUseError("instrument-1"),
+        new InstrumentAlreadyExistsError("AAPL"),
         new PortfolioItemNotFoundError("item-1"),
         new PortfolioItemConflictError("item-1"),
     ])("keeps the message of $code", (error) => {
@@ -53,6 +57,8 @@ describe("remoteErrorStatus", () => {
         [new InstrumentNotFoundError("instrument-1"), 404],
         [new PortfolioItemNotFoundError("item-1"), 404],
         [new PortfolioItemConflictError("item-1"), 409],
+        [new InstrumentInUseError("instrument-1"), 409],
+        [new InstrumentAlreadyExistsError("AAPL"), 409],
     ])("maps %o to %i", (error, status) => {
         expect(remoteErrorStatus(error)).toBe(status);
     });

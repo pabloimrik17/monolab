@@ -2,6 +2,10 @@ import { randomUUID } from "node:crypto";
 import { http, HttpResponse } from "msw";
 import { afterEach } from "vitest";
 import {
+    createInstrumentDtoSchema,
+    updateInstrumentDtoSchema,
+} from "../../data/contracts/instrument.dto.ts";
+import {
     createPortfolioItemDtoSchema,
     updatePortfolioItemDtoSchema,
 } from "../../data/contracts/portfolio-item.dto.ts";
@@ -67,11 +71,59 @@ afterEach(() => {
     catalog = [];
 });
 
-/** The catalog has these instruments; the service records holdings of them only. */
+/** An instrument as the service changes it: `null` clears an optional field. */
+function changeInstrument(instrument: InstrumentDto, body: unknown): InstrumentDto {
+    // The web always sends every field.
+    const { exchange, sector, replicates, ...changes } = updateInstrumentDtoSchema
+        .required()
+        .parse(body);
+    const { exchange: _exchange, sector: _sector, replicates: _replicates, ...kept } = instrument;
+    return {
+        ...kept,
+        ...changes,
+        ...(exchange !== null && { exchange }),
+        ...(sector !== null && { sector }),
+        ...(replicates !== null && { replicates }),
+    };
+}
+
+/**
+ * The catalog has these instruments; the service records holdings of them only, and adds,
+ * changes and removes instruments. Declare it before `givenPortfolioWith`, which refuses
+ * to remove a held instrument.
+ */
 export function givenCatalog(...instruments: InstrumentDto[]): void {
     catalog = instruments;
+    const listed = (id: unknown) => instruments.find((instrument) => instrument.id === id);
+    const notListed = () => failure(404, "INSTRUMENT_NOT_FOUND", "Instrument not found");
+
     investlabApi.use(
         http.get(`${API_URL}/instruments`, () => HttpResponse.json(instruments)),
+        http.post(`${API_URL}/instruments`, async ({ request }) => {
+            const { symbol, quotable, ...details } = createInstrumentDtoSchema.parse(
+                await request.json(),
+            );
+            const normalized = symbol.toUpperCase();
+            if (instruments.some((instrument) => instrument.symbol === normalized)) {
+                return failure(409, "INSTRUMENT_ALREADY_EXISTS", "Instrument already exists");
+            }
+            const recorded: InstrumentDto = {
+                id: randomUUID(),
+                symbol: normalized,
+                ...details,
+                quotable: quotable ?? true,
+            };
+            return HttpResponse.json(recorded, { status: 201 });
+        }),
+        http.put(`${API_URL}/instruments/:id`, async ({ params, request }) => {
+            const instrument = listed(params["id"]);
+            return instrument
+                ? HttpResponse.json(changeInstrument(instrument, await request.json()))
+                : notListed();
+        }),
+        http.delete(`${API_URL}/instruments/:id`, ({ params }) =>
+            listed(params["id"]) ? new HttpResponse(null, { status: 204 }) : notListed(),
+        ),
         http.post(`${API_URL}/portfolio-items`, async ({ request }) => {
             const { instrumentId, broker, targetWeight, currentValue, notes } =
                 createPortfolioItemDtoSchema.parse(await request.json());
@@ -133,6 +185,12 @@ export function givenPortfolioWith(...holdings: PortfolioItemWithInstrumentDto[]
         }),
         http.delete(`${API_URL}/portfolio-items/:id`, ({ params }) =>
             held(params["id"]) ? new HttpResponse(null, { status: 204 }) : notHeld(),
+        ),
+        // A held instrument stays in the catalog; any other falls through to `givenCatalog`.
+        http.delete(`${API_URL}/instruments/:id`, ({ params }) =>
+            holdings.some(({ instrument }) => instrument.id === params["id"])
+                ? failure(409, "INSTRUMENT_IN_USE", "Instrument is held in the portfolio")
+                : undefined,
         ),
     );
 }

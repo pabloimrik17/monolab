@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PersistenceError, ValidationError } from "@m0n0lab/investlab-core";
 import {
+    InstrumentAlreadyExistsError,
+    InstrumentInUseError,
     InstrumentNotFoundError,
     PortfolioItemConflictError,
     PortfolioItemNotFoundError,
@@ -13,6 +15,8 @@ describe("errorToHttp", () => {
         [new PortfolioItemNotFoundError("x"), 404],
         [new InstrumentNotFoundError("x"), 404],
         [new PortfolioItemConflictError("x"), 409],
+        [new InstrumentInUseError("x"), 409],
+        [new InstrumentAlreadyExistsError("AAPL"), 409],
         [new ValidationError("bad"), 422],
         [new PersistenceError(new Error("db")), 500],
     ])("maps %s to %i", (error, expected) => {

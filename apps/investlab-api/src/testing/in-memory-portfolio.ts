@@ -3,6 +3,7 @@ import { PersistenceError } from "@m0n0lab/investlab-core";
 import {
     AssetClass,
     Instrument,
+    InstrumentAlreadyExistsError,
     InstrumentType,
     type InstrumentRepository,
     type PortfolioItem,
@@ -12,18 +13,50 @@ import {
 } from "@m0n0lab/investlab-portfolio";
 import type { Quote, QuoteRepository } from "@m0n0lab/investlab-quotes";
 
+function detached(instrument: Instrument): Instrument {
+    const { id, symbol, name, type, assetClass, exchange, sector, replicates, quotable } =
+        instrument;
+    return Instrument.reconstitute({
+        id,
+        symbol,
+        name,
+        type,
+        assetClass,
+        exchange,
+        sector,
+        replicates,
+        quotable,
+    });
+}
+
 export class InMemoryInstrumentRepository implements InstrumentRepository {
     readonly store = new Map<string, Instrument>();
 
+    /** Like the unique symbol constraint: another instrument with the symbol refuses the write. */
     save(instrument: Instrument) {
+        const taken = [...this.store.values()].some(
+            ({ id, symbol }) => symbol === instrument.symbol && id !== instrument.id,
+        );
+        if (taken) {
+            return errAsync(new InstrumentAlreadyExistsError(instrument.symbol));
+        }
         this.store.set(instrument.id, instrument);
         return okAsync(instrument);
     }
+    /** Like rows from the database: a caller's changes reach the store only through a write. */
     findById(id: string) {
-        return okAsync(this.store.get(id) ?? null);
+        const instrument = this.store.get(id);
+        return okAsync(instrument ? detached(instrument) : null);
     }
     findAll() {
-        return okAsync([...this.store.values()]);
+        return okAsync([...this.store.values()].map(detached));
+    }
+    update(instrument: Instrument) {
+        return this.save(instrument);
+    }
+    delete(id: string) {
+        this.store.delete(id);
+        return okAsync(undefined);
     }
 }
 
@@ -54,6 +87,11 @@ export class InMemoryPortfolioItemRepository implements PortfolioItemRepository 
         return this.guard(() => {
             this.store.delete(id);
         });
+    }
+    existsForInstrument(instrumentId: string) {
+        return this.guard(() =>
+            [...this.store.values()].some((item) => item.instrumentId === instrumentId),
+        );
     }
 }
 

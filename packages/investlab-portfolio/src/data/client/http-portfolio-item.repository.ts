@@ -68,4 +68,10 @@ export class HttpPortfolioItemRepository implements PortfolioItemRepository<Port
             errors: { PORTFOLIO_ITEM_NOT_FOUND: () => new PortfolioItemNotFoundError(id) },
         });
     }
+
+    existsForInstrument(instrumentId: string): ResultAsync<boolean, PortfolioRemoteError> {
+        return this.findAll().map((items) =>
+            items.some((item) => item.instrumentId === instrumentId),
+        );
+    }
 }

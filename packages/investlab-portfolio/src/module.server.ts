@@ -1,5 +1,8 @@
 import { ContainerModule } from "inversify";
+import { InstrumentCreateUseCase } from "./application/server/instrument-create.use-case.ts";
+import { InstrumentDeleteUseCase } from "./application/server/instrument-delete.use-case.ts";
 import { InstrumentListUseCase } from "./application/server/instrument-list.use-case.ts";
+import { InstrumentUpdateUseCase } from "./application/server/instrument-update.use-case.ts";
 import { PortfolioItemCreateUseCase } from "./application/server/portfolio-item-create.use-case.ts";
 import { PortfolioItemDeleteUseCase } from "./application/server/portfolio-item-delete.use-case.ts";
 import { PortfolioItemListUseCase } from "./application/server/portfolio-item-list.use-case.ts";
@@ -19,4 +22,7 @@ export const portfolioServerModule = new ContainerModule(({ bind }) => {
     bind(PORTFOLIO.ItemDelete).to(PortfolioItemDeleteUseCase);
     bind(PORTFOLIO.ItemList).to(PortfolioItemListUseCase);
     bind(PORTFOLIO.InstrumentList).to(InstrumentListUseCase);
+    bind(PORTFOLIO.InstrumentCreate).to(InstrumentCreateUseCase);
+    bind(PORTFOLIO.InstrumentUpdate).to(InstrumentUpdateUseCase);
+    bind(PORTFOLIO.InstrumentDelete).to(InstrumentDeleteUseCase);
 });

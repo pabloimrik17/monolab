@@ -188,6 +188,51 @@ describe("Instrument", () => {
             }
         });
 
+        it("normalizes a new symbol to trimmed uppercase", () => {
+            const instrument = Instrument.create({
+                symbol: "VWCE",
+                name: "Vanguard FTSE All-World",
+                type: InstrumentType.ETF,
+                assetClass: AssetClass.Equity,
+            })._unsafeUnwrap();
+
+            instrument.update({ symbol: " vwrl " })._unsafeUnwrap();
+
+            expect(instrument.symbol).toBe("VWRL");
+        });
+
+        it("returns ValidationError for empty symbol update", () => {
+            const instrument = Instrument.create({
+                symbol: "VWCE",
+                name: "Vanguard FTSE All-World",
+                type: InstrumentType.ETF,
+                assetClass: AssetClass.Equity,
+            })._unsafeUnwrap();
+
+            const error = instrument.update({ symbol: "  " })._unsafeUnwrapErr();
+
+            expect(error.code).toBe("VALIDATION_ERROR");
+            expect(instrument.symbol).toBe("VWCE");
+        });
+
+        it("clears optional fields given as undefined", () => {
+            const instrument = Instrument.create({
+                symbol: "SPY",
+                name: "SPDR S&P 500 ETF",
+                type: InstrumentType.ETF,
+                assetClass: AssetClass.Equity,
+                exchange: "NYSE Arca",
+                sector: Sector.Technology,
+                replicates: "S&P 500",
+            })._unsafeUnwrap();
+
+            instrument.update({ exchange: undefined, sector: undefined, replicates: undefined });
+
+            expect(instrument.exchange).toBeUndefined();
+            expect(instrument.sector).toBeUndefined();
+            expect(instrument.replicates).toBeUndefined();
+        });
+
         it("partially updates only provided fields", () => {
             const result = Instrument.create({
                 symbol: "AAPL",

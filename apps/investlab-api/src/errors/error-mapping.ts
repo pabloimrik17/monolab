@@ -7,13 +7,15 @@ import type { ContentfulStatusCode } from "hono/utils/http-status";
 /** Every code a use case can fail with: the kernel's plus each module's. Quotes declare none. */
 type ApiDomainErrorCode = KernelErrorCode | PortfolioErrorCode;
 
-type ApiDomainError = DomainError<ApiDomainErrorCode>;
+export type ApiDomainError = DomainError<ApiDomainErrorCode>;
 
 // `satisfies Record<…>` makes an unmapped code a type error.
 const STATUS_BY_CODE = {
     PORTFOLIO_ITEM_NOT_FOUND: 404,
     INSTRUMENT_NOT_FOUND: 404,
     PORTFOLIO_ITEM_CONFLICT: 409,
+    INSTRUMENT_IN_USE: 409,
+    INSTRUMENT_ALREADY_EXISTS: 409,
     VALIDATION_ERROR: 422,
     PERSISTENCE_ERROR: 500,
 } as const satisfies Record<ApiDomainErrorCode, number>;

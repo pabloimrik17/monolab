@@ -84,6 +84,12 @@
             // `json`/`empty` are called by every module's HTTP repositories through `PLATFORM.InvestlabApiClient` (type-only import `audit` does not follow)
             "files": ["packages/investlab-platform/src/client/investlab-api-client.ts"],
             "rules": { "unused-class-members": "off" }
+        },
+        {
+            // `update` is called by the update use cases on the entity `findById` resolves, which fallow cannot type;
+            // fallow sees the call only while workspace imports resolve to src (no dist/), so an inline suppression goes stale in one of the two states
+            "files": ["packages/investlab-portfolio/src/domain/entities/instrument.ts"],
+            "rules": { "unused-class-members": "off" }
         }
     ]
 }

@@ -1,5 +1,7 @@
 // Domain
 export {
+    InstrumentAlreadyExistsError,
+    InstrumentInUseError,
     InstrumentNotFoundError,
     PortfolioItemConflictError,
     PortfolioItemNotFoundError,
@@ -19,7 +21,14 @@ export type { PortfolioItemWithInstrument } from "./domain/read-models/portfolio
 export type { PortfolioItemList } from "./domain/read-models/portfolio-item-list.ts";
 
 // Contracts
-export { instrumentDtoSchema, type InstrumentDto } from "./data/contracts/instrument.dto.ts";
+export {
+    createInstrumentDtoSchema,
+    instrumentDtoSchema,
+    updateInstrumentDtoSchema,
+    type CreateInstrumentDto,
+    type InstrumentDto,
+    type UpdateInstrumentDto,
+} from "./data/contracts/instrument.dto.ts";
 export {
     createPortfolioItemDtoSchema,
     portfolioItemDtoSchema,
