@@ -96,40 +96,12 @@ coverage:
                 flags:
                     - investlab-quotes
 
-            investlab-domain:
+            investlab-portfolio:
                 target: auto
                 threshold: 2%
                 informational: false
                 flags:
-                    - investlab-domain
-
-            investlab-data-server:
-                target: auto
-                threshold: 2%
-                informational: false
-                flags:
-                    - investlab-data-server
-
-            investlab-application-server:
-                target: auto
-                threshold: 2%
-                informational: false
-                flags:
-                    - investlab-application-server
-
-            investlab-application-client:
-                target: auto
-                threshold: 2%
-                informational: false
-                flags:
-                    - investlab-application-client
-
-            investlab-data-contracts:
-                target: auto
-                threshold: 2%
-                informational: false
-                flags:
-                    - investlab-data-contracts
+                    - investlab-portfolio
 
             green-beard:
                 target: auto
@@ -258,40 +230,12 @@ coverage:
                 flags:
                     - investlab-quotes
 
-            investlab-domain:
+            investlab-portfolio:
                 target: 50%
                 threshold: 10%
                 informational: false
                 flags:
-                    - investlab-domain
-
-            investlab-data-server:
-                target: 50%
-                threshold: 10%
-                informational: false
-                flags:
-                    - investlab-data-server
-
-            investlab-application-server:
-                target: 50%
-                threshold: 10%
-                informational: false
-                flags:
-                    - investlab-application-server
-
-            investlab-application-client:
-                target: 50%
-                threshold: 10%
-                informational: false
-                flags:
-                    - investlab-application-client
-
-            investlab-data-contracts:
-                target: 50%
-                threshold: 10%
-                informational: false
-                flags:
-                    - investlab-data-contracts
+                    - investlab-portfolio
 
             green-beard:
                 target: 50%
@@ -420,29 +364,9 @@ flags:
             - packages/investlab-quotes/
         carryforward: true
 
-    investlab-domain:
+    investlab-portfolio:
         paths:
-            - packages/investlab-domain/
-        carryforward: true
-
-    investlab-data-server:
-        paths:
-            - packages/investlab-data-server/
-        carryforward: true
-
-    investlab-application-server:
-        paths:
-            - packages/investlab-application-server/
-        carryforward: true
-
-    investlab-application-client:
-        paths:
-            - packages/investlab-application-client/
-        carryforward: true
-
-    investlab-data-contracts:
-        paths:
-            - packages/investlab-data-contracts/
+            - packages/investlab-portfolio/
         carryforward: true
 
     green-beard:

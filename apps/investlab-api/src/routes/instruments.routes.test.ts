@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { instrumentDtoSchema } from "@m0n0lab/investlab-data-contracts";
+import { instrumentDtoSchema } from "@m0n0lab/investlab-portfolio";
 import { makeInstrument } from "../testing/in-memory-portfolio.ts";
 import { createTestApp } from "../testing/test-app.ts";
 

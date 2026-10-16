@@ -14,24 +14,6 @@
     "exclude": ["**/*.test.ts", "**/*.spec.ts"],
     "references": [
       {
-        "path": "../investlab-domain"
-      },
-      {
-        "path": "../investlab-core"
-      },
-      {
-        "path": "../vitest-config"
-      },
-      {
-        "path": "../investlab-platform"
-      },
-      {
-        "path": "../investlab-database"
-      },
-      {
-        "path": "../investlab-data-server"
-      },
-      {
         "path": "./tsconfig.node.json"
       }
     ]

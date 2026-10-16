@@ -9,7 +9,7 @@ import {
     InstrumentNotFoundError,
     PortfolioItemConflictError,
     PortfolioItemNotFoundError,
-} from "@m0n0lab/investlab-domain";
+} from "@m0n0lab/investlab-portfolio";
 import { remoteErrorMessage, remoteErrorStatus } from "./remote-error";
 
 describe("remoteErrorMessage", () => {

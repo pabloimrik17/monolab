@@ -1,6 +1,2 @@
-export { dataModule } from "./data.module.ts";
-export { portfolioDataModule } from "./portfolio-data.module.ts";
-export { instruments, portfolioItems } from "./schema/index.ts";
-export { PgInstrumentRepository } from "./repositories/pg-instrument.repository.ts";
-export { PgPortfolioItemRepository } from "./repositories/pg-portfolio-item.repository.ts";
-export { PgPortfolioItemQuery } from "./queries/pg-portfolio-item.query.ts";
+// Emptied: the portfolio module moved to @m0n0lab/investlab-portfolio; this package is removed next.
+export {};

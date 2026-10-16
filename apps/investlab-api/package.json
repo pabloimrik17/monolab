@@ -21,12 +21,9 @@
     },
     "dependencies": {
         "@hono/node-server": "2.0.10",
-        "@m0n0lab/investlab-application-server": "workspace:*",
         "@m0n0lab/investlab-core": "workspace:*",
-        "@m0n0lab/investlab-data-contracts": "workspace:*",
-        "@m0n0lab/investlab-data-server": "workspace:*",
-        "@m0n0lab/investlab-domain": "workspace:*",
         "@m0n0lab/investlab-platform": "workspace:*",
+        "@m0n0lab/investlab-portfolio": "workspace:*",
         "@m0n0lab/investlab-quotes": "workspace:*",
         "@varlock/1password-plugin": "catalog:",
         "hono": "4.12.30",

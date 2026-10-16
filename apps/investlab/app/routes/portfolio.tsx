@@ -1,28 +1,18 @@
-import {
-    APP_TOKENS,
-    type PortfolioItemCreateUseCase,
-    type PortfolioItemDeleteUseCase,
-    type PortfolioItemListUseCase,
-    type PortfolioItemUpdateUseCase,
-} from "@m0n0lab/investlab-application-client";
 import { PortfolioPage } from "../components/portfolio/portfolio-page";
-import { getContainer } from "../lib/container.server";
 import {
     createPortfolioItemFormSchema,
     portfolioItemIdFormSchema,
     updatePortfolioItemFormSchema,
 } from "../lib/portfolio-item-form";
+import { addHolding, changeHolding, listPortfolio, removeHolding } from "../lib/portfolio.server";
 import { remoteErrorMessage, remoteErrorStatus } from "../lib/remote-error";
 import type { PortfolioFieldErrors } from "../components/portfolio/types";
 import type { Route } from "./+types/portfolio";
-import type { PortfolioRemoteError } from "@m0n0lab/investlab-domain";
+import type { PortfolioRemoteError } from "@m0n0lab/investlab-portfolio";
 import type { z } from "zod";
 
 export async function loader(_: Route.LoaderArgs) {
-    const listUseCase = getContainer().get<PortfolioItemListUseCase>(
-        APP_TOKENS.PortfolioItemListUseCase,
-    );
-    const result = await listUseCase.execute();
+    const result = await listPortfolio();
 
     if (result.isErr()) {
         throw new Response(remoteErrorMessage(result.error), {
@@ -80,10 +70,7 @@ function invalid(error: z.ZodError): ActionResult {
 async function createItem(formData: FormData): Promise<ActionResult> {
     const parsed = createPortfolioItemFormSchema.safeParse(Object.fromEntries(formData));
     if (!parsed.success) return invalid(parsed.error);
-    const useCase = getContainer().get<PortfolioItemCreateUseCase>(
-        APP_TOKENS.PortfolioItemCreateUseCase,
-    );
-    const result = await useCase.execute(parsed.data);
+    const result = await addHolding(parsed.data);
     return result.match(succeeded, failed);
 }
 
@@ -91,20 +78,14 @@ async function updateItem(formData: FormData): Promise<ActionResult> {
     const parsed = updatePortfolioItemFormSchema.safeParse(Object.fromEntries(formData));
     if (!parsed.success) return invalid(parsed.error);
     const { id, expectedUpdatedAt, ...changes } = parsed.data;
-    const useCase = getContainer().get<PortfolioItemUpdateUseCase>(
-        APP_TOKENS.PortfolioItemUpdateUseCase,
-    );
-    const result = await useCase.execute(id, changes, expectedUpdatedAt);
+    const result = await changeHolding(id, changes, expectedUpdatedAt);
     return result.match(succeeded, failed);
 }
 
 async function deleteItem(formData: FormData): Promise<ActionResult> {
     const parsed = portfolioItemIdFormSchema.safeParse(Object.fromEntries(formData));
     if (!parsed.success) return invalid(parsed.error);
-    const useCase = getContainer().get<PortfolioItemDeleteUseCase>(
-        APP_TOKENS.PortfolioItemDeleteUseCase,
-    );
-    const result = await useCase.execute(parsed.data.id);
+    const result = await removeHolding(parsed.data.id);
     return result.match(succeeded, failed);
 }
 

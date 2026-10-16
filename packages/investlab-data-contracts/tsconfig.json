@@ -11,11 +11,8 @@
     "include": ["src/**/*"],
     "exclude": ["**/*.test.ts", "**/*.spec.ts"],
     "references": [
-        {
-            "path": "../vitest-config"
-        },
-        {
-            "path": "./tsconfig.node.json"
-        }
+      {
+        "path": "./tsconfig.node.json"
+      }
     ]
 }

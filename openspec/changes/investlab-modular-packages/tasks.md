@@ -28,16 +28,16 @@
 ## 4. Integration test conventions (apply to every module in §5 and §6)
 
 - [ ] 4.1 Server `src/application/server/vitest-integration-setup.ts` per module: template migrated once with `migrate` from `@m0n0lab/investlab-database` (devDependency; through the Nx dependency a new migration makes the modules' `test:integration` targets affected); reuse the template-clone + Redis logical database approach of `investlab-application-server/src/testing/` (commit eace306), per test: each test gets its own clone of the template database (seed included) and a flushed Redis logical database; `beforeEach` builds the container from `platformServerModule` + the module's server module with a constant `Config`; `afterEach` unbinds it with `await container.unbindAllAsync()` and drops the clone; files still run in parallel; MSW `setupServer` with `onUnhandledRequest: "error"` for Finnhub starts once per file and closes in `afterAll`
-- [ ] 4.2 Client `src/application/client/vitest-integration-setup.ts` per module: MSW `setupServer` with `onUnhandledRequest: "error"` as the InvestLab API; container from `platformClientModule` + the module's client module with a constant `Config`
-- [ ] 4.3 Name every setup file `vitest-<testtype>-setup.ts`; list it in `setupFiles` of the side's vitest project (`integration-server`, `integration-client`); `test:integration` runs both projects
-- [ ] 4.4 Replace `src/testing/api-harness.ts` and `src/testing/integration-harness.ts` with the per-side setup file plus `given.ts`; no `src/testing/` folder remains in module packages
-- [ ] 4.5 Replace the `useCase()` helper with `let useCase` + `beforeEach(() => { useCase = container.get(TOKEN) })` in every test file
-- [ ] 4.6 Remove the `stubApi` wrapper; MSW handlers live inside the `given.ts` helpers (`givenPortfolioWith`, `givenInstrument`, `givenQuotesFor`, `givenApiUnavailable`, …), built from the module's contracts
-- [ ] 4.7 Integration tests are black box: delete every assertion on requests, routes, headers or bodies and every recorded-request log; assert only use-case results and domain errors
-- [ ] 4.8 Write each test as given / when / then; server state seeded and observed only through public use cases (create, list), never repositories or SQL
-- [ ] 4.9 Rename `describe`/`it`/helpers to business language: no DTO, route, status code or data-layer class names
-- [ ] 4.10 Drop type tests (`*.test-d.ts`) and their `typecheck` vitest setting; keep a `unit` project only where unit tests exist; remove `**/*.test-d.ts` from `.fallowrc.json` `entry` and `duplicates.ignore`
-- [ ] 4.11 Add the setup files to `.fallowrc.json` `entry` (the fallow vitest plugin does not follow `setupFiles`/`globalSetup`) instead of per-file `fallow-ignore-file` comments
+- [x] 4.2 Client `src/application/client/vitest-integration-setup.ts` per module: MSW `setupServer` with `onUnhandledRequest: "error"` as the InvestLab API; container from `platformClientModule` + the module's client module with a constant `Config`
+- [x] 4.3 Name every setup file `vitest-<testtype>-setup.ts`; list it in `setupFiles` of the side's vitest project (`integration-server`, `integration-client`); `test:integration` runs both projects
+- [x] 4.4 Replace `src/testing/api-harness.ts` and `src/testing/integration-harness.ts` with the per-side setup file plus `given.ts`; no `src/testing/` folder remains in module packages
+- [x] 4.5 Replace the `useCase()` helper with `let useCase` + `beforeEach(() => { useCase = container.get(TOKEN) })` in every test file
+- [x] 4.6 Remove the `stubApi` wrapper; MSW handlers live inside the `given.ts` helpers (`givenPortfolioWith`, `givenInstrument`, `givenQuotesFor`, `givenApiUnavailable`, …), built from the module's contracts
+- [x] 4.7 Integration tests are black box: delete every assertion on requests, routes, headers or bodies and every recorded-request log; assert only use-case results and domain errors
+- [x] 4.8 Write each test as given / when / then; server state seeded and observed only through public use cases (create, list), never repositories or SQL
+- [x] 4.9 Rename `describe`/`it`/helpers to business language: no DTO, route, status code or data-layer class names
+- [x] 4.10 Drop type tests (`*.test-d.ts`) and their `typecheck` vitest setting; keep a `unit` project only where unit tests exist; remove `**/*.test-d.ts` from `.fallowrc.json` `entry` and `duplicates.ignore` (kept: non-InvestLab packages still have type tests)
+- [x] 4.11 Add the setup files to `.fallowrc.json` `entry` (the fallow vitest plugin does not follow `setupFiles`/`globalSetup`) instead of per-file `fallow-ignore-file` comments
 
 ## 5. Quotes module
 
@@ -54,24 +54,24 @@
 
 ## 6. Portfolio module
 
-- [ ] 6.1 Scaffold `packages/investlab-portfolio` (`@m0n0lab/investlab-portfolio`) with the anatomy of design §2, entries `.`, `./server`, `./client`, `project.json` with `tags: ["docker"]`
-- [ ] 6.2 `domain/`: `Instrument`, `PortfolioItem`, value objects, ports, read model, module errors and `PortfolioErrorCode`; move `GLOSSARY.md` here
-- [ ] 6.3 `data/contracts/`: instrument, portfolio item and list DTOs
-- [ ] 6.4 `data/server/`: `schema.ts` (`instruments`, `portfolio_items`), Postgres repositories, read query and mappers on `PLATFORM.Db`; update the path in the database package's `drizzle.config.ts`, then `db:generate` reports no schema changes
-- [ ] 6.5 `data/client/`: HTTP repositories and read query on `InvestlabApiClient`, passing the portfolio error map
-- [ ] 6.6 `application/server` and `application/client`: portfolio item create/update/delete/list and instrument list use cases
-- [ ] 6.7 `module.server.ts`, `module.client.ts` and `PORTFOLIO` tokens per side (`ItemCreate`, `ItemUpdate`, `ItemDelete`, `ItemList`, `InstrumentList`)
-- [ ] 6.8 Rewrite the portfolio integration tests per §4 on both sides
-- [ ] 6.9 Keep unit tests for entities, mappers and DTO schemas; delete repository/query tests that mock the driver or stub `fetch`
-- [ ] 6.10 Switch API routes and web loaders/actions to `PORTFOLIO.*`; `nx run @m0n0lab/investlab-portfolio:test:integration` green
+- [x] 6.1 Scaffold `packages/investlab-portfolio` (`@m0n0lab/investlab-portfolio`) with the anatomy of design §2, entries `.`, `./server`, `./client`, `project.json` with `tags: ["docker"]`
+- [x] 6.2 `domain/`: `Instrument`, `PortfolioItem`, value objects, ports, read model, module errors and `PortfolioErrorCode`; move `GLOSSARY.md` here
+- [x] 6.3 `data/contracts/`: instrument, portfolio item and list DTOs
+- [x] 6.4 `data/server/`: `schema.ts` (`instruments`, `portfolio_items`), Postgres repositories, read query and mappers on `PLATFORM.Db`; update the path in the database package's `drizzle.config.ts`, then `db:generate` reports no schema changes
+- [x] 6.5 `data/client/`: HTTP repositories and read query on `InvestlabApiClient`, passing the portfolio error map
+- [x] 6.6 `application/server` and `application/client`: portfolio item create/update/delete/list and instrument list use cases
+- [x] 6.7 `module.server.ts`, `module.client.ts` and `PORTFOLIO` tokens per side (`ItemCreate`, `ItemUpdate`, `ItemDelete`, `ItemList`, `InstrumentList`)
+- [x] 6.8 Rewrite the portfolio integration tests per §4 on both sides; until §9 brings the seed and instrument create, the server `givenInstrument` writes through the module's own repository
+- [x] 6.9 Keep unit tests for entities, mappers and DTO schemas; delete repository/query tests that mock the driver or stub `fetch`
+- [x] 6.10 Switch API routes and web loaders/actions to `PORTFOLIO.*`; `nx run @m0n0lab/investlab-portfolio:test:integration` green
 
 ## 7. Apps as composition roots
 
-- [ ] 7.1 `apps/investlab-api/src/container.ts`: bind `ProcessEnvConfig`, load `platformServerModule`, `portfolioServerModule`, `quotesServerModule`; delete `readApiEnv`
-- [ ] 7.2 `apps/investlab-api/src/index.ts`: port and token from `Config`; `await container.unbindAllAsync()` on `SIGTERM`/`SIGINT` (inversify 8 `unbindAll()` is sync and throws on async deactivation)
-- [ ] 7.3 `apps/investlab/app/lib/container.server.ts`: bind the web `Config` adapter, load `platformClientModule`, `portfolioClientModule`, `quotesClientModule`; delete `readWebEnv`
-- [ ] 7.4 Web imports `./client` only from `.server.ts` files; components import only `.`
-- [ ] 7.5 Update the apps' own tests (API routes, bearer, error mapping, web routes, container) to the new imports; behaviour unchanged
+- [x] 7.1 `apps/investlab-api/src/container.ts`: bind `ProcessEnvConfig`, load `platformServerModule`, `portfolioServerModule`, `quotesServerModule`; delete `readApiEnv`
+- [x] 7.2 `apps/investlab-api/src/index.ts`: port and token from `Config`; `await container.unbindAllAsync()` on `SIGTERM`/`SIGINT` (inversify 8 `unbindAll()` is sync and throws on async deactivation)
+- [x] 7.3 `apps/investlab/app/lib/container.server.ts`: bind the web `Config` adapter, load `platformClientModule`, `portfolioClientModule`, `quotesClientModule`; delete `readWebEnv`
+- [x] 7.4 Web imports `./client` only from `.server.ts` files; components import only `.`
+- [x] 7.5 Update the apps' own tests (API routes, bearer, error mapping, web routes, container) to the new imports; behaviour unchanged
 
 ## 8. Remove the layer packages
 

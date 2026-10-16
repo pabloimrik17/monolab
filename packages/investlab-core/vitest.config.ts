@@ -5,7 +5,6 @@ export default mergeConfig(
     sharedConfig,
     defineConfig({
         test: {
-            typecheck: { enabled: true },
             reporters: ["default", "junit"],
             outputFile: {
                 junit: "./test-results.junit.xml",

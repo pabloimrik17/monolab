@@ -72,6 +72,8 @@
         { "implements": "OrderRepository", "members": ["*"] },
         { "implements": "SessionRepository", "members": ["*"] },
         { "implements": "PortfolioItemRepository", "members": ["*"] },
+        { "implements": "InstrumentRepository", "members": ["*"] },
+        { "implements": "PortfolioItemQuery", "members": ["*"] },
         { "implements": "QuoteRepository", "members": ["*"] }
     ],
     "rules": {

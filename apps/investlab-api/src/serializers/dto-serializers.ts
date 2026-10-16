@@ -1,10 +1,11 @@
-import type { PortfolioItemList } from "@m0n0lab/investlab-application-server";
 import type {
+    Instrument,
     InstrumentDto,
+    PortfolioItem,
     PortfolioItemDto,
     PortfolioItemListDto,
-} from "@m0n0lab/investlab-data-contracts";
-import type { Instrument, PortfolioItem } from "@m0n0lab/investlab-domain";
+} from "@m0n0lab/investlab-portfolio";
+import type { PortfolioItemList } from "@m0n0lab/investlab-portfolio/server";
 import type { Quote, QuoteDto } from "@m0n0lab/investlab-quotes";
 
 export function toPortfolioItemDto(item: PortfolioItem): PortfolioItemDto {

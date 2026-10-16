@@ -5,7 +5,7 @@ import {
     InstrumentNotFoundError,
     PortfolioItemConflictError,
     PortfolioItemNotFoundError,
-} from "@m0n0lab/investlab-domain";
+} from "@m0n0lab/investlab-portfolio";
 import { errorJson, errorToHttp, toApiError } from "./error-mapping.ts";
 
 describe("errorToHttp", () => {
