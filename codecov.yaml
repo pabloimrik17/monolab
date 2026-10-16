@@ -89,6 +89,13 @@ coverage:
                 flags:
                     - investlab-core
 
+            investlab-quotes:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - investlab-quotes
+
             investlab-domain:
                 target: auto
                 threshold: 2%
@@ -243,6 +250,13 @@ coverage:
                 informational: false
                 flags:
                     - investlab-core
+
+            investlab-quotes:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - investlab-quotes
 
             investlab-domain:
                 target: 50%
@@ -399,6 +413,11 @@ flags:
     investlab-core:
         paths:
             - packages/investlab-core/
+        carryforward: true
+
+    investlab-quotes:
+        paths:
+            - packages/investlab-quotes/
         carryforward: true
 
     investlab-domain:

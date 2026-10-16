@@ -3,9 +3,9 @@ import type {
     InstrumentDto,
     PortfolioItemDto,
     PortfolioItemListDto,
-    QuoteDto,
 } from "@m0n0lab/investlab-data-contracts";
-import type { Instrument, PortfolioItem, Quote } from "@m0n0lab/investlab-domain";
+import type { Instrument, PortfolioItem } from "@m0n0lab/investlab-domain";
+import type { Quote, QuoteDto } from "@m0n0lab/investlab-quotes";
 
 export function toPortfolioItemDto(item: PortfolioItem): PortfolioItemDto {
     return {

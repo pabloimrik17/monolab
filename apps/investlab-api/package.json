@@ -27,6 +27,7 @@
         "@m0n0lab/investlab-data-server": "workspace:*",
         "@m0n0lab/investlab-domain": "workspace:*",
         "@m0n0lab/investlab-platform": "workspace:*",
+        "@m0n0lab/investlab-quotes": "workspace:*",
         "@varlock/1password-plugin": "catalog:",
         "hono": "4.12.30",
         "inversify": "catalog:",

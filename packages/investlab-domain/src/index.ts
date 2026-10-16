@@ -20,7 +20,6 @@ export type { PortfolioItemProps } from "./entities/portfolio-item.ts";
 
 // Ports
 export type { InstrumentRepository } from "./ports/instrument.repository.ts";
-export type { Quote, QuoteRepository } from "./ports/quote.repository.ts";
 export type { PortfolioItemRepository } from "./ports/portfolio-item.repository.ts";
 export type { PortfolioItemQuery } from "./ports/portfolio-item.query.ts";
 export type { PortfolioItemListQuery } from "./ports/portfolio-item-list.query.ts";

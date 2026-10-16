@@ -46,7 +46,6 @@
         "@types/pg": "catalog:",
         "drizzle-orm": "catalog:",
         "ioredis": "catalog:",
-        "msw": "catalog:",
         "pg": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",

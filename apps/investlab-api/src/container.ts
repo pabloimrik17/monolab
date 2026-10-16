@@ -1,11 +1,12 @@
 import { Container } from "inversify";
 import { portfolioModule } from "@m0n0lab/investlab-application-server";
-import { dataModule, portfolioDataModule, quoteDataModule } from "@m0n0lab/investlab-data-server";
+import { dataModule, portfolioDataModule } from "@m0n0lab/investlab-data-server";
 import {
     PLATFORM,
     platformServerModule,
     ProcessEnvConfig,
 } from "@m0n0lab/investlab-platform/server";
+import { quotesServerModule } from "@m0n0lab/investlab-quotes/server";
 
 /** Composition root: `Config` from `process.env`; clients connect on first use, not here. */
 export function createContainer(): Container {
@@ -15,8 +16,8 @@ export function createContainer(): Container {
         platformServerModule,
         dataModule,
         portfolioDataModule,
-        quoteDataModule,
         portfolioModule,
+        quotesServerModule,
     );
     return container;
 }

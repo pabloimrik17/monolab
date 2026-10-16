@@ -71,6 +71,9 @@
       },
       {
         "path": "./packages/investlab-platform"
+      },
+      {
+        "path": "./packages/investlab-quotes"
       }
     ]
 }

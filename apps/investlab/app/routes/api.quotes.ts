@@ -1,6 +1,5 @@
-import { APP_TOKENS, type QuoteListUseCase } from "@m0n0lab/investlab-application-client";
-import { quoteListQueryDtoSchema, type QuoteDto } from "@m0n0lab/investlab-data-contracts";
-import { getContainer } from "../lib/container.server";
+import { quoteListQueryDtoSchema, type QuoteDto } from "@m0n0lab/investlab-quotes";
+import { listQuotes } from "../lib/quotes.server";
 import { remoteErrorMessage, remoteErrorStatus } from "../lib/remote-error";
 import type { Route } from "./+types/api.quotes";
 
@@ -16,8 +15,7 @@ export async function loader({ request }: Route.LoaderArgs): Promise<Response> {
         );
     }
 
-    const useCase = getContainer().get<QuoteListUseCase>(APP_TOKENS.QuoteListUseCase);
-    const result = await useCase.execute(query.data.symbols);
+    const result = await listQuotes(query.data.symbols);
 
     return result.match(
         (quotes) =>

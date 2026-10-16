@@ -1,15 +1,10 @@
-// fallow-ignore-file unused-class-member -- port impl bound in DI, consumed by application-client use cases (task 11.2)
 import { inject, injectable } from "inversify";
 import { errAsync, okAsync, type ResultAsync } from "neverthrow";
 import { z } from "zod";
-import { PersistenceError } from "@m0n0lab/investlab-core";
-import { quoteDtoSchema } from "@m0n0lab/investlab-data-contracts";
-import {
-    type Quote,
-    type QuoteRepository,
-    type PortfolioRemoteError,
-} from "@m0n0lab/investlab-domain";
+import { PersistenceError, type RemotePortError } from "@m0n0lab/investlab-core";
 import { PLATFORM, type InvestlabApiClient } from "@m0n0lab/investlab-platform/client";
+import { quoteDtoSchema } from "../contracts/quote.dto.ts";
+import type { Quote, QuoteRepository } from "../../domain/quote.ts";
 
 const quoteListSchema = z.array(quoteDtoSchema);
 
@@ -17,10 +12,10 @@ const quoteListSchema = z.array(quoteDtoSchema);
 const QUOTES_TIMEOUT_MS = 60_000;
 
 @injectable()
-export class HttpQuoteRepository implements QuoteRepository<PortfolioRemoteError> {
+export class HttpQuoteRepository implements QuoteRepository<RemotePortError> {
     constructor(@inject(PLATFORM.InvestlabApiClient) private readonly api: InvestlabApiClient) {}
 
-    getQuote(symbol: string): ResultAsync<Quote, PortfolioRemoteError> {
+    getQuote(symbol: string): ResultAsync<Quote, RemotePortError> {
         return this.getQuotes([symbol]).andThen((quotes) => {
             const quote = quotes.get(symbol);
             return quote
@@ -29,7 +24,7 @@ export class HttpQuoteRepository implements QuoteRepository<PortfolioRemoteError
         });
     }
 
-    getQuotes(symbols: string[]): ResultAsync<Map<string, Quote>, PortfolioRemoteError> {
+    getQuotes(symbols: string[]): ResultAsync<Map<string, Quote>, RemotePortError> {
         if (symbols.length === 0) {
             return okAsync(new Map());
         }

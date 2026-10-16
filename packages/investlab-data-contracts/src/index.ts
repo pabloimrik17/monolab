@@ -13,11 +13,3 @@ export {
     type PortfolioItemListDto,
     type PortfolioItemWithInstrumentDto,
 } from "./portfolio-item-list.dto.ts";
-export {
-    QUOTE_LIST_MAX_SYMBOLS,
-    quoteDtoSchema,
-    quoteListQueryDtoSchema,
-    quoteSymbolSchema,
-    type QuoteDto,
-    type QuoteListQueryDto,
-} from "./quote.dto.ts";

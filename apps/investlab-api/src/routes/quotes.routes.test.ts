@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { apiErrorDtoSchema, PersistenceError } from "@m0n0lab/investlab-core";
-import { QUOTE_LIST_MAX_SYMBOLS, quoteDtoSchema } from "@m0n0lab/investlab-data-contracts";
+import { QUOTE_LIST_MAX_SYMBOLS, quoteDtoSchema } from "@m0n0lab/investlab-quotes";
 import { createTestApp } from "../testing/test-app.ts";
 
 const AAPL = {

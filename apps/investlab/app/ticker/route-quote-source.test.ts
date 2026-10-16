@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { QUOTE_LIST_MAX_SYMBOLS } from "@m0n0lab/investlab-data-contracts";
+import { QUOTE_LIST_MAX_SYMBOLS } from "@m0n0lab/investlab-quotes";
 import { createRouteQuoteSource } from "./route-quote-source";
 
 const AAPL = {

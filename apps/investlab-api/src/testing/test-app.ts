@@ -1,6 +1,7 @@
 import { Container } from "inversify";
 import { portfolioModule } from "@m0n0lab/investlab-application-server";
 import { TOKENS } from "@m0n0lab/investlab-domain";
+import { QUOTES, QuoteListUseCase } from "@m0n0lab/investlab-quotes/server";
 import { createApp } from "../app.ts";
 import {
     InMemoryInstrumentRepository,
@@ -22,7 +23,7 @@ export function createTestApp() {
     container
         .bind(TOKENS.PortfolioItemQuery)
         .toConstantValue(new InMemoryPortfolioItemQuery(items, instruments));
-    container.bind(TOKENS.QuoteRepository).toConstantValue(quotes);
+    container.bind(QUOTES.List).toConstantValue(new QuoteListUseCase(quotes));
     container.load(portfolioModule);
 
     const app = createApp(container, { token: TEST_TOKEN });
