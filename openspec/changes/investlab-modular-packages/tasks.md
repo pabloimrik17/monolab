@@ -95,7 +95,7 @@
 - [x] 10.1 Configure fallow `boundaries` in `.fallowrc.json`: zones per module layer folder, core, per platform entry, database and per app; rules from design §4 (built and tried; fallow 3.6.0 never fails on `boundary-violation` and misses cross-package imports once `dist/` exists, so the rules moved to ESLint by 10.4)
 - [x] 10.2 Ban infrastructure libraries (`pg`, `drizzle-orm`, `ioredis`, `msw`, `varlock`) in `domain/` and `application/` with fallow `rulePacks` banned imports (tried; a new rule pack breaks `fallow audit` against a base without it, so the ban moved to ESLint by 10.4)
 - [x] 10.3 Prove it: a deliberate violation (web → `./server`, `application/` → `data/`, `domain/` → `drizzle-orm`, `domain/` → platform) fails the lint check (`lint:eslint` of the owning project); then revert it
-- [x] 10.4 If fallow cannot resolve workspace `exports` to zones or cannot express a rule, implement that rule with ESLint `no-restricted-imports` in `eslint.config.ts` (or `eslint-plugin-boundaries`) and record which tool holds which rule in design §4
+- [x] 10.4 If fallow cannot resolve workspace `exports` to zones or cannot express a rule, implement that rule with ESLint `no-restricted-imports` in `eslint.config.ts` (or `eslint-plugin-boundaries`) and record which tool holds which rule in design §4 (layer table on `eslint-plugin-boundaries` after regex on relative specifiers left holes; package specifiers stay on `no-restricted-imports`)
 
 ## 11. CI and workspace
 
