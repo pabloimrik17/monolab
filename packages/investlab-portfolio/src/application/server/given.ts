@@ -1,6 +1,5 @@
-import { eq, sql } from "drizzle-orm";
+import pg from "pg";
 import { PLATFORM } from "@m0n0lab/investlab-platform/server";
-import { portfolioItems } from "../../data/server/schema.ts";
 import { AssetClass } from "../../domain/value-objects/asset-class.ts";
 import { InstrumentType } from "../../domain/value-objects/instrument-type.ts";
 import { PORTFOLIO } from "./tokens.ts";
@@ -73,15 +72,17 @@ export async function portfolio(): Promise<PortfolioItemWithInstrument[]> {
 
 /** The database itself stamped the holding's last change, at a precision finer than a JS Date. */
 export async function givenStampedByDatabase(holding: PortfolioItem): Promise<PortfolioItem> {
-    (
-        await container.get(PLATFORM.Db).update((tx) =>
-            tx
-                .update(portfolioItems)
-                .set({
-                    updatedAt: sql`date_trunc('milliseconds', now()) + interval '123 microseconds'`,
-                })
-                .where(eq(portfolioItems.id, holding.id)),
-        )
-    )._unsafeUnwrap();
+    const client = new pg.Client({
+        connectionString: container.get(PLATFORM.Config).database.url,
+    });
+    await client.connect();
+    try {
+        await client.query(
+            "UPDATE portfolio_items SET updated_at = date_trunc('milliseconds', now()) + interval '123 microseconds' WHERE id = $1",
+            [holding.id],
+        );
+    } finally {
+        await client.end();
+    }
     return (await portfolio()).find(({ item }) => item.id === holding.id)!.item;
 }

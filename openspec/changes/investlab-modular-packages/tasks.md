@@ -27,7 +27,7 @@
 
 ## 4. Integration test conventions (apply to every module in §5 and §6)
 
-- [ ] 4.1 Server `src/application/server/vitest-integration-setup.ts` per module: template migrated once with `migrate` from `@m0n0lab/investlab-database` (devDependency; through the Nx dependency a new migration makes the modules' `test:integration` targets affected); reuse the template-clone + Redis logical database approach of `investlab-application-server/src/testing/` (commit eace306), per test: each test gets its own clone of the template database (seed included) and a flushed Redis logical database; `beforeEach` builds the container from `platformServerModule` + the module's server module with a constant `Config`; `afterEach` unbinds it with `await container.unbindAllAsync()` and drops the clone; files still run in parallel; MSW `setupServer` with `onUnhandledRequest: "error"` for Finnhub starts once per file and closes in `afterAll`
+- [x] 4.1 Server `src/application/server/vitest-integration-setup.ts` per module: template migrated once with `migrate` from `@m0n0lab/investlab-database` (devDependency; through the Nx dependency a new migration makes the modules' `test:integration` targets affected); reuse the template-clone + Redis logical database approach of `investlab-application-server/src/testing/` (commit eace306), per test: each test gets its own clone of the template database (seed included) and a flushed Redis logical database; `beforeEach` builds the container from `platformServerModule` + the module's server module with a constant `Config`; `afterEach` unbinds it with `await container.unbindAllAsync()` and drops the clone; files still run in parallel; MSW `setupServer` with `onUnhandledRequest: "error"` for Finnhub starts once per file and closes in `afterAll`
 - [x] 4.2 Client `src/application/client/vitest-integration-setup.ts` per module: MSW `setupServer` with `onUnhandledRequest: "error"` as the InvestLab API; container from `platformClientModule` + the module's client module with a constant `Config`
 - [x] 4.3 Name every setup file `vitest-<testtype>-setup.ts`; list it in `setupFiles` of the side's vitest project (`integration-server`, `integration-client`); `test:integration` runs both projects
 - [x] 4.4 Replace `src/testing/api-harness.ts` and `src/testing/integration-harness.ts` with the per-side setup file plus `given.ts`; no `src/testing/` folder remains in module packages
@@ -92,10 +92,10 @@
 
 ## 10. Layer boundaries lint
 
-- [ ] 10.1 Configure fallow `boundaries` in `.fallowrc.json`: zones per module layer folder, core, per platform entry, database and per app; rules from design §4
-- [ ] 10.2 Ban infrastructure libraries (`pg`, `drizzle-orm`, `ioredis`, `msw`, `varlock`) in `domain/` and `application/` with fallow `rulePacks` banned imports
-- [ ] 10.3 Prove it: a deliberate violation (web → `./server`, `application/` → `data/`, `domain/` → `drizzle-orm`, `domain/` → platform) fails `pnpm lint:fallow`; then revert it
-- [ ] 10.4 If fallow cannot resolve workspace `exports` to zones or cannot express a rule, implement that rule with ESLint `no-restricted-imports` in `eslint.config.ts` (or `eslint-plugin-boundaries`) and record which tool holds which rule in design §4
+- [x] 10.1 Configure fallow `boundaries` in `.fallowrc.json`: zones per module layer folder, core, per platform entry, database and per app; rules from design §4 (built and tried; fallow 3.6.0 never fails on `boundary-violation` and misses cross-package imports once `dist/` exists, so the rules moved to ESLint by 10.4)
+- [x] 10.2 Ban infrastructure libraries (`pg`, `drizzle-orm`, `ioredis`, `msw`, `varlock`) in `domain/` and `application/` with fallow `rulePacks` banned imports (tried; a new rule pack breaks `fallow audit` against a base without it, so the ban moved to ESLint by 10.4)
+- [x] 10.3 Prove it: a deliberate violation (web → `./server`, `application/` → `data/`, `domain/` → `drizzle-orm`, `domain/` → platform) fails the lint check (`lint:eslint` of the owning project); then revert it
+- [x] 10.4 If fallow cannot resolve workspace `exports` to zones or cannot express a rule, implement that rule with ESLint `no-restricted-imports` in `eslint.config.ts` (or `eslint-plugin-boundaries`) and record which tool holds which rule in design §4 (layer table on `eslint-plugin-boundaries` after regex on relative specifiers left holes; package specifiers stay on `no-restricted-imports`)
 
 ## 11. CI and workspace
 
@@ -106,6 +106,6 @@
 
 ## 12. Verification
 
-- [ ] 12.1 `nx run-many -t build,typecheck -p '@m0n0lab/investlab*'`
-- [ ] 12.2 `nx run-many -t test:unit,test:integration -p '@m0n0lab/investlab*'`
+- [x] 12.1 `nx run-many -t build,typecheck -p '@m0n0lab/investlab*'`
+- [x] 12.2 `nx run-many -t test:unit,test:integration -p '@m0n0lab/investlab*'`
 - [ ] 12.3 Manual E2E (web + API, `pnpm investlab:dev`): seeded instruments appear in the portfolio form; create, view, edit and delete a portfolio item; create, update and delete an instrument through the API; deleting an instrument in use answers 409 `INSTRUMENT_IN_USE`; live quotes refresh on the ticker page; stopping the API releases Postgres and Redis connections
