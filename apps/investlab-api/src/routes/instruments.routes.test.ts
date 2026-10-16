@@ -149,6 +149,22 @@ describe("instrument management routes", () => {
             expect(instrumentDtoSchema.parse(await res.json())).not.toHaveProperty("replicates");
         });
 
+        it("answers 409 INSTRUMENT_ALREADY_EXISTS and keeps the catalog for a taken symbol", async () => {
+            const ctx = createTestApp();
+            const instrument = seedInstrument(ctx);
+            seedInstrument(ctx, "VWCE");
+
+            const res = await ctx.json(`/instruments/${instrument.id}`, "PUT", {
+                symbol: "VWCE",
+            });
+
+            expect(res.status).toBe(409);
+            expect(apiErrorDtoSchema.parse(await res.json()).code).toBe(
+                "INSTRUMENT_ALREADY_EXISTS",
+            );
+            expect(ctx.instruments.store.get(instrument.id)!.symbol).toBe("VTI");
+        });
+
         it("answers 404 INSTRUMENT_NOT_FOUND for an unknown instrument", async () => {
             const res = await createTestApp().json(`/instruments/${MISSING_ID}`, "PUT", {
                 name: "Nothing",
