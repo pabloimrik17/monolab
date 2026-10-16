@@ -169,7 +169,7 @@ const investlabLayerRules = (() => {
     );
     const infra = ban(
         "^(pg|drizzle-orm|ioredis|msw|varlock)(/|$)",
-        "domain and application depend on ports; infrastructure lives in data/",
+        "domain, application, contracts and index.ts depend on ports; infrastructure lives in data/<side>",
     );
     const platformOrDb = ban(
         "^@m0n0lab/investlab-(platform|database)(/|$)",
