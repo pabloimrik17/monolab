@@ -1,7 +1,7 @@
 ## 1. Core package
 
 - [x] 1.1 Scaffold `packages/investlab-core` (`@m0n0lab/investlab-core`, a name reused from a dissolved browser-only package): single root entry (types + import), tsdown, tsconfig references (a `project.json` only if a target needs one; Nx config only in `project.json`); `pnpm nx sync`
-- [ ] 1.2 Move `DomainError`, `ValidationError`, `PersistenceError`, `NetworkError`, `UnauthorizedError`, the `KernelError` union (`ValidationError`, `PersistenceError`, `NetworkError`, `UnauthorizedError`), the generic `RemotePortError<E extends DomainError = never>` (= `KernelError | E`; each module names its own union, e.g. `PortfolioRemoteError`) and `apiErrorDtoSchema` here; depends only on `zod` and `neverthrow`, imports no `@m0n0lab/investlab-*` package
+- [x] 1.2 Move `DomainError`, `ValidationError`, `PersistenceError`, `NetworkError`, `UnauthorizedError`, the `KernelError` union (`ValidationError`, `PersistenceError`, `NetworkError`, `UnauthorizedError`), the generic `RemotePortError<E extends DomainError = never>` (= `KernelError | E`; each module names its own union, e.g. `PortfolioRemoteError`) and `apiErrorDtoSchema` here; depends only on `zod` and `neverthrow`, imports no `@m0n0lab/investlab-*` package
 - [x] 1.3 Re-point the old packages and both apps to `@m0n0lab/investlab-core` for these symbols; `nx run-many -t build,typecheck,test -p '@m0n0lab/investlab*'` green
 
 ## 2. Platform package

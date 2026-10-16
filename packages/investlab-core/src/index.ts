@@ -1,5 +1,6 @@
 export {
     DomainError,
+    type KernelError,
     type KernelErrorCode,
     NetworkError,
     PersistenceError,

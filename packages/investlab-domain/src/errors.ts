@@ -32,8 +32,6 @@ export class PortfolioItemConflictError extends DomainError<"PORTFOLIO_ITEM_CONF
 }
 
 /** Every failure a remote (HTTP) portfolio port can return: the kernel failures plus the module errors rebuilt from server codes. */
-export type PortfolioRemoteError =
-    | RemotePortError
-    | InstrumentNotFoundError
-    | PortfolioItemNotFoundError
-    | PortfolioItemConflictError;
+export type PortfolioRemoteError = RemotePortError<
+    InstrumentNotFoundError | PortfolioItemNotFoundError | PortfolioItemConflictError
+>;

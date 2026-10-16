@@ -46,4 +46,7 @@ export class UnauthorizedError extends Error {
 }
 
 /** Failures every remote (HTTP) port can return whatever the module: kernel codes rebuilt as errors plus transport and authorization failures. */
-export type RemotePortError = PersistenceError | ValidationError | NetworkError | UnauthorizedError;
+export type KernelError = ValidationError | PersistenceError | NetworkError | UnauthorizedError;
+
+/** A remote port's failures: the kernel errors plus the module errors `E` it rebuilds from server codes. */
+export type RemotePortError<E extends DomainError = never> = KernelError | E;
