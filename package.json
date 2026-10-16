@@ -76,7 +76,7 @@
         "eslint-config-prettier": "10.1.8",
         "eslint-plugin-regexp": "3.1.1",
         "fallow": "3.6.0",
-        "globals": "17.7.0",
+        "globals": "17.13.0",
         "husky": "9.1.7",
         "knip": "6.27.0",
         "lint-staged": "17.0.8",
@@ -101,14 +101,14 @@
             },
             {
                 "name": "node",
-                "version": "24.18.0",
+                "version": "24.21.0",
                 "onFail": "download"
             }
         ]
     },
     "engines": {
         "deno": "2.9.3",
-        "node": "24.18.0",
+        "node": "24.21.0",
         "pnpm": "11.15.0"
     },
     "packageManager": "pnpm@11.15.0",
