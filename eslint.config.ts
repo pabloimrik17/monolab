@@ -157,11 +157,16 @@ const investlabLayerRules = (() => {
         rules: { "no-restricted-imports": ["error", { patterns: bans }] },
     });
     const opposite = { server: "client", client: "server" } as const;
-    const otherPlatformSide = (side: "server" | "client") =>
+    // by package name, own package included: the boundaries plugin sees workspace imports as external
+    const otherSide = (side: "server" | "client") =>
         ban(
-            `^@m0n0lab/investlab-platform/${opposite[side]}$`,
-            `${side} code never imports the platform ./${opposite[side]} entry`,
+            `^@m0n0lab/investlab-[a-z-]+/${opposite[side]}(/|$)`,
+            `${side} code never imports a ./${opposite[side]} entry`,
         );
+    const anySide = ban(
+        "^@m0n0lab/investlab-[a-z-]+/(server|client)(/|$)",
+        "side-neutral code never imports a ./server or ./client entry",
+    );
     const infra = ban(
         "^(pg|drizzle-orm|ioredis|msw|varlock)(/|$)",
         "domain and application depend on ports; infrastructure lives in data/",
@@ -196,32 +201,32 @@ const investlabLayerRules = (() => {
             const clientDb = side === "client" ? [database] : [];
             const tests = testFiles.map((file) => `${src}/application/${side}/${file}`);
             return [
-                group([`${src}/application/${side}/**`], [independent, infra, platformOrDb], tests),
+                group(
+                    [`${src}/application/${side}/**`],
+                    [independent, infra, platformOrDb, otherSide(side)],
+                    tests,
+                ),
                 group(tests, [
                     independent,
                     ban(
                         "^(drizzle-orm|varlock)(/|$)",
                         "use-case tests use the module container, raw pg/ioredis and a constant Config",
                     ),
-                    otherPlatformSide(side),
+                    otherSide(side),
                     ...clientDb,
                 ]),
                 group(
                     [`${src}/data/${side}/**`, `${src}/module.${side}.ts`],
-                    [independent, otherPlatformSide(side), ...clientDb],
+                    [independent, otherSide(side), ...clientDb],
                 ),
+                group([`${src}/${side}.ts`], [independent, platformOrDb, otherSide(side)]),
             ];
         });
         return [
-            group([`${src}/domain/**`], [independent, infra, platformOrDb]),
+            group([`${src}/domain/**`], [independent, infra, platformOrDb, anySide]),
             group(
-                [
-                    `${src}/data/contracts/**`,
-                    `${src}/index.ts`,
-                    `${src}/server.ts`,
-                    `${src}/client.ts`,
-                ],
-                [independent, platformOrDb],
+                [`${src}/data/contracts/**`, `${src}/index.ts`],
+                [independent, platformOrDb, anySide],
             ),
             ...sides,
         ];
@@ -232,7 +237,16 @@ const investlabLayerRules = (() => {
     );
     return [
         group(["packages/investlab-core/src/**", "packages/investlab-database/src/**"], [ours]),
-        group(["packages/investlab-platform/src/**"], [notModules]),
+        ...(["server", "client"] as const).map((side) =>
+            group(
+                [
+                    `packages/investlab-platform/src/${side}.ts`,
+                    `packages/investlab-platform/src/${side}/**`,
+                ],
+                [notModules, otherSide(side)],
+            ),
+        ),
+        group(["packages/investlab-platform/src/shared/**"], [notModules, anySide]),
         ...modules,
         // `./client` entries are server-only web code (SSR): only `.server.ts` files import them
         group(

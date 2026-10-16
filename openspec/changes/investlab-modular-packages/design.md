@@ -154,7 +154,7 @@ A first cut matched relative specifiers with regex too and left holes, found in 
 |---|---|
 | Layer table (relative imports between `domain/`, `application/<side>`, `data/*`, `module.<side>.ts`, entries; platform `server/`, `client/`, `shared/` and entries) | `eslint-plugin-boundaries`, on the resolved file |
 | No `server` ↔ `client` (folders, entries, `module.*.ts`) | `eslint-plugin-boundaries` (no policy allows it) |
-| No `server` ↔ `client` platform entries (`@m0n0lab/investlab-platform/<side>`) | ESLint `no-restricted-imports`, specifier per side |
+| No `server` ↔ `client` entries by package name (`@m0n0lab/investlab-*/<side>`, the package's own included); side-neutral code (`domain/`, `data/contracts/`, `index.ts`, platform `shared/`) imports neither | ESLint `no-restricted-imports`, specifier per side |
 | Core and database import nothing of ours; platform imports only core; modules never import each other | ESLint `no-restricted-imports`, `@m0n0lab/investlab-*` specifiers per package |
 | `apps/investlab` never imports `./server` entries or the database, imports `./client` entries only from `.server.ts` files; `apps/investlab-api` never imports `./client` entries | ESLint `no-restricted-imports`, entry specifiers per app |
 | `pg`, `drizzle-orm`, `ioredis`, `msw`, `varlock`, platform and database banned in `domain/` and `application/`; platform and database banned in `data/contracts/` and the entries | ESLint `no-restricted-imports` |
