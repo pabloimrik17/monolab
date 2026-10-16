@@ -1,10 +1,148 @@
 // @ts-check
 import eslint from "@eslint/js";
+import { createConfig as boundariesConfig } from "eslint-plugin-boundaries/config";
 import regexpPlugin from "eslint-plugin-regexp";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
-// InvestLab layer rules (openspec change investlab-modular-packages, design §4), matched on the raw specifier.
+// InvestLab layer table inside the module and platform packages (openspec change investlab-modular-packages,
+// design §4), checked on the resolved file. Package-root files share the `src` element and differ by file category.
+const investlabLayerBoundaries = (() => {
+    const platform = "packages/investlab-platform/src";
+    const mod = "packages/investlab-*/src";
+    const sides = ["server", "client"] as const;
+    const layer = (type: string, pattern: string) => ({
+        type,
+        pattern,
+        partialMatch: false,
+        capture: ["pkg"],
+    });
+    const own = (type: string) => ({
+        element: { type, captured: { pkg: "{{ from.element.captured.pkg }}" } },
+    });
+    const rootFile = (category: string) => ({ ...own("root"), file: { categories: category } });
+    const from = (type: string, category?: string) => ({
+        element: { type },
+        ...(category && { file: { categories: category } }),
+    });
+    return boundariesConfig({
+        files: ["packages/investlab-{portfolio,quotes,platform}/src/**/*.ts"],
+        settings: {
+            "boundaries/root-path": import.meta.dirname,
+            "boundaries/legacy-templates": false,
+            // workspace packages resolve to dist/; the specifier rules below cover them
+            "boundaries/flag-as-external": { customSourcePatterns: ["@m0n0lab/*"] },
+            "boundaries/elements": [
+                { type: "platform-shared", pattern: `${platform}/shared`, partialMatch: false },
+                ...sides.map((side) => ({
+                    type: `platform-${side}`,
+                    pattern: `${platform}/${side}`,
+                    partialMatch: false,
+                })),
+                { type: "platform-root", pattern: platform, partialMatch: false },
+                ...sides.flatMap((side) => [
+                    layer(`application-${side}`, `${mod}/application/${side}`),
+                    layer(`data-${side}`, `${mod}/data/${side}`),
+                ]),
+                layer("contracts", `${mod}/data/contracts`),
+                layer("domain", `${mod}/domain`),
+                layer("root", mod),
+            ],
+            "boundaries/files": [
+                {
+                    category: "side-test",
+                    pattern: "**/application/*/{given,*.integration,vitest-*}.ts",
+                },
+                { category: "entry", pattern: "packages/*/src/index.ts" },
+                ...sides.flatMap((side) => [
+                    { category: `entry-${side}`, pattern: `packages/*/src/${side}.ts` },
+                    { category: `module-${side}`, pattern: `packages/*/src/module.${side}.ts` },
+                ]),
+            ],
+        },
+        rules: {
+            "boundaries/no-unknown-files": "error",
+            "boundaries/dependencies": [
+                "error",
+                {
+                    default: "disallow",
+                    checkInternals: true,
+                    message:
+                        "{{from.element.types}} {{from.file.categories}} may not import {{to.element.types}} {{to.file.categories}} (InvestLab layer table)",
+                    policies: [
+                        { allow: { to: { module: { origin: ["external", "core"] } } } },
+                        { from: from("domain"), allow: { to: own("domain") } },
+                        {
+                            from: from("contracts"),
+                            allow: { to: [own("domain"), own("contracts")] },
+                        },
+                        {
+                            from: from("root", "entry"),
+                            allow: { to: [own("domain"), own("contracts")] },
+                        },
+                        {
+                            from: from("platform-shared"),
+                            allow: { to: { element: { type: "platform-shared" } } },
+                        },
+                        ...sides.flatMap((side) => [
+                            {
+                                from: from(`application-${side}`),
+                                allow: { to: [own("domain"), own(`application-${side}`)] },
+                            },
+                            {
+                                from: from(`application-${side}`, "side-test"),
+                                allow: { to: [rootFile(`module-${side}`), own("contracts")] },
+                            },
+                            {
+                                from: from(`data-${side}`),
+                                allow: {
+                                    to: [own("domain"), own("contracts"), own(`data-${side}`)],
+                                },
+                            },
+                            {
+                                from: from("root", `module-${side}`),
+                                allow: {
+                                    to: [
+                                        own("domain"),
+                                        own(`application-${side}`),
+                                        own(`data-${side}`),
+                                    ],
+                                },
+                            },
+                            {
+                                from: from("root", `entry-${side}`),
+                                allow: {
+                                    to: [
+                                        own("domain"),
+                                        own(`application-${side}`),
+                                        rootFile(`module-${side}`),
+                                    ],
+                                },
+                            },
+                            {
+                                from: [
+                                    from(`platform-${side}`),
+                                    from("platform-root", `entry-${side}`),
+                                ],
+                                allow: {
+                                    to: {
+                                        element: {
+                                            types: {
+                                                anyOf: [`platform-${side}`, "platform-shared"],
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        ]),
+                    ],
+                },
+            ],
+        },
+    });
+})();
+
+// InvestLab rules on package specifiers (workspace packages and banned libraries), matched on the raw specifier.
 // Flat config replaces a rule's options per file, so each file group carries its whole list and groups never overlap.
 const investlabLayerRules = (() => {
     type Ban = { regex: string; message: string };
@@ -19,10 +157,10 @@ const investlabLayerRules = (() => {
         rules: { "no-restricted-imports": ["error", { patterns: bans }] },
     });
     const opposite = { server: "client", client: "server" } as const;
-    const sideOnly = (side: "server" | "client") =>
+    const otherPlatformSide = (side: "server" | "client") =>
         ban(
-            `(^|/)${opposite[side]}(/|$)`,
-            `${side} code never imports ${opposite[side]} code or a ./${opposite[side]} entry`,
+            `^@m0n0lab/investlab-platform/${opposite[side]}$`,
+            `${side} code never imports the platform ./${opposite[side]} entry`,
         );
     const infra = ban(
         "^(pg|drizzle-orm|ioredis|msw|varlock)(/|$)",
@@ -30,20 +168,11 @@ const investlabLayerRules = (() => {
     );
     const platformOrDb = ban(
         "^@m0n0lab/investlab-(platform|database)(/|$)",
-        "domain and application never import the platform or the database",
+        "only data/<side>, module.<side>.ts and side tests import the platform or the database",
     );
     const database = ban(
         "^@m0n0lab/investlab-database(/|$)",
         "only server code imports the database package",
-    );
-    const application = ban(
-        "(^|/)application/",
-        "only module.*.ts and the entries import application/",
-    );
-    const data = ban("(^|/)data/", "domain and application never import data/");
-    const containerModule = ban(
-        "(^|/)module\\.(server|client)(\\.ts)?$",
-        "only the entries and side tests import module.*.ts",
     );
     const ours = ban("^@m0n0lab/investlab-", "this package imports no other InvestLab package");
     const serverEntry = ban(
@@ -67,49 +196,32 @@ const investlabLayerRules = (() => {
             const clientDb = side === "client" ? [database] : [];
             const tests = testFiles.map((file) => `${src}/application/${side}/${file}`);
             return [
-                group(
-                    [`${src}/application/${side}/**`],
-                    [independent, infra, platformOrDb, data, containerModule, sideOnly(side)],
-                    tests,
-                ),
+                group([`${src}/application/${side}/**`], [independent, infra, platformOrDb], tests),
                 group(tests, [
                     independent,
                     ban(
                         "^(drizzle-orm|varlock)(/|$)",
                         "use-case tests use the module container, raw pg/ioredis and a constant Config",
                     ),
-                    ban(
-                        "(^|/)data/(server|client)/",
-                        "use-case tests reach data/ through the module container",
-                    ),
-                    sideOnly(side),
+                    otherPlatformSide(side),
                     ...clientDb,
                 ]),
                 group(
-                    [`${src}/data/${side}/**`],
-                    [independent, application, containerModule, sideOnly(side), ...clientDb],
-                ),
-                group(
-                    [`${src}/module.${side}.ts`, `${src}/${side}.ts`],
-                    [independent, sideOnly(side), ...clientDb],
+                    [`${src}/data/${side}/**`, `${src}/module.${side}.ts`],
+                    [independent, otherPlatformSide(side), ...clientDb],
                 ),
             ];
         });
         return [
+            group([`${src}/domain/**`], [independent, infra, platformOrDb]),
             group(
-                [`${src}/domain/**`],
-                [independent, infra, platformOrDb, application, data, containerModule],
-            ),
-            group(
-                [`${src}/data/contracts/**`, `${src}/index.ts`],
                 [
-                    independent,
-                    platformOrDb,
-                    application,
-                    containerModule,
-                    sideOnly("server"),
-                    sideOnly("client"),
+                    `${src}/data/contracts/**`,
+                    `${src}/index.ts`,
+                    `${src}/server.ts`,
+                    `${src}/client.ts`,
                 ],
+                [independent, platformOrDb],
             ),
             ...sides,
         ];
@@ -118,12 +230,9 @@ const investlabLayerRules = (() => {
         "^@m0n0lab/investlab-(database|portfolio|quotes)(/|$)",
         "the platform imports only @m0n0lab/investlab-core",
     );
-    const platform = "packages/investlab-platform/src";
     return [
         group(["packages/investlab-core/src/**", "packages/investlab-database/src/**"], [ours]),
-        group([`${platform}/server.ts`, `${platform}/server/**`], [notModules, sideOnly("server")]),
-        group([`${platform}/client.ts`, `${platform}/client/**`], [notModules, sideOnly("client")]),
-        group([`${platform}/shared/**`], [notModules, sideOnly("server"), sideOnly("client")]),
+        group(["packages/investlab-platform/src/**"], [notModules]),
         ...modules,
         // `./client` entries are server-only web code (SSR): only `.server.ts` files import them
         group(
@@ -241,5 +350,6 @@ export default tseslint.config(
             "@typescript-eslint/no-empty-object-type": "off",
         },
     },
+    investlabLayerBoundaries,
     ...investlabLayerRules,
 );
