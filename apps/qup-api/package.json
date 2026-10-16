@@ -7,8 +7,13 @@
         "build": "tsdown",
         "dev": "tsx watch src/index.ts",
         "dev:migrate": "pnpm --filter @m0n0lab/qup-data db:migrate",
-        "start": "node dist/index.js",
+        "start": "node dist/index.mjs",
+        "test": "vitest run",
+        "test:changed": "vitest run --changed",
+        "test:coverage": "vitest run --coverage",
+        "test:watch": "vitest",
         "test:unit": "vitest run",
+        "test:unit:changed": "vitest run --changed",
         "test:unit:watch": "vitest",
         "test:unit:coverage": "vitest run --coverage",
         "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
@@ -25,6 +30,7 @@
     },
     "devDependencies": {
         "@codecov/rollup-plugin": "catalog:",
+        "@m0n0lab/vitest-config": "workspace:*",
         "@types/node": "catalog:",
         "tsdown": "catalog:",
         "tsx": "4.23.1",
@@ -32,7 +38,7 @@
         "vitest": "catalog:"
     },
     "engines": {
-        "node": "24.18.0",
+        "node": "24.21.0",
         "pnpm": "11.15.0"
     },
     "packageManager": "pnpm@11.15.0"

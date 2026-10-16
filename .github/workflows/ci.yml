@@ -42,7 +42,7 @@ jobs:
               uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
 
             - name: Setup Nodejs
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
                   node-version-file: .nvmrc
                   # Cache node_modules
@@ -97,6 +97,27 @@ jobs:
                       node_modules
                       ~/.cache/Cypress # needed for the Cypress binary
                   key: ${{ steps.cache-dependencies-restore.outputs.cache-primary-key }}
+
+            # Nx agents get Chromium from .nx/workflows/agents.yaml; this covers tasks that run
+            # on this runner (Nx Cloud unavailable or NX_CLOUD_DISTRIBUTED_EXECUTION=false).
+            - name: Get Playwright version
+              id: playwright-version
+              run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+            - name: Cache Playwright browsers
+              id: cache-playwright
+              uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+              with:
+                  path: ~/.cache/ms-playwright
+                  key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+            - name: Install Playwright Chromium
+              if: ${{ steps.cache-playwright.outputs.cache-hit != 'true' }}
+              run: pnpm exec playwright install --with-deps chromium
+
+            - name: Install Playwright system dependencies
+              if: ${{ steps.cache-playwright.outputs.cache-hit == 'true' }}
+              run: pnpm exec playwright install-deps chromium
 
             - name: Restore Nx cache
               id: cache-nx-restore
@@ -158,6 +179,26 @@ jobs:
               run: pnpm exec nx run-many -t test:unit:coverage
               if: ${{ github.event_name == 'push' }}
 
+            - name: 🧪 Execute integration test checks for affected files (Affected)
+              run: |
+                  pnpm exec nx affected -t test:integration --exclude=tag:docker
+                  NX_CLOUD_DISTRIBUTED_EXECUTION=false pnpm exec nx affected -t test:integration --exclude='*,!tag:docker'
+              if: ${{ github.event_name == 'pull_request' }}
+
+            - name: 🧪 Execute integration test checks for all files (All)
+              run: |
+                  pnpm exec nx run-many -t test:integration --exclude=tag:docker
+                  NX_CLOUD_DISTRIBUTED_EXECUTION=false pnpm exec nx run-many -t test:integration -p tag:docker
+              if: ${{ github.event_name == 'push' }}
+
+            - name: 🔍 Execute type checks for affected files (Affected)
+              run: pnpm exec nx affected -t typecheck
+              if: ${{ github.event_name == 'pull_request' }}
+
+            - name: 🔍 Execute type checks for all files (All)
+              run: pnpm exec nx run-many -t typecheck
+              if: ${{ github.event_name == 'push' }}
+
             - name: 🔍 Execute type test checks for affected files (Affected)
               run: pnpm exec nx affected -t test:types
               if: ${{ github.event_name == 'pull_request' }}
@@ -175,7 +216,7 @@ jobs:
               id: affected-codecov
               run: |
                   # name:path pairs — single source of truth for the upload-codecov matrix.
-                  PACKAGES="react-hooks:packages/react-hooks react-clean:packages/react-clean ts-configs:packages/ts-configs ts-types:packages/ts-types http-client:packages/http-client qup-api:apps/qup-api qup-data:packages/qup-data qup-domain:packages/qup-domain solid-clean:packages/solid-clean wealth-tracker-core:packages/wealth-tracker-core green-beard:apps/green-beard qup-web:apps/qup-web wealth-react:apps/wealth-react qup-shared:packages/qup-shared"
+                  PACKAGES="react-hooks:packages/react-hooks react-clean:packages/react-clean ts-configs:packages/ts-configs ts-types:packages/ts-types http-client:packages/http-client drizzle-neverthrow:packages/drizzle-neverthrow qup-api:apps/qup-api qup-data:packages/qup-data qup-domain:packages/qup-domain solid-clean:packages/solid-clean investlab-core:packages/investlab-core investlab-quotes:packages/investlab-quotes investlab-portfolio:packages/investlab-portfolio green-beard:apps/green-beard qup-web:apps/qup-web investlab:apps/investlab investlab-api:apps/investlab-api qup-shared:packages/qup-shared"
 
                   if [ "${{ github.event_name }}" = "pull_request" ]; then
                     AFFECTED_PROJECTS=$(pnpm exec nx show projects --affected)
@@ -226,7 +267,7 @@ jobs:
               run: pnpm exec nx run-many -t build
 
             - name: 🧬 Execute mutation testing (All)
-              run: pnpm exec nx run-many -t test:mutation
+              run: pnpm exec nx run-many -t test:mutation --parallel=1
               if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
               env:
                   STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
@@ -254,7 +295,7 @@ jobs:
               run: |
                   # Analyze each published package
                   # Note: nx run-many with Nx cache avoids redundant rebuilds of non-affected packages
-                  for package in react-hooks react-clean ts-configs ts-types http-client solid-clean qup-shared wealth-tracker-core; do
+                  for package in react-hooks react-clean ts-configs ts-types http-client drizzle-neverthrow solid-clean qup-shared; do
                     if [ -d "packages/$package/dist" ]; then
                       echo "📦 Analyzing bundle for $package..."
                       pnpm exec bundle-analyzer packages/$package/dist \

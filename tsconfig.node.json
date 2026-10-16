@@ -1,0 +1,11 @@
+{
+    "extends": "./packages/ts-configs/tsconfig.node.tooling.json",
+    "include": [
+        "commitlint.config.ts",
+        "eslint.config.ts",
+        "knip.config.ts",
+        "lint-staged.config.ts",
+        "oxfmt.config.ts",
+        "vitest.config.ts"
+    ]
+}

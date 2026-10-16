@@ -1,0 +1,7 @@
+{
+    "name": "@m0n0lab/drizzle-neverthrow",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/drizzle-neverthrow/src",
+    "projectType": "library",
+    "tags": ["docker"]
+}

@@ -9,9 +9,11 @@
     },
     "files": [
         "tsconfig.base.json",
+        "tsconfig.test.json",
         "tsconfig.node.base.json",
         "tsconfig.node.app.json",
         "tsconfig.node.lib.json",
+        "tsconfig.node.tooling.json",
         "tsconfig.web.base.json",
         "tsconfig.web.app.json",
         "tsconfig.web.lib.json",
@@ -24,9 +26,11 @@
     "sideEffects": false,
     "exports": {
         "./tsconfig.base.json": "./tsconfig.base.json",
+        "./tsconfig.test.json": "./tsconfig.test.json",
         "./tsconfig.node.base.json": "./tsconfig.node.base.json",
         "./tsconfig.node.app.json": "./tsconfig.node.app.json",
         "./tsconfig.node.lib.json": "./tsconfig.node.lib.json",
+        "./tsconfig.node.tooling.json": "./tsconfig.node.tooling.json",
         "./tsconfig.web.base.json": "./tsconfig.web.base.json",
         "./tsconfig.web.app.json": "./tsconfig.web.app.json",
         "./tsconfig.web.lib.json": "./tsconfig.web.lib.json",
@@ -47,6 +51,7 @@
         "lint:oxfmt:fix": "oxfmt ."
     },
     "devDependencies": {
+        "@m0n0lab/vitest-config": "workspace:*",
         "typescript": "catalog:"
     },
     "engines": {

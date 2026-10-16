@@ -1,0 +1,90 @@
+{
+    "name": "@m0n0lab/drizzle-neverthrow",
+    "version": "0.0.0",
+    "private": false,
+    "description": "Wrap a Drizzle client so queries return neverthrow ResultAsync with caller-defined errors",
+    "license": "MIT",
+    "author": "Pablo F.G.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/pabloimrik17/monolab.git",
+        "directory": "packages/drizzle-neverthrow"
+    },
+    "files": [
+        "dist",
+        "package.json",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE"
+    ],
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true,
+        "registry": "https://registry.npmjs.org/"
+    },
+    "scripts": {
+        "build": "tsdown",
+        "build:check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
+        "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
+        "lint:eslint:config-check": "eslint-config-prettier src/index.ts",
+        "lint:eslint:fix": "eslint --cache --concurrency=auto --max-warnings 40 --fix .",
+        "lint:knip": "knip --max-issues 40",
+        "lint:knip:fix": "knip --fix",
+        "lint:oxfmt": "oxfmt --check .",
+        "lint:oxfmt:fix": "oxfmt .",
+        "test": "vitest run",
+        "test:changed": "vitest run --changed",
+        "test:coverage": "vitest run --coverage",
+        "test:integration": "vitest run --project integration",
+        "test:integration:changed": "vitest run --project integration --changed",
+        "test:integration:coverage": "vitest run --project integration --coverage",
+        "test:integration:watch": "vitest --project integration",
+        "test:mutation": "stryker run",
+        "test:mutation:report": "open reports/mutation/index.html",
+        "test:types": "vitest run --project types",
+        "test:types:changed": "vitest run --project types --changed",
+        "test:types:watch": "vitest --project types",
+        "test:ui": "vitest --ui",
+        "test:unit": "vitest run --project unit",
+        "test:unit:changed": "vitest run --project unit --changed",
+        "test:unit:coverage": "vitest run --project unit --coverage",
+        "test:unit:watch": "vitest --project unit",
+        "test:watch": "vitest",
+        "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
+    },
+    "devDependencies": {
+        "@arethetypeswrong/cli": "catalog:",
+        "@m0n0lab/vitest-config": "workspace:*",
+        "@stryker-mutator/api": "catalog:",
+        "@testcontainers/postgresql": "catalog:",
+        "@types/pg": "catalog:",
+        "@vitest/coverage-v8": "catalog:",
+        "drizzle-orm": "catalog:",
+        "neverthrow": "catalog:",
+        "pg": "catalog:",
+        "tsdown": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:"
+    },
+    "peerDependencies": {
+        "drizzle-orm": "^0.45.0",
+        "neverthrow": "^8.0.0"
+    },
+    "engines": {
+        "node": ">=22.0.0",
+        "pnpm": "11.15.0"
+    },
+    "packageManager": "pnpm@11.15.0"
+}

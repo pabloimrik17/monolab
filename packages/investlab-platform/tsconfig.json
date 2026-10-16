@@ -1,0 +1,30 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "module": "preserve",
+        "moduleResolution": "bundler",
+        "outDir": "./out-tsc",
+        "rootDir": "./src",
+        "declaration": true,
+        "composite": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "types": ["node"]
+    },
+    "include": ["src/**/*"],
+    "exclude": ["**/*.test.ts", "**/*.spec.ts"],
+    "references": [
+        {
+            "path": "../investlab-core"
+        },
+        {
+            "path": "../drizzle-neverthrow"
+        },
+        {
+            "path": "../vitest-config"
+        },
+        {
+            "path": "./tsconfig.node.json"
+        }
+    ]
+}

@@ -23,13 +23,9 @@ export abstract class BaseViewModel {
     }
 
     /**
-     * Lifecycle method executed immediately after the component is mounted.
-     * Typically used for initializing data, setting up subscriptions, or making API calls.
-     *
-     * @return {Promise<void> | void} Returns a Promise if asynchronous operations are performed,
-     * otherwise returns void if no asynchronous operations are required.
+     * Optional lifecycle method executed after the component is mounted.
      */
-    didMount(): Promise<void> | void {}
+    didMount?(): Promise<void> | void;
 
     /**
      * Handles the cleanup operations before the component is unmounted.

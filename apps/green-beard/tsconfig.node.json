@@ -1,0 +1,4 @@
+{
+    "extends": "../../packages/ts-configs/tsconfig.node.tooling.json",
+    "include": ["vitest.config.ts"]
+}

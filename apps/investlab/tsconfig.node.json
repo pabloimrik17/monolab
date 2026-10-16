@@ -1,0 +1,4 @@
+{
+    "extends": "../../packages/ts-configs/tsconfig.node.tooling.json",
+    "include": ["react-router.config.ts", "vite.config.ts", "vitest.config.ts"]
+}

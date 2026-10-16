@@ -1,29 +1,46 @@
 {
-    "extends": "../../tsconfig.base.json",
+    "include": ["**/*.ts", "**/*.tsx", ".react-router/types/**/*"],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "out-tsc",
+        "react-router.config.ts",
+        "vite.config.ts",
+        "vitest.config.ts"
+    ],
     "compilerOptions": {
-        "module": "preserve",
+        "lib": ["DOM", "DOM.Iterable", "ES2022"],
+        "target": "ES2022",
+        "module": "ES2022",
         "moduleResolution": "bundler",
-        "outDir": "./out-tsc",
-        "rootDir": "./src",
-        "declaration": true,
-        "composite": true,
+        "jsx": "react-jsx",
+        "rootDirs": [".", "./.react-router/types"],
+        "outDir": "./dist",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "noEmit": true,
+        "isolatedModules": true,
+        "resolveJsonModule": true,
+        "types": ["node", "vite/client"],
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true
     },
-    "include": ["src/**/*"],
-    "exclude": ["**/*.test.ts", "**/*.spec.ts"],
     "references": [
       {
-        "path": "../../packages/wealth-tracker-core"
-      },
-      {
-        "path": "../../packages/investlab-domain"
-      },
-      {
-        "path": "../../packages/investlab-data"
+        "path": "../../packages/vitest-config"
       },
       {
         "path": "../../packages/investlab-core"
+      },
+      {
+        "path": "../../packages/investlab-quotes"
+      },
+      {
+        "path": "../../packages/investlab-portfolio"
+      },
+      {
+        "path": "../../packages/investlab-platform"
       }
     ]
 }

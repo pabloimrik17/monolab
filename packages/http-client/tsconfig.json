@@ -5,5 +5,13 @@
         "rootDir": "./src"
     },
     "include": ["src/**/*"],
-    "exclude": ["**/*.test.ts", "**/*.test-d.ts", "**/*.spec.ts"]
+    "exclude": ["**/*.test.ts", "**/*.test-d.ts", "**/*.spec.ts", "**/*.integration.ts"],
+    "references": [
+        {
+            "path": "../vitest-config"
+        },
+        {
+            "path": "./tsconfig.node.json"
+        }
+    ]
 }

@@ -10,6 +10,11 @@
         "apps/qup-web/src/routes/**/*.tsx",
         // type-level test files are entries for their assertions
         "**/*.test-d.ts",
+        // integration tests live in a vitest `projects` entry, whose include the fallow vitest plugin does not follow
+        "**/*.integration.ts",
+        "**/*.integration.tsx",
+        // module test setups, loaded by vitest `setupFiles`/`globalSetup`, which the fallow vitest plugin does not follow
+        "packages/*/src/application/*/vitest-*-setup.ts",
         // tool-loaded configs (oxfmt CLI, validate-branch-name via husky)
         "oxfmt.config.ts",
         "validate-branch-name.config.cjs"
@@ -38,7 +43,12 @@
         // scoped intent: deliberate keep in apps/qup-web (mirrors knip decision)
         "@kobalte/core"
     ],
-    "publicPackages": ["@m0n0lab/qup-domain", "@m0n0lab/solid-clean", "@m0n0lab/react-clean"],
+    "publicPackages": [
+        "@m0n0lab/qup-domain",
+        "@m0n0lab/solid-clean",
+        "@m0n0lab/react-clean",
+        "@m0n0lab/drizzle-neverthrow"
+    ],
     "ignoreDecorators": ["injectable"],
     "duplicates": {
         // type-level test files are per-type assertion boilerplate; clone detection adds no signal there
@@ -60,9 +70,26 @@
         // port implementations bound in DI; members invoked by use-cases via the port interface
         { "implements": "MenuItemRepository", "members": ["*"] },
         { "implements": "OrderRepository", "members": ["*"] },
-        { "implements": "SessionRepository", "members": ["*"] }
+        { "implements": "SessionRepository", "members": ["*"] },
+        { "implements": "PortfolioItemRepository", "members": ["*"] },
+        { "implements": "InstrumentRepository", "members": ["*"] },
+        { "implements": "PortfolioItemQuery", "members": ["*"] },
+        { "implements": "QuoteRepository", "members": ["*"] }
     ],
     "rules": {
         "require-suppression-reason": "warn"
-    }
+    },
+    "overrides": [
+        {
+            // `json`/`empty` are called by every module's HTTP repositories through `PLATFORM.InvestlabApiClient` (type-only import `audit` does not follow)
+            "files": ["packages/investlab-platform/src/client/investlab-api-client.ts"],
+            "rules": { "unused-class-members": "off" }
+        },
+        {
+            // `update` is called by the update use cases on the entity `findById` resolves, which fallow cannot type;
+            // fallow sees the call only while workspace imports resolve to src (no dist/), so an inline suppression goes stale in one of the two states
+            "files": ["packages/investlab-portfolio/src/domain/entities/instrument.ts"],
+            "rules": { "unused-class-members": "off" }
+        }
+    ]
 }

@@ -40,6 +40,13 @@ coverage:
                 flags:
                     - ts-types
 
+            drizzle-neverthrow:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - drizzle-neverthrow
+
             http-client:
                 target: auto
                 threshold: 2%
@@ -75,12 +82,26 @@ coverage:
                 flags:
                     - solid-clean
 
-            wealth-tracker-core:
+            investlab-core:
                 target: auto
                 threshold: 2%
                 informational: false
                 flags:
-                    - wealth-tracker-core
+                    - investlab-core
+
+            investlab-quotes:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - investlab-quotes
+
+            investlab-portfolio:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - investlab-portfolio
 
             green-beard:
                 target: auto
@@ -96,12 +117,19 @@ coverage:
                 flags:
                     - qup-web
 
-            wealth-react:
+            investlab:
                 target: auto
                 threshold: 2%
                 informational: false
                 flags:
-                    - wealth-react
+                    - investlab
+
+            investlab-api:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - investlab-api
 
             qup-shared:
                 target: auto
@@ -146,6 +174,13 @@ coverage:
                 flags:
                     - ts-types
 
+            drizzle-neverthrow:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - drizzle-neverthrow
+
             http-client:
                 target: 50%
                 threshold: 10%
@@ -181,12 +216,26 @@ coverage:
                 flags:
                     - solid-clean
 
-            wealth-tracker-core:
+            investlab-core:
                 target: 50%
                 threshold: 10%
                 informational: false
                 flags:
-                    - wealth-tracker-core
+                    - investlab-core
+
+            investlab-quotes:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - investlab-quotes
+
+            investlab-portfolio:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - investlab-portfolio
 
             green-beard:
                 target: 50%
@@ -202,12 +251,19 @@ coverage:
                 flags:
                     - qup-web
 
-            wealth-react:
+            investlab:
                 target: 50%
                 threshold: 10%
                 informational: false
                 flags:
-                    - wealth-react
+                    - investlab
+
+            investlab-api:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - investlab-api
 
             qup-shared:
                 target: 50%
@@ -273,6 +329,11 @@ flags:
             - packages/http-client/
         carryforward: true
 
+    drizzle-neverthrow:
+        paths:
+            - packages/drizzle-neverthrow/
+        carryforward: true
+
     qup-api:
         paths:
             - apps/qup-api/
@@ -293,9 +354,19 @@ flags:
             - packages/solid-clean/
         carryforward: true
 
-    wealth-tracker-core:
+    investlab-core:
         paths:
-            - packages/wealth-tracker-core/
+            - packages/investlab-core/
+        carryforward: true
+
+    investlab-quotes:
+        paths:
+            - packages/investlab-quotes/
+        carryforward: true
+
+    investlab-portfolio:
+        paths:
+            - packages/investlab-portfolio/
         carryforward: true
 
     green-beard:
@@ -308,9 +379,14 @@ flags:
             - apps/qup-web/
         carryforward: true
 
-    wealth-react:
+    investlab:
         paths:
-            - apps/wealth-react/
+            - apps/investlab/
+        carryforward: true
+
+    investlab-api:
+        paths:
+            - apps/investlab-api/
         carryforward: true
 
     qup-shared:

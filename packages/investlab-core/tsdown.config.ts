@@ -6,15 +6,7 @@ export default defineConfig({
     format: ["esm"],
     fixedExtension: false,
     outDir: "dist",
-    deps: {
-        neverBundle: [
-            /^@m0n0lab\/investlab-domain($|\/)/,
-            /^@m0n0lab\/wealth-tracker-core($|\/)/,
-            /^ioredis($|\/)/,
-            /^inversify($|\/)/,
-            /^neverthrow($|\/)/,
-        ],
-    },
+    deps: { neverBundle: [/^zod($|\/)/] },
     dts: {
         compilerOptions: {
             composite: false,

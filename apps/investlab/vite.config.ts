@@ -1,0 +1,18 @@
+import { codecovVitePlugin } from "@codecov/vite-plugin";
+import { reactRouter } from "@react-router/dev/vite";
+import { varlockVitePlugin } from "@varlock/vite-integration";
+import { defineConfig, type PluginOption } from "vite";
+
+// Cast: see note in apps/demo/vite.config.ts — drop once @codecov/vite-plugin
+// advertises vite@7 in peerDependencies.
+const codecovToken = process.env["CODECOV_TOKEN"]?.trim();
+const codecovPlugin = codecovVitePlugin({
+    enableBundleAnalysis: Boolean(codecovToken),
+    bundleName: "investlab",
+    ...(codecovToken != null && { uploadToken: codecovToken }),
+    gitService: "github",
+}) as PluginOption;
+
+export default defineConfig({
+    plugins: [varlockVitePlugin(), reactRouter(), codecovPlugin],
+});

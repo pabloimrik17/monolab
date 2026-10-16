@@ -1,0 +1,36 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "module": "preserve",
+        "moduleResolution": "bundler",
+        "outDir": "./out-tsc",
+        "rootDir": "./src",
+        "declaration": true,
+        "composite": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "types": ["node"]
+    },
+    "include": ["src/**/*"],
+    "exclude": ["**/*.test.ts", "**/*.spec.ts"],
+    "references": [
+      {
+        "path": "../../packages/investlab-quotes"
+      },
+      {
+        "path": "../../packages/investlab-portfolio"
+      },
+      {
+        "path": "../../packages/investlab-platform"
+      },
+      {
+        "path": "../../packages/investlab-core"
+      },
+      {
+        "path": "../../packages/vitest-config"
+      },
+      {
+        "path": "./tsconfig.node.json"
+      }
+    ]
+}

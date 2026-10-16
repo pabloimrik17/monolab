@@ -60,6 +60,18 @@
                 }
             ]
         },
+        "packages/drizzle-neverthrow": {
+            "release-type": "node",
+            "package-name": "@m0n0lab/drizzle-neverthrow",
+            "changelog-path": "CHANGELOG.md",
+            "extra-files": [
+                {
+                    "type": "json",
+                    "path": "deno.json",
+                    "jsonpath": "$.version"
+                }
+            ]
+        },
         "packages/solid-clean": {
             "release-type": "node",
             "package-name": "@m0n0lab/solid-clean",

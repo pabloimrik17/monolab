@@ -4,7 +4,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "tsc -b --clean && tsc -b && vite build",
+        "build": "vite build",
         "dev": "vite",
         "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 60 .",
         "lint:eslint:config-check": "eslint-config-prettier src/index.tsx",
@@ -25,7 +25,7 @@
         "vite-plugin-solid": "catalog:"
     },
     "engines": {
-        "node": "24.18.0",
+        "node": "24.21.0",
         "pnpm": "11.15.0"
     },
     "packageManager": "pnpm@11.15.0"

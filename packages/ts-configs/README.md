@@ -38,9 +38,10 @@ tsconfig.base.json (platform-agnostic foundation)
 ├── tsconfig.web.base.json ✅
 │   ├── tsconfig.web.lib.json ✅
 │   └── tsconfig.web.app.json ✅
-└── tsconfig.node.base.json (coming soon)
-    ├── tsconfig.node.lib.json (coming soon)
-    └── tsconfig.node.app.json (coming soon)
+└── tsconfig.node.base.json ✅
+    ├── tsconfig.node.lib.json ✅
+    ├── tsconfig.node.app.json ✅
+    └── tsconfig.node.tooling.json ✅
 ```
 
 ## Available Configurations
@@ -159,9 +160,51 @@ tsconfig.base.json (platform-agnostic foundation)
 - Web utilities and hooks
 - JSR-published packages
 
-### Platform Configs (Coming Soon)
+### `tsconfig.node.tooling.json`
 
-Additional platform-specific configs in development:
+**Configuration for tool config files** (e.g. bundler, test runner or linter `*.config.ts`). Type-check only.
+
+**Extends:** `tsconfig.node.base.json`
+
+**Adds:**
+
+- ✅ **Node.js Resolution**: Inherits `module: "NodeNext"` and `types: ["node"]`
+- ✅ **Side-Effect Imports**: `noUncheckedSideEffectImports: true`
+- ✅ **Self-Contained Paths**: `rootDir`, `outDir` and `tsBuildInfoFile` use `${configDir}`, so only `include` is needed
+- ✅ **Composite Reference**: `emitDeclarationOnly: true` (to `out-tsc/tooling`) so the project can be referenced from `tsconfig.json`
+
+**Usage** (`tsconfig.node.json`, referenced from the project `tsconfig.json`):
+
+```json
+{
+    "extends": "@m0n0lab/ts-configs/tsconfig.node.tooling.json",
+    "include": ["vite.config.ts", "vitest.config.ts"]
+}
+```
+
+### `tsconfig.test.json`
+
+Test configuration overlay for checking types without emitting files. Apply it after your
+project's production configuration to preserve platform settings and strict checks while
+disabling emission, composite builds and incremental compilation.
+
+Keep file patterns and project references in the consuming configuration. TypeScript does
+not inherit `references` through `extends`; copy any required references explicitly.
+
+**Usage** (`tsconfig.test.json`):
+
+```json
+{
+    "extends": ["./tsconfig.json", "@m0n0lab/ts-configs/tsconfig.test.json"],
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist", "out-tsc", "**/*.test.ts", "**/*.spec.ts"]
+}
+```
+
+For Vitest type tests, point `test.typecheck.tsconfig` at this configuration and ensure
+`*.test-d.ts` files are included. Continue using the production configuration for builds.
+
+### Node.js Configs
 
 - **`tsconfig.node.base.json`**: Base for Node.js projects (adds `module: "NodeNext"`)
 - **`tsconfig.node.lib.json`**: For Node.js libraries
