@@ -10,9 +10,9 @@ const { api } = container.get(PLATFORM.Config);
 const server = serve({ fetch: createApp(container, { token: api.token }).fetch, port: api.port });
 console.log(`investlab-api listening on http://localhost:${api.port}`);
 
-// Unbinding releases the Postgres pool and the Redis connection.
+// In-flight requests finish before unbinding releases the Postgres pool and the Redis connection.
 async function shutdown(): Promise<void> {
-    server.close();
+    await new Promise<void>((resolve) => server.close(() => resolve()));
     await container.unbindAllAsync();
     process.exit(0);
 }

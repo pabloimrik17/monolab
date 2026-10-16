@@ -1,5 +1,5 @@
 import { Container } from "inversify";
-import { http, HttpResponse } from "msw";
+import { delay, http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { z } from "zod";
@@ -111,6 +111,27 @@ describe("InvestlabApiClient", () => {
         const result = await apiClient({ token: "wrong" }).json("GET", "/things/1", thingSchema);
 
         expect(result._unsafeUnwrapErr()).toMatchObject({ code: "UNAUTHORIZED" });
+    });
+
+    it("returns UnauthorizedError on a 401 whose body is not JSON", async () => {
+        fakeApi("get", "/things/1", () => new HttpResponse("Unauthorized", { status: 401 }));
+
+        const result = await apiClient().json("GET", "/things/1", thingSchema);
+
+        expect(result._unsafeUnwrapErr()).toMatchObject({ code: "UNAUTHORIZED" });
+    });
+
+    it("applies the caller's timeout", async () => {
+        server.use(
+            http.get(`${BASE_URL}/things/1`, async () => {
+                await delay(200);
+                return HttpResponse.json({ id: "1" });
+            }),
+        );
+
+        const result = await apiClient().json("GET", "/things/1", thingSchema, { timeoutMs: 20 });
+
+        expect(result._unsafeUnwrapErr()).toMatchObject({ code: "NETWORK_ERROR" });
     });
 
     it.each<[string, () => Response]>([

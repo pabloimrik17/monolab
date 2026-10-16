@@ -29,6 +29,8 @@ export type ApiErrorMap<E> = { readonly [Code in ModuleErrorCode]?: (error: ApiE
 export interface ApiCallOptions<E> {
     readonly body?: unknown;
     readonly errors?: ApiErrorMap<E>;
+    /** Overrides `HttpClient`'s default timeout, for endpoints that wait on slower services. */
+    readonly timeoutMs?: number;
 }
 
 const HTTP_UNAUTHORIZED = 401;
@@ -74,7 +76,7 @@ export class InvestlabApiClient {
     private exchange<E>(
         method: HttpMethod,
         path: string,
-        { body, errors = {} }: ApiCallOptions<E>,
+        { body, errors = {}, timeoutMs }: ApiCallOptions<E>,
     ): ResultAsync<unknown, E | RemotePortError> {
         return this.http
             .request({
@@ -82,6 +84,7 @@ export class InvestlabApiClient {
                 url: `${this.baseUrl}${path}`,
                 headers: { Authorization: `Bearer ${this.token}` },
                 body,
+                ...(timeoutMs !== undefined && { timeoutMs }),
             })
             .andThen(({ status, body: payload }): Result<unknown, E | RemotePortError> => {
                 if (status >= 200 && status < 300) {

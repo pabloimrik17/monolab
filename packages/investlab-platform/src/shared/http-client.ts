@@ -1,5 +1,5 @@
 import { injectable } from "inversify";
-import { Result, ResultAsync } from "neverthrow";
+import { ok, Result, ResultAsync } from "neverthrow";
 import { NetworkError } from "@m0n0lab/investlab-core";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -16,7 +16,7 @@ export interface HttpRequest {
 
 export interface HttpResponse {
     readonly status: number;
-    /** Parsed JSON body; `undefined` when the response has none. */
+    /** Parsed JSON body; `undefined` when the response has none, or an error status's body is not JSON. */
     readonly body: unknown;
 }
 
@@ -29,8 +29,8 @@ const parseJson = Result.fromThrowable(
 
 /**
  * Generic JSON over `fetch`. Every HTTP status comes back as a response with its parsed body;
- * only transport failures (unreachable, timeout, unparsable body) are `NetworkError`s.
- * Knows no base URL, endpoint or credentials.
+ * only transport failures (bad request setup, unreachable, timeout, unparsable success body) are
+ * `NetworkError`s. Knows no base URL, endpoint or credentials.
  */
 @injectable()
 export class HttpClient {
@@ -41,21 +41,26 @@ export class HttpClient {
         body,
         timeoutMs = DEFAULT_TIMEOUT_MS,
     }: HttpRequest): ResultAsync<HttpResponse, NetworkError> {
-        return ResultAsync.fromPromise(
-            fetch(url, {
-                method,
-                headers: {
-                    Accept: "application/json",
-                    ...(body !== undefined && { "Content-Type": "application/json" }),
-                    ...headers,
-                },
-                ...(body !== undefined && { body: JSON.stringify(body) }),
-                signal: AbortSignal.timeout(timeoutMs),
-            }),
+        return ResultAsync.fromThrowable(
+            () =>
+                fetch(url, {
+                    method,
+                    headers: {
+                        Accept: "application/json",
+                        ...(body !== undefined && { "Content-Type": "application/json" }),
+                        ...headers,
+                    },
+                    ...(body !== undefined && { body: JSON.stringify(body) }),
+                    signal: AbortSignal.timeout(timeoutMs),
+                }),
             (cause) => new NetworkError(cause),
-        ).andThen((response) =>
+        )().andThen((response) =>
             ResultAsync.fromPromise(response.text(), (cause) => new NetworkError(cause))
-                .andThen(parseJson)
+                .andThen((text) => {
+                    const parsed = parseJson(text);
+                    // A proxy's HTML 502 must still reach the caller as a 502.
+                    return response.ok ? parsed : ok(parsed.unwrapOr(undefined));
+                })
                 .map((parsed) => ({ status: response.status, body: parsed })),
         );
     }

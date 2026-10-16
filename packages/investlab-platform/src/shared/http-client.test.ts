@@ -57,10 +57,27 @@ describe("HttpClient", () => {
         expect(result._unsafeUnwrap()).toEqual({ status: 204, body: undefined });
     });
 
-    it("fails with NetworkError on a body that is not JSON", async () => {
+    it("fails with NetworkError on a success body that is not JSON", async () => {
+        server.use(http.get(URL, () => new HttpResponse("<h1>Hello</h1>", { status: 200 })));
+
+        const result = await new HttpClient().request({ method: "GET", url: URL });
+
+        expect(result._unsafeUnwrapErr()).toMatchObject({ code: "NETWORK_ERROR" });
+    });
+
+    it("keeps the status of an error whose body is not JSON", async () => {
         server.use(http.get(URL, () => new HttpResponse("<h1>Bad gateway</h1>", { status: 502 })));
 
         const result = await new HttpClient().request({ method: "GET", url: URL });
+
+        expect(result._unsafeUnwrap()).toEqual({ status: 502, body: undefined });
+    });
+
+    it.each<[string, { body?: unknown; timeoutMs?: number }]>([
+        ["a negative timeout", { timeoutMs: -1 }],
+        ["a body that cannot be serialized", { body: { big: 1n } }],
+    ])("fails with NetworkError on %s instead of throwing", async (_name, request) => {
+        const result = await new HttpClient().request({ method: "POST", url: URL, ...request });
 
         expect(result._unsafeUnwrapErr()).toMatchObject({ code: "NETWORK_ERROR" });
     });
