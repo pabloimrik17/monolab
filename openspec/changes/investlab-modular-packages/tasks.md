@@ -75,9 +75,9 @@
 
 ## 8. Remove the layer packages
 
-- [ ] 8.1 Delete `packages/investlab-{domain,data-contracts,data-server,data-client,application-server,application-client}`
-- [ ] 8.2 Remove their references: tsconfig references, app `package.json` dependencies, `.fallowrc.json` (`usedClassMembers`, entries), knip config; `pnpm install` and `pnpm nx sync`
-- [ ] 8.3 `nx show projects -p '@m0n0lab/investlab*'` lists exactly the two apps and the five new packages
+- [x] 8.1 Delete `packages/investlab-{domain,data-contracts,data-server,data-client,application-server,application-client}`
+- [x] 8.2 Remove their references: tsconfig references, app `package.json` dependencies, `.fallowrc.json` (`usedClassMembers`, entries), knip config; `pnpm install` and `pnpm nx sync`
+- [x] 8.3 `nx show projects -p '@m0n0lab/investlab*'` lists exactly the two apps and the five new packages
 
 ## 9. Instrument CRUD
 
@@ -99,10 +99,10 @@
 
 ## 11. CI and workspace
 
-- [ ] 11.1 CI `test:integration` runs the new projects (`nx affected -t test:integration` picks the module packages, which carry `tag:docker` so the non-distributed step runs them)
-- [ ] 11.2 Root scripts `investlab:*` keep naming the two apps
-- [ ] 11.3 `pnpm lint:fallow`, `pnpm lint:knip`, markdownlint and oxfmt green
-- [ ] 11.4 Check the web's client build output contains no `pg`, `ioredis`, `drizzle-orm` and no `INVESTLAB_API_TOKEN` value
+- [x] 11.1 CI `test:integration` runs the new projects (`nx affected -t test:integration` picks the module packages, which carry `tag:docker` so the non-distributed step runs them)
+- [x] 11.2 Root scripts `investlab:*` keep naming the two apps
+- [x] 11.3 `pnpm lint:fallow`, `pnpm lint:knip`, markdownlint and oxfmt green
+- [x] 11.4 Check the web's client build output contains no `pg`, `ioredis`, `drizzle-orm` and no `INVESTLAB_API_TOKEN` value
 
 ## 12. Verification
 

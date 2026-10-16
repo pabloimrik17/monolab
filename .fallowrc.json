@@ -78,5 +78,12 @@
     ],
     "rules": {
         "require-suppression-reason": "warn"
-    }
+    },
+    "overrides": [
+        {
+            // `json`/`empty` are called by every module's HTTP repositories through `PLATFORM.InvestlabApiClient` (type-only import `audit` does not follow)
+            "files": ["packages/investlab-platform/src/client/investlab-api-client.ts"],
+            "rules": { "unused-class-members": "off" }
+        }
+    ]
 }
