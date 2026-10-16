@@ -532,7 +532,7 @@ cd packages/my-package
         "directory": "packages/my-package"
     },
     "engines": {
-        "node": "24.12.0"
+        "node": ">=22.0.0"
     },
     "publishConfig": {
         "access": "public",
