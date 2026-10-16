@@ -1,0 +1,53 @@
+{
+    "name": "@m0n0lab/investlab-api",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "tsdown",
+        "db:generate": "pnpm --filter @m0n0lab/investlab-data-server db:generate",
+        "db:migrate": "pnpm --filter @m0n0lab/investlab-data-server db:migrate",
+        "dev": "tsx watch src/index.ts",
+        "start": "node dist/index.mjs",
+        "test": "vitest run",
+        "test:changed": "vitest run --changed",
+        "test:coverage": "vitest run --coverage",
+        "test:watch": "vitest",
+        "test:unit": "vitest run",
+        "test:unit:changed": "vitest run --changed",
+        "test:unit:watch": "vitest",
+        "test:unit:coverage": "vitest run --coverage",
+        "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
+    },
+    "dependencies": {
+        "@hono/node-server": "2.0.10",
+        "@m0n0lab/investlab-application-server": "workspace:*",
+        "@m0n0lab/investlab-data-contracts": "workspace:*",
+        "@m0n0lab/investlab-data-server": "workspace:*",
+        "@m0n0lab/investlab-domain": "workspace:*",
+        "@varlock/1password-plugin": "catalog:",
+        "drizzle-orm": "catalog:",
+        "hono": "4.12.30",
+        "inversify": "catalog:",
+        "ioredis": "catalog:",
+        "neverthrow": "catalog:",
+        "pg": "catalog:",
+        "varlock": "catalog:",
+        "zod": "3.25.76"
+    },
+    "devDependencies": {
+        "@codecov/rollup-plugin": "catalog:",
+        "@m0n0lab/vitest-config": "workspace:*",
+        "@types/node": "catalog:",
+        "@types/pg": "8.20.0",
+        "tsdown": "catalog:",
+        "tsx": "4.23.1",
+        "typescript": "catalog:",
+        "vitest": "catalog:"
+    },
+    "engines": {
+        "node": "24.21.0",
+        "pnpm": "11.15.0"
+    },
+    "packageManager": "pnpm@11.15.0"
+}

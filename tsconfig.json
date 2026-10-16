@@ -19,9 +19,6 @@
         "path": "./packages/http-client"
       },
       {
-        "path": "./packages/wealth-tracker-core"
-      },
-      {
         "path": "./packages/solid-clean"
       },
       {
@@ -43,16 +40,28 @@
         "path": "./packages/investlab-domain"
       },
       {
-        "path": "./packages/investlab-core"
+        "path": "./packages/investlab-data-server"
       },
       {
-        "path": "./packages/investlab-data"
+        "path": "./packages/investlab-application-server"
       },
       {
-        "path": "./apps/investlab"
+        "path": "./packages/investlab-data-client"
+      },
+      {
+        "path": "./packages/investlab-data-contracts"
       },
       {
         "path": "./packages/vitest-config"
+      },
+      {
+        "path": "./packages/drizzle-neverthrow"
+      },
+      {
+        "path": "./apps/investlab-api"
+      },
+      {
+        "path": "./packages/investlab-application-client"
       }
     ]
 }

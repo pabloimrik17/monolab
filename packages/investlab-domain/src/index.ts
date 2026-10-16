@@ -1,8 +1,14 @@
 // Errors
 export {
     DomainError,
+    type DomainErrorCode,
     InstrumentNotFoundError,
+    NetworkError,
     PersistenceError,
+    PortfolioItemConflictError,
+    PortfolioItemNotFoundError,
+    type RemotePortError,
+    UnauthorizedError,
     ValidationError,
 } from "./errors.ts";
 
@@ -14,13 +20,18 @@ export { Sector } from "./value-objects/sector.ts";
 // Entities
 export { Instrument } from "./entities/instrument.ts";
 export type { InstrumentProps } from "./entities/instrument.ts";
+export { PortfolioItem } from "./entities/portfolio-item.ts";
+export type { PortfolioItemProps } from "./entities/portfolio-item.ts";
 
 // Ports
 export type { InstrumentRepository } from "./ports/instrument.repository.ts";
-export type { Quote, QuoteCache } from "./ports/quote-cache.ts";
+export type { Quote, QuoteRepository } from "./ports/quote.repository.ts";
+export type { PortfolioItemRepository } from "./ports/portfolio-item.repository.ts";
+export type { PortfolioItemQuery } from "./ports/portfolio-item.query.ts";
+export type { PortfolioItemListQuery } from "./ports/portfolio-item-list.query.ts";
+
+export type { PortfolioItemWithInstrument } from "./read-models/portfolio-item-with-instrument.ts";
+export type { PortfolioItemList } from "./read-models/portfolio-item-list.ts";
 
 // Tokens
 export { TOKENS } from "./tokens.ts";
-
-// Module
-export { domainModule } from "./domain.module.ts";

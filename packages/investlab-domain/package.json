@@ -26,7 +26,6 @@
         "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
     },
     "dependencies": {
-        "inversify": "catalog:",
         "neverthrow": "catalog:"
     },
     "devDependencies": {

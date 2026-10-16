@@ -1,0 +1,57 @@
+{
+    "name": "@m0n0lab/investlab-application-server",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "scripts": {
+        "build": "tsdown",
+        "test": "vitest run",
+        "test:changed": "vitest run --changed",
+        "test:coverage": "vitest run --coverage",
+        "test:integration": "vitest run --project integration",
+        "test:integration:changed": "vitest run --project integration --changed",
+        "test:integration:coverage": "vitest run --project integration --coverage",
+        "test:integration:watch": "vitest --project integration",
+        "test:unit": "vitest run --project unit",
+        "test:unit:changed": "vitest run --project unit --changed",
+        "test:unit:coverage": "vitest run --project unit --coverage",
+        "test:unit:watch": "vitest --project unit",
+        "test:watch": "vitest",
+        "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
+    },
+    "dependencies": {
+        "@m0n0lab/investlab-domain": "workspace:*",
+        "inversify": "catalog:",
+        "neverthrow": "catalog:"
+    },
+    "devDependencies": {
+        "@m0n0lab/investlab-data-server": "workspace:*",
+        "@m0n0lab/vitest-config": "workspace:*",
+        "@testcontainers/postgresql": "catalog:",
+        "@testcontainers/redis": "catalog:",
+        "@types/node": "catalog:",
+        "@types/pg": "catalog:",
+        "drizzle-orm": "catalog:",
+        "ioredis": "catalog:",
+        "msw": "catalog:",
+        "pg": "catalog:",
+        "tsdown": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:"
+    },
+    "engines": {
+        "node": "24.21.0",
+        "pnpm": "11.15.0"
+    },
+    "packageManager": "pnpm@11.15.0"
+}

@@ -1,5 +1,6 @@
 {
     "workspace": [
+        "./packages/drizzle-neverthrow",
         "./packages/http-client",
         "./packages/react-clean",
         "./packages/react-hooks",

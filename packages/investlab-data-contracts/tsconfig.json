@@ -1,0 +1,21 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "module": "preserve",
+        "moduleResolution": "bundler",
+        "outDir": "./out-tsc",
+        "rootDir": "./src",
+        "declaration": true,
+        "composite": true
+    },
+    "include": ["src/**/*"],
+    "exclude": ["**/*.test.ts", "**/*.spec.ts"],
+    "references": [
+        {
+            "path": "../vitest-config"
+        },
+        {
+            "path": "./tsconfig.node.json"
+        }
+    ]
+}

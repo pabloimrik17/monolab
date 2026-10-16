@@ -1,6 +1,13 @@
 // fallow-ignore-file unused-class-member -- abstract code contract implemented by subclasses, read by use-cases pending
+export type DomainErrorCode =
+    | "PERSISTENCE_ERROR"
+    | "VALIDATION_ERROR"
+    | "INSTRUMENT_NOT_FOUND"
+    | "PORTFOLIO_ITEM_NOT_FOUND"
+    | "PORTFOLIO_ITEM_CONFLICT";
+
 export abstract class DomainError extends Error {
-    abstract readonly code: string;
+    abstract readonly code: DomainErrorCode;
 }
 
 export class PersistenceError extends DomainError {
@@ -27,3 +34,51 @@ export class InstrumentNotFoundError extends DomainError {
         this.name = "InstrumentNotFoundError";
     }
 }
+
+export class PortfolioItemNotFoundError extends DomainError {
+    readonly code = "PORTFOLIO_ITEM_NOT_FOUND";
+    constructor(id: string) {
+        super(`Portfolio item not found: ${id}`);
+        this.name = "PortfolioItemNotFoundError";
+    }
+}
+
+export class PortfolioItemConflictError extends DomainError {
+    readonly code = "PORTFOLIO_ITEM_CONFLICT";
+    constructor(id: string) {
+        super(`Portfolio item ${id} was changed by another request; reload and try again`);
+        this.name = "PortfolioItemConflictError";
+    }
+}
+
+// Client-side transport failure (API unreachable or unusable response).
+// Deliberately not a DomainError: it never crosses the wire, so the API's code→status map stays total.
+export class NetworkError extends Error {
+    readonly code = "NETWORK_ERROR";
+    constructor(cause: unknown) {
+        super("API request failed");
+        this.name = "NetworkError";
+        this.cause = cause;
+    }
+}
+
+// Client-side: the API rejected our bearer token (HTTP 401). An operator misconfiguration, not an outage.
+// Deliberately not a DomainError, for the same reason as NetworkError.
+export class UnauthorizedError extends Error {
+    readonly code = "UNAUTHORIZED";
+    constructor(cause: unknown) {
+        super("API rejected the bearer token");
+        this.name = "UnauthorizedError";
+        this.cause = cause;
+    }
+}
+
+/** Every failure a remote (HTTP) port can return: server codes rebuilt as domain errors plus transport and authorization failures. */
+export type RemotePortError =
+    | PersistenceError
+    | ValidationError
+    | InstrumentNotFoundError
+    | PortfolioItemNotFoundError
+    | PortfolioItemConflictError
+    | NetworkError
+    | UnauthorizedError;

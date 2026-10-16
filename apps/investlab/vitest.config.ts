@@ -5,8 +5,8 @@ export default mergeConfig(
     sharedConfig,
     defineConfig({
         test: {
+            include: ["**/*.{test,spec}.{ts,tsx}"],
             passWithNoTests: true,
-            include: ["**/*.{test,spec}.ts"],
             reporters: ["default", "junit"],
             outputFile: {
                 junit: "./test-results.junit.xml",

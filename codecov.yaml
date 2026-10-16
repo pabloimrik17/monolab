@@ -40,6 +40,13 @@ coverage:
                 flags:
                     - ts-types
 
+            drizzle-neverthrow:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - drizzle-neverthrow
+
             http-client:
                 target: auto
                 threshold: 2%
@@ -75,12 +82,40 @@ coverage:
                 flags:
                     - solid-clean
 
-            wealth-tracker-core:
+            investlab-domain:
                 target: auto
                 threshold: 2%
                 informational: false
                 flags:
-                    - wealth-tracker-core
+                    - investlab-domain
+
+            investlab-data-server:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - investlab-data-server
+
+            investlab-application-server:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - investlab-application-server
+
+            investlab-application-client:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - investlab-application-client
+
+            investlab-data-contracts:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - investlab-data-contracts
 
             green-beard:
                 target: auto
@@ -96,12 +131,19 @@ coverage:
                 flags:
                     - qup-web
 
-            wealth-react:
+            investlab:
                 target: auto
                 threshold: 2%
                 informational: false
                 flags:
-                    - wealth-react
+                    - investlab
+
+            investlab-api:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - investlab-api
 
             qup-shared:
                 target: auto
@@ -146,6 +188,13 @@ coverage:
                 flags:
                     - ts-types
 
+            drizzle-neverthrow:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - drizzle-neverthrow
+
             http-client:
                 target: 50%
                 threshold: 10%
@@ -181,12 +230,40 @@ coverage:
                 flags:
                     - solid-clean
 
-            wealth-tracker-core:
+            investlab-domain:
                 target: 50%
                 threshold: 10%
                 informational: false
                 flags:
-                    - wealth-tracker-core
+                    - investlab-domain
+
+            investlab-data-server:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - investlab-data-server
+
+            investlab-application-server:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - investlab-application-server
+
+            investlab-application-client:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - investlab-application-client
+
+            investlab-data-contracts:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - investlab-data-contracts
 
             green-beard:
                 target: 50%
@@ -202,12 +279,19 @@ coverage:
                 flags:
                     - qup-web
 
-            wealth-react:
+            investlab:
                 target: 50%
                 threshold: 10%
                 informational: false
                 flags:
-                    - wealth-react
+                    - investlab
+
+            investlab-api:
+                target: 50%
+                threshold: 10%
+                informational: false
+                flags:
+                    - investlab-api
 
             qup-shared:
                 target: 50%
@@ -273,6 +357,11 @@ flags:
             - packages/http-client/
         carryforward: true
 
+    drizzle-neverthrow:
+        paths:
+            - packages/drizzle-neverthrow/
+        carryforward: true
+
     qup-api:
         paths:
             - apps/qup-api/
@@ -293,9 +382,29 @@ flags:
             - packages/solid-clean/
         carryforward: true
 
-    wealth-tracker-core:
+    investlab-domain:
         paths:
-            - packages/wealth-tracker-core/
+            - packages/investlab-domain/
+        carryforward: true
+
+    investlab-data-server:
+        paths:
+            - packages/investlab-data-server/
+        carryforward: true
+
+    investlab-application-server:
+        paths:
+            - packages/investlab-application-server/
+        carryforward: true
+
+    investlab-application-client:
+        paths:
+            - packages/investlab-application-client/
+        carryforward: true
+
+    investlab-data-contracts:
+        paths:
+            - packages/investlab-data-contracts/
         carryforward: true
 
     green-beard:
@@ -308,9 +417,14 @@ flags:
             - apps/qup-web/
         carryforward: true
 
-    wealth-react:
+    investlab:
         paths:
-            - apps/wealth-react/
+            - apps/investlab/
+        carryforward: true
+
+    investlab-api:
+        paths:
+            - apps/investlab-api/
         carryforward: true
 
     qup-shared:
