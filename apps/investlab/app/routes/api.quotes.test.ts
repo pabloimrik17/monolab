@@ -1,6 +1,6 @@
 import { createServer, type Server } from "node:http";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { QUOTE_LIST_MAX_SYMBOLS } from "@m0n0lab/investlab-data-contracts";
+import { QUOTE_LIST_MAX_SYMBOLS } from "@m0n0lab/investlab-quotes";
 import type { Route } from "./+types/api.quotes";
 
 const TOKEN = "test-token";
