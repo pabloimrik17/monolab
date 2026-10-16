@@ -1,4 +1,5 @@
 import { inject, injectable, optional } from "inversify";
+import { PLATFORM } from "@m0n0lab/investlab-platform/server";
 import { DATA_TOKENS } from "../tokens.ts";
 import type { Quote } from "@m0n0lab/investlab-domain";
 import type Redis from "ioredis";
@@ -28,7 +29,7 @@ export class RedisQuoteDatasource {
     private readonly ttl: number;
 
     constructor(
-        @inject(DATA_TOKENS.Redis) private readonly redis: Redis,
+        @inject(PLATFORM.Redis) private readonly redis: Redis,
         @inject(DATA_TOKENS.QuoteCacheTtl) @optional() ttl?: number,
     ) {
         this.ttl = ttl != null && Number.isInteger(ttl) && ttl > 0 ? ttl : DEFAULT_TTL_SECONDS;

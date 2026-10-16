@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { PortfolioItem, PortfolioItemConflictError } from "@m0n0lab/investlab-domain";
+import { asDb } from "../testing/as-db.ts";
 import { PgPortfolioItemRepository } from "./pg-portfolio-item.repository.ts";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
@@ -32,7 +33,7 @@ describe("PgPortfolioItemRepository", () => {
             }),
         } as unknown as NodePgDatabase;
 
-        const result = await new PgPortfolioItemRepository(db).update(item, row.updatedAt);
+        const result = await new PgPortfolioItemRepository(asDb(db)).update(item, row.updatedAt);
 
         expect(result._unsafeUnwrapErr()).toBeInstanceOf(PortfolioItemConflictError);
     });
@@ -44,7 +45,7 @@ describe("PgPortfolioItemRepository", () => {
             }),
         } as unknown as NodePgDatabase;
 
-        const result = await new PgPortfolioItemRepository(db).update(item, row.updatedAt);
+        const result = await new PgPortfolioItemRepository(asDb(db)).update(item, row.updatedAt);
 
         expect(result._unsafeUnwrap().id).toBe("p-1");
     });
@@ -54,7 +55,7 @@ describe("PgPortfolioItemRepository", () => {
             delete: () => ({ where: () => Promise.resolve({ rowCount: 1 }) }),
         } as unknown as NodePgDatabase;
 
-        const result = await new PgPortfolioItemRepository(db).delete("p-1");
+        const result = await new PgPortfolioItemRepository(asDb(db)).delete("p-1");
 
         expect(result._unsafeUnwrap()).toBeUndefined();
     });
@@ -64,7 +65,7 @@ describe("PgPortfolioItemRepository", () => {
             select: () => ({ from: () => ({ where: () => Promise.resolve([]) }) }),
         } as unknown as NodePgDatabase;
 
-        const result = await new PgPortfolioItemRepository(db).findById("p-1");
+        const result = await new PgPortfolioItemRepository(asDb(db)).findById("p-1");
 
         expect(result._unsafeUnwrap()).toBeNull();
     });

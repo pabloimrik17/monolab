@@ -24,6 +24,9 @@
         "path": "../vitest-config"
       },
       {
+        "path": "../investlab-platform"
+      },
+      {
         "path": "../investlab-data-contracts"
       },
       {

@@ -29,6 +29,7 @@
         "@m0n0lab/investlab-core": "workspace:*",
         "@m0n0lab/investlab-data-contracts": "workspace:*",
         "@m0n0lab/investlab-domain": "workspace:*",
+        "@m0n0lab/investlab-platform": "workspace:*",
         "inversify": "catalog:",
         "neverthrow": "catalog:",
         "zod": "3.25.76"

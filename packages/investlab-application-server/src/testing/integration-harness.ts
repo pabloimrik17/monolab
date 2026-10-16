@@ -1,13 +1,10 @@
-import { drizzle } from "drizzle-orm/node-postgres";
 import { Container, type ServiceIdentifier } from "inversify";
-import Redis from "ioredis";
-import pg from "pg";
 import { afterAll, beforeAll, beforeEach } from "vitest";
 import {
-    createFinnhubQuoteDatasource,
-    DATA_TOKENS,
     dataModule,
+    instruments,
     portfolioDataModule,
+    portfolioItems,
     quoteDataModule,
 } from "@m0n0lab/investlab-data-server";
 import {
@@ -19,6 +16,11 @@ import {
     type InstrumentRepository,
     type PortfolioItemRepository,
 } from "@m0n0lab/investlab-domain";
+import {
+    PLATFORM,
+    platformServerModule,
+    type ServerConfig,
+} from "@m0n0lab/investlab-platform/server";
 import { portfolioModule } from "../portfolio.module.ts";
 import { fileUrls } from "./vitest-integration-setup.ts";
 import type { Result } from "neverthrow";
@@ -49,18 +51,27 @@ function unwrap<T>(result: Result<T, Error>): T {
     return result.value;
 }
 
-/** Same wiring as the investlab-api composition root, against the Testcontainers services. */
-function createHarness(databaseUrl: string): OwnedHarness {
-    const pool = new pg.Pool({ connectionString: databaseUrl });
-    const redis = new Redis(fileUrls.redisUrl, { lazyConnect: true });
+/** The file's own database and Redis logical database; Finnhub is faked with MSW. */
+function testConfig(databaseUrl: string): ServerConfig {
+    return {
+        database: { url: databaseUrl },
+        redis: { url: fileUrls.redisUrl },
+        finnhub: { apiKey: "test-finnhub-key" },
+        api: { port: 3002, token: "test-api-token" },
+    };
+}
 
+/** Same wiring as the investlab-api composition root, with a constant `Config`. */
+function createHarness(databaseUrl: string): OwnedHarness {
     const container = new Container();
-    container.bind(DATA_TOKENS.DrizzleDb).toConstantValue(drizzle(pool));
-    container.bind(DATA_TOKENS.Redis).toConstantValue(redis);
-    container
-        .bind(DATA_TOKENS.FinnhubQuoteDatasource)
-        .toConstantValue(createFinnhubQuoteDatasource("test-finnhub-key"));
-    container.load(dataModule, portfolioDataModule, quoteDataModule, portfolioModule);
+    container.bind(PLATFORM.Config).toConstantValue(testConfig(databaseUrl));
+    container.load(
+        platformServerModule,
+        dataModule,
+        portfolioDataModule,
+        quoteDataModule,
+        portfolioModule,
+    );
 
     return {
         get: (id) => container.get(id),
@@ -95,13 +106,13 @@ function createHarness(databaseUrl: string): OwnedHarness {
             );
         },
         async reset() {
-            await pool.query("TRUNCATE portfolio_items, instruments");
-            await redis.flushdb();
+            const db = container.get(PLATFORM.Db);
+            unwrap(await db.delete((tx) => tx.delete(portfolioItems)));
+            unwrap(await db.delete((tx) => tx.delete(instruments)));
+            await container.get(PLATFORM.Redis).flushdb();
         },
-        async close() {
-            redis.disconnect();
-            await pool.end();
-        },
+        // Deactivation ends the pool and the Redis connection.
+        close: () => container.unbindAllAsync(),
     };
 }
 

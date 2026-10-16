@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { PersistenceError } from "@m0n0lab/investlab-core";
 import { Instrument } from "@m0n0lab/investlab-domain";
+import { asDb } from "../testing/as-db.ts";
 import { PgInstrumentRepository } from "./pg-instrument.repository.ts";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
@@ -32,7 +33,7 @@ describe("PgInstrumentRepository", () => {
             update: () => ({ set: () => ({ where: () => ({ returning }) }) }),
         } as unknown as NodePgDatabase;
 
-        const result = await new PgInstrumentRepository(db).update(instrument);
+        const result = await new PgInstrumentRepository(asDb(db)).update(instrument);
 
         expect(result._unsafeUnwrapErr()).toBeInstanceOf(PersistenceError);
     });
@@ -44,7 +45,7 @@ describe("PgInstrumentRepository", () => {
             }),
         } as unknown as NodePgDatabase;
 
-        const result = await new PgInstrumentRepository(db).update(instrument);
+        const result = await new PgInstrumentRepository(asDb(db)).update(instrument);
 
         expect(result._unsafeUnwrap().id).toBe("i-1");
     });
@@ -54,7 +55,7 @@ describe("PgInstrumentRepository", () => {
             delete: () => ({ where: () => Promise.resolve({ rowCount: 1 }) }),
         } as unknown as NodePgDatabase;
 
-        const result = await new PgInstrumentRepository(db).delete("i-1");
+        const result = await new PgInstrumentRepository(asDb(db)).delete("i-1");
 
         expect(result._unsafeUnwrap()).toBeUndefined();
     });
@@ -66,7 +67,7 @@ describe("PgInstrumentRepository", () => {
             select: () => ({ from: () => ({ where: () => Promise.resolve([row]) }) }),
         } as unknown as NodePgDatabase;
 
-        const result = await new PgInstrumentRepository(db).upsertBySymbol(instrument);
+        const result = await new PgInstrumentRepository(asDb(db)).upsertBySymbol(instrument);
 
         expect(onConflictDoNothing).toHaveBeenCalledOnce();
         expect(result._unsafeUnwrap().symbol).toBe("VWCE");
@@ -80,7 +81,7 @@ describe("PgInstrumentRepository", () => {
             }),
         } as unknown as NodePgDatabase;
 
-        const result = await new PgInstrumentRepository(db).upsertBySymbol(instrument);
+        const result = await new PgInstrumentRepository(asDb(db)).upsertBySymbol(instrument);
 
         const error = result._unsafeUnwrapErr();
         expect(error).toBeInstanceOf(PersistenceError);

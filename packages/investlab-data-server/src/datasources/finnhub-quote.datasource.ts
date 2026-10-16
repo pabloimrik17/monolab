@@ -1,5 +1,6 @@
 import { batchExecute } from "./batch.ts";
 import type { Quote } from "@m0n0lab/investlab-domain";
+import type { HttpClient } from "@m0n0lab/investlab-platform/server";
 
 const FINNHUB_BASE_URL = "https://finnhub.io/api/v1";
 const DEFAULT_CONCURRENCY = 10;
@@ -33,6 +34,7 @@ interface FinnhubQuoteResponse {
 
 export function createFinnhubQuoteDatasource(
     apiKey: string,
+    http: HttpClient,
     options: FinnhubQuoteDatasourceOptions = {},
 ): FinnhubQuoteDatasource {
     if (!apiKey) {
@@ -48,17 +50,21 @@ export function createFinnhubQuoteDatasource(
         const url = `${FINNHUB_BASE_URL}/quote?symbol=${encodeURIComponent(
             symbol,
         )}&token=${apiKey}`;
-        const response = await fetch(url);
+        const response = await http.request({ method: "GET", url });
+        if (response.isErr()) {
+            throw response.error;
+        }
+        const { status, body } = response.value;
 
-        if (response.status === 401 || response.status === 403) {
-            throw new FinnhubAuthError(symbol, response.status);
+        if (status === 401 || status === 403) {
+            throw new FinnhubAuthError(symbol, status);
         }
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch quote for ${symbol}: ${response.statusText}`);
+        if (status < 200 || status >= 300) {
+            throw new Error(`Failed to fetch quote for ${symbol}: HTTP ${status}`);
         }
 
-        const data = (await response.json()) as FinnhubQuoteResponse;
+        const data = body as FinnhubQuoteResponse;
 
         const { c, d, dp } = data;
         if (c === 0 || d == null || dp == null) {

@@ -1,5 +1,20 @@
+import { Container } from "inversify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createFinnhubQuoteDatasource, FinnhubAuthError } from "./finnhub-quote.datasource.ts";
+import { PLATFORM, platformServerModule } from "@m0n0lab/investlab-platform/server";
+import {
+    createFinnhubQuoteDatasource as createWithHttp,
+    FinnhubAuthError,
+} from "./finnhub-quote.datasource.ts";
+
+/** The datasource over the platform's real `HttpClient`, so stubbing `fetch` drives it. */
+function createFinnhubQuoteDatasource(
+    apiKey: string,
+    options?: Parameters<typeof createWithHttp>[2],
+) {
+    const container = new Container();
+    container.load(platformServerModule);
+    return createWithHttp(apiKey, container.get(PLATFORM.HttpClient), options);
+}
 
 const mockFinnhubResponse = (data: object) =>
     new Response(JSON.stringify(data), {
@@ -88,7 +103,10 @@ describe("createFinnhubQuoteDatasource", () => {
             const quote = await client.getQuote("aapl");
 
             expect(quote.symbol).toBe("AAPL");
-            expect(fetch).toHaveBeenCalledWith(expect.stringContaining("symbol=AAPL"));
+            expect(fetch).toHaveBeenCalledWith(
+                expect.stringContaining("symbol=AAPL"),
+                expect.anything(),
+            );
         });
 
         it("throws on invalid symbol (real Finnhub shape: null change)", async () => {
@@ -190,7 +208,10 @@ describe("createFinnhubQuoteDatasource", () => {
             const client = createFinnhubQuoteDatasource("my-secret-key");
             await client.getQuote("AAPL");
 
-            expect(fetch).toHaveBeenCalledWith(expect.stringContaining("token=my-secret-key"));
+            expect(fetch).toHaveBeenCalledWith(
+                expect.stringContaining("token=my-secret-key"),
+                expect.anything(),
+            );
         });
     });
 

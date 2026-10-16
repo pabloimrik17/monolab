@@ -7,19 +7,13 @@ import {
     type PortfolioItem,
     type PortfolioItemRepository,
 } from "@m0n0lab/investlab-domain";
+import { PLATFORM, type Db } from "@m0n0lab/investlab-platform/server";
 import { portfolioItemToDomain, portfolioItemToRow } from "../mappers/portfolio-item.mapper.ts";
 import { portfolioItems } from "../schema/portfolio-items.ts";
-import { DATA_TOKENS } from "../tokens.ts";
-import { wrapDb } from "../wrap-db.ts";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 @injectable()
 export class PgPortfolioItemRepository implements PortfolioItemRepository {
-    private readonly db: ReturnType<typeof wrapDb>;
-
-    constructor(@inject(DATA_TOKENS.DrizzleDb) db: NodePgDatabase) {
-        this.db = wrapDb(db);
-    }
+    constructor(@inject(PLATFORM.Db) private readonly db: Db) {}
 
     save(item: PortfolioItem): ResultAsync<PortfolioItem, PersistenceError> {
         return this.db

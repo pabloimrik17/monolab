@@ -1,37 +1,37 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
     APP_TOKENS,
     InstrumentListUseCase,
     PortfolioItemListUseCase,
     QuoteListUseCase,
 } from "@m0n0lab/investlab-application-server";
-import { createContainer, readApiEnv } from "./container.ts";
+import { PLATFORM } from "@m0n0lab/investlab-platform/server";
+import { createContainer } from "./container.ts";
 
 const ENV = {
     DATABASE_URL: "postgres://investlab:investlab@localhost:5433/investlab",
     REDIS_URL: "redis://localhost:6379",
     FINNHUB_API_KEY: "finnhub-key",
+    PORT: "3002",
+    INVESTLAB_API_TOKEN: "api-token",
 };
 
-describe("readApiEnv", () => {
-    it("reads the backing-service settings", () => {
-        expect(readApiEnv(ENV)).toEqual({
-            databaseUrl: ENV.DATABASE_URL,
-            redisUrl: ENV.REDIS_URL,
-            finnhubApiKey: ENV.FINNHUB_API_KEY,
+describe("createContainer", () => {
+    beforeEach(() => {
+        for (const [key, value] of Object.entries(ENV)) {
+            vi.stubEnv(key, value);
+        }
+    });
+
+    it("reads the API settings from the env", () => {
+        expect(createContainer().get(PLATFORM.Config).api).toEqual({
+            port: 3002,
+            token: ENV.INVESTLAB_API_TOKEN,
         });
     });
 
-    it("names every missing variable at once", () => {
-        expect(() => readApiEnv({ REDIS_URL: ENV.REDIS_URL, FINNHUB_API_KEY: "" })).toThrow(
-            "Missing env vars: DATABASE_URL, FINNHUB_API_KEY",
-        );
-    });
-});
-
-describe("createContainer", () => {
     it("resolves the use cases wired to Postgres, Redis and Finnhub without connecting", () => {
-        const container = createContainer(readApiEnv(ENV));
+        const container = createContainer();
 
         expect(container.get(APP_TOKENS.PortfolioItemListUseCase)).toBeInstanceOf(
             PortfolioItemListUseCase,
@@ -40,5 +40,15 @@ describe("createContainer", () => {
             InstrumentListUseCase,
         );
         expect(container.get(APP_TOKENS.QuoteListUseCase)).toBeInstanceOf(QuoteListUseCase);
+        expect(container.get(PLATFORM.Redis).status).toBe("wait");
+    });
+
+    it("names every missing env var when a use case is first resolved", () => {
+        vi.stubEnv("DATABASE_URL", "");
+        vi.stubEnv("FINNHUB_API_KEY", undefined);
+
+        expect(() => createContainer().get(APP_TOKENS.QuoteListUseCase)).toThrow(
+            "Missing env vars: DATABASE_URL, FINNHUB_API_KEY",
+        );
     });
 });

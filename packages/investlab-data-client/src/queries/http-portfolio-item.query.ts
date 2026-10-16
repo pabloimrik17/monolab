@@ -1,7 +1,7 @@
 // fallow-ignore-file unused-class-member -- port impl bound in DI, consumed by application-client use cases (task 11.2)
 import { inject, injectable } from "inversify";
 import { portfolioItemListDtoSchema } from "@m0n0lab/investlab-data-contracts";
-import { ApiClient } from "../api-client.ts";
+import { PLATFORM, type InvestlabApiClient } from "@m0n0lab/investlab-platform/client";
 import { instrumentToDomain } from "../mappers/instrument.mapper.ts";
 import { portfolioItemToDomain } from "../mappers/portfolio-item.mapper.ts";
 import type {
@@ -13,7 +13,7 @@ import type { ResultAsync } from "neverthrow";
 
 @injectable()
 export class HttpPortfolioItemQuery implements PortfolioItemListQuery<PortfolioRemoteError> {
-    constructor(@inject(ApiClient) private readonly api: ApiClient) {}
+    constructor(@inject(PLATFORM.InvestlabApiClient) private readonly api: InvestlabApiClient) {}
 
     list(): ResultAsync<PortfolioItemList, PortfolioRemoteError> {
         return this.api
