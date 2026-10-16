@@ -9,10 +9,14 @@ import tseslint from "typescript-eslint";
 const investlabLayerRules = (() => {
     type Ban = { regex: string; message: string };
     const ban = (regex: string, message: string): Ban => ({ regex, message });
-    const group = (files: string[], bans: Ban[], ignores: string[] = []) => ({
+    const group = (
+        files: string[],
+        bans: Ban[],
+        ignores: string[] = [],
+    ): tseslint.ConfigWithExtends => ({
         files,
         ignores,
-        rules: { "no-restricted-imports": ["error", { patterns: bans }] as const },
+        rules: { "no-restricted-imports": ["error", { patterns: bans }] },
     });
     const opposite = { server: "client", client: "server" } as const;
     const sideOnly = (side: "server" | "client") =>
