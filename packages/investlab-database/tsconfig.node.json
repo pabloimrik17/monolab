@@ -1,0 +1,4 @@
+{
+    "extends": "../ts-configs/tsconfig.node.tooling.json",
+    "include": ["drizzle.config.ts", "tsdown.config.ts"]
+}

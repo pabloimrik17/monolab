@@ -5,8 +5,8 @@
     "type": "module",
     "scripts": {
         "build": "tsdown",
-        "db:generate": "pnpm --filter @m0n0lab/investlab-data-server db:generate",
-        "db:migrate": "pnpm --filter @m0n0lab/investlab-data-server db:migrate",
+        "db:generate": "pnpm --filter @m0n0lab/investlab-database db:generate",
+        "db:migrate": "pnpm --filter @m0n0lab/investlab-database db:migrate",
         "dev": "tsx watch src/index.ts",
         "start": "node dist/index.mjs",
         "test": "vitest run",

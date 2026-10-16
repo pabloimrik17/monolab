@@ -15,8 +15,6 @@
     },
     "scripts": {
         "build": "tsdown",
-        "db:generate": "varlock run --path ../../apps/investlab-api/ -- drizzle-kit generate",
-        "db:migrate": "varlock run --path ../../apps/investlab-api/ -- drizzle-kit migrate",
         "test": "vitest run",
         "test:changed": "vitest run --changed",
         "test:coverage": "vitest run --coverage",
@@ -39,10 +37,8 @@
     },
     "devDependencies": {
         "@m0n0lab/vitest-config": "workspace:*",
-        "drizzle-kit": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",
-        "varlock": "catalog:",
         "vitest": "catalog:"
     },
     "engines": {
