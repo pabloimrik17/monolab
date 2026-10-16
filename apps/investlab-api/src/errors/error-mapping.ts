@@ -37,10 +37,13 @@ export function errorJson(c: Context, error: ApiDomainError): Response {
     return c.json(dto, dto.statusCode as ContentfulStatusCode);
 }
 
+function isApiDomainError(error: Error): error is ApiDomainError {
+    return error instanceof DomainError && Object.hasOwn(STATUS_BY_CODE, error.code);
+}
+
 export function handleError(error: Error, c: Context): Response {
-    // Every DomainError the API raises carries a code mapped in STATUS_BY_CODE.
-    if (error instanceof DomainError) {
-        return errorJson(c, error as ApiDomainError);
+    if (isApiDomainError(error)) {
+        return errorJson(c, error);
     }
 
     console.error("Unhandled error:", error);
