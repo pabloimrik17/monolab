@@ -1,9 +1,9 @@
 import { and, asc, eq, sql } from "drizzle-orm";
 import { inject, injectable } from "inversify";
 import { err, ok, type ResultAsync } from "neverthrow";
+import { type PersistenceError } from "@m0n0lab/investlab-core";
 import {
     PortfolioItemConflictError,
-    type PersistenceError,
     type PortfolioItem,
     type PortfolioItemRepository,
 } from "@m0n0lab/investlab-domain";

@@ -1,17 +1,19 @@
 import {
-    InstrumentNotFoundError,
     NetworkError,
     PersistenceError,
-    PortfolioItemConflictError,
-    PortfolioItemNotFoundError,
     ValidationError,
     UnauthorizedError,
-    type RemotePortError,
+    type ApiErrorDto,
+} from "@m0n0lab/investlab-core";
+import {
+    InstrumentNotFoundError,
+    PortfolioItemConflictError,
+    PortfolioItemNotFoundError,
+    type PortfolioRemoteError,
 } from "@m0n0lab/investlab-domain";
-import type { ApiErrorDto } from "@m0n0lab/investlab-data-contracts";
 
 /** Rebuilds the domain error named by `dto.code` (ADR 0005); `resourceId` names the missing entity. */
-export function apiErrorToDomain(dto: ApiErrorDto, resourceId: string): RemotePortError {
+export function apiErrorToDomain(dto: ApiErrorDto, resourceId: string): PortfolioRemoteError {
     switch (dto.code) {
         case "PERSISTENCE_ERROR":
             return new PersistenceError(dto);

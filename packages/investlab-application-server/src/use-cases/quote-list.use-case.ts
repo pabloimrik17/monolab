@@ -1,10 +1,6 @@
 import { inject, injectable } from "inversify";
-import {
-    TOKENS,
-    type PersistenceError,
-    type Quote,
-    type QuoteRepository,
-} from "@m0n0lab/investlab-domain";
+import { TOKENS, type Quote, type QuoteRepository } from "@m0n0lab/investlab-domain";
+import type { PersistenceError } from "@m0n0lab/investlab-core";
 import type { ResultAsync } from "neverthrow";
 
 export type QuoteListError = PersistenceError;

@@ -1,7 +1,7 @@
 import { HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 import { apiError, stubApi } from "./api-harness.ts";
-import type { RemotePortError } from "@m0n0lab/investlab-domain";
+import type { PortfolioRemoteError } from "@m0n0lab/investlab-domain";
 import type { ResultAsync } from "neverthrow";
 
 interface Endpoint {
@@ -17,7 +17,7 @@ interface TransportFailureOptions {
 /** Failures that mean "the API is unusable for this client": the use case must surface a NetworkError. */
 export function describeTransportFailures(
     endpoint: Endpoint,
-    run: () => ResultAsync<unknown, RemotePortError>,
+    run: () => ResultAsync<unknown, PortfolioRemoteError>,
     { malformedBody }: TransportFailureOptions = {},
 ): void {
     const cases: Array<readonly [string, () => Response]> = [

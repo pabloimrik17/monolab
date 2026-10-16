@@ -6,10 +6,9 @@ import {
     TOKENS,
     type InstrumentNotFoundError,
     type InstrumentRepository,
-    type PersistenceError,
     type PortfolioItemRepository,
-    type ValidationError,
 } from "@m0n0lab/investlab-domain";
+import type { PersistenceError, ValidationError } from "@m0n0lab/investlab-core";
 
 export type PortfolioItemCreateError = ValidationError | InstrumentNotFoundError | PersistenceError;
 

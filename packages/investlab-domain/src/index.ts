@@ -1,15 +1,10 @@
 // Errors
 export {
-    DomainError,
     type DomainErrorCode,
     InstrumentNotFoundError,
-    NetworkError,
-    PersistenceError,
     PortfolioItemConflictError,
     PortfolioItemNotFoundError,
-    type RemotePortError,
-    UnauthorizedError,
-    ValidationError,
+    type PortfolioRemoteError,
 } from "./errors.ts";
 
 // Value Objects

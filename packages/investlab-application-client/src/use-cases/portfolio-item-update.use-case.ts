@@ -6,16 +6,16 @@ import {
     TOKENS,
     type PortfolioItem,
     type PortfolioItemRepository,
-    type RemotePortError,
+    type PortfolioRemoteError,
 } from "@m0n0lab/investlab-domain";
 
-export type PortfolioItemUpdateError = RemotePortError;
+export type PortfolioItemUpdateError = PortfolioRemoteError;
 
 @injectable()
 export class PortfolioItemUpdateUseCase {
     constructor(
         @inject(TOKENS.PortfolioItemRepository)
-        private readonly portfolioItemRepo: PortfolioItemRepository<RemotePortError>,
+        private readonly portfolioItemRepo: PortfolioItemRepository<PortfolioRemoteError>,
     ) {}
 
     execute(

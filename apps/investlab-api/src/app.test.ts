@@ -1,7 +1,8 @@
 import { Hono } from "hono";
 import { Container } from "inversify";
 import { describe, expect, it } from "vitest";
-import { PersistenceError, PortfolioItemNotFoundError } from "@m0n0lab/investlab-domain";
+import { DomainError, PersistenceError } from "@m0n0lab/investlab-core";
+import { PortfolioItemNotFoundError } from "@m0n0lab/investlab-domain";
 import { createApp } from "./app.ts";
 import { handleError } from "./errors/error-mapping.ts";
 
@@ -64,6 +65,26 @@ describe("createApp", () => {
         failing.onError(handleError);
         failing.get("/boom", () => {
             throw new Error("leaky");
+        });
+
+        const res = await failing.request("/boom");
+
+        expect(res.status).toBe(500);
+        expect(await res.json()).toEqual({
+            code: "INTERNAL_ERROR",
+            message: "Internal server error",
+            statusCode: 500,
+        });
+    });
+
+    it("hides a domain error with an unmapped code behind a generic 500", async () => {
+        class UnmappedError extends DomainError<"UNMAPPED"> {
+            readonly code = "UNMAPPED";
+        }
+        const failing = new Hono();
+        failing.onError(handleError);
+        failing.get("/boom", () => {
+            throw new UnmappedError("leaky");
         });
 
         const res = await failing.request("/boom");

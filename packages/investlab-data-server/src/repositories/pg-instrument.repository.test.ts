@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { Instrument, PersistenceError } from "@m0n0lab/investlab-domain";
+import { PersistenceError } from "@m0n0lab/investlab-core";
+import { Instrument } from "@m0n0lab/investlab-domain";
 import { PgInstrumentRepository } from "./pg-instrument.repository.ts";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 

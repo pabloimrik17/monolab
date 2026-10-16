@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
-    InstrumentNotFoundError,
     NetworkError,
     PersistenceError,
-    PortfolioItemConflictError,
-    PortfolioItemNotFoundError,
     UnauthorizedError,
     ValidationError,
+} from "@m0n0lab/investlab-core";
+import {
+    InstrumentNotFoundError,
+    PortfolioItemConflictError,
+    PortfolioItemNotFoundError,
 } from "@m0n0lab/investlab-domain";
 import { remoteErrorMessage, remoteErrorStatus } from "./remote-error";
 

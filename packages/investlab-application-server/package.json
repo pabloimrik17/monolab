@@ -30,6 +30,7 @@
         "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
     },
     "dependencies": {
+        "@m0n0lab/investlab-core": "workspace:*",
         "@m0n0lab/investlab-domain": "workspace:*",
         "inversify": "catalog:",
         "neverthrow": "catalog:"

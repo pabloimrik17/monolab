@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { PersistenceError, type Quote } from "@m0n0lab/investlab-domain";
+import { PersistenceError } from "@m0n0lab/investlab-core";
+import { type Quote } from "@m0n0lab/investlab-domain";
 import { RedisQuoteDatasource } from "../datasources/redis-quote.datasource.ts";
 import { CachedQuoteRepository } from "./cached-quote.repository.ts";
 import type { FinnhubQuoteDatasource } from "../datasources/finnhub-quote.datasource.ts";

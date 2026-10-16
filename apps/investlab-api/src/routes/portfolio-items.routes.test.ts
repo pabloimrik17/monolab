@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { apiErrorDtoSchema, PersistenceError } from "@m0n0lab/investlab-core";
 import {
-    apiErrorDtoSchema,
     portfolioItemDtoSchema,
     portfolioItemListDtoSchema,
 } from "@m0n0lab/investlab-data-contracts";
-import { PersistenceError, PortfolioItem } from "@m0n0lab/investlab-domain";
+import { PortfolioItem } from "@m0n0lab/investlab-domain";
 import { makeInstrument } from "../testing/in-memory-portfolio.ts";
 import { createTestApp } from "../testing/test-app.ts";
 

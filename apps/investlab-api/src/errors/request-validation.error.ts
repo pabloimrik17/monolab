@@ -1,9 +1,8 @@
 // fallow-ignore-file unused-class-member -- `code` implements the abstract DomainError contract, read by error mapping through the base type
-import { DomainError } from "@m0n0lab/investlab-domain";
-import type { ApiErrorIssueDto } from "@m0n0lab/investlab-data-contracts";
+import { DomainError, type ApiErrorIssueDto } from "@m0n0lab/investlab-core";
 import type { ZodError } from "zod";
 
-export class RequestValidationError extends DomainError {
+export class RequestValidationError extends DomainError<"VALIDATION_ERROR"> {
     readonly code = "VALIDATION_ERROR";
     readonly issues: readonly ApiErrorIssueDto[];
 

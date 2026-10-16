@@ -12,15 +12,15 @@ import {
 import type {
     PortfolioItem,
     PortfolioItemRepository,
-    RemotePortError,
+    PortfolioRemoteError,
 } from "@m0n0lab/investlab-domain";
 import type { ResultAsync } from "neverthrow";
 
 @injectable()
-export class HttpPortfolioItemRepository implements PortfolioItemRepository<RemotePortError> {
+export class HttpPortfolioItemRepository implements PortfolioItemRepository<PortfolioRemoteError> {
     constructor(@inject(ApiClient) private readonly api: ApiClient) {}
 
-    save(item: PortfolioItem): ResultAsync<PortfolioItem, RemotePortError> {
+    save(item: PortfolioItem): ResultAsync<PortfolioItem, PortfolioRemoteError> {
         return this.api
             .json("POST", "/portfolio-items", portfolioItemDtoSchema, {
                 body: portfolioItemToCreateDto(item),
@@ -29,12 +29,12 @@ export class HttpPortfolioItemRepository implements PortfolioItemRepository<Remo
             .map(portfolioItemToDomain);
     }
 
-    findById(id: string): ResultAsync<PortfolioItem | null, RemotePortError> {
+    findById(id: string): ResultAsync<PortfolioItem | null, PortfolioRemoteError> {
         // The API has no single-item route; the list is the only read model.
         return this.findAll().map((items) => items.find((item) => item.id === id) ?? null);
     }
 
-    findAll(): ResultAsync<PortfolioItem[], RemotePortError> {
+    findAll(): ResultAsync<PortfolioItem[], PortfolioRemoteError> {
         return this.api
             .json("GET", "/portfolio-items", portfolioItemListDtoSchema)
             .map(({ items }) => items.map(({ item }) => portfolioItemToDomain(item)));
@@ -43,7 +43,7 @@ export class HttpPortfolioItemRepository implements PortfolioItemRepository<Remo
     update(
         item: PortfolioItem,
         expectedUpdatedAt: Date,
-    ): ResultAsync<PortfolioItem, RemotePortError> {
+    ): ResultAsync<PortfolioItem, PortfolioRemoteError> {
         return this.api
             .json("PUT", `/portfolio-items/${item.id}`, portfolioItemDtoSchema, {
                 body: portfolioItemToUpdateDto(item, expectedUpdatedAt),
@@ -52,7 +52,7 @@ export class HttpPortfolioItemRepository implements PortfolioItemRepository<Remo
             .map(portfolioItemToDomain);
     }
 
-    delete(id: string): ResultAsync<void, RemotePortError> {
+    delete(id: string): ResultAsync<void, PortfolioRemoteError> {
         return this.api.empty("DELETE", `/portfolio-items/${id}`, { resourceId: id });
     }
 }

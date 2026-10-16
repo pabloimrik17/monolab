@@ -1,6 +1,7 @@
 import { inject, injectable } from "inversify";
 import { errAsync, ResultAsync } from "neverthrow";
-import { PersistenceError, type Quote, type QuoteRepository } from "@m0n0lab/investlab-domain";
+import { PersistenceError } from "@m0n0lab/investlab-core";
+import { type Quote, type QuoteRepository } from "@m0n0lab/investlab-domain";
 import { DATA_TOKENS } from "../tokens.ts";
 import type { FinnhubQuoteDatasource } from "../datasources/finnhub-quote.datasource.ts";
 import type { RedisQuoteDatasource } from "../datasources/redis-quote.datasource.ts";

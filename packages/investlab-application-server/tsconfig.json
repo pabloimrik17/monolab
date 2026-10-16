@@ -17,6 +17,9 @@
         "path": "../investlab-domain"
       },
       {
+        "path": "../investlab-core"
+      },
+      {
         "path": "../vitest-config"
       },
       {

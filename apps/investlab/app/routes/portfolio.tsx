@@ -15,7 +15,7 @@ import {
 import { remoteErrorMessage, remoteErrorStatus } from "../lib/remote-error";
 import type { PortfolioFieldErrors } from "../components/portfolio/types";
 import type { Route } from "./+types/portfolio";
-import type { RemotePortError } from "@m0n0lab/investlab-domain";
+import type { PortfolioRemoteError } from "@m0n0lab/investlab-domain";
 import type { z } from "zod";
 
 export async function loader(_: Route.LoaderArgs) {
@@ -63,7 +63,9 @@ export async function loader(_: Route.LoaderArgs) {
 type ActionResult = { ok: true } | { error: string; fieldErrors?: PortfolioFieldErrors };
 
 const succeeded = (): ActionResult => ({ ok: true });
-const failed = (error: RemotePortError): ActionResult => ({ error: remoteErrorMessage(error) });
+const failed = (error: PortfolioRemoteError): ActionResult => ({
+    error: remoteErrorMessage(error),
+});
 
 function invalid(error: z.ZodError): ActionResult {
     const fieldErrors = Object.fromEntries(

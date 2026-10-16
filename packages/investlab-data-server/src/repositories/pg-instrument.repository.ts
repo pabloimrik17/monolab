@@ -2,8 +2,8 @@
 import { eq } from "drizzle-orm";
 import { inject, injectable } from "inversify";
 import { err, ok, type ResultAsync } from "neverthrow";
+import { PersistenceError } from "@m0n0lab/investlab-core";
 import {
-    PersistenceError,
     type AssetClass,
     type Instrument,
     type InstrumentRepository,

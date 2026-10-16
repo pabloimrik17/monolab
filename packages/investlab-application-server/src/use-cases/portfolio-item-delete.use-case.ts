@@ -3,10 +3,10 @@ import { errAsync, type ResultAsync } from "neverthrow";
 import {
     PortfolioItemNotFoundError as PortfolioItemNotFoundErrorClass,
     TOKENS,
-    type PersistenceError,
     type PortfolioItemNotFoundError,
     type PortfolioItemRepository,
 } from "@m0n0lab/investlab-domain";
+import type { PersistenceError } from "@m0n0lab/investlab-core";
 
 export type PortfolioItemDeleteError = PortfolioItemNotFoundError | PersistenceError;
 

@@ -1,11 +1,10 @@
 import { Hono } from "hono";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { PersistenceError, ValidationError } from "@m0n0lab/investlab-core";
 import {
     InstrumentNotFoundError,
-    PersistenceError,
     PortfolioItemConflictError,
     PortfolioItemNotFoundError,
-    ValidationError,
 } from "@m0n0lab/investlab-domain";
 import { errorJson, errorToHttp, toApiError } from "./error-mapping.ts";
 

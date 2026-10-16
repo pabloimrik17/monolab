@@ -4,12 +4,8 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll } from "vitest";
 import { DATA_CLIENT_TOKENS, dataClientModule } from "@m0n0lab/investlab-data-client";
 import { applicationClientModule } from "../application-client.module.ts";
-import type {
-    ApiErrorDto,
-    InstrumentDto,
-    PortfolioItemDto,
-    QuoteDto,
-} from "@m0n0lab/investlab-data-contracts";
+import type { ApiErrorDto } from "@m0n0lab/investlab-core";
+import type { InstrumentDto, PortfolioItemDto, QuoteDto } from "@m0n0lab/investlab-data-contracts";
 
 const API_URL = "http://investlab-api.test";
 export const API_TOKEN = "s3cret-token";

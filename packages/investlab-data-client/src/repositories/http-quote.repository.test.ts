@@ -1,11 +1,7 @@
 import { HttpResponse } from "msw";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import {
-    PersistenceError,
-    TOKENS,
-    type QuoteRepository,
-    type RemotePortError,
-} from "@m0n0lab/investlab-domain";
+import { PersistenceError } from "@m0n0lab/investlab-core";
+import { TOKENS, type QuoteRepository, type PortfolioRemoteError } from "@m0n0lab/investlab-domain";
 import { apiError, createTestContainer, fakeApi, quoteDto, server } from "../testing/api-server.ts";
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
@@ -13,7 +9,7 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 function createRepository() {
-    return createTestContainer().get<QuoteRepository<RemotePortError>>(TOKENS.QuoteRepository);
+    return createTestContainer().get<QuoteRepository<PortfolioRemoteError>>(TOKENS.QuoteRepository);
 }
 
 describe("HttpQuoteRepository", () => {

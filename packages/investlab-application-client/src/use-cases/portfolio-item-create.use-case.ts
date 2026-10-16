@@ -4,16 +4,16 @@ import {
     PortfolioItem,
     TOKENS,
     type PortfolioItemRepository,
-    type RemotePortError,
+    type PortfolioRemoteError,
 } from "@m0n0lab/investlab-domain";
 
-export type PortfolioItemCreateError = RemotePortError;
+export type PortfolioItemCreateError = PortfolioRemoteError;
 
 @injectable()
 export class PortfolioItemCreateUseCase {
     constructor(
         @inject(TOKENS.PortfolioItemRepository)
-        private readonly portfolioItemRepo: PortfolioItemRepository<RemotePortError>,
+        private readonly portfolioItemRepo: PortfolioItemRepository<PortfolioRemoteError>,
     ) {}
 
     // Instrument existence is enforced by the API (INSTRUMENT_NOT_FOUND), not pre-checked here.

@@ -1,10 +1,6 @@
 import { inject, injectable } from "inversify";
-import {
-    TOKENS,
-    type Instrument,
-    type InstrumentRepository,
-    type PersistenceError,
-} from "@m0n0lab/investlab-domain";
+import { TOKENS, type Instrument, type InstrumentRepository } from "@m0n0lab/investlab-domain";
+import type { PersistenceError } from "@m0n0lab/investlab-core";
 import type { ResultAsync } from "neverthrow";
 
 export type InstrumentListError = PersistenceError;

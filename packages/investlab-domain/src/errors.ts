@@ -1,33 +1,13 @@
-// fallow-ignore-file unused-class-member -- abstract code contract implemented by subclasses, read by use-cases pending
+// fallow-ignore-file unused-class-member -- `code` implements the abstract DomainError contract, read by the API error mapping through the base type
+import { DomainError, type KernelErrorCode, type RemotePortError } from "@m0n0lab/investlab-core";
+
 export type DomainErrorCode =
-    | "PERSISTENCE_ERROR"
-    | "VALIDATION_ERROR"
+    | KernelErrorCode
     | "INSTRUMENT_NOT_FOUND"
     | "PORTFOLIO_ITEM_NOT_FOUND"
     | "PORTFOLIO_ITEM_CONFLICT";
 
-export abstract class DomainError extends Error {
-    abstract readonly code: DomainErrorCode;
-}
-
-export class PersistenceError extends DomainError {
-    readonly code = "PERSISTENCE_ERROR";
-    constructor(cause: unknown) {
-        super("Database operation failed");
-        this.name = "PersistenceError";
-        this.cause = cause;
-    }
-}
-
-export class ValidationError extends DomainError {
-    readonly code = "VALIDATION_ERROR";
-    constructor(message: string) {
-        super(message);
-        this.name = "ValidationError";
-    }
-}
-
-export class InstrumentNotFoundError extends DomainError {
+export class InstrumentNotFoundError extends DomainError<"INSTRUMENT_NOT_FOUND"> {
     readonly code = "INSTRUMENT_NOT_FOUND";
     constructor(id: string) {
         super(`Instrument not found: ${id}`);
@@ -35,7 +15,7 @@ export class InstrumentNotFoundError extends DomainError {
     }
 }
 
-export class PortfolioItemNotFoundError extends DomainError {
+export class PortfolioItemNotFoundError extends DomainError<"PORTFOLIO_ITEM_NOT_FOUND"> {
     readonly code = "PORTFOLIO_ITEM_NOT_FOUND";
     constructor(id: string) {
         super(`Portfolio item not found: ${id}`);
@@ -43,7 +23,7 @@ export class PortfolioItemNotFoundError extends DomainError {
     }
 }
 
-export class PortfolioItemConflictError extends DomainError {
+export class PortfolioItemConflictError extends DomainError<"PORTFOLIO_ITEM_CONFLICT"> {
     readonly code = "PORTFOLIO_ITEM_CONFLICT";
     constructor(id: string) {
         super(`Portfolio item ${id} was changed by another request; reload and try again`);
@@ -51,34 +31,7 @@ export class PortfolioItemConflictError extends DomainError {
     }
 }
 
-// Client-side transport failure (API unreachable or unusable response).
-// Deliberately not a DomainError: it never crosses the wire, so the API's code→status map stays total.
-export class NetworkError extends Error {
-    readonly code = "NETWORK_ERROR";
-    constructor(cause: unknown) {
-        super("API request failed");
-        this.name = "NetworkError";
-        this.cause = cause;
-    }
-}
-
-// Client-side: the API rejected our bearer token (HTTP 401). An operator misconfiguration, not an outage.
-// Deliberately not a DomainError, for the same reason as NetworkError.
-export class UnauthorizedError extends Error {
-    readonly code = "UNAUTHORIZED";
-    constructor(cause: unknown) {
-        super("API rejected the bearer token");
-        this.name = "UnauthorizedError";
-        this.cause = cause;
-    }
-}
-
-/** Every failure a remote (HTTP) port can return: server codes rebuilt as domain errors plus transport and authorization failures. */
-export type RemotePortError =
-    | PersistenceError
-    | ValidationError
-    | InstrumentNotFoundError
-    | PortfolioItemNotFoundError
-    | PortfolioItemConflictError
-    | NetworkError
-    | UnauthorizedError;
+/** Every failure a remote (HTTP) portfolio port can return: the kernel failures plus the module errors rebuilt from server codes. */
+export type PortfolioRemoteError = RemotePortError<
+    InstrumentNotFoundError | PortfolioItemNotFoundError | PortfolioItemConflictError
+>;

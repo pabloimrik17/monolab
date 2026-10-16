@@ -1,7 +1,7 @@
-import type { RemotePortError } from "@m0n0lab/investlab-domain";
+import type { PortfolioRemoteError } from "@m0n0lab/investlab-domain";
 
 /** What the user reads when a client use case fails; server-side details never reach the page. */
-export function remoteErrorMessage(error: RemotePortError): string {
+export function remoteErrorMessage(error: PortfolioRemoteError): string {
     switch (error.code) {
         case "NETWORK_ERROR":
             return "InvestLab service is unavailable. Please try again later.";
@@ -18,7 +18,7 @@ export function remoteErrorMessage(error: RemotePortError): string {
 }
 
 /** HTTP status for a loader or resource route that fails with `error`. */
-export function remoteErrorStatus(error: RemotePortError): number {
+export function remoteErrorStatus(error: PortfolioRemoteError): number {
     switch (error.code) {
         case "NETWORK_ERROR":
             return 503;

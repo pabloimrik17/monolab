@@ -1,6 +1,10 @@
 import { HttpResponse } from "msw";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { TOKENS, type InstrumentRepository, type RemotePortError } from "@m0n0lab/investlab-domain";
+import {
+    TOKENS,
+    type InstrumentRepository,
+    type PortfolioRemoteError,
+} from "@m0n0lab/investlab-domain";
 import { createTestContainer, fakeApi, instrumentDto, server } from "../testing/api-server.ts";
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
@@ -25,7 +29,7 @@ describe("HttpInstrumentRepository", () => {
             ),
         );
         const repository = createTestContainer().get<
-            Pick<InstrumentRepository<RemotePortError>, "findAll">
+            Pick<InstrumentRepository<PortfolioRemoteError>, "findAll">
         >(TOKENS.InstrumentRepository);
 
         const instruments = (await repository.findAll())._unsafeUnwrap();
