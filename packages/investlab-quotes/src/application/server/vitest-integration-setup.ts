@@ -20,6 +20,9 @@ container.load(platformServerModule, quotesServerModule);
 export const containerWithCacheDown = new Container();
 containerWithCacheDown.load(platformServerModule, quotesServerModule);
 
+/** The Finnhub key the composition is configured with; `given.ts` answers only requests carrying it. */
+export const FINNHUB_API_KEY = "test-finnhub-key";
+
 /** Nothing listens on port 1: connections are refused. */
 const UNREACHABLE_REDIS_URL = "redis://127.0.0.1:1";
 
@@ -28,7 +31,7 @@ function testConfig(redisUrl: string): ServerConfig {
         // Quotes never touch the database; nothing listens here.
         database: { url: "postgres://investlab:investlab@127.0.0.1:1/investlab" },
         redis: { url: redisUrl },
-        finnhub: { apiKey: "test-finnhub-key" },
+        finnhub: { apiKey: FINNHUB_API_KEY },
         api: { port: 3002, token: "test-api-token" },
     };
 }

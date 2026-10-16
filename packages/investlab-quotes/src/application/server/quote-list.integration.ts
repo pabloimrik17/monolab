@@ -1,7 +1,11 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { givenMarketDataUnavailable, givenQuotesFor } from "./given.ts";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+    givenMarketDataRejectsTheKey,
+    givenMarketDataUnavailable,
+    givenQuotesFor,
+} from "./given.ts";
 import { QUOTES } from "./tokens.ts";
-import { container, containerWithCacheDown } from "./vitest-integration-setup.ts";
+import { container, containerWithCacheDown, FINNHUB_API_KEY } from "./vitest-integration-setup.ts";
 import type { QuoteListUseCase } from "./quote-list.use-case.ts";
 
 const APPLE = { price: 190.5, change: 1.5, changePercent: 0.79 };
@@ -40,6 +44,37 @@ describe("listing quotes", () => {
         const quotes = (await list.execute(["AAPL", "NOPE"]))._unsafeUnwrap();
 
         expect(quotes.map((quote) => quote.symbol)).toEqual(["AAPL"]);
+    });
+
+    it("answers no quotes, not an error, while market data is unreachable and nothing is cached", async () => {
+        givenMarketDataUnavailable();
+
+        const quotes = (await list.execute(["AAPL"]))._unsafeUnwrap();
+
+        expect(quotes).toEqual([]);
+    });
+
+    it("asks the market again for a symbol it had no data for", async () => {
+        givenQuotesFor({});
+        await list.execute(["AAPL"]);
+        givenQuotesFor({ AAPL: APPLE });
+
+        const quotes = (await list.execute(["AAPL"]))._unsafeUnwrap();
+
+        expect(quotes).toEqual([{ symbol: "AAPL", ...APPLE, updatedAt: expect.any(Date) }]);
+    });
+
+    it("reports a rejected market data key without revealing it", async () => {
+        const log = vi.spyOn(console, "error").mockImplementation(() => {});
+        givenMarketDataRejectsTheKey();
+
+        const quotes = (await list.execute(["AAPL"]))._unsafeUnwrap();
+
+        expect(quotes).toEqual([]);
+        const logged = log.mock.calls.flat().map(String).join("\n");
+        expect(logged).toContain("check FINNHUB_API_KEY");
+        expect(logged).not.toContain(FINNHUB_API_KEY);
+        log.mockRestore();
     });
 
     it("lists each symbol once, whatever its case or padding", async () => {
