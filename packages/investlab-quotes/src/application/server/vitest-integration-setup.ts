@@ -12,13 +12,13 @@ import { quotesServerModule } from "../../module.server.ts";
 /** Finnhub for this file; `given.ts` declares its answers, anything undeclared fails the test. */
 export const finnhub = setupServer();
 
-/** The API's composition of the quotes module, on this file's own Redis logical database. */
-export const container = new Container();
-container.load(platformServerModule, quotesServerModule);
+/** The API's composition of the quotes module, on this file's own Redis logical database, flushed per test. */
+export let container: Container;
 
 /** The same composition with a Redis that cannot be reached, as when its server is down. */
-export const containerWithCacheDown = new Container();
-containerWithCacheDown.load(platformServerModule, quotesServerModule);
+export let containerWithCacheDown: Container;
+
+let redisUrl: string;
 
 /** The Finnhub key the composition is configured with; `given.ts` answers only requests carrying it. */
 export const FINNHUB_API_KEY = "test-finnhub-key";
@@ -45,24 +45,31 @@ async function fileRedisUrl(): Promise<string> {
     return url.toString();
 }
 
+function composition(url: string): Container {
+    const composed = new Container();
+    composed.load(platformServerModule, quotesServerModule);
+    composed.bind(PLATFORM.Config).toConstantValue(testConfig(url));
+    return composed;
+}
+
 beforeAll(async () => {
-    const redisUrl = await fileRedisUrl();
-    container.bind(PLATFORM.Config).toConstantValue(testConfig(redisUrl));
-    containerWithCacheDown.bind(PLATFORM.Config).toConstantValue(testConfig(UNREACHABLE_REDIS_URL));
+    redisUrl = await fileRedisUrl();
     finnhub.listen({ onUnhandledRequest: "error" });
 });
 
 // Every test starts with an empty quote cache.
 beforeEach(async () => {
+    container = composition(redisUrl);
+    containerWithCacheDown = composition(UNREACHABLE_REDIS_URL);
     await container.get(PLATFORM.Redis).flushdb();
 });
 
-afterEach(() => {
+afterEach(async () => {
     finnhub.resetHandlers();
-});
-
-afterAll(async () => {
     // Async deactivation (Redis `quit`) needs the async unbind.
     await Promise.all([container.unbindAllAsync(), containerWithCacheDown.unbindAllAsync()]);
+});
+
+afterAll(() => {
     finnhub.close();
 });

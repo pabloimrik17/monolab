@@ -10,7 +10,7 @@ declare module "vitest" {
     }
 }
 
-/** Database every file clones (`CREATE DATABASE ... TEMPLATE`), so files never share rows. */
+/** Database every test clones (`CREATE DATABASE ... TEMPLATE`), so tests never share rows. */
 const TEMPLATE_DATABASE = "investlab_template";
 
 /** Starts Postgres once per run and migrates the template database. Portfolio uses no Redis. */

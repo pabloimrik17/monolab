@@ -23,7 +23,7 @@ export default mergeConfig(
                         name: "integration-server",
                         include: ["src/application/server/**/*.integration.ts"],
                         globalSetup: ["src/application/server/vitest-integration-global-setup.ts"],
-                        // Each file clones its own database from the migrated template
+                        // Each test clones its own database from the migrated template
                         setupFiles: ["src/application/server/vitest-integration-setup.ts"],
                         // Container start-up (image pull) is slow on a cold machine
                         hookTimeout: 120_000,
