@@ -226,7 +226,7 @@ const investlabLayerRules = (() => {
             group([`${src}/domain/**`], [independent, infra, platformOrDb, anySide]),
             group(
                 [`${src}/data/contracts/**`, `${src}/index.ts`],
-                [independent, platformOrDb, anySide],
+                [independent, infra, platformOrDb, anySide],
             ),
             ...sides,
         ];
