@@ -25,12 +25,6 @@ npm install @m0n0lab/react-clean
 pnpm add @m0n0lab/react-clean
 ```
 
-### JSR
-
-```bash
-npx jsr add @m0n0lab/react-clean
-```
-
 ## Usage
 
 ```typescript
