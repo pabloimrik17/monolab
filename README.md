@@ -572,7 +572,8 @@ Create or update `packages/my-package/project.json`:
    brand-new package:
     - Publish an empty `0.0.0` placeholder while logged in to npm:
       `npx setup-npm-trusted-publish @m0n0lab/my-package`
-    - Configure the trusted publisher with `publish` allowed (asks for 2FA):
+    - Configure the trusted publisher with `publish` allowed (requires
+      account-level 2FA on npm):
       `npx npm@latest trust github @m0n0lab/my-package --file release-please.yml --repo pabloimrik17/monolab --allow-publish`
 
 5. Review and merge the Release PR to publish, within 2 days of step 4
