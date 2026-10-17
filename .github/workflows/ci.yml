@@ -347,10 +347,11 @@ jobs:
                   fail_ci_if_error: false
 
             - name: 📊 Upload test results to Codecov
-              uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
+              uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
               if: ${{ !cancelled() }}
               with:
                   files: ./${{ matrix.package.path }}/test-results.junit.xml
                   flags: ${{ matrix.package.name }}
+                  report_type: test_results
                   token: ${{ secrets.CODECOV_TOKEN }}
                   fail_ci_if_error: false
