@@ -31,12 +31,6 @@ npm install @m0n0lab/http-client
 pnpm add @m0n0lab/http-client
 ```
 
-### JSR
-
-```bash
-npx jsr add @m0n0lab/http-client
-```
-
 ## Contracts
 
 The package defines interfaces for all aspects of HTTP communication:
