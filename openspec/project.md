@@ -1,7 +1,7 @@
 # Project Context
 
 ## Purpose
-**MonoLab** is an Nx-powered monorepo containing a collection of modern JavaScript/TypeScript utility packages and libraries published to JSR (JavaScript Registry):
+**MonoLab** is an Nx-powered monorepo containing a collection of modern JavaScript/TypeScript utility packages and libraries published to npm:
 
 - **React Ecosystem**: Professional React libraries including:
   - `react-hooks`: Custom lifecycle hooks (useDidMount, useWillUnmount)
@@ -49,7 +49,7 @@
 
 ### CI/CD & Publishing
 - **GitHub Actions**: Automated CI pipeline with Nx Cloud integration
-- **JSR**: Primary package registry for publishing
+- **npm**: Package registry for publishing
 - **Nx Cloud**: Distributed task execution (ID: 67f985a4bdd1693cbb6398fa)
 - **Codecov**: Code coverage reporting, test analytics, and bundle size analysis
   - Coverage reports uploaded from CI with per-package flags (react-hooks, react-clean, ts-configs, ts-types)
@@ -163,7 +163,7 @@
 - Independent versioning per package
 - Conventional commits drive version bumps
 - Changelog generation with GitHub releases
-- Automated JSR publishing via GitHub Actions
+- Automated npm publishing via GitHub Actions
 
 **Workflow Summary**:
 1. Create feature branch with proper naming
@@ -176,7 +176,7 @@
 ## Domain Context
 
 **JavaScript/TypeScript Ecosystem**:
-- This project contributes to the modern JavaScript ecosystem via JSR (JavaScript Registry)
+- This project contributes to the modern JavaScript ecosystem via npm
 - Focuses on ESM-first, tree-shakeable packages for optimal bundle sizes
 - Targets both browser and Node.js environments
 
@@ -213,7 +213,7 @@
 - Declaration maps required for composite builds
 
 **Package Registry**:
-- Primary publishing target: JSR (not npm)
+- Publishing target: npm only
 - Packages must pass `attw --pack` export validation
 - No CJS (CommonJS) - ESM only
 
@@ -235,9 +235,9 @@
 
 ## External Dependencies
 
-**JSR (JavaScript Registry)**:
-- Primary package publishing platform
-- Requires `npx jsr publish` for deployment
+**npm**:
+- Sole package publishing platform
+- Published with `pnpm publish` (OIDC trusted publishing with provenance)
 - Automated via GitHub Actions on main branch pushes
 
 **Nx Cloud**:

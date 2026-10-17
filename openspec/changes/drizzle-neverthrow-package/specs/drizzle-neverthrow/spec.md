@@ -22,7 +22,7 @@ The package SHALL expose only operations that a consumer in the monorepo uses, e
 
 ### Requirement: Published package
 
-The package SHALL be published as `@m0n0lab/drizzle-neverthrow` to JSR and npm, ESM-only, with `drizzle-orm` and `neverthrow` as peer dependencies and exports validated by `attw --pack`.
+The package SHALL be published as `@m0n0lab/drizzle-neverthrow` to npm only, ESM-only, with `drizzle-orm` and `neverthrow` as peer dependencies and exports validated by `attw --pack`.
 
 #### Scenario: Peer dependencies not bundled
 - **WHEN** the package is built

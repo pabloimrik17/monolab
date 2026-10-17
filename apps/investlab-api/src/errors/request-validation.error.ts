@@ -1,4 +1,3 @@
-// fallow-ignore-file unused-class-member -- `code` implements the abstract DomainError contract, read by error mapping through the base type
 import { DomainError, type ApiErrorIssueDto } from "@m0n0lab/investlab-core";
 import type { ZodError } from "zod";
 

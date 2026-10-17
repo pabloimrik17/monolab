@@ -31,12 +31,6 @@ npm install @m0n0lab/ts-types
 pnpm add @m0n0lab/ts-types
 ```
 
-### JSR
-
-```bash
-npx jsr add @m0n0lab/ts-types
-```
-
 ## Usage
 
 ### Nullable Types

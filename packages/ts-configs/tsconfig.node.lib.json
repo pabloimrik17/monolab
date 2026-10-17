@@ -5,7 +5,7 @@
          * Node.js Library Configuration
          * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
          * Extends the Node.js base config with library-specific settings
-         * optimized for publishable packages (JSR, npm).
+         * optimized for publishable packages (npm).
          *
          * Individual libraries should set their own outDir and rootDir
          * in their project-specific tsconfig.json files.

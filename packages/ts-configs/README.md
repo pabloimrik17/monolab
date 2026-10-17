@@ -25,12 +25,6 @@ npm install @m0n0lab/ts-configs
 pnpm add @m0n0lab/ts-configs
 ```
 
-### JSR
-
-```bash
-npx jsr add @m0n0lab/ts-configs
-```
-
 ## Configuration Hierarchy
 
 ```text
@@ -128,7 +122,7 @@ tsconfig.base.json (platform-agnostic foundation)
 
 ### `tsconfig.web.lib.json`
 
-**Configuration for web libraries** that will be published to npm/JSR. Optimized for React components and reusable web packages.
+**Configuration for web libraries** that will be published to npm. Optimized for React components and reusable web packages.
 
 **Extends:** `tsconfig.web.base.json`
 
@@ -158,7 +152,7 @@ tsconfig.base.json (platform-agnostic foundation)
 - React component libraries
 - Shared UI components
 - Web utilities and hooks
-- JSR-published packages
+- npm-published packages
 
 ### `tsconfig.node.tooling.json`
 
