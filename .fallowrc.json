@@ -68,7 +68,10 @@
         { "implements": "PortfolioItemRepository", "members": ["*"] },
         { "implements": "InstrumentRepository", "members": ["*"] },
         { "implements": "PortfolioItemQuery", "members": ["*"] },
-        { "implements": "QuoteRepository", "members": ["*"] }
+        { "implements": "QuoteRepository", "members": ["*"] },
+        // error `code` discriminant: fallow misses its usage when workspace imports resolve to a built dist/
+        { "extends": "Error", "members": ["code"] },
+        { "extends": "DomainError", "members": ["code"] }
     ],
     "rules": {
         "require-suppression-reason": "warn"

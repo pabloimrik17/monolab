@@ -1,4 +1,3 @@
-// fallow-ignore-file unused-class-member -- `code` is the wire discriminant (ADR 0005), read by consumers through the error unions
 // Shared kernel errors. Module errors extend DomainError in their own domain layer.
 export type KernelErrorCode = "PERSISTENCE_ERROR" | "VALIDATION_ERROR";
 
