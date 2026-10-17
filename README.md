@@ -17,60 +17,44 @@
 
 ## Published Packages
 
-This monorepo publishes several packages to both npm and JSR registries:
+This monorepo publishes several packages to npm:
 
 ### React Hooks
 
-**[@m0n0lab/react-hooks](https://www.npmjs.com/package/@m0n0lab/react-hooks)** | **[@m0n0lab/react-hooks (JSR)](https://jsr.io/@m0n0lab/react-hooks)**
+**[@m0n0lab/react-hooks](https://www.npmjs.com/package/@m0n0lab/react-hooks)**
 
 Collection of reusable React hooks.
 
 ```bash
-# npm
 npm install @m0n0lab/react-hooks
-
-# JSR (Deno, Node.js, Bun)
-npx jsr add @m0n0lab/react-hooks
 ```
 
-**[@m0n0lab/react-clean](https://www.npmjs.com/package/@m0n0lab/react-clean)** | **[@m0n0lab/react-clean (JSR)](https://jsr.io/@m0n0lab/react-clean)**
+**[@m0n0lab/react-clean](https://www.npmjs.com/package/@m0n0lab/react-clean)**
 
 Clean React components and patterns.
 
 ```bash
-# npm
 npm install @m0n0lab/react-clean
-
-# JSR (Deno, Node.js, Bun)
-npx jsr add @m0n0lab/react-clean
 ```
 
 ### Configuration Packages
 
-**[@m0n0lab/ts-configs](https://www.npmjs.com/package/@m0n0lab/ts-configs)** | **[@m0n0lab/ts-configs (JSR)](https://jsr.io/@m0n0lab/ts-configs)**
+**[@m0n0lab/ts-configs](https://www.npmjs.com/package/@m0n0lab/ts-configs)**
 
 Shared TypeScript configurations for web and Node.js projects.
 
 ```bash
-# npm
 npm install -D @m0n0lab/ts-configs
-
-# JSR (Deno, Node.js, Bun)
-npx jsr add -D @m0n0lab/ts-configs
 ```
 
 ### HTTP Clients
 
-**[@m0n0lab/http-client](https://www.npmjs.com/package/@m0n0lab/http-client)** | **[@m0n0lab/http-client (JSR)](https://jsr.io/@m0n0lab/http-client)**
+**[@m0n0lab/http-client](https://www.npmjs.com/package/@m0n0lab/http-client)**
 
 Abstracted HTTP client for web and Node.js environments. Foundation package for future implementations with neverthrow and effect-ts wrappers.
 
 ```bash
-# npm
 npm install @m0n0lab/http-client
-
-# JSR (Deno, Node.js, Bun)
-npx jsr add @m0n0lab/http-client
 ```
 
 ## Development Setup
@@ -429,14 +413,14 @@ to automate versioning and publishing.
 3. **Review Release PR**: The PR shows version bumps and changelog entries
    for affected packages
 4. **Merge to Publish**: Merging the Release PR triggers automatic publishing
-   to npm and JSR
+   to npm
 
 #### Release PR
 
 When commits are pushed to `main`, release-please automatically:
 
 - Calculates version bumps based on conventional commits
-- Updates `package.json` and `jsr.json` versions
+- Updates `package.json` versions
 - Generates/updates `CHANGELOG.md` for each package
 - Updates `.release-please-manifest.json`
 - Creates or updates a single Release PR with all changes
@@ -447,24 +431,21 @@ The Release PR title follows the pattern: `chore(main): release packages`
 
 When the Release PR is merged:
 
-1. **JSR Publishing**: Packages are published to JSR first, in dependency order
-    - Uses `deno publish` with Deno workspaces for automatic dependency resolution
-    - Working directory stays clean (no build artifacts yet)
-    - OIDC Trusted Publisher authentication
-2. **npm Publishing**: Packages are built and published to npm
+1. **npm Publishing**: Packages are built and published to npm
     - Build generates `dist/` artifacts
     - Uses `pnpm publish`, which automatically transforms `workspace:*` into
       semver ranges
     - Provenance attestation via OIDC authentication
-3. **GitHub Releases**: release-please creates GitHub releases with changelogs
+    - Versions already on npm are skipped, so re-running the workflow is safe
+2. **GitHub Releases**: release-please creates GitHub releases with changelogs
    and tags
 
 **Important**:
 
-- Both npm and JSR use OIDC Trusted Publishers (no secrets/tokens needed)
-- JSR runs first to keep working directory clean (no `--allow-dirty` flag needed)
+- npm uses OIDC Trusted Publishers (no secrets/tokens needed once the
+  package's trusted publisher is configured; see
+  [First Release](#6-first-release))
 - pnpm automatically transforms workspace protocol dependencies to proper semver
-- Both tools run full validation suites (no disabled checks)
 
 #### Workspace Protocol Dependencies
 
@@ -487,23 +468,10 @@ monorepo packages:
 - **Development**: pnpm links packages locally for fast iteration
 - **Publishing to npm**: pnpm automatically transforms `workspace:*` →
   `^X.Y.Z` (published version)
-- **Publishing to JSR**: Deno workspaces automatically resolve to JSR
-  registry URLs
 - **No manual updates**: Dependency versions stay in sync automatically
 
 **Important**: Never manually update internal dependency versions - the
 workspace protocol and publishing tools handle this automatically.
-
-#### Dependency Order
-
-JSR packages are published in the correct order to respect dependencies:
-
-1. `ts-types` (no internal dependencies)
-2. `react-hooks` (no internal dependencies)
-3. `ts-configs` (no internal dependencies)
-4. `react-clean` (depends on `react-hooks` and `ts-types`)
-
-This ordering is calculated dynamically using Nx's project graph.
 
 ### Adding a New Package
 
@@ -544,32 +512,7 @@ cd packages/my-package
 **Important**: Set initial version to `0.0.0` (release-please will bump it
 on first release).
 
-#### 3. Create deno.json
-
-```json
-{
-    "name": "@m0n0lab/my-package",
-    "version": "0.0.0",
-    "license": "MIT",
-    "exports": "./src/index.ts"
-}
-```
-
-**Note**: For packages that use DOM APIs (React, browser utilities), add compilerOptions:
-
-```json
-{
-    "name": "@m0n0lab/my-package",
-    "version": "0.0.0",
-    "license": "MIT",
-    "exports": "./src/index.ts",
-    "compilerOptions": {
-        "lib": ["ES2023", "DOM"]
-    }
-}
-```
-
-#### 4. Update release-please-config.json
+#### 3. Update release-please-config.json
 
 Add your package to the `packages` section:
 
@@ -577,16 +520,17 @@ Add your package to the `packages` section:
 {
     "packages": {
         "packages/my-package": {
-            "extra-files": ["deno.json"]
+            "release-type": "node",
+            "package-name": "@m0n0lab/my-package",
+            "changelog-path": "CHANGELOG.md"
         }
     }
 }
 ```
 
-This ensures both `package.json` and `deno.json` versions stay
-synchronized.
+release-please bumps the `package.json` version and updates `CHANGELOG.md`.
 
-#### 5. Update .release-please-manifest.json
+#### 4. Update .release-please-manifest.json
 
 Add the initial version:
 
@@ -596,7 +540,7 @@ Add the initial version:
 }
 ```
 
-#### 6. Configure Nx Project
+#### 5. Configure Nx Project
 
 Create or update `packages/my-package/project.json`:
 
@@ -609,7 +553,7 @@ Create or update `packages/my-package/project.json`:
 }
 ```
 
-#### 7. First Release
+#### 6. First Release
 
 1. Commit your new package with a conventional commit:
 
@@ -623,7 +567,21 @@ Create or update `packages/my-package/project.json`:
 
 3. Wait for release-please to create a Release PR
 
-4. Review and merge the Release PR to publish
+4. Bootstrap npm trusted publishing. npm only lets you configure a trusted
+   publisher on a package that already exists, so CI cannot publish a
+   brand-new package:
+    - Publish an empty `0.0.0` placeholder while logged in to npm:
+      `npx setup-npm-trusted-publish @m0n0lab/my-package`
+    - Configure the trusted publisher with `publish` allowed (requires
+      account-level 2FA on npm):
+      `npx npm@latest trust github @m0n0lab/my-package --file release-please.yml --repo pabloimrik17/monolab --allow-publish`
+
+5. Review and merge the Release PR to publish, within 2 days of step 4
+   (unused trusted publisher configurations expire). The first real version
+   is published from CI with provenance, like every later release.
+
+6. Deprecate the placeholder:
+   `npm deprecate @m0n0lab/my-package@0.0.0 "Placeholder for trusted publishing setup"`
 
 ### Manual Recovery Procedures
 
@@ -631,7 +589,7 @@ If publishing fails, follow these recovery steps:
 
 #### Failed npm Publish
 
-If npm publish fails but JSR succeeds:
+If npm publish fails for a package:
 
 ```bash
 # 1. Verify the package version that failed
@@ -648,73 +606,34 @@ pnpm publish --access public
 **Note**: Use `pnpm publish` (not `npm publish`) to ensure workspace:\*
 dependencies are transformed correctly.
 
-#### Failed JSR Publish
-
-If JSR publish fails but npm succeeds:
-
-```bash
-# 1. Verify the package version that failed
-cat packages/<package>/deno.json
-
-# 2. Manually publish to JSR using Deno
-cd packages/<package>
-deno publish
-```
-
-**Note**: Ensure you're in a clean git state. Deno workspaces automatically
-resolve internal dependencies.
-
-#### Version Mismatch Recovery
-
-If `package.json` and `deno.json` versions get out of sync:
-
-```bash
-# 1. Check current versions
-cat packages/<package>/package.json | grep version
-cat packages/<package>/deno.json | grep version
-
-# 2. Manually align versions (choose the higher version)
-# Edit both files to match
-
-# 3. Commit the fix
-git add packages/<package>/{package,deno}.json
-git commit -m "fix(<package>): align versions"
-git push
-
-# 4. Wait for next release cycle to normalize
-```
-
 #### Complete Publish Failure
 
-If both npm and JSR fail:
+If every package fails to publish:
 
 1. **Check workflow logs**: Review GitHub Actions logs for the specific
    error
 2. **Verify authentication**: Ensure OIDC Trusted Publishers are configured
-   correctly in npm and JSR
+   correctly in npm
 3. **Check package validity**: Run local builds and tests
-4. **Manual publish**: Follow the steps above for both registries
+4. **Manual publish**: Follow the steps above for each package
 5. **Update manifest**: Manually update `.release-please-manifest.json` to
    reflect published versions
 
 #### Rollback a Release
 
-If you need to unpublish a bad release:
-
-**npm** (only within 72 hours):
+If you need to unpublish a bad release (npm allows it only within 72 hours):
 
 ```bash
 npm unpublish @m0n0lab/<package>@<version>
 ```
 
-**JSR** (contact JSR support or publish a patch version):
+**Important**: Avoid unpublishing if possible. Instead, revert the change and
+publish a new patch/minor version with the fix:
 
 ```bash
-# JSR doesn't support unpublishing, so publish a fixed version
-git revert <bad-commit>
+git revert --no-commit <bad-commit>
+# or, if the change landed via a merge commit:
+git revert --no-commit -m 1 <bad-merge-commit>
 git commit -m "fix(<package>): revert breaking change"
 # Follow normal release process
 ```
-
-**Important**: Avoid unpublishing if possible. Instead, publish a new
-patch/minor version with the fix.

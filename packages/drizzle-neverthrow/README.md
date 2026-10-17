@@ -21,10 +21,6 @@ ResultAsync.fromPromise(this.db.select().from(items), (e) => new PersistenceErro
 pnpm add @m0n0lab/drizzle-neverthrow drizzle-orm neverthrow
 ```
 
-```bash
-npx jsr add @m0n0lab/drizzle-neverthrow
-```
-
 ## Usage
 
 ```typescript

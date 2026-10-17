@@ -12,7 +12,6 @@
         "investlab:build": "nx run-many -t build -p @m0n0lab/investlab @m0n0lab/investlab-api",
         "investlab:dev": "nx run-many -t dev -p @m0n0lab/investlab @m0n0lab/investlab-api",
         "investlab:test": "nx run-many -t test:unit -p @m0n0lab/investlab @m0n0lab/investlab-api",
-        "jsr:sync-version": "node tools/sync-jsr-version.js",
         "lint:fallow": "fallow dead-code --fail-on-issues",
         "lint:knip": "knip --max-issues 40",
         "lint:knip:fix": "knip --fix",
@@ -29,10 +28,6 @@
         "mutation:test": "nx run-many --target=mutation:test",
         "mutation:test:affected": "nx affected --target=mutation:test",
         "prepare": "husky",
-        "react-clean:release": "nx release --skip-publish --projects @m0n0lab/react-clean && pnpm run jsr:sync-version",
-        "react-clean:release:dry": "nx release --skip-publish --dry-run --projects @m0n0lab/react-clean",
-        "react-hooks:release": "nx release --skip-publish --projects @m0n0lab/react-hooks && pnpm run jsr:sync-version",
-        "react-hooks:release:dry": "nx release --skip-publish --dry-run --projects @m0n0lab/react-hooks",
         "setup:browsers": "playwright install chromium",
         "test": "nx run-many --target=test",
         "test:affected": "nx affected --target=test",
@@ -96,11 +91,6 @@
     "devEngines": {
         "runtime": [
             {
-                "name": "deno",
-                "version": "2.9.3",
-                "onFail": "download"
-            },
-            {
                 "name": "node",
                 "version": "24.21.0",
                 "onFail": "download"
@@ -108,7 +98,6 @@
         ]
     },
     "engines": {
-        "deno": "2.9.3",
         "node": "24.21.0",
         "pnpm": "11.15.0"
     },
