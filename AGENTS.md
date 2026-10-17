@@ -32,8 +32,3 @@ In all interactions, plans, and commit messages, be extremely concise and sacrif
 - End each plan with list of unresolved questions, if any.
 
 <!-- Matt Pocock concise rule end-->
-
-# Agent instructions
-
-- `AGENTS.md` is the only instruction file; Claude Code reads it natively. Do not add `CLAUDE.md` (it would shadow this file).
-- Refresh the Nx block with `pnpm nx configure-ai-agents --agents codex --no-interactive`, never `--agents claude` (recreates `CLAUDE.md`).
