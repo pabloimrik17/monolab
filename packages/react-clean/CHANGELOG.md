@@ -15,6 +15,22 @@
 
 -   Pablo F. Guerra @pabloimrik17
 
+## [4.0.0](https://github.com/pabloimrik17/monolab/compare/react-clean-v3.4.1...react-clean-v4.0.0) (2026-10-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* make React and Solid ViewModel mount hooks optional ([#323](https://github.com/pabloimrik17/monolab/issues/323))
+
+### Features
+
+* make React and Solid ViewModel mount hooks optional ([#323](https://github.com/pabloimrik17/monolab/issues/323)) ([fc4be15](https://github.com/pabloimrik17/monolab/commit/fc4be152196c69f5a99d72b86024b308d363e5cc))
+
+
+### Bug Fixes
+
+* **test:** include type tests in Vitest typechecking ([#324](https://github.com/pabloimrik17/monolab/issues/324)) ([e1d19c0](https://github.com/pabloimrik17/monolab/commit/e1d19c0a49f6de05bb3e1be398f03651169a8d61))
+
 ## [3.4.1](https://github.com/pabloimrik17/monolab/compare/react-clean-v3.4.0...react-clean-v3.4.1) (2026-10-04)
 
 
