@@ -10,13 +10,7 @@
         "apps/qup-web/src/routes/**/*.tsx",
         // type-level test files are entries for their assertions
         "**/*.test-d.ts",
-        // integration tests live in a vitest `projects` entry, whose include the fallow vitest plugin does not follow
-        "**/*.integration.ts",
-        "**/*.integration.tsx",
-        // module test setups, loaded by vitest `setupFiles`/`globalSetup`, which the fallow vitest plugin does not follow
-        "packages/*/src/application/*/vitest-*-setup.ts",
-        // tool-loaded configs (oxfmt CLI, validate-branch-name via husky)
-        "oxfmt.config.ts",
+        // tool-loaded config (validate-branch-name via husky)
         "validate-branch-name.config.cjs"
     ],
     "ignorePatterns": [
