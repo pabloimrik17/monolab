@@ -56,6 +56,11 @@
             "description": "Re-assert 14-day minimum release age for npm; config:best-practices brings security:minimumReleaseAgeNpm with a shorter window",
             "matchDatasources": ["npm"],
             "minimumReleaseAge": "14 days"
+        },
+        {
+            "description": "Update the fallow CLI and its GitHub Action together",
+            "matchPackageNames": ["fallow", "fallow-rs/fallow"],
+            "groupName": "fallow"
         }
     ],
     "customManagers": [
