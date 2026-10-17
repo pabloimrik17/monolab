@@ -32,14 +32,14 @@ No task changes package exports: `deno.json` was never in any package's `files`.
 
 ## 4. Commits
 
-- [ ] 4.1 Commit in conventional units (design decision 8): `build:` (deno.json/.dvmrc/engines/lockfile/scripts), `ci(release):` (workflow + release-please config), `docs:` (root docs, openspec context), `docs(<pkg>):` per package README. Verify `git log --oneline develop..HEAD` shows only conventional subjects and husky/commitlint accepted each commit (no `--no-verify` on code commits).
+- [x] 4.1 Commit in conventional units (design decision 8): `build:` (deno.json/.dvmrc/engines/lockfile/scripts), `ci(release):` (workflow + release-please config), `docs:` (root docs, openspec context), `docs(<pkg>):` per package README. Verify `git log --oneline develop..HEAD` shows only conventional subjects and husky/commitlint accepted each commit (no `--no-verify` on code commits).
 
 ## 5. Integration verification
 
-- [ ] 5.1 Repo-wide sweep: run `git grep -n -i -w -E "deno|jsr" -- . ':!pnpm-lock.yaml' ':!**/CHANGELOG.md' ':!openspec/changes/archive/**' ':!openspec/changes/remove-deno-jsr/**' ':!openspec/specs/**' ':!claude-plugins/**' ':!.agents/**' ':!.opencode/**'`. Verify the only hits are the allowed ones: `implement-ky-http-client` (ky runtime-compat list) and the drizzle superseded note.
-- [ ] 5.2 Run `pnpm install --frozen-lockfile`, then `pnpm nx run-many -t build build:check-exports typecheck test:unit -p @m0n0lab/drizzle-neverthrow @m0n0lab/http-client @m0n0lab/react-clean @m0n0lab/react-hooks @m0n0lab/ts-configs @m0n0lab/ts-types` (targets a project lacks are skipped), then `pnpm run lint:oxfmt`. Verify all pass.
-- [ ] 5.3 Run `pnpm pack --dry-run` in `packages/react-clean` and `packages/ts-types`. Verify the tarball file list matches `files` and contains no `deno.json` (npm artifacts unchanged).
-- [ ] 5.4 Run `openspec validate remove-deno-jsr --strict`. Verify it is valid.
+- [x] 5.1 Repo-wide sweep: run `git grep -n -i -w -E "deno|jsr" -- . ':!pnpm-lock.yaml' ':!**/CHANGELOG.md' ':!openspec/changes/archive/**' ':!openspec/changes/remove-deno-jsr/**' ':!openspec/specs/**' ':!claude-plugins/**' ':!.agents/**' ':!.opencode/**'`. Verify the only hits are the allowed ones: `implement-ky-http-client` (ky runtime-compat list) and the drizzle superseded note.
+- [x] 5.2 Run `pnpm install --frozen-lockfile`, then `pnpm nx run-many -t build build:check-exports typecheck test:unit -p @m0n0lab/drizzle-neverthrow @m0n0lab/http-client @m0n0lab/react-clean @m0n0lab/react-hooks @m0n0lab/ts-configs @m0n0lab/ts-types` (targets a project lacks are skipped), then `pnpm run lint:oxfmt`. Verify all pass.
+- [x] 5.3 Run `pnpm pack --dry-run` in `packages/react-clean` and `packages/ts-types`. Verify the tarball file list matches `files` and contains no `deno.json` (npm artifacts unchanged).
+- [x] 5.4 Run `openspec validate remove-deno-jsr --strict`. Verify it is valid.
 
 ## 6. Post-merge release recovery (manual, after the change is on `main`)
 
