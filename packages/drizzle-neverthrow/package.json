@@ -1,6 +1,6 @@
 {
     "name": "@m0n0lab/drizzle-neverthrow",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "private": false,
     "description": "Wrap a Drizzle client so queries return neverthrow ResultAsync with caller-defined errors",
     "license": "MIT",

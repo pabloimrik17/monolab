@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4](https://github.com/pabloimrik17/monolab/compare/http-client-v0.2.3...http-client-v0.2.4) (2026-10-17)
+
+
+### Bug Fixes
+
+* **test:** include type tests in Vitest typechecking ([#324](https://github.com/pabloimrik17/monolab/issues/324)) ([e1d19c0](https://github.com/pabloimrik17/monolab/commit/e1d19c0a49f6de05bb3e1be398f03651169a8d61))
+
 ## [0.2.3](https://github.com/pabloimrik17/monolab/compare/http-client-v0.2.2...http-client-v0.2.3) (2026-10-04)
 
 

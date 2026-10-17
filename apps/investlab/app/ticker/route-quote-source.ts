@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { QUOTE_LIST_MAX_SYMBOLS, quoteDtoSchema, quoteSymbolSchema } from "@m0n0lab/investlab-quotes";
+import {
+    QUOTE_LIST_MAX_SYMBOLS,
+    quoteDtoSchema,
+    quoteSymbolSchema,
+} from "@m0n0lab/investlab-quotes";
 import type { QuoteSource } from "./quote-poller";
 import type { Quote } from "./types";
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/pabloimrik17/monolab/compare/solid-clean-v0.2.2...solid-clean-v1.0.0) (2026-10-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* make React and Solid ViewModel mount hooks optional ([#323](https://github.com/pabloimrik17/monolab/issues/323))
+
+### Features
+
+* make React and Solid ViewModel mount hooks optional ([#323](https://github.com/pabloimrik17/monolab/issues/323)) ([fc4be15](https://github.com/pabloimrik17/monolab/commit/fc4be152196c69f5a99d72b86024b308d363e5cc))
+
 ## [0.2.2](https://github.com/pabloimrik17/monolab/compare/solid-clean-v0.2.1...solid-clean-v0.2.2) (2026-10-04)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/pabloimrik17/monolab/compare/ts-types-v1.1.1...ts-types-v1.1.2) (2026-10-17)
+
+
+### Bug Fixes
+
+* **test:** include type tests in Vitest typechecking ([#324](https://github.com/pabloimrik17/monolab/issues/324)) ([e1d19c0](https://github.com/pabloimrik17/monolab/commit/e1d19c0a49f6de05bb3e1be398f03651169a8d61))
+
 ## [1.1.1](https://github.com/pabloimrik17/monolab/compare/ts-types-v1.1.0...ts-types-v1.1.1) (2026-10-04)
 
 

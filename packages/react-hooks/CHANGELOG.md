@@ -8,6 +8,13 @@
 
 -   Pablo F. Guerra @pabloimrik17
 
+## [1.4.2](https://github.com/pabloimrik17/monolab/compare/react-hooks-v1.4.1...react-hooks-v1.4.2) (2026-10-17)
+
+
+### Bug Fixes
+
+* **test:** include type tests in Vitest typechecking ([#324](https://github.com/pabloimrik17/monolab/issues/324)) ([e1d19c0](https://github.com/pabloimrik17/monolab/commit/e1d19c0a49f6de05bb3e1be398f03651169a8d61))
+
 ## [1.4.1](https://github.com/pabloimrik17/monolab/compare/react-hooks-v1.4.0...react-hooks-v1.4.1) (2026-10-04)
 
 
