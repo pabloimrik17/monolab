@@ -75,7 +75,7 @@ jobs:
 
             - name: Restore cached npm dependencies
               id: cache-dependencies-restore
-              uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: |
                       node_modules
@@ -91,7 +91,7 @@ jobs:
 
             - name: Cache npm dependencies
               id: cache-dependencies-save
-              uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+              uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: |
                       node_modules
@@ -122,7 +122,7 @@ jobs:
             - name: Restore Nx cache
               id: cache-nx-restore
               if: ${{ env.NX_NO_CLOUD == 'true' }}
-              uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: .nx
                   key: nx-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('nx.json') }}
@@ -133,7 +133,7 @@ jobs:
 
             - name: Restore Stryker incremental cache
               id: cache-stryker-restore
-              uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: packages/*/reports/stryker-incremental.json
                   key: stryker-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -274,7 +274,7 @@ jobs:
 
             - name: Cache Stryker incremental results
               id: cache-stryker-save
-              uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+              uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
               with:
                   path: packages/*/reports/stryker-incremental.json
@@ -309,7 +309,7 @@ jobs:
             - name: Cache Nx results
               id: cache-nx-save
               if: ${{ env.NX_NO_CLOUD == 'true' }}
-              uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+              uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: .nx
                   key: ${{ steps.cache-nx-restore.outputs.cache-primary-key }}
