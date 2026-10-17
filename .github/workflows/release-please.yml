@@ -27,7 +27,7 @@ jobs:
             prs_created: ${{ steps.release.outputs.prs_created }}
             head_branch: ${{ fromJson(steps.release.outputs.pr || '{}').headBranchName }}
         steps:
-            - uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4.4.1
+            - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
               id: release
               with:
                   # Use manifest mode for monorepo
@@ -37,8 +37,9 @@ jobs:
                   target-branch: main
 
     # release-please round-trips JSON files through JSON.parse/JSON.stringify when
-    # updating versions, which expands compact arrays to multi-line (e.g.
-    # `["ES2023", "DOM"]` → multi-line). Upstream WONTFIX (release-please#2319).
+    # updating versions, which expands compact arrays to multi-line (e.g. the
+    # `keywords` arrays in claude-plugins/*/.claude-plugin/plugin.json). Upstream
+    # WONTFIX (release-please#2319).
     # We re-format the release PR with oxfmt so the lint:oxfmt CI check passes.
     prettify-pr:
         needs: release-please
@@ -52,12 +53,12 @@ jobs:
             NX_NO_CLOUD: ${{ vars.NX_NO_CLOUD }}
         steps:
             - name: Checkout release PR branch
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   ref: ${{ needs.release-please.outputs.head_branch }}
 
             - name: Setup pnpm
-              uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+              uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
 
             - name: Setup Node.js
               uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -98,21 +99,16 @@ jobs:
             NX_NO_CLOUD: ${{ vars.NX_NO_CLOUD }}
         steps:
             - name: Checkout code
-              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
             - name: Setup pnpm
-              uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+              uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
 
             - name: Setup Node.js
               uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
                   node-version-file: .nvmrc
                   cache: "pnpm"
-
-            - name: Setup Deno
-              uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
-              with:
-                  deno-version-file: .dvmrc
 
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
@@ -136,67 +132,6 @@ jobs:
                   fi
 
                   echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
-
-            - name: Publish packages to JSR
-              run: |
-                  # Get list of packages that were released
-                  PACKAGES="${{ steps.released-packages.outputs.packages }}"
-
-                  # Generate dependency graph to determine publish order (using --print to avoid creating files)
-                  # Filter to only include library projects (excludes demo app) and sort by dependencies
-                  ORDERED_PACKAGES=$(pnpm exec nx graph --print 2>/dev/null | jq -r '
-                    .graph.dependencies |
-                    to_entries |
-                    map(select(.key | startswith("@m0n0lab/") and (contains("demo") | not))) |
-                    map({
-                      pkg: (.key | sub("@m0n0lab/"; "")),
-                      deps: (.value | length)
-                    }) |
-                    sort_by(.deps) |
-                    .[].pkg
-                  ')
-
-                  echo "Publishing to JSR in dependency order: $ORDERED_PACKAGES"
-
-                  publish_to_jsr() {
-                    local pkg_path="$1"
-                    local pkg_name="$2"
-                    local label="$3"
-
-                    if [ ! -f "$pkg_path/deno.json" ]; then
-                      echo "Skipping $label$pkg_name for JSR — no deno.json"
-                      return 0
-                    fi
-
-                    local version
-                    version=$(jq -r '.version' "$pkg_path/deno.json")
-                    local meta_url="https://jsr.io/${pkg_name}/${version}_meta.json"
-
-                    if curl -sf -o /dev/null "$meta_url"; then
-                      echo "Skipping $label$pkg_name@$version for JSR — already published"
-                      return 0
-                    fi
-
-                    echo "Publishing $label$pkg_name@$version to JSR..."
-                    ( cd "$pkg_path" && deno publish --unstable-sloppy-imports )
-                    echo "Successfully published $pkg_name@$version to JSR"
-                  }
-
-                  # First publish packages in dependency order (from graph)
-                  for PKG_DIR in $ORDERED_PACKAGES; do
-                    # Only publish if package was released
-                    if echo "$PACKAGES" | grep -q "$PKG_DIR"; then
-                      publish_to_jsr "packages/$PKG_DIR" "@m0n0lab/$PKG_DIR" ""
-                    fi
-                  done
-
-                  # Then publish any remaining packages not in the graph (new packages, standalone packages)
-                  for PKG_DIR in $PACKAGES; do
-                    # Skip if already published in dependency order
-                    if ! echo "$ORDERED_PACKAGES" | grep -q "$PKG_DIR"; then
-                      publish_to_jsr "packages/$PKG_DIR" "@m0n0lab/$PKG_DIR" "standalone "
-                    fi
-                  done
 
             - name: Build and publish packages to npm
               run: |

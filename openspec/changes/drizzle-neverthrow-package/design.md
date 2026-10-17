@@ -8,7 +8,7 @@ Repositories wrap every Drizzle call in `ResultAsync.fromPromise` with the same 
 
 - One place that turns Drizzle queries into `ResultAsync`.
 - Caller-defined error type, so packages keep their domain `PersistenceError`.
-- Published from day one (JSR + npm), versioned by release-please.
+- Published from day one (npm only), versioned by release-please.
 
 **Non-Goals:**
 

@@ -1,4 +1,3 @@
-// fallow-ignore-file unused-class-member -- `code` implements the abstract DomainError contract, read by the API error mapping through the base type
 import { DomainError, type RemotePortError } from "@m0n0lab/investlab-core";
 
 /** Codes of the portfolio module's own errors; the kernel codes live in core. */

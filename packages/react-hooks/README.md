@@ -25,12 +25,6 @@ npm install @m0n0lab/react-hooks
 pnpm add @m0n0lab/react-hooks
 ```
 
-### JSR
-
-```bash
-npx jsr add @m0n0lab/react-hooks
-```
-
 ## Usage
 
 ```typescript

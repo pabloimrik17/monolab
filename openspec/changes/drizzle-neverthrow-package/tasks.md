@@ -1,6 +1,6 @@
 ## 1. Package scaffold
 
-- [x] 1.1 Generate `packages/drizzle-neverthrow` following `packages/http-client` (tsdown, vitest shared config, tsconfig presets, project.json, JSR + npm publish, release-please entry)
+- [x] 1.1 Generate `packages/drizzle-neverthrow` following `packages/http-client` (tsdown, vitest shared config, tsconfig presets, project.json, JSR + npm publish, release-please entry) (JSR part superseded by `remove-deno-jsr`)
 - [x] 1.2 Declare `drizzle-orm` and `neverthrow` as peer dependencies; validate exports with `attw --pack` (affects exports)
 
 ## 2. Wrapper
