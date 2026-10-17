@@ -442,7 +442,9 @@ When the Release PR is merged:
 
 **Important**:
 
-- npm uses OIDC Trusted Publishers (no secrets/tokens needed)
+- npm uses OIDC Trusted Publishers (no secrets/tokens needed once the
+  package's trusted publisher is configured; see
+  [First Release](#6-first-release))
 - pnpm automatically transforms workspace protocol dependencies to proper semver
 
 #### Workspace Protocol Dependencies
@@ -565,7 +567,20 @@ Create or update `packages/my-package/project.json`:
 
 3. Wait for release-please to create a Release PR
 
-4. Review and merge the Release PR to publish
+4. Bootstrap npm trusted publishing. npm only lets you configure a trusted
+   publisher on a package that already exists, so CI cannot publish a
+   brand-new package:
+    - Publish an empty `0.0.0` placeholder while logged in to npm:
+      `npx setup-npm-trusted-publish @m0n0lab/my-package`
+    - Configure the trusted publisher with `publish` allowed (asks for 2FA):
+      `npx npm@latest trust github @m0n0lab/my-package --file release-please.yml --repo pabloimrik17/monolab --allow-publish`
+
+5. Review and merge the Release PR to publish, within 2 days of step 4
+   (unused trusted publisher configurations expire). The first real version
+   is published from CI with provenance, like every later release.
+
+6. Deprecate the placeholder:
+   `npm deprecate @m0n0lab/my-package@0.0.0 "Placeholder for trusted publishing setup"`
 
 ### Manual Recovery Procedures
 
@@ -616,6 +631,8 @@ publish a new patch/minor version with the fix:
 
 ```bash
 git revert --no-commit <bad-commit>
+# or, if the change landed via a merge commit:
+git revert --no-commit -m 1 <bad-merge-commit>
 git commit -m "fix(<package>): revert breaking change"
 # Follow normal release process
 ```
