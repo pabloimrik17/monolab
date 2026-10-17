@@ -3,74 +3,32 @@
         "packages/react-clean": {
             "release-type": "node",
             "package-name": "@m0n0lab/react-clean",
-            "changelog-path": "CHANGELOG.md",
-            "extra-files": [
-                {
-                    "type": "json",
-                    "path": "deno.json",
-                    "jsonpath": "$.version"
-                }
-            ]
+            "changelog-path": "CHANGELOG.md"
         },
         "packages/react-hooks": {
             "release-type": "node",
             "package-name": "@m0n0lab/react-hooks",
-            "changelog-path": "CHANGELOG.md",
-            "extra-files": [
-                {
-                    "type": "json",
-                    "path": "deno.json",
-                    "jsonpath": "$.version"
-                }
-            ]
+            "changelog-path": "CHANGELOG.md"
         },
         "packages/ts-configs": {
             "release-type": "node",
             "package-name": "@m0n0lab/ts-configs",
-            "changelog-path": "CHANGELOG.md",
-            "extra-files": [
-                {
-                    "type": "json",
-                    "path": "deno.json",
-                    "jsonpath": "$.version"
-                }
-            ]
+            "changelog-path": "CHANGELOG.md"
         },
         "packages/ts-types": {
             "release-type": "node",
             "package-name": "@m0n0lab/ts-types",
-            "changelog-path": "CHANGELOG.md",
-            "extra-files": [
-                {
-                    "type": "json",
-                    "path": "deno.json",
-                    "jsonpath": "$.version"
-                }
-            ]
+            "changelog-path": "CHANGELOG.md"
         },
         "packages/http-client": {
             "release-type": "node",
             "package-name": "@m0n0lab/http-client",
-            "changelog-path": "CHANGELOG.md",
-            "extra-files": [
-                {
-                    "type": "json",
-                    "path": "deno.json",
-                    "jsonpath": "$.version"
-                }
-            ]
+            "changelog-path": "CHANGELOG.md"
         },
         "packages/drizzle-neverthrow": {
             "release-type": "node",
             "package-name": "@m0n0lab/drizzle-neverthrow",
-            "changelog-path": "CHANGELOG.md",
-            "extra-files": [
-                {
-                    "type": "json",
-                    "path": "deno.json",
-                    "jsonpath": "$.version"
-                }
-            ]
+            "changelog-path": "CHANGELOG.md"
         },
         "packages/solid-clean": {
             "release-type": "node",

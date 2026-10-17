@@ -37,8 +37,9 @@ jobs:
                   target-branch: main
 
     # release-please round-trips JSON files through JSON.parse/JSON.stringify when
-    # updating versions, which expands compact arrays to multi-line (e.g.
-    # `["ES2023", "DOM"]` → multi-line). Upstream WONTFIX (release-please#2319).
+    # updating versions, which expands compact arrays to multi-line (e.g. the
+    # `keywords` arrays in claude-plugins/*/.claude-plugin/plugin.json). Upstream
+    # WONTFIX (release-please#2319).
     # We re-format the release PR with oxfmt so the lint:oxfmt CI check passes.
     prettify-pr:
         needs: release-please
@@ -109,11 +110,6 @@ jobs:
                   node-version-file: .nvmrc
                   cache: "pnpm"
 
-            - name: Setup Deno
-              uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
-              with:
-                  deno-version-file: .dvmrc
-
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
@@ -136,67 +132,6 @@ jobs:
                   fi
 
                   echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
-
-            - name: Publish packages to JSR
-              run: |
-                  # Get list of packages that were released
-                  PACKAGES="${{ steps.released-packages.outputs.packages }}"
-
-                  # Generate dependency graph to determine publish order (using --print to avoid creating files)
-                  # Filter to only include library projects (excludes demo app) and sort by dependencies
-                  ORDERED_PACKAGES=$(pnpm exec nx graph --print 2>/dev/null | jq -r '
-                    .graph.dependencies |
-                    to_entries |
-                    map(select(.key | startswith("@m0n0lab/") and (contains("demo") | not))) |
-                    map({
-                      pkg: (.key | sub("@m0n0lab/"; "")),
-                      deps: (.value | length)
-                    }) |
-                    sort_by(.deps) |
-                    .[].pkg
-                  ')
-
-                  echo "Publishing to JSR in dependency order: $ORDERED_PACKAGES"
-
-                  publish_to_jsr() {
-                    local pkg_path="$1"
-                    local pkg_name="$2"
-                    local label="$3"
-
-                    if [ ! -f "$pkg_path/deno.json" ]; then
-                      echo "Skipping $label$pkg_name for JSR — no deno.json"
-                      return 0
-                    fi
-
-                    local version
-                    version=$(jq -r '.version' "$pkg_path/deno.json")
-                    local meta_url="https://jsr.io/${pkg_name}/${version}_meta.json"
-
-                    if curl -sf -o /dev/null "$meta_url"; then
-                      echo "Skipping $label$pkg_name@$version for JSR — already published"
-                      return 0
-                    fi
-
-                    echo "Publishing $label$pkg_name@$version to JSR..."
-                    ( cd "$pkg_path" && deno publish --unstable-sloppy-imports )
-                    echo "Successfully published $pkg_name@$version to JSR"
-                  }
-
-                  # First publish packages in dependency order (from graph)
-                  for PKG_DIR in $ORDERED_PACKAGES; do
-                    # Only publish if package was released
-                    if echo "$PACKAGES" | grep -q "$PKG_DIR"; then
-                      publish_to_jsr "packages/$PKG_DIR" "@m0n0lab/$PKG_DIR" ""
-                    fi
-                  done
-
-                  # Then publish any remaining packages not in the graph (new packages, standalone packages)
-                  for PKG_DIR in $PACKAGES; do
-                    # Skip if already published in dependency order
-                    if ! echo "$ORDERED_PACKAGES" | grep -q "$PKG_DIR"; then
-                      publish_to_jsr "packages/$PKG_DIR" "@m0n0lab/$PKG_DIR" "standalone "
-                    fi
-                  done
 
             - name: Build and publish packages to npm
               run: |
