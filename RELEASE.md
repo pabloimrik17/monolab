@@ -2,7 +2,7 @@
 
 This repo releases two kinds of artifacts:
 
-- **npm/JSR packages** under `packages/` — see the existing `package-release` capability and the [Release Process section in `README.md`](./README.md#release-process).
+- **npm packages** under `packages/` — see the existing `package-release` capability and the [Release Process section in `README.md`](./README.md#release-process).
 - **Claude Code plugins** under `claude-plugins/` — covered below.
 
 Both flows are driven by a single `release-please` configuration (`release-please-config.json` + `.release-please-manifest.json`) and the `.github/workflows/release-please.yml` workflow with `target-branch: main`.

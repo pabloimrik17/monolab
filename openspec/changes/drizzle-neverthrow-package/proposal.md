@@ -4,7 +4,7 @@
 
 ## What Changes
 
-- New publishable package `packages/drizzle-neverthrow` (`@m0n0lab/drizzle-neverthrow`, dual JSR + npm publish like `http-client`).
+- New publishable package `packages/drizzle-neverthrow` (`@m0n0lab/drizzle-neverthrow`, published to npm only like `http-client`).
 - It exposes a **wrapped Drizzle client**: queries built through it return `ResultAsync<T, E>` instead of promises, with the error produced by a caller-supplied factory (each domain keeps its own `PersistenceError`).
 - **Kept simple**: the wrapper covers only the Drizzle operations InvestLab needs today (select, insert, update, delete with `returning`, and transactions if used); it is not a 1:1 mirror of Drizzle and grows on demand.
 - `investlab-data-server` adopts it (via change `investlab-portfolio-instruments`, task 9.3). `qup-data` adopts it later (tracked in beads).

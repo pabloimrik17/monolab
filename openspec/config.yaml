@@ -1,7 +1,7 @@
 schema: spec-driven
 
 context: |
-  Nx monorepo publishing ESM-only libs to JSR + npm (dual publish).
+  Nx monorepo publishing ESM-only libs to npm.
 
   Stack: TypeScript 5.9, pnpm workspaces, tsdown bundler, Vitest
   Packages: react-hooks, react-clean (MVVM w/ Inversify+RxJS), ts-configs
