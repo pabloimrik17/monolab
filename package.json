@@ -14,6 +14,7 @@
         "investlab:test": "nx run-many -t test:unit -p @m0n0lab/investlab @m0n0lab/investlab-api",
         "lint:fallow": "fallow dead-code --fail-on-issues",
         "lint:knip": "knip --max-issues 40",
+        "lint:legacy-tests": "git ls-files '*.legacy.test.*' | diff docs/legacy-tests.txt -",
         "lint:knip:fix": "knip --fix",
         "lint:markdownlint": "markdownlint .",
         "lint:oxfmt": "oxfmt --check",
@@ -105,6 +106,7 @@
     "nx": {
         "includedScripts": [
             "lint:fallow",
+            "lint:legacy-tests",
             "lint:markdownlint",
             "typecheck"
         ]

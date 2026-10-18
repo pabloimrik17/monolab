@@ -6,13 +6,5 @@
         "outDir": "./out-tsc",
         "rootDir": "./src"
     },
-    "include": ["src/**/*"],
-    "references": [
-        {
-            "path": "../vitest-config"
-        },
-        {
-            "path": "./tsconfig.node.json"
-        }
-    ]
+    "include": ["src/**/*"]
 }

@@ -189,7 +189,7 @@ test (*.routes.integration-platform.ts)
 - **Excluded files.** `mutate` also excludes `*.integration-platform.{ts,tsx}`. `*.legacy.test.ts` is already excluded through `*.test.ts`.
 - **Dashboard.** The `dashboard` reporter is added only when `STRYKER_DASHBOARD_API_KEY` is set. CI passes that secret on push to `main`/`develop` only, so PR runs never upload.
 - **PR gate.** The `build` job runs `nx affected -t test:mutation --parallel=1` on pull requests and keeps `run-many` on push. PR runs restore the Stryker incremental cache with the existing fallback to `develop` and do not save it, so the `develop` baseline stays clean.
-- **Archive order.** `add-mutation-testing` is archived before this change, because its `mutation-testing` spec must exist for this change's MODIFIED and RENAMED deltas. The ten dashboard tasks it leaves open are covered here.
+- **Archive order.** `add-mutation-testing` is archived before this change, because its `mutation-testing` spec must exist for this change's REMOVED, ADDED and MODIFIED deltas. The ten dashboard tasks it leaves open are covered here.
 
 ### Legacy check
 

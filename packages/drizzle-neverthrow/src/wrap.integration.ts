@@ -4,7 +4,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { pgTable, serial, text } from "drizzle-orm/pg-core";
 import { Pool } from "pg";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { wrap } from "./wrap.ts";
+import { wrap } from "./index.ts";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 const items = pgTable("items", {

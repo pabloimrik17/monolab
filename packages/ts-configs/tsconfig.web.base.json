@@ -9,7 +9,7 @@
          */
 
         /* Browser Environment */
-        "lib": ["ES2024", "DOM", "DOM.Iterable"],
+        "lib": ["ES2024", "ESNext.Disposable", "DOM", "DOM.Iterable"],
 
         /* Module System for Bundlers */
         "module": "preserve",

@@ -46,6 +46,7 @@ const investlabLayerBoundaries = (() => {
                 ]),
                 layer("contracts", `${mod}/data/contracts`),
                 layer("domain", `${mod}/domain`),
+                layer("testing", `${mod}/testing`),
                 layer("root", mod),
             ],
             "boundaries/files": [
@@ -76,6 +77,7 @@ const investlabLayerBoundaries = (() => {
                             from: from("contracts"),
                             allow: { to: [own("domain"), own("contracts")] },
                         },
+                        { from: from("testing"), allow: { to: [own("domain"), own("testing")] } },
                         {
                             from: from("root", "entry"),
                             allow: { to: [own("domain"), own("contracts")] },

@@ -10,6 +10,8 @@ export default {
     ],
     ignoreWorkspaces: [".claude/worktrees/**"],
     ignoreDependencies: ["validate-branch-name"],
+    // POSIX `diff` (root `lint:legacy-tests`), a system binary, not a package
+    ignoreBinaries: ["diff"],
     ignoreExportsUsedInFile: {
         interface: true,
         type: true,

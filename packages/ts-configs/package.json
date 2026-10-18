@@ -51,7 +51,6 @@
         "lint:oxfmt:fix": "oxfmt ."
     },
     "devDependencies": {
-        "@m0n0lab/vitest-config": "workspace:*",
         "typescript": "catalog:"
     },
     "engines": {

@@ -13,6 +13,8 @@ const config = {
         "!src/**/*.test-d.ts",
         "!src/**/*.integration.ts",
         "!src/**/*.integration.tsx",
+        "!src/**/*.integration-platform.ts",
+        "!src/**/*.integration-platform.tsx",
     ],
     ignorePatterns: [
         "target/**",
@@ -27,7 +29,13 @@ const config = {
     incremental: true,
     incrementalFile: "reports/stryker-incremental.json",
     inPlace: true,
-    reporters: ["html", "json", "clear-text", "progress"],
+    reporters: [
+        "html",
+        "json",
+        "clear-text",
+        "progress",
+        ...(process.env.STRYKER_DASHBOARD_API_KEY ? ["dashboard"] : []),
+    ],
     htmlReporter: {
         fileName: "reports/mutation/index.html",
     },
@@ -35,9 +43,9 @@ const config = {
         fileName: "reports/mutation/report.json",
     },
     thresholds: {
-        high: 80,
-        low: 60,
-        break: 60,
+        high: 90,
+        low: 80,
+        break: 80,
     },
     concurrency: "50%",
     dashboard: {

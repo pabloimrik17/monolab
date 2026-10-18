@@ -4,8 +4,8 @@ const config = {
     ...baseConfig,
     thresholds: {
         high: 80,
-        low: 60,
-        break: 60,
+        low: 75,
+        break: 75,
     },
     dashboard: {
         ...baseConfig.dashboard,

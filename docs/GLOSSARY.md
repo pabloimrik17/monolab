@@ -69,7 +69,7 @@ Where a test runs, Node or a browser; never a kind of test nor a deployment.
 _Avoid_: browser test.
 
 **Dogfooding**:
-Using every published library in the monorepo's own apps, which is how its packaged build gets proven.
+Using every published library in at least one of the monorepo's own apps or packages, which is how its packaged build gets proven.
 
 **Legacy test**:
 A test written under the strategy that predates this policy, kept only until it is replaced and never to be imitated.

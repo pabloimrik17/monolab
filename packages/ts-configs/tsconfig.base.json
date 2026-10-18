@@ -7,7 +7,7 @@
          * Target ES2022 for runtime compatibility, lib ES2024 for modern APIs.
          */
         "target": "ES2022",
-        "lib": ["ES2024"],
+        "lib": ["ES2024", "ESNext.Disposable"],
         "allowJs": true,
         "resolveJsonModule": true,
         "moduleDetection": "force",

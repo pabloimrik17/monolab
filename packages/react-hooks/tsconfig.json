@@ -16,8 +16,6 @@
         "**/*.test-d.ts",
         "**/*.spec.ts",
         "**/*.spec.tsx",
-        "**/*.browser.test.ts",
-        "**/*.browser.test.tsx",
         "**/*.integration.ts",
         "**/*.integration.tsx"
     ],

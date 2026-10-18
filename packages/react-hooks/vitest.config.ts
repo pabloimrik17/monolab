@@ -1,6 +1,6 @@
 import react from "@vitejs/plugin-react-swc";
 import { configDefaults, defineConfig, mergeConfig } from "vitest/config";
-import { sharedConfig } from "@m0n0lab/vitest-config";
+import { coverageThresholds, sharedConfig } from "@m0n0lab/vitest-config";
 import { headlessChromium } from "@m0n0lab/vitest-config/browser";
 
 export default mergeConfig(
@@ -21,18 +21,38 @@ export default mergeConfig(
             },
             coverage: {
                 provider: "v8",
+                include: ["src/**/*.{ts,tsx}"],
+                exclude: [
+                    "**/*.test-d.ts",
+                    "**/*.integration.{ts,tsx}",
+                    "**/testing/**",
+                    "**/vitest-*setup*.ts",
+                ],
+                thresholds: coverageThresholds({
+                    lines: 80,
+                    branches: 80,
+                    functions: 80,
+                    statements: 80,
+                }),
                 reporter: ["lcov", "text", "json", "html"],
                 reportsDirectory: "./coverage",
             },
-            browser: headlessChromium(),
             projects: [
                 {
                     extends: true,
-                    test: { name: "unit", include: ["**/*.{test,spec}.{ts,tsx}"] },
+                    test: {
+                        name: "unit",
+                        include: ["**/*.{test,spec}.{ts,tsx}"],
+                        browser: headlessChromium(),
+                    },
                 },
                 {
                     extends: true,
-                    test: { name: "integration", include: ["src/**/*.integration.{ts,tsx}"] },
+                    test: {
+                        name: "integration",
+                        include: ["src/**/*.integration.{ts,tsx}"],
+                        browser: headlessChromium(),
+                    },
                 },
                 {
                     extends: true,

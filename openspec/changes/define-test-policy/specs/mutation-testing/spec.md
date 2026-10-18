@@ -1,55 +1,20 @@
 # Spec Delta
 
-## RENAMED Requirements
+## REMOVED Requirements
 
-- FROM: `### Requirement: CI Integration on Main Branches`
-- TO: `### Requirement: CI Integration`
+### Requirement: CI Integration on Main Branches
 
-## MODIFIED Requirements
+**Reason**: Mutation testing now gates pull requests too, so a requirement that skips it on pull requests no longer holds.
 
-### Requirement: CI Integration
-
-The system SHALL run mutation testing in CI on pull requests, for the affected packages that have a Stryker configuration, and on pushes to main and develop, for every such package. A run below a package's break threshold SHALL fail CI.
-
-#### Scenario: Pull request with mutation testing
-
-- **WHEN** pull request CI runs
-- **THEN** mutation testing runs on the affected packages that have a Stryker configuration
-- **AND** uses the incremental cache restored from the branch or, failing that, from develop
-- **AND** a package scoring below its break threshold fails the run
-
-#### Scenario: Push to develop with mutation testing
-
-- **WHEN** code is pushed to develop branch
-- **THEN** mutation testing runs on all packages
-- **AND** uses incremental cache from previous runs
-
-#### Scenario: Push to main with mutation testing
-
-- **WHEN** code is pushed to main branch
-- **THEN** mutation testing runs on all packages
-- **AND** enforces mutation score thresholds
+**Migration**: Replaced by "CI Integration" (added below), which runs mutation on the affected packages of a pull request and on every package on pushes to main and develop.
 
 ### Requirement: Mutation Score Thresholds
 
-The system SHALL enforce mutation score thresholds that follow the test policy's target: break at 80, low at 80 and high at 90 by default. A package scoring below 80 SHALL set its break and low thresholds to its measured score rounded down to a multiple of 5. Its thresholds SHALL NOT be lowered, and SHALL be raised when its score passes the next multiple of 5.
+**Reason**: Thresholds no longer vary by package type. Every package follows the test policy's target, with floors for packages below it.
 
-#### Scenario: Package meeting the target
+**Migration**: Replaced by "Mutation Score Target and Floors" (added below). Packages drop their per-type overrides; qup-domain and solid-clean keep a floor of 75.
 
-- **WHEN** mutation testing runs on a package whose score is 90.9%, such as react-clean
-- **THEN** high threshold is 90%, low is 80%, break is 80%
-- **AND** build fails if mutation score < 80%
-
-#### Scenario: Package below the target
-
-- **WHEN** mutation testing runs on a package whose score is 76.1%, such as qup-domain
-- **THEN** low and break thresholds are 75%
-- **AND** build fails if mutation score < 75%
-
-#### Scenario: Thresholds only rise
-
-- **WHEN** a package below the target scores 81% on develop
-- **THEN** its break and low thresholds are raised to 80% in the next change that touches its Stryker configuration
+## MODIFIED Requirements
 
 ### Requirement: Dashboard Integration
 
@@ -92,6 +57,50 @@ The system SHALL upload mutation testing reports to Stryker Dashboard with per-p
 - **THEN** no report is uploaded to the dashboard
 
 ## ADDED Requirements
+
+### Requirement: CI Integration
+
+The system SHALL run mutation testing in CI on pull requests, for the affected packages that have a Stryker configuration, and on pushes to main and develop, for every such package. A run below a package's break threshold SHALL fail CI.
+
+#### Scenario: Pull request with mutation testing
+
+- **WHEN** pull request CI runs
+- **THEN** mutation testing runs on the affected packages that have a Stryker configuration
+- **AND** uses the incremental cache restored from the branch or, failing that, from develop
+- **AND** a package scoring below its break threshold fails the run
+
+#### Scenario: Push to develop with mutation testing
+
+- **WHEN** code is pushed to develop branch
+- **THEN** mutation testing runs on all packages
+- **AND** uses incremental cache from previous runs
+
+#### Scenario: Push to main with mutation testing
+
+- **WHEN** code is pushed to main branch
+- **THEN** mutation testing runs on all packages
+- **AND** enforces mutation score thresholds
+
+### Requirement: Mutation Score Target and Floors
+
+The system SHALL enforce mutation score thresholds that follow the test policy's target: break at 80, low at 80 and high at 90 by default. A package scoring below 80 SHALL set its break and low thresholds to its measured score rounded down to a multiple of 5. Its thresholds SHALL NOT be lowered, and SHALL be raised when its score passes the next multiple of 5.
+
+#### Scenario: Package meeting the target
+
+- **WHEN** mutation testing runs on a package whose score is 90.9%, such as react-clean
+- **THEN** high threshold is 90%, low is 80%, break is 80%
+- **AND** build fails if mutation score < 80%
+
+#### Scenario: Package below the target
+
+- **WHEN** mutation testing runs on a package whose score is 76.1%, such as qup-domain
+- **THEN** low and break thresholds are 75%
+- **AND** build fails if mutation score < 75%
+
+#### Scenario: Thresholds only rise
+
+- **WHEN** a package below the target scores 81% on develop
+- **THEN** its break and low thresholds are raised to 80% in the next change that touches its Stryker configuration
 
 ### Requirement: Mutation runs over every non-e2e test
 
