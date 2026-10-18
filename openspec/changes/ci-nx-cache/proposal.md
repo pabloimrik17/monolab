@@ -12,7 +12,7 @@ Every CI run starts with a cold Nx cache from the day the Nx Cloud quota runs ou
 - **Every deterministic Nx target is cacheable, with explicit inputs and outputs:**
     - `typecheck`: the 17 package.json scripts identical to the `@nx/js/typescript` inferred command (`tsc --build tsconfig.json --emitDeclarationOnly`) are deleted, so the cached inferred target takes over. `apps/investlab`'s custom script gets cache config in its `project.json`.
     - `test:integration` and its variants, `build:check-exports` and `lint:eslint:config-check` become cacheable through `targetDefaults`.
-    - `*:changed`, `*:watch`, `test:ui`, `db:*`, `dev` and `lint:fallow` stay uncached on purpose.
+    - `*:changed`, `*:watch`, `*:fix`, `test:ui`, `db:*`, `dev` and `lint:fallow` stay uncached on purpose (`lint:eslint:fix` loses its `cache: true`: a cache hit would skip rewriting the sources).
 - **CI leftovers are removed:** the "Debug Nx Cloud variable" step, the `~/.cache/Cypress` path in the dependency cache (no project uses Cypress), the `NX_NO_CLOUD` switch, and one of the two overlapping dependency caches (`setup-node`'s pnpm store cache and the `node_modules` cache).
 - **Manual step for the owner:** the repository is public and Nx Cloud lets anyone without a token read and write the cache by default. Set anonymous access to "none" in the Nx Cloud workspace settings.
 
