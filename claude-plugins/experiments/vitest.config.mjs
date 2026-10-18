@@ -16,6 +16,10 @@ export default mergeConfig(
                 reportsDirectory: "./coverage",
                 include: ["scripts/**/*.mjs"],
                 exclude: ["scripts/**/*.test.mjs", "scripts/fixtures/**"],
+                // Below the 80 target of ADR 0008 (docs/adr/0008-test-policy.md): these floors are the CI
+                // measurement of 2026-10-18 rounded down to a multiple of 5 (lines 76.56, branches 68.21, functions 83.1,
+                // statements 73.81). Never lower them. Whoever adds tests here re-measures with `test:coverage` and
+                // raises every metric that passed its next multiple of 5, until each one reaches 80.
                 thresholds: coverageThresholds({
                     lines: 75,
                     branches: 65,
