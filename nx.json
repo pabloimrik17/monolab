@@ -26,7 +26,15 @@
             "outputs": ["{projectRoot}/dist"]
         },
         "build:check-exports": {
-            "dependsOn": ["^build", "build", "^build:check-exports"]
+            "dependsOn": ["^build", "build", "^build:check-exports"],
+            "cache": true,
+            "inputs": [
+                "production",
+                {
+                    "dependentTasksOutputFiles": "**/dist/**/*",
+                    "transitive": true
+                }
+            ]
         },
         "dev": {
             "continuous": true,
@@ -49,10 +57,8 @@
             "outputs": ["{projectRoot}/.eslintcache"]
         },
         "lint:eslint:fix": {
-            "cache": true,
             "dependsOn": ["^build", "^lint:eslint:fix"],
-            "inputs": ["default", "{workspaceRoot}/eslint.config.ts"],
-            "outputs": ["{projectRoot}/.eslintcache"]
+            "inputs": ["default", "{workspaceRoot}/eslint.config.ts"]
         },
         "lint:fallow": {
             "cache": false
@@ -139,22 +145,66 @@
             "dependsOn": ["^build"]
         },
         "test:integration": {
-            "dependsOn": ["^build"]
+            "dependsOn": ["^build"],
+            "cache": true,
+            "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/vitest.config.ts",
+                "{projectRoot}/vitest.config.ts"
+            ],
+            "outputs": [
+                "{projectRoot}/test-results.junit.xml",
+                "{projectRoot}/coverage",
+                "{projectRoot}/html"
+            ]
         },
         "test:integration:changed": {
             "dependsOn": ["^build"]
         },
         "test:integration:coverage": {
-            "dependsOn": ["^build"]
+            "dependsOn": ["^build"],
+            "cache": true,
+            "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/vitest.config.ts",
+                "{projectRoot}/vitest.config.ts"
+            ],
+            "outputs": [
+                "{projectRoot}/test-results.junit.xml",
+                "{projectRoot}/coverage",
+                "{projectRoot}/html"
+            ]
         },
         "test:browser": {
-            "dependsOn": ["^build"]
+            "cache": true,
+            "dependsOn": ["^build"],
+            "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/vitest.config.ts",
+                "{projectRoot}/vitest.config.ts"
+            ],
+            "outputs": ["{projectRoot}/html", "{projectRoot}/test-results.junit.xml"]
         },
         "test:browser:changed": {
             "dependsOn": ["^build"]
         },
         "test:browser:coverage": {
-            "dependsOn": ["^build"]
+            "cache": true,
+            "dependsOn": ["^build"],
+            "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/vitest.config.ts",
+                "{projectRoot}/vitest.config.ts"
+            ],
+            "outputs": [
+                "{projectRoot}/coverage",
+                "{projectRoot}/html",
+                "{projectRoot}/test-results.junit.xml"
+            ]
         },
         "test:types:watch": {
             "continuous": true,
@@ -239,10 +289,16 @@
                 "dependsOn": ["^typecheck", "^build"]
             },
             {
-                "filter": { "plugin": "@nx/js/typescript" },
+                "filter": {
+                    "plugin": "@nx/js/typescript"
+                },
                 "inputs": ["...", "sharedGlobals"]
             }
-        ]
+        ],
+        "lint:eslint:config-check": {
+            "cache": true,
+            "inputs": ["default", "{workspaceRoot}/eslint.config.ts"]
+        }
     },
     "sync": {
         "applyChanges": true
@@ -263,5 +319,6 @@
             }
         }
     ],
-    "analytics": false
+    "analytics": false,
+    "maxCacheSize": "1GB"
 }

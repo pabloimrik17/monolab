@@ -63,8 +63,7 @@
         "test:unit:changed": "vitest run --project unit --changed",
         "test:unit:coverage": "vitest run --project unit --coverage",
         "test:unit:watch": "vitest --project unit",
-        "test:watch": "vitest",
-        "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
+        "test:watch": "vitest"
     },
     "dependencies": {
         "tslib": "catalog:"
