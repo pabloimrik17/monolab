@@ -22,10 +22,10 @@ export default mergeConfig(
                 ],
                 // Provisional 0: task 9.2 sets these from the PR's CI run (Docker-backed)
                 thresholds: coverageThresholds({
-                    lines: 0,
-                    branches: 0,
-                    functions: 0,
-                    statements: 0,
+                    lines: 80,
+                    branches: 70,
+                    functions: 80,
+                    statements: 80,
                 }),
             },
             projects: [

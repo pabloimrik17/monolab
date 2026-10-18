@@ -34,21 +34,21 @@
 ## 4. Libraries
 
 - [x] 4.1 http-client: delete `src/package-entry.integration.ts`, its `integration` Vitest project, its `test:integration*` scripts and the `build` entries in `project.json`'s test targets. Verify that `pnpm nx run @m0n0lab/http-client:test:coverage` passes and that `pnpm nx show project @m0n0lab/http-client --json` lists no `test:integration` target.
-- [ ] 4.2 For every library (drizzle-neverthrow, http-client, react-clean, react-hooks, solid-clean, ts-types, investlab-platform), set `coverage.include` and `coverage.exclude` per design.md, and thresholds through the helper. Verify that `pnpm nx run-many -t test:coverage -p <libraries>` passes and that `pnpm nx run @m0n0lab/react-hooks:test:unit:coverage` passes without enforcing thresholds.
+- [x] 4.2 For every library (drizzle-neverthrow, http-client, react-clean, react-hooks, solid-clean, ts-types, investlab-platform), set `coverage.include` and `coverage.exclude` per design.md, and thresholds through the helper. Verify that `pnpm nx run-many -t test:coverage -p <libraries>` passes and that `pnpm nx run @m0n0lab/react-hooks:test:unit:coverage` passes without enforcing thresholds.
 - [x] 4.3 react-clean and react-hooks:
     - `git mv` the `*.browser.test.tsx` files to `*.integration.tsx`;
     - delete every `test:browser*` script;
     - add the missing per-kind variants (`:changed`, `:coverage`).
 
     Verify with `pnpm nx run-many -t test:integration -p @m0n0lab/react-clean @m0n0lab/react-hooks` (runs in headless Chromium) and `git grep -n "browser.test\|test:browser"`, which should return nothing outside `openspec/changes/archive`.
-- [ ] 4.4 drizzle-neverthrow: import `./index.ts` in `wrap.integration.ts`; verify that `pnpm nx run @m0n0lab/drizzle-neverthrow:test:integration` passes in CI
+- [x] 4.4 drizzle-neverthrow: import `./index.ts` in `wrap.integration.ts`; verify that `pnpm nx run @m0n0lab/drizzle-neverthrow:test:integration` passes in CI
 - [x] 4.5 investlab-platform: `git mv` `src/client/investlab-api-client.test.ts` and `src/shared/http-client.test.ts` to `*.integration.ts`, add `unit` and `integration` Vitest projects and the per-kind scripts. Verify that `pnpm nx run @m0n0lab/investlab-platform:test:integration` runs exactly those two files.
-- [ ] 4.6 Drop the per-package Stryker `thresholds` overrides in drizzle-neverthrow, http-client, react-clean, react-hooks and ts-types, and set `low: 75, break: 75` in solid-clean; verify that `pnpm nx run-many -t test:mutation -p <those packages> --parallel=1` passes
+- [x] 4.6 Drop the per-package Stryker `thresholds` overrides in drizzle-neverthrow, http-client, react-clean, react-hooks and ts-types, and set `low: 75, break: 75` in solid-clean; verify that `pnpm nx run-many -t test:mutation -p <those packages> --parallel=1` passes
 - [x] 4.7 ts-configs: delete its unused `vitest.config.ts`; verify that `pnpm nx show project @m0n0lab/ts-configs --json` lists no test target
 
 ## 5. Business packages
 
-- [ ] 5.1 investlab-portfolio and investlab-quotes: rename the Vitest projects `integration-server`/`integration-client` to `integration:server`/`integration:client` and update `test:integration*` scripts; verify that `pnpm nx run @m0n0lab/investlab-portfolio:test:integration` still runs all 16 integration files in CI
+- [x] 5.1 investlab-portfolio and investlab-quotes: rename the Vitest projects `integration-server`/`integration-client` to `integration:server`/`integration:client` and update `test:integration*` scripts; verify that `pnpm nx run @m0n0lab/investlab-portfolio:test:integration` still runs all 16 integration files in CI
 - [x] 5.2 `git mv` to `*.legacy.test.ts`:
     - investlab-portfolio's `data/contracts/*.dto.test.ts` and `data/server/*.mapper.test.ts`;
     - investlab-quotes' `quote.dto.test.ts` and `batch.test.ts`;
@@ -56,7 +56,7 @@
     - qup-domain's 11 `use-cases/*.use-case.test.ts`.
 
     Append the paths to `docs/legacy-tests.txt` and keep it sorted. Verify that `pnpm nx run @m0n0lab/source:lint:legacy-tests` passes and that `pnpm nx run-many -t test:unit -p <those packages>` runs the same number of tests as before.
-- [ ] 5.3 Set `coverage.include`/`exclude`, thresholds and the aggregate and per-kind scripts for investlab-core, investlab-portfolio, investlab-quotes, qup-domain, qup-data and qup-shared. Set qup-domain's Stryker override to `low: 75, break: 75`. Verify that `pnpm nx run-many -t test:coverage` passes for the non-Docker packages locally and for all of them in CI.
+- [x] 5.3 Set `coverage.include`/`exclude`, thresholds and the aggregate and per-kind scripts for investlab-core, investlab-portfolio, investlab-quotes, qup-domain, qup-data and qup-shared. Set qup-domain's Stryker override to `low: 75, break: 75`. Verify that `pnpm nx run-many -t test:coverage` passes for the non-Docker packages locally and for all of them in CI.
 - [x] 5.4 investlab-portfolio and investlab-quotes: add `src/testing/` with the test-data builders moved from investlab-api's `in-memory-portfolio.ts` (`makeInstrument`, a portfolio item builder, a quote builder) and export it through a `./testing` subpath in `package.json` (both private, no attw). Add `**/testing/**` to their `coverage.exclude`. Verify with `pnpm nx run-many -t typecheck -p @m0n0lab/investlab-portfolio @m0n0lab/investlab-quotes` and that `test:coverage` lists no `testing/` file.
 
 ## 6. Apps
@@ -114,12 +114,12 @@
     - the load-test tool choice, blocked by the staging issue, with the design.md candidate comparison (Artillery, k6, Gatling JS) in its description.
 
     Write the legacy and load-tool issue IDs into ADR 0008, and verify that each issue ID in the ADR resolves with `bd show`.
-- [ ] 9.2 From the PR's CI coverage run, set the thresholds of investlab-portfolio, investlab-quotes, investlab-api and the experiments plugin, and recheck the provisional floors of every other project against the measured values, using the spec rule (80, or measured rounded down to a multiple of 5). Verify that the next CI run's `test:coverage` passes on all projects.
+- [x] 9.2 From the PR's CI coverage run, set the thresholds of investlab-portfolio, investlab-quotes, investlab-api and the experiments plugin, and recheck the provisional floors of every other project against the measured values, using the spec rule (80, or measured rounded down to a multiple of 5). Verify that the next CI run's `test:coverage` passes on all projects.
 
 ## 10. Final checks
 
-- [ ] 10.1 Run `pnpm nx run-many -t lint test:coverage typecheck` and `pnpm run lint:fallow` locally (Docker-backed integration in CI), and confirm on the PR that every job and the `main` gate are green
-- [ ] 10.2 Run `openspec validate define-test-policy --strict` and confirm it passes without the archive warning
+- [x] 10.1 Run `pnpm nx run-many -t lint test:coverage typecheck` and `pnpm run lint:fallow` locally (Docker-backed integration in CI), and confirm on the PR that every job and the `main` gate are green
+- [x] 10.2 Run `openspec validate define-test-policy --strict` and confirm it passes without the archive warning
 
 ## Workflow follow-up
 
