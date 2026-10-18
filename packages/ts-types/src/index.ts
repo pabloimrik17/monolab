@@ -20,3 +20,5 @@ export type { StrictOmit } from "./strict-omit.ts";
 
 // String key utilities
 export type { StringKeyOf } from "./string-keyof.ts";
+
+var gateCheckThrowaway = 1;
