@@ -117,7 +117,7 @@ This project uses Vitest for testing with separate test types organized by purpo
 - Run with: `pnpm run test:unit` or `pnpm run test:unit:affected`
 - Watch mode: `pnpm run test:unit:watch`
 
-**Integration Tests** (`*.integration.ts`)
+**Integration Tests** (`*.integration.ts`, `*.integration.tsx`)
 
 - Tests for module interactions and integration points
 - Run with: `pnpm run test:integration` or `pnpm run test:integration:affected`
@@ -130,12 +130,11 @@ This project uses Vitest for testing with separate test types organized by purpo
 - Run with: `pnpm run test:types` or `pnpm run test:types:affected`
 - Watch mode: `pnpm run test:types:watch`
 
-**Browser Tests** (`*.browser.test.ts`, `*.browser.test.tsx`) - React packages only
+**Integration-platform Tests** (`*.integration-platform.ts`)
 
-- Real browser testing with Playwright (Chromium)
-- Tests actual DOM behavior, not jsdom simulation
-- Run with: `pnpm run test:browser` or `pnpm run test:browser:affected`
-- Watch mode: `pnpm run test:browser:watch`
+- Drive an app on its real platform (UI in a browser, or API requests)
+- Run with: `pnpm run test:integration-platform` or `pnpm run test:integration-platform:affected`
+- Watch mode: `pnpm run test:integration-platform:watch`
 
 ### Interactive UI Mode
 
@@ -156,7 +155,7 @@ pnpm run test                # Every test type
 pnpm run test:unit           # All unit tests
 pnpm run test:integration    # All integration tests
 pnpm run test:types          # All type tests
-pnpm run test:browser        # All browser tests (React packages)
+pnpm run test:integration-platform  # All integration-platform tests
 ```
 
 **Affected tests only (based on git changes):**
@@ -166,7 +165,7 @@ pnpm run test:affected
 pnpm run test:unit:affected
 pnpm run test:integration:affected
 pnpm run test:types:affected
-pnpm run test:browser:affected
+pnpm run test:integration-platform:affected
 ```
 
 **Per-package tests:**
@@ -179,7 +178,7 @@ uncommitted changes) and `:watch` variants, plus `:coverage` when it runs code
 ```bash
 pnpm --filter @m0n0lab/react-hooks run test
 pnpm --filter @m0n0lab/react-hooks run test:unit:changed
-pnpm --filter @m0n0lab/react-hooks run test:browser
+pnpm --filter @m0n0lab/react-hooks run test:integration
 ```
 
 ### Writing Tests
@@ -210,10 +209,10 @@ expectTypeOf(useDidMount).parameter(0).toBeFunction();
 expectTypeOf(useDidMount).returns.toBeVoid();
 ```
 
-**Browser Test Example (React):**
+**Integration Test Example (React):**
 
 ```typescript
-// src/hooks/use-did-mount.browser.test.tsx
+// src/hooks/use-did-mount.integration.tsx
 import { render } from "@testing-library/react";
 import { expect, test } from "vitest";
 

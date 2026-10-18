@@ -87,6 +87,9 @@ jobs:
             - name: 🔍 Check for format and lint configs are valid
               run: pnpm exec nx run-many -t lint:eslint:config-check lint:stylelint:config-check:scss
 
+            - name: 🔍 Check legacy tests
+              run: pnpm exec nx run-many -t lint:legacy-tests
+
             - name: 🔍 Validate OpenSpec change proposals
               run: pnpm dlx @fission-ai/openspec@1.2.0 validate --changes --no-interactive
 
@@ -193,22 +196,12 @@ jobs:
                       nx-${{ runner.os }}-tests-${{ github.ref_name }}-
                       nx-${{ runner.os }}-tests-develop-
 
-            - name: 🧪 Execute unit test checks for affected files (Affected)
-              # We disable the coverage threshold for PRs because affected will only run on the files
-              # that have changed and the coverage will be lower than the threshold
-              run: pnpm exec nx affected -t test:unit:coverage -- --coverage.thresholds.0
+            - name: 🧪 Execute test coverage checks for affected files (Affected)
+              run: pnpm exec nx affected -t test:coverage
               if: ${{ github.event_name == 'pull_request' }}
 
-            - name: 🧪 Execute unit test checks for all files (All)
-              run: pnpm exec nx run-many -t test:unit:coverage
-              if: ${{ github.event_name == 'push' }}
-
-            - name: 🧪 Execute integration test checks for affected files (Affected)
-              run: pnpm exec nx affected -t test:integration
-              if: ${{ github.event_name == 'pull_request' }}
-
-            - name: 🧪 Execute integration test checks for all files (All)
-              run: pnpm exec nx run-many -t test:integration
+            - name: 🧪 Execute test coverage checks for all files (All)
+              run: pnpm exec nx run-many -t test:coverage
               if: ${{ github.event_name == 'push' }}
 
             - name: 🔍 Execute type checks for affected files (Affected)
@@ -217,14 +210,6 @@ jobs:
 
             - name: 🔍 Execute type checks for all files (All)
               run: pnpm exec nx run-many -t typecheck
-              if: ${{ github.event_name == 'push' }}
-
-            - name: 🔍 Execute type test checks for affected files (Affected)
-              run: pnpm exec nx affected -t test:types
-              if: ${{ github.event_name == 'pull_request' }}
-
-            - name: 🔍 Execute type test checks for all files (All)
-              run: pnpm exec nx run-many -t test:types
               if: ${{ github.event_name == 'push' }}
 
             # Build the upload-codecov matrix dynamically.
@@ -236,7 +221,7 @@ jobs:
               id: affected-codecov
               run: |
                   # name:path pairs — single source of truth for the upload-codecov matrix.
-                  PACKAGES="react-hooks:packages/react-hooks react-clean:packages/react-clean ts-configs:packages/ts-configs ts-types:packages/ts-types http-client:packages/http-client drizzle-neverthrow:packages/drizzle-neverthrow qup-api:apps/qup-api qup-data:packages/qup-data qup-domain:packages/qup-domain solid-clean:packages/solid-clean investlab-core:packages/investlab-core investlab-quotes:packages/investlab-quotes investlab-portfolio:packages/investlab-portfolio green-beard:apps/green-beard qup-web:apps/qup-web investlab:apps/investlab investlab-api:apps/investlab-api qup-shared:packages/qup-shared"
+                  PACKAGES="react-hooks:packages/react-hooks react-clean:packages/react-clean ts-types:packages/ts-types http-client:packages/http-client drizzle-neverthrow:packages/drizzle-neverthrow qup-api:apps/qup-api qup-data:packages/qup-data qup-domain:packages/qup-domain solid-clean:packages/solid-clean investlab-core:packages/investlab-core investlab-quotes:packages/investlab-quotes investlab-portfolio:packages/investlab-portfolio green-beard:apps/green-beard qup-web:apps/qup-web investlab:apps/investlab investlab-api:apps/investlab-api qup-shared:packages/qup-shared plugin-experiments:claude-plugins/experiments"
 
                   if [ "${{ github.event_name }}" = "pull_request" ]; then
                     AFFECTED_PROJECTS=$(pnpm exec nx show projects --affected)
@@ -259,7 +244,7 @@ jobs:
                     MATRIX=$(echo "$MATRIX" | jq -c --arg n "$name" --arg p "$path" '. + [{name: $n, path: $p}]')
                   done
 
-                  echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+                  echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
                   echo "Matrix: $MATRIX"
 
             # Upload lcov + junit artifacts for the downstream matrix job to consume.
@@ -273,8 +258,10 @@ jobs:
                   path: |
                       packages/*/coverage/lcov.info
                       apps/*/coverage/lcov.info
+                      claude-plugins/*/coverage/lcov.info
                       packages/*/test-results.junit.xml
                       apps/*/test-results.junit.xml
+                      claude-plugins/*/test-results.junit.xml
                   if-no-files-found: warn
                   retention-days: 1
 
@@ -386,7 +373,7 @@ jobs:
               run: |
                   # Analyze each published package
                   # Note: nx run-many with Nx cache avoids redundant rebuilds of non-affected packages
-                  for package in react-hooks react-clean ts-configs ts-types http-client drizzle-neverthrow solid-clean qup-shared; do
+                  for package in react-hooks react-clean ts-types http-client drizzle-neverthrow solid-clean qup-shared; do
                     if [ -d "packages/$package/dist" ]; then
                       echo "📦 Analyzing bundle for $package..."
                       pnpm exec bundle-analyzer packages/$package/dist \
@@ -396,6 +383,11 @@ jobs:
                       echo "⚠️  Skipping $package: dist directory not found"
                     fi
                   done
+
+            - name: 🧬 Execute mutation testing (Affected)
+              # --parallel=1: browser-mode Stryker runs fail when they overlap on one runner.
+              run: pnpm exec nx affected -t test:mutation --parallel=1
+              if: ${{ github.event_name == 'pull_request' }}
 
             - name: 🧬 Execute mutation testing (All)
               # --parallel=1: browser-mode Stryker runs fail when they overlap on one runner.

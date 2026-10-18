@@ -3,7 +3,11 @@
     "$schema": "node_modules/nx/schemas/project-schema.json",
     "targets": {
         "lint:legacy-tests": {
-            "cache": false
+            "cache": true,
+            "inputs": [
+                "{workspaceRoot}/docs/legacy-tests.txt",
+                "{workspaceRoot}/**/*.legacy.test.*"
+            ]
         },
         "typecheck": {
             "cache": true,

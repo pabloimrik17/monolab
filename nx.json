@@ -173,44 +173,11 @@
                 "{projectRoot}/html"
             ]
         },
-        "test:browser": {
-            "cache": true,
-            "dependsOn": ["^build"],
-            "inputs": [
-                "default",
-                "^production",
-                "{workspaceRoot}/vitest.config.ts",
-                "{projectRoot}/vitest.config.ts"
-            ],
-            "outputs": ["{projectRoot}/html", "{projectRoot}/test-results.junit.xml"]
-        },
-        "test:browser:changed": {
-            "dependsOn": ["^build"]
-        },
-        "test:browser:coverage": {
-            "cache": true,
-            "dependsOn": ["^build"],
-            "inputs": [
-                "default",
-                "^production",
-                "{workspaceRoot}/vitest.config.ts",
-                "{projectRoot}/vitest.config.ts"
-            ],
-            "outputs": [
-                "{projectRoot}/coverage",
-                "{projectRoot}/html",
-                "{projectRoot}/test-results.junit.xml"
-            ]
-        },
         "test:types:watch": {
             "continuous": true,
             "dependsOn": ["^build"]
         },
         "test:integration:watch": {
-            "continuous": true,
-            "dependsOn": ["^build"]
-        },
-        "test:browser:watch": {
             "continuous": true,
             "dependsOn": ["^build"]
         },

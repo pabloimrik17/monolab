@@ -11,11 +11,7 @@
         "test": "vitest run",
         "test:changed": "vitest run --changed",
         "test:coverage": "vitest run --coverage",
-        "test:watch": "vitest",
-        "test:unit": "vitest run",
-        "test:unit:changed": "vitest run --changed",
-        "test:unit:watch": "vitest",
-        "test:unit:coverage": "vitest run --coverage"
+        "test:watch": "vitest"
     },
     "dependencies": {
         "@hono/node-server": "2.0.10",

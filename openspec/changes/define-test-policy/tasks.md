@@ -71,9 +71,9 @@
 - [x] 6.2 investlab-api: move `app.test.ts`'s `/health`, missing-token and unknown-route cases into `src/app.integration-platform.ts` on `BaseApiHarness` and delete `app.test.ts`. Verify that the new file passes and that the dropped cases only wrapped `handleError` in a standalone Hono.
 - [x] 6.3 investlab-api: compare coverage of `errors/error-mapping.ts`, `middleware/bearer-auth.ts` and `serializers/dto-serializers.ts` between the old unit run and the new integration-platform run. Delete the three unit tests only when the new run covers each file at least as well, and add the missing route assertions first if not. Verify by attaching both coverage summaries to the PR.
 - [x] 6.4 investlab-api: delete `src/container.test.ts` (every integration-platform test now launches the real `createContainer()`). Define a single `integration-platform` Vitest project with its scripts (`test:integration-platform`, `:watch`, `:coverage`, `:changed`); no `unit` project, since no unit test remains. Verify that `pnpm nx run @m0n0lab/investlab-api:test` runs only that project and that `git grep -n "container.test" apps/investlab-api` returns nothing.
-- [ ] 6.5 investlab web and qup-api: `git mv` all their `*.test.ts(x)` to `*.legacy.test.ts(x)` and add them to `docs/legacy-tests.txt`; verify that `pnpm nx run-many -t test -p @m0n0lab/investlab @m0n0lab/qup-api` passes with the same test count
-- [ ] 6.6 Set `coverage.include`/`exclude` and thresholds for investlab, investlab-api, qup-api, qup-web and green-beard (TypeScript sources only for green-beard; `.svelte` files cannot be parsed by v8 coverage there). Verify that `pnpm nx run-many -t test:coverage -p <apps>` passes.
-- [ ] 6.7 Delete `apps/demo`, the root `demo:dev` script and its lockfile entries (`pnpm install`). Move its codecov-plugin cast note into `apps/investlab/vite.config.ts` and point `apps/green-beard/vite.config.ts` at it. Verify that `git grep -n "apps/demo\|@m0n0lab/demo"` returns nothing outside `openspec/` and that `pnpm nx run-many -t build` passes.
+- [x] 6.5 investlab web and qup-api: `git mv` all their `*.test.ts(x)` to `*.legacy.test.ts(x)` and add them to `docs/legacy-tests.txt`; verify that `pnpm nx run-many -t test -p @m0n0lab/investlab @m0n0lab/qup-api` passes with the same test count
+- [x] 6.6 Set `coverage.include`/`exclude` and thresholds for investlab, investlab-api, qup-api, qup-web and green-beard (TypeScript sources only for green-beard; `.svelte` files cannot be parsed by v8 coverage there). Verify that `pnpm nx run-many -t test:coverage -p <apps>` passes.
+- [x] 6.7 Delete `apps/demo`, the root `demo:dev` script and its lockfile entries (`pnpm install`). Move its codecov-plugin cast note into `apps/investlab/vite.config.ts` and point `apps/green-beard/vite.config.ts` at it. Verify that `git grep -n "apps/demo\|@m0n0lab/demo"` returns nothing outside `openspec/` and that `pnpm nx run-many -t build` passes.
 
 ## 7. Plugin with code
 
@@ -81,21 +81,21 @@
 
 ## 8. Root and CI wiring
 
-- [ ] 8.1 Root `package.json`:
+- [x] 8.1 Root `package.json`:
     - rename `mutation:test*` to `test:mutation*`;
     - delete `test:browser*`;
     - add `test:integration-platform`, `test:integration-platform:affected` and `test:integration-platform:watch`;
     - make `investlab:test` and `qup:test` run `-t test` over their apps and packages.
 
     Verify that each renamed or added script resolves to existing targets (`pnpm run test:mutation:affected --dry-run` or a run with `--skip-nx-cache` on one project).
-- [ ] 8.2 Root `vitest.config.ts`: list `{apps,packages}/*/vitest.config.ts` and `claude-plugins/*/vitest.config.mjs`; verify that `pnpm run test:ui` opens with apps and the experiments plugin present
-- [ ] 8.3 `codecov.yaml`: remove the `ts-configs` flag and statuses, add `plugin-experiments` (path `claude-plugins/experiments/`), and set every patch target to 80% with threshold 0. Verify with `curl --data-binary @codecov.yaml https://codecov.io/validate`.
-- [ ] 8.4 `.github/workflows/ci.yml` tests job:
+- [x] 8.2 Root `vitest.config.ts`: list `{apps,packages}/*/vitest.config.ts` and `claude-plugins/*/vitest.config.mjs`; verify that `pnpm run test:ui` opens with apps and the experiments plugin present
+- [x] 8.3 `codecov.yaml`: remove the `ts-configs` flag and statuses, add `plugin-experiments` (path `claude-plugins/experiments/`), and set every patch target to 80% with threshold 0. Verify with `curl --data-binary @codecov.yaml https://codecov.io/validate`.
+- [x] 8.4 `.github/workflows/ci.yml` tests job:
     - run `test:coverage` (affected on PR, run-many on push) in place of `test:unit:coverage`, `test:integration` and `test:types`;
     - drop `ts-configs` from the Codecov matrix and add `plugin-experiments:claude-plugins/experiments`.
 
     Verify on the PR run that the tests job executes every project's aggregate and that `upload-codecov` has a matrix entry for `plugin-experiments`.
-- [ ] 8.5 `.github/workflows/ci.yml`:
+- [x] 8.5 `.github/workflows/ci.yml`:
     - the build job runs `test:mutation` with `--parallel=1` on pull requests (affected) as well as pushes;
     - `STRYKER_DASHBOARD_API_KEY` is passed on push only;
     - the Stryker cache is saved on push only;

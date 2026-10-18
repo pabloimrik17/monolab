@@ -260,10 +260,18 @@ const investlabLayerRules = (() => {
                     "import `./client` entries from `.server.ts` files only",
                 ),
             ],
-            ["apps/investlab/**/*.server.ts", "apps/investlab/**/*.server.test.ts"],
+            [
+                "apps/investlab/**/*.server.ts",
+                "apps/investlab/**/*.server.test.ts",
+                "apps/investlab/**/*.server.legacy.test.ts",
+            ],
         ),
         group(
-            ["apps/investlab/**/*.server.ts", "apps/investlab/**/*.server.test.ts"],
+            [
+                "apps/investlab/**/*.server.ts",
+                "apps/investlab/**/*.server.test.ts",
+                "apps/investlab/**/*.server.legacy.test.ts",
+            ],
             [serverEntry],
         ),
         group(["apps/investlab-api/**"], [clientEntry]),

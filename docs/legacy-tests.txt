@@ -1,3 +1,15 @@
+apps/investlab/app/lib/container.server.legacy.test.ts
+apps/investlab/app/lib/portfolio-item-form.legacy.test.ts
+apps/investlab/app/lib/remote-error.legacy.test.ts
+apps/investlab/app/root.legacy.test.tsx
+apps/investlab/app/routes/api.quotes.legacy.test.ts
+apps/investlab/app/routes/portfolio.legacy.test.ts
+apps/investlab/app/ticker/quote-poller.legacy.test.ts
+apps/investlab/app/ticker/route-quote-source.legacy.test.ts
+apps/investlab/app/ticker/ticker-store.legacy.test.ts
+apps/qup-api/src/errors/error-mapping.legacy.test.ts
+apps/qup-api/src/middleware/admin-only.legacy.test.ts
+apps/qup-api/src/services/event-bus.legacy.test.ts
 packages/investlab-core/src/api-error.dto.legacy.test.ts
 packages/investlab-portfolio/src/data/contracts/instrument.dto.legacy.test.ts
 packages/investlab-portfolio/src/data/contracts/portfolio-item-list.dto.legacy.test.ts

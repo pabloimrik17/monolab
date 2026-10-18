@@ -1,5 +1,5 @@
 import { defineConfig, mergeConfig } from "vitest/config";
-import { sharedConfig } from "@m0n0lab/vitest-config";
+import { coverageThresholds, sharedConfig } from "@m0n0lab/vitest-config";
 
 export default mergeConfig(
     sharedConfig,
@@ -15,6 +15,21 @@ export default mergeConfig(
                 provider: "v8",
                 reporter: ["lcov", "text", "json", "html"],
                 reportsDirectory: "./coverage",
+                include: ["src/**/*.ts"],
+                exclude: [
+                    "**/*.test-d.ts",
+                    "**/*.integration.{ts,tsx}",
+                    "**/*.integration-platform.{ts,tsx}",
+                    "**/testing/**",
+                    "**/vitest-*setup*.ts",
+                    "**/*.d.ts",
+                ],
+                thresholds: coverageThresholds({
+                    lines: 0,
+                    branches: 0,
+                    functions: 0,
+                    statements: 0,
+                }),
             },
         },
     }),
