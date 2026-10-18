@@ -17,15 +17,15 @@
 ## 3. Parallel jobs and the `main` gate
 
 - [x] 3.1 Split `.github/workflows/ci.yml` into `lint`, `tests` and `build` jobs as laid out in design.md, each with checkout, pnpm, Node, the dependency cache, `nx-set-shas` and the per-job `.nx` restore/save (key `nx-<os>-<job>-<ref>-<sha>`, restore keys falling back to the same job on the branch, then on `develop`); install Playwright Chromium only in `tests` and `build`; verify with `actionlint .github/workflows/ci.yml` (or `pnpm dlx` it) reporting no errors
-- [ ] 3.2 Move the Codecov matrix detection and the coverage-artifact upload into `tests`, expose `matrix` as a `tests` job output, and change `upload-codecov` to `needs: tests`; verify on the PR that `upload-codecov` gets the full matrix (ci.yml is a shared global, so every package is affected)
+- [x] 3.2 Move the Codecov matrix detection and the coverage-artifact upload into `tests`, expose `matrix` as a `tests` job output, and change `upload-codecov` to `needs: tests`; verify on the PR that `upload-codecov` gets the full matrix (ci.yml is a shared global, so every package is affected)
 - [x] 3.3 Keep mutation testing, its Stryker cache and its report upload in `build`, with `--parallel=1` and the same push-only condition; verify by reading the job that the condition and flag are unchanged
-- [ ] 3.4 Add the final `main` job with `needs: [lint, tests, build]` and `if: always()` that fails when any needed result is `failure` or `cancelled`; verify on the PR that the required `main` check reports, and that it fails when a job fails (temporarily break one lint rule in a throwaway commit, then drop the commit)
-- [ ] 3.5 Drop `cache: pnpm` from `setup-node`, keep the `node_modules` cache without the `~/.cache/Cypress` path; verify that the install step stays under 20s on the PR run, otherwise swap the two caches as design.md allows
+- [x] 3.4 Add the final `main` job with `needs: [lint, tests, build]` and `if: always()` that fails when any needed result is `failure` or `cancelled`; verify on the PR that the required `main` check reports, and that it fails when a job fails (temporarily break one lint rule in a throwaway commit, then drop the commit)
+- [x] 3.5 Drop `cache: pnpm` from `setup-node`, keep the `node_modules` cache without the `~/.cache/Cypress` path; verify that the install step stays under 20s on the PR run, otherwise swap the two caches as design.md allows
 
 ## 4. Verification on CI
 
-- [ ] 4.1 On the PR run, compare wall time with the last single-job runs (4.6–6.1 min) and record the result in the PR description
-- [ ] 4.2 Push a follow-up commit that touches one package and confirm in the logs that tasks of untouched projects are read from cache in all three jobs (`[local cache]` or `[remote cache]`)
+- [x] 4.1 On the PR run, compare wall time with the last single-job runs (4.6–6.1 min) and record the result in the PR description
+- [x] 4.2 Push a follow-up commit that touches one package and confirm in the logs that tasks of untouched projects are read from cache in all three jobs (`[local cache]` or `[remote cache]`)
 
 ## 5. Manual settings (owner)
 
