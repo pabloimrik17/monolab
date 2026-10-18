@@ -48,12 +48,24 @@ _Avoid_: API test.
 An integration test that drives an app on its real platform, its UI in a browser or a request to its API, with the use cases faked. The use case is where an app's two halves meet: integration tests cover it down to the system boundary, integration-platform tests cover the app down to it. Unrelated to a platform package.
 _Avoid_: platform integration test, platform test, browser test, UI test, component test.
 
+**Harness**:
+The layer an integration-platform test enters an app through: it launches the app on its platform, arranges the fakes and hides the framework, so the test reads as domain actions and checks. A base harness per app, one harness per entry point.
+_Avoid_: test helper, test utils, test app.
+
 **E2E test**:
-A test that drives the deployed system from its outermost edge, against real services and a database seeded for testing.
+A test that drives staging from the system's outermost edge, faking nothing, third-party APIs included.
 _Avoid_: smoke test, acceptance test.
 
+**Load test**:
+A test that drives staging under a declared traffic profile (average load, stress, spike, soak or breakpoint) and fails on a threshold.
+_Avoid_: stress test when meaning the kind, performance test, benchmark.
+
+**Staging**:
+A deployment of the system separate from production, with a database seeded for tests, where e2e and load tests run.
+_Avoid_: test environment, pre-production.
+
 **Test environment**:
-Where a test runs, Node or a browser; never a kind of test.
+Where a test runs, Node or a browser; never a kind of test nor a deployment.
 _Avoid_: browser test.
 
 **Dogfooding**:

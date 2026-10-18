@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines how the monorepo tests its projects: the kinds of test, what each project category must carry, how tests are named and run, how legacy tests are contained, and how coverage thresholds are set and enforced.
+Defines how the monorepo tests its projects: the kinds of test, what each project category must carry, how integration-platform tests reach an app through a harness, how tests are named and run, how legacy tests are contained, and how coverage thresholds are set and enforced.
 
 ## ADDED Requirements
 
@@ -53,14 +53,80 @@ An integration-platform test SHALL drive an app on its real platform, its UI ren
 - **WHEN** an integration-platform test renders a page in a browser
 - **THEN** the page, its components and its router run for real and the use cases it calls are faked
 
-### Requirement: E2E tests run against the deployed system
+### Requirement: Integration-platform tests enter through a harness
 
-An e2e test SHALL drive the deployed system from its outermost edge, with real services and a database seeded for testing, and SHALL fake nothing. No e2e tests exist yet; this kind is reserved.
+An integration-platform test SHALL reach the app through a harness: a base harness per app that launches the app on its platform and arranges the fakes, and one harness per entry point (a route file for an API, a page for a UI) whose public methods are named after the domain. The harness SHALL be the only test code that knows the app's framework and how the app is launched.
+
+#### Scenario: Framework replaced
+
+- **WHEN** an app's web framework is replaced
+- **THEN** its base harness is rewritten and no `*.integration-platform.*` file changes
+
+#### Scenario: Entry point
+
+- **WHEN** an API gains a new route file
+- **THEN** it gains one harness whose methods name the domain actions the routes expose
+
+### Requirement: Integration-platform tests are flat
+
+An integration-platform test SHALL hold only Arrange, Act and Assert steps over harness methods, SHALL launch its harness itself with `await using`, and SHALL keep every assertion in the test, never inside the harness. No `beforeEach` or `afterEach` SHALL manage a harness.
+
+#### Scenario: Test shape
+
+- **WHEN** an integration-platform test is read
+- **THEN** it launches the harness with `await using`, calls domain-named methods and asserts with `expect`, with at most one `describe` level grouping the cases
+
+### Requirement: An API harness drives the real server over HTTP
+
+The base harness of an API SHALL launch the app's real composition root on an ephemeral loopback port inside the test process and send requests to it with the standard `fetch`. It SHALL rebind each use case a test arranges to a fake that returns the arranged result and records its calls, bind the configuration to constants, and rebind the platform ports (database, cache, HTTP client) to guards that fail naming the port. It SHALL close the server when the test scope ends.
+
+#### Scenario: Route contract
+
+- **WHEN** a test arranges the update use case to return an item and calls `PUT /portfolio-items/:id` with a body
+- **THEN** the response carries the serialized item and the fake records the id from the path and the input the route built from the body
+
+#### Scenario: Unarranged use case
+
+- **WHEN** a route resolves a use case no test arranged
+- **THEN** the request fails at once naming the platform port it reached, and no database or cache is contacted
+
+#### Scenario: Scope ends
+
+- **WHEN** the test's scope ends, by success or failure
+- **THEN** the server is closed and its port released before the next test launches
+
+### Requirement: E2E tests run against staging
+
+An e2e test SHALL drive staging from the system's outermost edge and SHALL fake nothing, third-party APIs included. No e2e tests exist yet; this kind is reserved.
 
 #### Scenario: Reserved kind
 
 - **WHEN** a project adds its first e2e test
-- **THEN** it runs against a deployed test environment with a seeded database, never against fakes
+- **THEN** it runs against staging with its seeded database, never against fakes
+
+#### Scenario: Third-party API
+
+- **WHEN** an e2e test lists quotes
+- **THEN** Finnhub answers for real
+
+### Requirement: Load tests run against staging
+
+A load test SHALL drive staging under a declared profile: average-load, stress, spike, soak or breakpoint. It SHALL fail on a declared threshold, such as p95 latency or error rate, never on inspection; SHALL fake only the third-party APIs it may not load; and SHALL NOT run in pull-request CI, only scheduled or on demand. Every app with a server process SHALL carry load tests once staging exists. No load tests exist yet; this kind is reserved, and its tool is chosen when staging exists.
+
+#### Scenario: Reserved kind
+
+- **WHEN** a project adds its first load test
+- **THEN** it runs against staging under a named profile and fails only on a declared threshold
+
+#### Scenario: Third-party API
+
+- **WHEN** a load test exercises the quote routes
+- **THEN** Finnhub is faked while the API, Postgres and Redis run for real
+
+#### Scenario: Pull request
+
+- **WHEN** a pull request runs CI
+- **THEN** no load test runs
 
 ### Requirement: Type tests guard the public types of libraries
 
@@ -78,7 +144,7 @@ A published library that exports public types SHALL guard them with `*.test-d.ts
 
 ### Requirement: Each project category carries its required kinds
 
-Each project SHALL belong to one category and carry the kinds of test that category requires: a business package carries unit tests for its models and integration tests per use case; a library, published or platform, carries unit tests for its internals and integration tests through its public API; an app carries integration-platform tests; a plugin with code carries unit tests.
+Each project SHALL belong to one category and carry the kinds of test that category requires: a business package carries unit tests for its models and integration tests per use case; a library, published or platform, carries unit tests for its internals and integration tests through its public API; an app carries integration-platform tests, and load tests once staging exists if it has a server process; a plugin with code carries unit tests.
 
 #### Scenario: Business package
 
@@ -129,7 +195,7 @@ Every library published to a registry SHALL be used by at least one app or packa
 
 ### Requirement: Each kind has one name everywhere
 
-A kind's file suffix, Vitest project name and script name SHALL use the same token: `unit` for `*.test.{ts,tsx}`, `integration` for `*.integration.{ts,tsx}`, `integration-platform` for `*.integration-platform.{ts,tsx}`, `types` for `*.test-d.ts`. A project that splits a kind by side SHALL name its Vitest projects `<kind>:<side>`.
+A kind's file suffix, Vitest project name and script name SHALL use the same token: `unit` for `*.test.{ts,tsx}`, `integration` for `*.integration.{ts,tsx}`, `integration-platform` for `*.integration-platform.{ts,tsx}`, `types` for `*.test-d.ts`. A project that splits a kind by side SHALL name its Vitest projects `<kind>:<side>`. The reserved kinds, e2e and load, get their token with their first test.
 
 #### Scenario: Integration-platform file
 

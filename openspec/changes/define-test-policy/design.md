@@ -9,6 +9,7 @@ See proposal.md for the motivation. This change stacks on `ci-nx-cache`, which s
 - **The owner's grill of 2026-10-17/18**, recorded in `docs/GLOSSARY.md` (Workspace context).
 - **ADR 0006 and ADR 0007**: use-case integration tests inside module packages. They are amended, not replaced.
 - **The work-fleet convention** (beads `WebstormProjects-tdhc.13` and eci-av `docs/adr/0001-four-test-kinds.md`): four kinds, with integration-platform faking the use cases. The name `integration-platform` was settled in this grill and posted back to tdhc.13.
+- **The owner's grill of 2026-10-18 on the API harness and load tests.** The harness follows the fleet's pattern (prowler `BrowserHarness`, eci-av page suites): the harness owns fakes, DI rebinds and launch; tests call domain-named methods; assertions stay in the test. Two monolab variants are posted back to tdhc.13: APIs are driven over real HTTP, and the lifecycle uses `await using` instead of `onTestFinished`.
 
 **Baseline, measured 2026-10-17:**
 
@@ -41,9 +42,10 @@ See proposal.md for the motivation. This change stacks on `ci-nx-cache`, which s
 **Non-Goals:**
 
 - Writing missing tests. That includes integration-platform tests for the investlab web, qup-web and qup-api, integration tests for libraries that lack them, and Stryker for the projects without it. They come later, one change at a time.
-- Deciding how integration-platform tests call an API. `app.request()` stays until the owner's separate grill settles it.
+- The UI harness. The rule applies to it (base harness, one harness per page, `await using`); its concrete design waits for the first UI integration-platform test.
 - Running tests from package sources (`@m0n0lab/source`). That is measured first, in a beads task.
-- E2E infrastructure.
+- Staging, and with it e2e and load infrastructure and the load-test tool.
+- Frontend performance budgets (web vitals, bundle size, requests per page). They are single-user and deterministic, so they are not load tests; they are named here only so nobody files them under load.
 
 ## Decisions
 
@@ -51,7 +53,7 @@ See proposal.md for the motivation. This change stacks on `ci-nx-cache`, which s
 
 The policy lives in three places, each with one job:
 
-- **`docs/adr/0008-test-policy.md`**: the decision and its reasons, the category matrix, the app-unit exception list (empty) and the legacy groups with their issue IDs.
+- **`docs/adr/0008-test-policy.md`**: the decision and its reasons, the category matrix, the app-unit exception list (empty), the legacy groups with their issue IDs, the harness pattern with the base harness and one reference suite named as the living guide (no separate harness guide), and the reserved load kind with its prerequisites and the issue holding the tool comparison.
 - **The `test-policy` spec**: the testable requirements.
 - **One line in `AGENTS.md`**, approved verbatim by the owner. Everything else an agent finds through the ADR.
 
@@ -68,12 +70,12 @@ ADR 0006's status becomes `amended by ADR-0007, ADR-0008`. ADR 0008 states that 
 
 | Project | Files | Becomes |
 |---|---|---|
-| apps/investlab-api | `routes/*.routes.test.ts` (3) | Rename to `*.routes.integration-platform.ts`. The harness binds faked use cases instead of real ones over in-memory repositories. |
-| | `testing/test-app.ts` | Rewritten to bind a fake per use-case token. |
-| | `testing/in-memory-portfolio.ts` | Deleted. |
-| | `app.test.ts` | Its `/health`, missing-token and unknown-route cases move to `app.integration-platform.ts` on the new harness. Its cases that wrap `handleError` in a standalone Hono are dropped, because the route tests assert error mapping through real routes. |
+| apps/investlab-api | `routes/*.routes.test.ts` (3) | Rename to `*.routes.integration-platform.ts`, rewritten flat on one harness per route file. |
+| | `testing/test-app.ts` | Replaced by `testing/base-api-harness.ts` and `routes/*.harness.ts` (see "How integration-platform tests reach an API"). |
+| | `testing/in-memory-portfolio.ts` | Deleted. Its builders (`makeInstrument` and friends) move to `@m0n0lab/investlab-portfolio/testing` and `@m0n0lab/investlab-quotes/testing`. |
+| | `app.test.ts` | Its `/health`, missing-token and unknown-route cases move to `app.integration-platform.ts` on the base harness. Its cases that wrap `handleError` in a standalone Hono are dropped, because the route tests assert error mapping through real routes. |
 | | `errors/error-mapping.test.ts`, `middleware/bearer-auth.test.ts`, `serializers/dto-serializers.test.ts` | Deleted once the integration-platform tests cover their files at least as well as before. |
-| | `container.test.ts` | Legacy. No test of the right kind exercises the container wiring until E2E exists. |
+| | `container.test.ts` | Deleted. The base harness launches the real `createContainer()`, so every integration-platform test exercises the container wiring. |
 | apps/investlab | all 9 `*.test.ts(x)` | Legacy. |
 | apps/qup-api | all 3 `*.test.ts` | Legacy. |
 | packages/qup-domain | `entities/*`, `value-objects/*` (5) | Unit, unchanged. |
@@ -81,8 +83,10 @@ ADR 0006's status becomes `amended by ADR-0007, ADR-0008`. ADR 0008 states that 
 | packages/investlab-portfolio | `domain/**` (3) | Unit, unchanged. |
 | | `data/contracts/*.dto.test.ts` (3), `data/server/*.mapper.test.ts` (2) | Legacy. |
 | | `*.integration.ts` (16) | Unchanged. The Vitest projects become `integration:server` and `integration:client`. |
+| | `src/testing/` (new) | Test-data builders moved from investlab-api, exported through a `./testing` subpath. Excluded from coverage. |
 | packages/investlab-quotes | `quote.dto.test.ts`, `batch.test.ts` | Legacy. |
 | | `*.integration.ts` (2) | Unchanged; the Vitest projects are renamed as in portfolio. |
+| | `src/testing/` (new) | Quote builders, as in portfolio. |
 | packages/investlab-core | `errors.test.ts`, `errors.test-d.ts` | Unchanged (`RemotePortError<E>` is a shared generic). |
 | | `api-error.dto.test.ts` | Legacy. |
 | packages/investlab-platform | `investlab-api-client.test.ts`, `shared/http-client.test.ts` (MSW) | Rename to `*.integration.ts`, in a new `integration` Vitest project. |
@@ -97,6 +101,56 @@ ADR 0006's status becomes `amended by ADR-0007, ADR-0008`. ADR 0008 states that 
 Everything else (solid-clean, ts-types, the experiments plugin and the remaining library tests) stays as it is.
 
 Legacy renames keep the `.test.ts` ending (`foo.legacy.test.ts`), so the unit project still collects them, coverage and Stryker keep excluding them as test files, and they keep running until they are replaced.
+
+### How integration-platform tests reach an API
+
+The test must not know the framework, and the test code that does know it must be one file per app. The fleet's harness pattern gives that shape:
+
+```text
+BaseApiHarness (apps/investlab-api/src/testing/base-api-harness.ts)
+  launch(): createContainer() -> rebind PLATFORM.Config to constants
+            -> rebind PLATFORM.Db / Redis / HttpClient to boundary guards
+            -> serve on 127.0.0.1:0 -> url
+  [Symbol.asyncDispose] / close(): idempotent
+  protected: request(path, init) with the bearer token, json(), fake(TOKEN)
+  the only test code that imports hono, @hono/node-server or inversify
+
+PortfolioItemsHarness / InstrumentsHarness / QuotesHarness (routes/*.harness.ts)
+  public, domain-named: givenItems([...]), givenListFails(error), listItems(),
+  createItem(dto), updateItem(id, dto); return the Response or the DTO parsed
+  with its zod schema; no expect inside
+
+test (*.routes.integration-platform.ts)
+  await using api = await PortfolioItemsHarness.launch();
+  // Arrange / Act / Assert over harness methods, schemas and expect
+  /health, auth and 404 cases use BaseApiHarness directly (app.integration-platform.ts)
+```
+
+- **Real server, real HTTP.** The harness starts the app on an ephemeral loopback port in the Vitest worker and tests use the standard `fetch`. Same process, so fakes bind per test and coverage counts the server. It exercises what in-process calls skip: the Node adapter, real headers, streamed bodies, SSE and client disconnects (qup-api will need those). Start costs about a millisecond.
+    - *`app.request()` (today)*: rejected. Hono's own API in every test file.
+    - *`app.fetch(new Request())`*: rejected. Standard, but only frameworks with a fetch handler offer it, and nothing crosses a socket.
+    - *supertest, light-my-request, pactum*: rejected. Node-only or their own DSL, for nothing `fetch` lacks.
+    - *Hurl, Bruno, Playwright `request`*: rejected for this kind. Black box in another process: no fakes per test, no coverage. Fit for e2e.
+- **Real composition root.** `launch()` calls the app's `createContainer()` and rebinds, instead of building a container of fakes by hand. The container's bindings connect on first use, so faking the use cases before the first request keeps Postgres and Redis untouched and Docker out. Every test then runs the real module registration, which retires `container.test.ts`. `PLATFORM.Config` is rebound to constants because `ProcessEnvConfig` reads `process.env`.
+    - *Hand-built container (today)*: rejected. It tests a wiring production never runs.
+- **Boundary guard.** The three platform ports are rebound to fakes that throw `system boundary reached: PLATFORM.Db` on first use. A use case a test forgot to arrange fails at once with a stack trace naming the route, instead of a Postgres connection timeout. It is MSW's `onUnhandledRequest: error` at the system boundary, and it covers new use cases without a list to maintain.
+    - *A "not arranged" fake per use-case token*: rejected. Better message, but a token list that must grow with every use case.
+- **Fakes record calls.** With the use case faked, the response proves only the route's output side. `api.itemUpdate.calls` proves the input side: the id taken from the path, the body turned into the use-case input, `notes: null` dropped rather than passed. Together they are the route's whole contract; the package mappers below the use case belong to the integration tests.
+- **Lifecycle with `await using`.** The harness implements `Symbol.asyncDispose`; a test opens it with `await using` and the server closes when the scope ends, on failure too. It is a language feature (Node 24 runs it natively, TypeScript 6 types it with `ESNext.Disposable` in `lib`), it shows the resource's lifetime in the test, and it works outside Vitest. No `beforeEach`/`afterEach` for harnesses; one `describe` level at most.
+    - *`onTestFinished` registered inside `launch()` (eci-av)*: rejected. Zero ceremony, but it ties the base harness to Vitest and hides the lifetime. A test that writes `const` instead of `await using` leaks a port, which shows as a hanging worker on the first run; `close()` is idempotent so a test may also close early.
+    - *`test.extend` fixtures*: rejected. Same coupling, plus a custom `it` import.
+- **Builders in the owning package.** Test-data builders live next to the entities they build, exported through a `./testing` subpath of investlab-portfolio and investlab-quotes, so the investlab web's harness reuses them. They are excluded from coverage like every `**/testing/**`.
+- **No lint rule** forbidding framework imports in tests. The pattern is applied and corrected in review; agents copy the reference suite. The ADR names `base-api-harness.ts` and `portfolio-items.routes.integration-platform.ts` as the living guide.
+
+### Load tests are reserved
+
+- **Why reserved.** Load figures only mean something against a stable deployment like production, and none exists: there is no staging, only local docker-compose. GitHub runners are shared, so a threshold there fails at random. The policy records the kind and its rules now so the first load test lands in the right shape; the tool is chosen when staging exists.
+- **One kind, five profiles.** `load test` is the kind; average-load, stress, spike, soak and breakpoint are profiles a test declares. "Stress" is one profile, not the kind; "performance test" would also cover benchmarks and web vitals.
+- **Staging.** The deployment e2e and load tests run against, with a database seeded for tests. The glossary keeps `test environment` for Node-or-browser, so the deployment gets its own word.
+- **What is faked.** Only third-party APIs that may not be loaded: Finnhub has a rate limit and terms of use, so its fake stands in. E2E keeps Finnhub real, since a small e2e suite fits the free tier and it is the only test that notices a contract change. That difference is why load is a kind of its own rather than an e2e profile.
+- **Which projects.** Every app with a server process: investlab-api, qup-api and the three SSR webs (investlab on React Router, qup-web on SolidStart, green-beard on SvelteKit). Risk orders the rollout: qup-api first, with its opening-time burst and its SSE connections over an in-memory event bus. A static SPA would carry none; what it needs is a performance budget, which is not load.
+- **Never in PR CI.** Scheduled or on demand against staging. A SLO failing a pull request on runner noise is the classic mistake.
+- **Tool.** Deferred to a beads issue blocked by staging; it holds the comparison. Candidates as of 2026-10-18: Artillery 2.0.34 (npm, YAML plus TypeScript processors, `ensure` thresholds, reuses the zod schemas, SSE through a processor), k6 2.3.0 (Go binary, highest throughput per machine, no npm imports, SSE only through an xk6 build), Gatling JS (native SSE, JVM underneath). Artillery fits the toolchain best today; k6 is the fallback if the generator runs short.
 
 ### Vitest projects and scripts
 
@@ -157,6 +211,10 @@ Legacy renames keep the `.test.ts` ending (`foo.legacy.test.ts`), so the unit pr
 - [Thresholds for Docker-backed packages are unknown until CI runs] → They are set from the PR's own CI measurement before merge, never guessed.
 - [Renamed or deleted helpers trip knip or fallow] → Run `pnpm nx run-many -t lint` and `pnpm run lint:fallow` after each group of moves.
 - [Archiving `add-mutation-testing` syncs a spec describing outdated per-type thresholds] → This change modifies those requirements in the same stack, before anyone builds on them.
+- [A test opens the harness with `const` and leaks the server] → `close()` is idempotent and the worker hangs visibly on the first run; the reference suite shows `await using`.
+- [A route resolves a use case the test did not arrange] → The boundary guard fails the request at once naming the port; nothing reaches Postgres or Redis.
+- [The real composition root pulls in `varlock/auto-load` or env reads at launch] → `createContainer()` only binds; `index.ts` keeps the env loading and signal handlers, and the harness rebinds `PLATFORM.Config` before any request.
+- [The harness diverges from the fleet's `onTestFinished` lifecycle] → Posted to tdhc.13 as the monolab variant, with the reason.
 
 ## Migration Plan
 
@@ -166,4 +224,4 @@ Legacy renames keep the `.test.ts` ending (`foo.legacy.test.ts`), so the unit pr
 
 ## Open Questions
 
-- How integration-platform tests call the API (in-process `app.request()` or a started server). It is decided in the owner's separate grill and then applied to the investlab-api harness. The specs say "a request to its API" and do not change either way.
+None. The API harness question was settled in the 2026-10-18 grill (see "How integration-platform tests reach an API").

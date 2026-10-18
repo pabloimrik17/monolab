@@ -7,15 +7,17 @@
 ## 2. Policy documents
 
 - [ ] 2.1 Write `docs/adr/0008-test-policy.md`:
-    - the decision and its reasons, the four kinds plus type tests, and the category matrix;
+    - the decision and its reasons, the five kinds plus type tests, and the category matrix (apps with a server process also carry load tests once staging exists);
     - the app-unit exception list (empty);
+    - the harness pattern: base harness per app, one harness per entry point, `await using`, assertions in the test; for APIs the real composition root, boundary guards and fakes that record calls; `apps/investlab-api/src/testing/base-api-harness.ts` and `portfolio-items.routes.integration-platform.ts` named as the living guide, no separate harness doc;
+    - the reserved load kind: profiles, thresholds, never in PR CI, third-party APIs faked, its prerequisites (staging with a seeded database, a Finnhub fake, SLOs) and the issue holding the tool comparison (from 9.1); one line stating that frontend performance budgets are not load tests;
     - the legacy groups with their issue IDs (filled in by 9.1);
     - that it amends ADR 0006.
 
     Verify with `pnpm nx run @m0n0lab/source:lint:markdownlint`.
 - [ ] 2.2 Set ADR 0006's frontmatter status to `amended by ADR-0007, ADR-0008`; verify that the file renders and passes markdownlint
 - [ ] 2.3 Add to `AGENTS.md` exactly the owner-approved line `Write the fewest tests that run the most real code. Full policy: [ADR 0008](docs/adr/0008-test-policy.md).` and nothing else; verify with `git diff AGENTS.md`, which should show one added line
-- [ ] 2.4 Check that `docs/GLOSSARY.md` (Workspace context, written during the grill) and its `GLOSSARY-MAP.md` entry pass markdownlint and match the terms used in ADR 0008
+- [ ] 2.4 Check that `docs/GLOSSARY.md` (Workspace context, written during the grills; includes Harness, Load test and Staging) and its `GLOSSARY-MAP.md` entry pass markdownlint and match the terms used in ADR 0008
 
 ## 3. Shared tooling
 
@@ -27,6 +29,7 @@
 
     Verify with `pnpm nx run @m0n0lab/ts-types:test:mutation` (score 100, no dashboard upload without the key).
 - [ ] 3.3 Add `docs/legacy-tests.txt` (empty for now) and the root script `lint:legacy-tests` (`git ls-files '*.legacy.test.*' | diff docs/legacy-tests.txt -`). Add it to root `nx.includedScripts`, with its Nx metadata in the root `project.json`. Verify that `pnpm nx run @m0n0lab/source:lint:legacy-tests` passes, and fails after a temporary `touch x.legacy.test.ts && git add x.legacy.test.ts`; undo the temporary file.
+- [ ] 3.4 ts-configs: add `ESNext.Disposable` to `lib` in `tsconfig.base.json` and `tsconfig.web.base.json` so `Symbol.asyncDispose` and `await using` type-check. Verify with `pnpm nx run-many -t typecheck`.
 
 ## 4. Libraries
 
@@ -54,18 +57,20 @@
 
     Append the paths to `docs/legacy-tests.txt` and keep it sorted. Verify that `pnpm nx run @m0n0lab/source:lint:legacy-tests` passes and that `pnpm nx run-many -t test:unit -p <those packages>` runs the same number of tests as before.
 - [ ] 5.3 Set `coverage.include`/`exclude`, thresholds and the aggregate and per-kind scripts for investlab-core, investlab-portfolio, investlab-quotes, qup-domain, qup-data and qup-shared. Set qup-domain's Stryker override to `low: 75, break: 75`. Verify that `pnpm nx run-many -t test:coverage` passes for the non-Docker packages locally and for all of them in CI.
+- [ ] 5.4 investlab-portfolio and investlab-quotes: add `src/testing/` with the test-data builders moved from investlab-api's `in-memory-portfolio.ts` (`makeInstrument`, a portfolio item builder, a quote builder) and export it through a `./testing` subpath in `package.json` (both private, no attw). Add `**/testing/**` to their `coverage.exclude`. Verify with `pnpm nx run-many -t typecheck -p @m0n0lab/investlab-portfolio @m0n0lab/investlab-quotes` and that `test:coverage` lists no `testing/` file.
 
 ## 6. Apps
 
-- [ ] 6.1 investlab-api harness:
-    - rewrite `src/testing/test-app.ts` to bind a fake per use-case token (`PORTFOLIO.*`, `QUOTES.List`) whose results each test arranges;
-    - delete `src/testing/in-memory-portfolio.ts`;
-    - `git mv` the three route tests to `*.routes.integration-platform.ts` and adapt their arrange steps.
+- [ ] 6.1 investlab-api harness (design.md, "How integration-platform tests reach an API"):
+    - write `src/testing/base-api-harness.ts`: `launch()` calls the real `createContainer()`, rebinds `PLATFORM.Config` to constants and `PLATFORM.Db`, `PLATFORM.Redis`, `PLATFORM.HttpClient` to guards that throw `system boundary reached: <port>`, starts the app with `@hono/node-server` on `127.0.0.1:0` and returns the URL; `fake(TOKEN)` rebinds a use case to a fake that returns an arranged result and records `calls`; `[Symbol.asyncDispose]` and an idempotent `close()`; protected `request`/`json` adding the bearer token. It is the only test file importing `hono`, `@hono/node-server` or `inversify`;
+    - write one harness per route file (`src/routes/portfolio-items.harness.ts`, `instruments.harness.ts`, `quotes.harness.ts`) with domain-named methods that return the `Response` or the DTO parsed with its zod schema, no `expect` inside;
+    - `git mv` the three route tests to `*.routes.integration-platform.ts` and rewrite them flat: `await using api = await <Harness>.launch()`, Arrange/Act/Assert, one `describe` level at most, no `beforeEach`/`afterEach`; success cases assert status, body and the fake's `calls`, error cases assert the mapped status and body;
+    - delete `src/testing/test-app.ts` and `src/testing/in-memory-portfolio.ts` (builders moved in 5.4).
 
-    Verify with `pnpm nx run @m0n0lab/investlab-api:test:integration-platform`.
-- [ ] 6.2 investlab-api: move `app.test.ts`'s `/health`, missing-token and unknown-route cases into `src/app.integration-platform.ts` and delete `app.test.ts`. Verify that the new file passes and that the dropped cases only wrapped `handleError` in a standalone Hono.
+    Verify with `pnpm nx run @m0n0lab/investlab-api:test:integration-platform`, and that a test which deliberately skips `fake()` fails naming `PLATFORM.Db` without any Docker running.
+- [ ] 6.2 investlab-api: move `app.test.ts`'s `/health`, missing-token and unknown-route cases into `src/app.integration-platform.ts` on `BaseApiHarness` and delete `app.test.ts`. Verify that the new file passes and that the dropped cases only wrapped `handleError` in a standalone Hono.
 - [ ] 6.3 investlab-api: compare coverage of `errors/error-mapping.ts`, `middleware/bearer-auth.ts` and `serializers/dto-serializers.ts` between the old unit run and the new integration-platform run. Delete the three unit tests only when the new run covers each file at least as well, and add the missing route assertions first if not. Verify by attaching both coverage summaries to the PR.
-- [ ] 6.4 investlab-api: `git mv src/container.test.ts src/container.legacy.test.ts` and add it to `docs/legacy-tests.txt`. Define `unit` and `integration-platform` Vitest projects with their scripts. Verify that `pnpm nx run @m0n0lab/investlab-api:test` runs both.
+- [ ] 6.4 investlab-api: delete `src/container.test.ts` (every integration-platform test now launches the real `createContainer()`). Define a single `integration-platform` Vitest project with its scripts (`test:integration-platform`, `:watch`, `:coverage`, `:changed`); no `unit` project, since no unit test remains. Verify that `pnpm nx run @m0n0lab/investlab-api:test` runs only that project and that `git grep -n "container.test" apps/investlab-api` returns nothing.
 - [ ] 6.5 investlab web and qup-api: `git mv` all their `*.test.ts(x)` to `*.legacy.test.ts(x)` and add them to `docs/legacy-tests.txt`; verify that `pnpm nx run-many -t test -p @m0n0lab/investlab @m0n0lab/qup-api` passes with the same test count
 - [ ] 6.6 Set `coverage.include`/`exclude` and thresholds for investlab, investlab-api, qup-api, qup-web and green-beard (TypeScript sources only for green-beard; `.svelte` files cannot be parsed by v8 coverage there). Verify that `pnpm nx run-many -t test:coverage -p <apps>` passes.
 - [ ] 6.7 Delete `apps/demo`, the root `demo:dev` script and its lockfile entries (`pnpm install`). Move its codecov-plugin cast note into `apps/investlab/vite.config.ts` and point `apps/green-beard/vite.config.ts` at it. Verify that `git grep -n "apps/demo\|@m0n0lab/demo"` returns nothing outside `openspec/` and that `pnpm nx run-many -t build` passes.
@@ -101,12 +106,14 @@
 ## 9. Thresholds and tracking
 
 - [ ] 9.1 Create the tracker issues through the labelling skill:
-    - one per legacy group (qup-domain use cases; investlab web; qup-api; investlab-api container; DTO, mapper and batch tests in investlab packages);
+    - one per legacy group (qup-domain use cases; investlab web; qup-api; DTO, mapper and batch tests in investlab packages);
     - one per dogfooding gap (react-clean, http-client);
     - the `@m0n0lab/source` test-resolution measurement;
-    - Stryker for the projects with tests that lack it.
+    - Stryker for the projects with tests that lack it;
+    - staging (a deployment with a seeded database and a Finnhub fake; prerequisite of e2e and load);
+    - the load-test tool choice, blocked by the staging issue, with the design.md candidate comparison (Artillery, k6, Gatling JS) in its description.
 
-    Write the legacy issue IDs into ADR 0008, and verify that each issue ID in the ADR resolves with `bd show`.
+    Write the legacy and load-tool issue IDs into ADR 0008, and verify that each issue ID in the ADR resolves with `bd show`.
 - [ ] 9.2 From the PR's CI coverage run, set the thresholds of investlab-portfolio, investlab-quotes, investlab-api and the experiments plugin, and recheck the provisional floors of every other project against the measured values, using the spec rule (80, or measured rounded down to a multiple of 5). Verify that the next CI run's `test:coverage` passes on all projects.
 
 ## 10. Final checks
@@ -117,5 +124,5 @@
 ## Workflow follow-up
 
 - This change stacks on `ci-nx-cache` in the same PR stack and merges after it.
-- The owner's separate grill on how integration-platform tests call an API updates this change, or a follow-up change, with the chosen tool.
+- The UI harness is designed with the first UI integration-platform test, in its own change.
 - Archive after merge; a possible third proposal migrates the investlab web's hand-written view model to react-clean, which would also close react-clean's dogfooding gap.
