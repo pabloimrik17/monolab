@@ -18,8 +18,7 @@
         "test:unit": "vitest run",
         "test:unit:changed": "vitest run --changed",
         "test:unit:watch": "vitest",
-        "test:unit:coverage": "vitest run --coverage",
-        "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
+        "test:unit:coverage": "vitest run --coverage"
     },
     "dependencies": {
         "@hono/node-server": "2.0.10",

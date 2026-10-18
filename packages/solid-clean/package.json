@@ -44,8 +44,7 @@
         "test:unit:watch": "vitest",
         "test:unit:coverage": "vitest run --coverage",
         "test:mutation": "stryker run",
-        "test:mutation:report": "open reports/mutation/index.html",
-        "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
+        "test:mutation:report": "open reports/mutation/index.html"
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "catalog:",
