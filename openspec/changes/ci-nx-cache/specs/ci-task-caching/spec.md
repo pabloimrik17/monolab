@@ -8,18 +8,18 @@ Defines how CI runs and developer machines reuse Nx task results, so unchanged w
 
 ### Requirement: Deterministic targets are cacheable
 
-Every Nx target whose result depends only on its declared inputs SHALL be cacheable, with inputs that include everything it reads and outputs that include everything it writes. The targets that depend on git state, run continuously, are interactive, touch a database or analyse the whole repository SHALL stay uncached.
+Every Nx target whose result depends only on its declared inputs SHALL be cacheable, with inputs that include everything it reads and outputs that include everything it writes. The targets that depend on git state, run continuously, are interactive, rewrite source files, touch a database or analyse the whole repository SHALL stay uncached.
 
 #### Scenario: Cached targets
 
 - **WHEN** `NX_DAEMON=false pnpm nx show project <name> --json` is run for any project
-- **THEN** its `build`, `build:check-exports`, `typecheck` and `lint:*` targets, except `lint:fallow`, have `cache: true`
+- **THEN** its `build`, `build:check-exports`, `typecheck` and `lint:*` targets, except `lint:fallow` and `*:fix`, have `cache: true`
 - **AND** every `test` or `test:*` target has `cache: true`, except `*:changed`, `*:watch`, `test:ui` and `test:mutation:report`
 
 #### Scenario: Deliberately uncached targets
 
 - **WHEN** the same command is run
-- **THEN** `*:changed`, `*:watch`, `test:ui`, `db:*`, `dev`, `test:mutation:report` and `lint:fallow` targets have no `cache: true`
+- **THEN** `*:changed`, `*:watch`, `*:fix`, `test:ui`, `db:*`, `dev`, `test:mutation:report` and `lint:fallow` targets have no `cache: true`
 
 #### Scenario: Second run is served from cache
 

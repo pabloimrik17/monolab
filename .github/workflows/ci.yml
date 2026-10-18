@@ -14,7 +14,7 @@ permissions:
     contents: read
 
 jobs:
-    main:
+    lint:
         runs-on: ubuntu-latest
         permissions:
             actions: read
@@ -24,13 +24,6 @@ jobs:
             checks: write
         env:
             NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-            # Set to 'true' to disable Nx Cloud when monthly limit is reached
-            NX_NO_CLOUD: ${{ vars.NX_NO_CLOUD }}
-        outputs:
-            # JSON array of { name, path } objects — the upload-codecov matrix is built
-            # from this. PR: only affected packages; push: all packages. Empty ([]) when
-            # no covered package is affected, which skips the upload-codecov job entirely.
-            matrix: ${{ steps.affected-codecov.outputs.matrix }}
         steps:
             - name: Checkout code
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -45,41 +38,15 @@ jobs:
               uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
                   node-version-file: .nvmrc
-                  # Cache node_modules
-                  cache: "pnpm"
 
             - name: Set Nx SHA
               uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
-
-            - name: Debug Nx Cloud variable
-              run: |
-                  echo "NX_NO_CLOUD variable: '${{ vars.NX_NO_CLOUD }}'"
-                  echo "NX_NO_CLOUD env: '${{ env.NX_NO_CLOUD }}'"
-
-            # This enables task distribution via Nx Cloud
-            # Run this command as early as possible, before dependencies are installed
-            # Learn more at https://nx.dev/ci/reference/nx-cloud-cli#npx-nxcloud-startcirun
-            - name: Start Nx Cloud CI Run
-              if: ${{ env.NX_NO_CLOUD != 'true' }}
-              # --stop-agents-after must match the last distributed target of the run.
-              # On push to main/develop the test:mutation step runs after build, so agents
-              # must survive past it; on other events mutation is skipped and we stop at build.
-              run: |
-                  if [ "${{ github.event_name }}" = "push" ] && \
-                     { [ "${{ github.ref_name }}" = "main" ] || [ "${{ github.ref_name }}" = "develop" ]; }; then
-                    STOP_AFTER="test:mutation"
-                  else
-                    STOP_AFTER="build"
-                  fi
-                  pnpm dlx nx-cloud start-ci-run --distribute-on="3 linux-medium-js-playwright" --stop-agents-after="$STOP_AFTER"
 
             - name: Restore cached npm dependencies
               id: cache-dependencies-restore
               uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
-                  path: |
-                      node_modules
-                      ~/.cache/Cypress # needed for the Cypress binary
+                  path: node_modules
                   key: npm-dependencies-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}
                   restore-keys: |
                       npm-dependencies-${{ runner.os }}-${{ github.ref_name }}-
@@ -91,56 +58,25 @@ jobs:
 
             - name: Cache npm dependencies
               id: cache-dependencies-save
+              if: ${{ steps.cache-dependencies-restore.outputs.cache-hit != 'true' }}
               uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
-                  path: |
-                      node_modules
-                      ~/.cache/Cypress # needed for the Cypress binary
+                  path: node_modules
                   key: ${{ steps.cache-dependencies-restore.outputs.cache-primary-key }}
 
-            # Nx agents get Chromium from .nx/workflows/agents.yaml; this covers tasks that run
-            # on this runner (Nx Cloud unavailable or NX_CLOUD_DISTRIBUTED_EXECUTION=false).
-            - name: Get Playwright version
-              id: playwright-version
-              run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
-
-            - name: Cache Playwright browsers
-              id: cache-playwright
-              uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-              with:
-                  path: ~/.cache/ms-playwright
-                  key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
-
-            - name: Install Playwright Chromium
-              if: ${{ steps.cache-playwright.outputs.cache-hit != 'true' }}
-              run: pnpm exec playwright install --with-deps chromium
-
-            - name: Install Playwright system dependencies
-              if: ${{ steps.cache-playwright.outputs.cache-hit == 'true' }}
-              run: pnpm exec playwright install-deps chromium
-
+            # The whole .nx is cached so the cache index in .nx/workspace-data travels with
+            # the entries. Every job uses its own key per commit: cache entries are immutable,
+            # so a fixed key would never refresh, and a shared one would let jobs overwrite
+            # each other.
             - name: Restore Nx cache
               id: cache-nx-restore
-              if: ${{ env.NX_NO_CLOUD == 'true' }}
               uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: .nx
-                  key: nx-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('nx.json') }}
+                  key: nx-${{ runner.os }}-lint-${{ github.ref_name }}-${{ github.sha }}
                   restore-keys: |
-                      nx-${{ runner.os }}-${{ github.ref_name }}-
-                      nx-${{ runner.os }}-develop-
-                      nx-${{ runner.os }}-
-
-            - name: Restore Stryker incremental cache
-              id: cache-stryker-restore
-              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-              with:
-                  path: packages/*/reports/stryker-incremental.json
-                  key: stryker-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}
-                  restore-keys: |
-                      stryker-${{ runner.os }}-${{ github.ref_name }}-
-                      stryker-${{ runner.os }}-develop-
-                      stryker-${{ runner.os }}-
+                      nx-${{ runner.os }}-lint-${{ github.ref_name }}-
+                      nx-${{ runner.os }}-lint-develop-
 
             - name: 🔍 Check monorepo integrity
               run: pnpm exec nx sync:check
@@ -170,6 +106,93 @@ jobs:
               run: pnpm exec nx run-many -t lint:publint lint:knip lint:eslint lint:stylelint lint:markdownlint lint:oxfmt lint:fallow
               if: ${{ github.event_name == 'push' }}
 
+            - name: Cache Nx results
+              id: cache-nx-save
+              if: ${{ !cancelled() }}
+              uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: .nx
+                  key: ${{ steps.cache-nx-restore.outputs.cache-primary-key }}
+
+    tests:
+        runs-on: ubuntu-latest
+        env:
+            NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+        outputs:
+            # JSON array of { name, path } objects — the upload-codecov matrix is built
+            # from this. PR: only affected packages; push: all packages. Empty ([]) when
+            # no covered package is affected, which skips the upload-codecov job entirely.
+            matrix: ${{ steps.affected-codecov.outputs.matrix }}
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  filter: tree:0
+                  fetch-depth: 0
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+            - name: Setup Nodejs
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+              with:
+                  node-version-file: .nvmrc
+
+            - name: Set Nx SHA
+              uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+
+            - name: Restore cached npm dependencies
+              id: cache-dependencies-restore
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: node_modules
+                  key: npm-dependencies-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      npm-dependencies-${{ runner.os }}-${{ github.ref_name }}-
+                      npm-dependencies-${{ runner.os }}-develop-
+                      npm-dependencies-${{ runner.os }}-
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Cache npm dependencies
+              id: cache-dependencies-save
+              if: ${{ steps.cache-dependencies-restore.outputs.cache-hit != 'true' }}
+              uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: node_modules
+                  key: ${{ steps.cache-dependencies-restore.outputs.cache-primary-key }}
+
+            # Browser-mode vitest tests need Chromium.
+            - name: Get Playwright version
+              id: playwright-version
+              run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+            - name: Cache Playwright browsers
+              id: cache-playwright
+              uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: ~/.cache/ms-playwright
+                  key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+            - name: Install Playwright Chromium
+              if: ${{ steps.cache-playwright.outputs.cache-hit != 'true' }}
+              run: pnpm exec playwright install --with-deps chromium
+
+            - name: Install Playwright system dependencies
+              if: ${{ steps.cache-playwright.outputs.cache-hit == 'true' }}
+              run: pnpm exec playwright install-deps chromium
+
+            - name: Restore Nx cache
+              id: cache-nx-restore
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: .nx
+                  key: nx-${{ runner.os }}-tests-${{ github.ref_name }}-${{ github.sha }}
+                  restore-keys: |
+                      nx-${{ runner.os }}-tests-${{ github.ref_name }}-
+                      nx-${{ runner.os }}-tests-develop-
+
             - name: 🧪 Execute unit test checks for affected files (Affected)
               # We disable the coverage threshold for PRs because affected will only run on the files
               # that have changed and the coverage will be lower than the threshold
@@ -181,15 +204,11 @@ jobs:
               if: ${{ github.event_name == 'push' }}
 
             - name: 🧪 Execute integration test checks for affected files (Affected)
-              run: |
-                  pnpm exec nx affected -t test:integration --exclude=tag:docker
-                  NX_CLOUD_DISTRIBUTED_EXECUTION=false pnpm exec nx affected -t test:integration --exclude='*,!tag:docker'
+              run: pnpm exec nx affected -t test:integration
               if: ${{ github.event_name == 'pull_request' }}
 
             - name: 🧪 Execute integration test checks for all files (All)
-              run: |
-                  pnpm exec nx run-many -t test:integration --exclude=tag:docker
-                  NX_CLOUD_DISTRIBUTED_EXECUTION=false pnpm exec nx run-many -t test:integration -p tag:docker
+              run: pnpm exec nx run-many -t test:integration
               if: ${{ github.event_name == 'push' }}
 
             - name: 🔍 Execute type checks for affected files (Affected)
@@ -259,6 +278,99 @@ jobs:
                   if-no-files-found: warn
                   retention-days: 1
 
+            - name: Cache Nx results
+              id: cache-nx-save
+              if: ${{ !cancelled() }}
+              uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: .nx
+                  key: ${{ steps.cache-nx-restore.outputs.cache-primary-key }}
+
+    build:
+        runs-on: ubuntu-latest
+        env:
+            NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  filter: tree:0
+                  fetch-depth: 0
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+            - name: Setup Nodejs
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+              with:
+                  node-version-file: .nvmrc
+
+            - name: Set Nx SHA
+              uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+
+            - name: Restore cached npm dependencies
+              id: cache-dependencies-restore
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: node_modules
+                  key: npm-dependencies-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      npm-dependencies-${{ runner.os }}-${{ github.ref_name }}-
+                      npm-dependencies-${{ runner.os }}-develop-
+                      npm-dependencies-${{ runner.os }}-
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Cache npm dependencies
+              id: cache-dependencies-save
+              if: ${{ steps.cache-dependencies-restore.outputs.cache-hit != 'true' }}
+              uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: node_modules
+                  key: ${{ steps.cache-dependencies-restore.outputs.cache-primary-key }}
+
+            # Browser-mode Stryker runs need Chromium.
+            - name: Get Playwright version
+              id: playwright-version
+              run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+            - name: Cache Playwright browsers
+              id: cache-playwright
+              uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: ~/.cache/ms-playwright
+                  key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+            - name: Install Playwright Chromium
+              if: ${{ steps.cache-playwright.outputs.cache-hit != 'true' }}
+              run: pnpm exec playwright install --with-deps chromium
+
+            - name: Install Playwright system dependencies
+              if: ${{ steps.cache-playwright.outputs.cache-hit == 'true' }}
+              run: pnpm exec playwright install-deps chromium
+
+            - name: Restore Nx cache
+              id: cache-nx-restore
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: .nx
+                  key: nx-${{ runner.os }}-build-${{ github.ref_name }}-${{ github.sha }}
+                  restore-keys: |
+                      nx-${{ runner.os }}-build-${{ github.ref_name }}-
+                      nx-${{ runner.os }}-build-develop-
+
+            - name: Restore Stryker incremental cache
+              id: cache-stryker-restore
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: packages/*/reports/stryker-incremental.json
+                  key: stryker-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  restore-keys: |
+                      stryker-${{ runner.os }}-${{ github.ref_name }}-
+                      stryker-${{ runner.os }}-develop-
+                      stryker-${{ runner.os }}-
+
             - name: 🏗 Execute build checks
               # Builds all packages; Nx cache optimizes by skipping rebuild of non-affected packages.
               # CODECOV_TOKEN is propagated so app bundler plugins (@codecov/vite-plugin,
@@ -267,7 +379,26 @@ jobs:
                   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
               run: pnpm exec nx run-many -t build
 
+            - name: 📦 Analyze and upload bundle sizes to Codecov
+              continue-on-error: true
+              env:
+                  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+              run: |
+                  # Analyze each published package
+                  # Note: nx run-many with Nx cache avoids redundant rebuilds of non-affected packages
+                  for package in react-hooks react-clean ts-configs ts-types http-client drizzle-neverthrow solid-clean qup-shared; do
+                    if [ -d "packages/$package/dist" ]; then
+                      echo "📦 Analyzing bundle for $package..."
+                      pnpm exec bundle-analyzer packages/$package/dist \
+                        --bundle-name="$package" \
+                        --upload-token="$CODECOV_TOKEN"
+                    else
+                      echo "⚠️  Skipping $package: dist directory not found"
+                    fi
+                  done
+
             - name: 🧬 Execute mutation testing (All)
+              # --parallel=1: browser-mode Stryker runs fail when they overlap on one runner.
               run: pnpm exec nx run-many -t test:mutation --parallel=1
               if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
               env:
@@ -289,45 +420,43 @@ jobs:
                   path: packages/*/reports/mutation
                   retention-days: 30
 
-            - name: 📦 Analyze and upload bundle sizes to Codecov
-              continue-on-error: true
-              env:
-                  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-              run: |
-                  # Analyze each published package
-                  # Note: nx run-many with Nx cache avoids redundant rebuilds of non-affected packages
-                  for package in react-hooks react-clean ts-configs ts-types http-client drizzle-neverthrow solid-clean qup-shared; do
-                    if [ -d "packages/$package/dist" ]; then
-                      echo "📦 Analyzing bundle for $package..."
-                      pnpm exec bundle-analyzer packages/$package/dist \
-                        --bundle-name="$package" \
-                        --upload-token="$CODECOV_TOKEN"
-                    else
-                      echo "⚠️  Skipping $package: dist directory not found"
-                    fi
-                  done
-
             - name: Cache Nx results
               id: cache-nx-save
-              if: ${{ env.NX_NO_CLOUD == 'true' }}
+              if: ${{ !cancelled() }}
               uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: .nx
                   key: ${{ steps.cache-nx-restore.outputs.cache-primary-key }}
 
+    # The branch-protection ruleset requires one check named `main`; this job keeps that
+    # name whatever the job layout above.
+    main:
+        needs: [lint, tests, build]
+        if: always()
+        runs-on: ubuntu-latest
+        steps:
+            - name: ✅ Require lint, tests and build to pass
+              run: |
+                  echo "lint: ${{ needs.lint.result }}"
+                  echo "tests: ${{ needs.tests.result }}"
+                  echo "build: ${{ needs.build.result }}"
+                  if [ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" = "true" ]; then
+                    exit 1
+                  fi
+
     # Fan-out coverage + test-results uploads to Codecov.
-    # The matrix is built dynamically by the `main` job from the affected packages, so a
+    # The matrix is built dynamically by the `tests` job from the affected packages, so a
     # PR that touches no covered package produces an empty matrix and this job is skipped
     # (instead of failing on a missing coverage artifact). Single source of truth for the
-    # package list: the `affected-codecov` step in the `main` job.
+    # package list: the `affected-codecov` step in the `tests` job.
     upload-codecov:
-        needs: main
-        if: ${{ !cancelled() && needs.main.outputs.matrix != '' && needs.main.outputs.matrix != '[]' }}
+        needs: tests
+        if: ${{ !cancelled() && needs.tests.outputs.matrix != '' && needs.tests.outputs.matrix != '[]' }}
         runs-on: ubuntu-latest
         strategy:
             fail-fast: false
             matrix:
-                package: ${{ fromJson(needs.main.outputs.matrix) }}
+                package: ${{ fromJson(needs.tests.outputs.matrix) }}
         steps:
             - name: Download coverage artifacts
               # Tolerate a missing artifact: an affected package that produced no coverage
