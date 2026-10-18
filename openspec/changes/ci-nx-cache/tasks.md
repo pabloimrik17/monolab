@@ -7,7 +7,7 @@
 - [x] 1.3 Add `targetDefaults` in `nx.json` for `test:integration` and `test:integration:coverage` (cache, the same inputs as `test:unit`, JUnit and coverage outputs), `build:check-exports` (cache, `production` inputs) and `lint:eslint:config-check` (cache, `default` plus `{workspaceRoot}/eslint.config.ts`); verify that `pnpm nx run @m0n0lab/react-hooks:build:check-exports` and `pnpm nx run @m0n0lab/http-client:test:integration` hit the cache on a second run
 - [x] 1.4 Set `maxCacheSize` in `nx.json` and verify that `pnpm nx show projects` still loads the workspace without warnings
 - [x] 1.5 Confirm that the integration-test container images are tag-pinned (`postgres:17-alpine`, `redis:7-alpine` in the `vitest-integration-global-setup.ts` files and in `drizzle-neverthrow/src/wrap.integration.ts`) and that no setup uses `latest`
-- [ ] 1.6 Run the spec check from `ci-task-caching`: for every project, `NX_DAEMON=false pnpm nx show project <name> --json` shows `cache: true` on `build`, `build:check-exports`, `typecheck`, every `lint:*` except `lint:fallow` and `*:fix`, and every `test*` target except `*:changed`, `*:watch`, `test:ui` and `test:mutation:report`
+- [x] 1.6 Run the spec check from `ci-task-caching`: for every project, `NX_DAEMON=false pnpm nx show project <name> --json` shows `cache: true` on `build`, `build:check-exports`, `typecheck`, every `lint:*` except `lint:fallow` and `*:fix`, and every `test*` target except `*:changed`, `*:watch`, `test:ui` and `test:mutation:report`
 
 ## 2. Nx Cloud as remote cache only
 
