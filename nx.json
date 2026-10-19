@@ -153,11 +153,7 @@
                 "{workspaceRoot}/vitest.config.ts",
                 "{projectRoot}/vitest.config.ts"
             ],
-            "outputs": [
-                "{projectRoot}/test-results.junit.xml",
-                "{projectRoot}/coverage",
-                "{projectRoot}/html"
-            ]
+            "outputs": ["{projectRoot}/html", "{projectRoot}/test-results.junit.xml"]
         },
         "test:integration:changed": {
             "dependsOn": ["^build"]

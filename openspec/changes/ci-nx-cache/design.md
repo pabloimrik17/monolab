@@ -66,7 +66,7 @@ Delete the `typecheck` script from the 17 `package.json` files where it is exact
 
 ### `targetDefaults` for the remaining targets
 
-- `test:integration` and `test:integration:coverage`: `cache: true` with the same inputs as `test:unit` and outputs for JUnit and coverage. Integration tests fake everything beyond the system boundary, and the container images they start are pinned by tag, so the result depends only on the inputs.
+- `test:integration` and `test:integration:coverage`: `cache: true` with the same inputs as `test:unit`. Outputs match `test:unit` and `test:unit:coverage`: JUnit and HTML, plus `coverage` only for the `:coverage` target, because a cached `coverage/` the run never wrote would be restored over a fresh one. Integration tests fake everything beyond the system boundary, and the container images they start are pinned by tag, so the result depends only on the inputs.
 - `build:check-exports`: `cache: true`, inputs `production` plus the build output (`dependsOn` keeps `build`).
 - `lint:eslint:config-check`: `cache: true`, inputs `default` plus `{workspaceRoot}/eslint.config.ts`.
 
