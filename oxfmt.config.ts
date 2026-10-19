@@ -33,7 +33,6 @@ export default {
             "unknown",
         ],
     },
-    sortPackageJson: {},
     overrides: [
         {
             files: [".nvmrc"],
