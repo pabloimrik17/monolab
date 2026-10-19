@@ -27,7 +27,7 @@ The monorepo has no written test policy, so every project tests differently and 
 - **Modified:**
     - investlab-api route tests move onto a harness over the real composition root with faked use cases and are renamed to `*.integration-platform.ts`;
     - investlab-portfolio and investlab-quotes gain a `./testing` subpath with the test-data builders the harnesses use;
-    - ts-configs adds `ESNext.Disposable` to its `lib` for `await using`;
+    - ts-configs adds `tsconfig.node24.json` (ES2025 + `ESNext.Disposable`) for Node-24-only code, so `await using` type-checks in the servers and tooling while browser code and published libraries stay on ES2024;
     - investlab-platform's MSW tests become integration tests;
     - the react-clean and react-hooks browser tests become integration tests;
     - drizzle-neverthrow's integration test imports the public entry;
@@ -64,7 +64,7 @@ The monorepo has no written test policy, so every project tests differently and 
 - **Test files:** about 50 files renamed or moved (legacy, integration-platform, integration), about 9 deleted, and the investlab-api harness written from scratch (base harness plus one per route file).
 - **Config:**
     - every `vitest.config.ts` (projects, `coverage.include`, thresholds) and the root `vitest.config.ts`;
-    - `packages/ts-configs` base tsconfigs (`lib` gains `ESNext.Disposable`);
+    - `packages/ts-configs`: new `tsconfig.node24.json` (ES2025 + `ESNext.Disposable`), extended by the Node-24-only projects; the base tsconfigs stay on ES2024;
     - investlab-portfolio and investlab-quotes `package.json` (`./testing` export; both private, no attw);
     - every project `package.json` test script;
     - root `package.json` scripts;

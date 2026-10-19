@@ -29,7 +29,7 @@
 
     Verify with `pnpm nx run @m0n0lab/ts-types:test:mutation` (score 100, no dashboard upload without the key).
 - [x] 3.3 Add `docs/legacy-tests.txt` (empty for now) and the root script `lint:legacy-tests` (`git ls-files '*.legacy.test.*' | diff docs/legacy-tests.txt -`). Add it to root `nx.includedScripts`, with its Nx metadata in the root `project.json`. Verify that `pnpm nx run @m0n0lab/source:lint:legacy-tests` passes, and fails after a temporary `touch x.legacy.test.ts && git add x.legacy.test.ts`; undo the temporary file.
-- [x] 3.4 ts-configs: add `ESNext.Disposable` to `lib` in `tsconfig.base.json` and `tsconfig.web.base.json` so `Symbol.asyncDispose` and `await using` type-check. Verify with `pnpm nx run-many -t typecheck`.
+- [x] 3.4 ts-configs: add `tsconfig.node24.json` (ES2025 + `ESNext.Disposable`) and extend it from the Node-24-only projects (investlab-api, qup-api, investlab-database, qup-data, qup-domain, `tsconfig.node.tooling.json`), so `Symbol.asyncDispose` and `await using` type-check there; `tsconfig.base.json`, the web configs and published libraries stay on ES2024 without `ESNext.Disposable` (Node 22 lacks `DisposableStack`), and tsdown targets follow the same split. Verify with `pnpm nx run-many -t typecheck`.
 
 ## 4. Libraries
 
