@@ -22,8 +22,7 @@
         "lint:knip": "knip --max-issues 40",
         "lint:knip:fix": "knip --fix",
         "lint:oxfmt": "oxfmt --check .",
-        "lint:oxfmt:fix": "oxfmt .",
-        "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
+        "lint:oxfmt:fix": "oxfmt ."
     },
     "devDependencies": {
         "@vitest/browser-playwright": "catalog:",
