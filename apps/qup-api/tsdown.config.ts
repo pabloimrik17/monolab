@@ -27,7 +27,7 @@ export default defineConfig({
     sourcemap: true,
     clean: true,
     minify: false,
-    target: "ES2023",
+    target: "ES2025",
     plugins: [
         codecovRollupPlugin({
             enableBundleAnalysis: Boolean(codecovToken),

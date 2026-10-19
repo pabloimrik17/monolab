@@ -46,7 +46,7 @@ tsconfig.base.json (platform-agnostic foundation)
 
 **Includes:**
 
-- ✅ **Language & Target**: ES2022 output, ES2024 API types
+- ✅ **Language & Target**: `target` and `lib` ES2024 (see [Target and lib policy](#target-and-lib-policy))
 - ✅ **Maximum Strictness**: 18 strict flags (12 compiler options)
 - ✅ **ESM Interop**: Modern module handling with bundler compatibility
 - ✅ **Performance**: Incremental compilation and project references support
@@ -273,14 +273,24 @@ The updated base config includes additional strictness flags that may cause comp
 }
 ```
 
+## Target and lib policy
+
+`target` and `lib` are the ES year fully supported by the oldest runtime that may load the code.
+`target` only downlevels syntax and never polyfills, so `lib` must not exceed the runtime (never `ESNext`).
+
+- **Default (`tsconfig.base.json`, web configs)**: ES2024. For browsers, published libraries and anything shared with them.
+- **Node 24 only (`tsconfig.node24.json`)**: ES2025 + `ESNext.Disposable`. Extend it as a second entry in `extends` (private servers, tooling).
+- ES2024 configs omit `ESNext.Disposable` (no `DisposableStack` on Node 22): `await using` needs node24.
+- Never bare `ESNext`: it adds collection, typedarrays, temporal and date, which Node 24 lacks. Temporal, `Uint8Array.fromBase64` and `Math.sumPrecise` are missing in Node 24: do not add them to `lib`.
+
 ## Configuration Details
 
 ### Group 1: Language & Target
 
 ```json
 {
-    "target": "ES2022", // Stable runtime target (2 versions back)
-    "lib": ["ES2024"], // Modern API types (penultimate version)
+    "target": "ES2024", // Baseline ES year for the oldest runtime
+    "lib": ["ES2024"], // API types that runtime guarantees
     "allowJs": true, // Allow JavaScript files
     "resolveJsonModule": true, // Import JSON files with types
     "moduleDetection": "force" // All files are modules

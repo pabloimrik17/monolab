@@ -313,6 +313,7 @@ export default tseslint.config(
     {
         files: ["**/*.cjs", "**/*.mjs", "**/*.config.{js,ts,cjs,mjs}"],
         languageOptions: {
+            ecmaVersion: 2025,
             globals: {
                 ...globals.node,
             },
