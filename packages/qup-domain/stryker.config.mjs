@@ -3,7 +3,7 @@ import baseConfig from "../../stryker.config.base.mjs";
 const config = {
     ...baseConfig,
     thresholds: {
-        high: 80,
+        ...baseConfig.thresholds,
         low: 75,
         break: 75,
     },
