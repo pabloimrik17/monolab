@@ -19,9 +19,9 @@ export default mergeConfig(
                     "**/*.test-d.ts",
                     "**/*.integration.ts",
                     "**/testing/**",
+                    "**/*.builder.ts",
                     "**/vitest-integration-*.ts",
                 ],
-                // Provisional 0: task 9.2 sets these from the PR's CI run (Docker-backed)
                 thresholds: coverageThresholds({
                     lines: 80,
                     branches: 80,

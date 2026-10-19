@@ -18,9 +18,9 @@ export default mergeConfig(
                     "**/*.test-d.ts",
                     "**/*.integration.ts",
                     "**/testing/**",
+                    "**/*.builder.ts",
                     "**/vitest-integration-*.ts",
                 ],
-                // Provisional 0: task 9.2 sets these from the PR's CI run (Docker-backed)
                 // Below the 80 target of ADR 0008 (docs/adr/0008-test-policy.md): these floors are the CI
                 // measurement of 2026-10-18 rounded down to a multiple of 5 (lines 85.25, branches 73.58, functions 85.24,
                 // statements 85.11). Never lower them. Whoever adds tests here re-measures with `test:coverage` and

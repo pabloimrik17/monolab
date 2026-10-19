@@ -15,6 +15,7 @@ const config = {
         "!src/**/*.integration.tsx",
         "!src/**/*.integration-platform.ts",
         "!src/**/*.integration-platform.tsx",
+        "!src/**/*.builder.ts",
     ],
     ignorePatterns: [
         "target/**",

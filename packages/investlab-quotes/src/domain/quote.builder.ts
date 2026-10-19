@@ -1,6 +1,5 @@
-import type { Quote } from "../domain/quote.ts";
+import type { Quote } from "./quote.ts";
 
-/** A quote for tests; `overrides` replace the defaults field by field. */
 export function makeQuote(overrides: Partial<Quote> = {}): Quote {
     return {
         symbol: "AAPL",
