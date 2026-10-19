@@ -14,7 +14,6 @@ export default mergeConfig(
                 reporter: ["lcov", "text", "json", "html"],
                 reportsDirectory: "./coverage",
                 include: ["src/**/*.ts"],
-                // Harnesses are test code, like the builders under testing/
                 exclude: ["**/*.integration-platform.ts", "**/*.harness.ts", "**/testing/**"],
                 thresholds: coverageThresholds({
                     lines: 80,

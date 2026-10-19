@@ -1,4 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
+import { DomainError, PersistenceError, type ApiErrorDto } from "@m0n0lab/investlab-core";
+import { PortfolioItemsHarness } from "./routes/portfolio-items.harness.ts";
 import { BaseApiHarness } from "./testing/base-api-harness.ts";
 
 const TOKEN = "s3cret-token";
@@ -7,7 +9,13 @@ const UNAUTHORIZED = {
     code: "UNAUTHORIZED",
     message: "Invalid or missing bearer token",
     statusCode: 401,
-};
+} satisfies ApiErrorDto;
+
+const INTERNAL_ERROR = {
+    code: "INTERNAL_ERROR",
+    message: "Internal server error",
+    statusCode: 500,
+} satisfies ApiErrorDto;
 
 describe("the API as a platform", () => {
     it("serves GET /health without a token", async () => {
@@ -29,11 +37,58 @@ describe("the API as a platform", () => {
 
     it("fails a request whose use case reaches a guarded platform port, naming the port", async () => {
         await using api = await BaseApiHarness.launch();
-        vi.spyOn(console, "error").mockImplementation(() => {});
+        api.silenceErrorLog();
 
         await expect(api.get("/portfolio-items")).rejects.toThrow(
             "system boundary reached: PLATFORM.Db",
         );
+    });
+});
+
+// Every route answers through the same `errorJson` and `app.onError`, so one route proves it.
+describe("errors hidden behind a 500", () => {
+    it("answers a generic 500 for a use case that throws and logs the cause", async () => {
+        await using api = await PortfolioItemsHarness.launch();
+        const log = api.silenceErrorLog();
+        const error = new Error("leaky");
+        api.givenListThrows(error);
+
+        const { status, body } = await api.listItems();
+
+        expect(status).toBe(500);
+        expect(body).toEqual(INTERNAL_ERROR);
+        expect(log.calls).toEqual([[expect.any(String), error]]);
+    });
+
+    it("answers a generic 500 for a domain error the API does not map", async () => {
+        class UnmappedError extends DomainError<"UNMAPPED"> {
+            readonly code = "UNMAPPED";
+        }
+        await using api = await PortfolioItemsHarness.launch();
+        api.silenceErrorLog();
+        api.givenListThrows(new UnmappedError("leaky"));
+
+        const { status, body } = await api.listItems();
+
+        expect(status).toBe(500);
+        expect(body).toEqual(INTERNAL_ERROR);
+    });
+
+    it("answers 500 PERSISTENCE_ERROR without its message and logs the cause", async () => {
+        await using api = await PortfolioItemsHarness.launch();
+        const log = api.silenceErrorLog();
+        const error = new PersistenceError(new Error("db down"));
+        api.givenListFails(error);
+
+        const { status, body } = await api.listItems();
+
+        expect(status).toBe(500);
+        expect(body).toEqual({
+            code: "PERSISTENCE_ERROR",
+            message: "Internal server error",
+            statusCode: 500,
+        } satisfies ApiErrorDto);
+        expect(log.calls).toEqual([[expect.any(String), error]]);
     });
 });
 

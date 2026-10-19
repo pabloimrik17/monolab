@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { quoteListQueryDtoSchema } from "@m0n0lab/investlab-quotes";
 import { QUOTES } from "@m0n0lab/investlab-quotes/server";
-import { errorJson } from "../errors/error-mapping.ts";
 import { parseWith } from "../errors/parse-request.ts";
 import { toQuoteDto } from "../serializers/dto-serializers.ts";
+import { replyJson } from "./reply.ts";
 import type { Container } from "inversify";
 
 export function quoteRoutes(container: Container) {
@@ -11,9 +11,6 @@ export function quoteRoutes(container: Container) {
         const { symbols } = parseWith(quoteListQueryDtoSchema, c.req.query());
         const uc = container.get(QUOTES.List);
 
-        return (await uc.execute(symbols)).match(
-            (quotes) => c.json(quotes.map(toQuoteDto)),
-            (error) => errorJson(c, error),
-        );
+        return replyJson(c, await uc.execute(symbols), (quotes) => quotes.map(toQuoteDto));
     });
 }

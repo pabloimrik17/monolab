@@ -1,4 +1,6 @@
 import { errAsync, okAsync } from "neverthrow";
+import { z } from "zod";
+import { portfolioItemDtoSchema, portfolioItemListDtoSchema } from "@m0n0lab/investlab-portfolio";
 import { PORTFOLIO } from "@m0n0lab/investlab-portfolio/server";
 import { BaseApiHarness } from "../testing/base-api-harness.ts";
 import type { PortfolioItem } from "@m0n0lab/investlab-portfolio";
@@ -10,7 +12,6 @@ import type {
     PortfolioItemUpdateError,
 } from "@m0n0lab/investlab-portfolio/server";
 
-/** `/portfolio-items` over HTTP; each `given*` arranges one use case and returns its recorder. */
 export class PortfolioItemsHarness extends BaseApiHarness {
     givenItems(list: PortfolioItemList) {
         return this.fake(PORTFOLIO.ItemList, okAsync(list));
@@ -48,28 +49,32 @@ export class PortfolioItemsHarness extends BaseApiHarness {
         return this.fake(PORTFOLIO.ItemDelete, errAsync(error));
     }
 
-    listItems(): Promise<Response> {
-        return this.request("/portfolio-items");
+    listItems() {
+        return this.reply(this.request("/portfolio-items"), portfolioItemListDtoSchema);
     }
 
-    createItem(body: unknown): Promise<Response> {
-        return this.json("/portfolio-items", "POST", body);
+    createItem(body: unknown) {
+        return this.reply(this.json("/portfolio-items", "POST", body), portfolioItemDtoSchema);
     }
 
     /** POST with `body` sent as is, for payloads that are not JSON. */
-    createItemFromRaw(body: string): Promise<Response> {
-        return this.request("/portfolio-items", {
+    createItemFromRaw(body: string) {
+        const response = this.request("/portfolio-items", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body,
         });
+        return this.reply(response, portfolioItemDtoSchema);
     }
 
-    updateItem(id: string, body: unknown): Promise<Response> {
-        return this.json(`/portfolio-items/${id}`, "PUT", body);
+    updateItem(id: string, body: unknown) {
+        return this.reply(this.json(`/portfolio-items/${id}`, "PUT", body), portfolioItemDtoSchema);
     }
 
-    deleteItem(id: string): Promise<Response> {
-        return this.request(`/portfolio-items/${id}`, { method: "DELETE" });
+    deleteItem(id: string) {
+        return this.reply(
+            this.request(`/portfolio-items/${id}`, { method: "DELETE" }),
+            z.undefined(),
+        );
     }
 }

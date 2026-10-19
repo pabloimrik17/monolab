@@ -1,8 +1,10 @@
 import { serve, type ServerType } from "@hono/node-server";
+import { apiErrorDtoSchema, type ApiErrorDto } from "@m0n0lab/investlab-core";
 import { PLATFORM, type ServerConfig } from "@m0n0lab/investlab-platform/server";
 import { createApp } from "../app.ts";
 import { createContainer } from "../container.ts";
 import type { Container, ServiceIdentifier } from "inversify";
+import type { ZodType, ZodTypeDef } from "zod";
 
 /** Stands in for `ProcessEnvConfig`; the guards make sure no URL is ever dialled. */
 const TEST_CONFIG: ServerConfig = {
@@ -18,12 +20,23 @@ type Execute<T> = T extends { execute: (...args: infer A) => infer R }
 type ExecuteArgs<T> = Execute<T>["args"];
 type ExecuteResult<T> = Execute<T>["result"];
 
-/** A use case replaced for one test, as the test sees it: every call it received. */
 export interface FakeUseCase<T> {
     readonly calls: ExecuteArgs<T>[];
 }
 
-/** Answers what the test arranged and records every call. */
+/** A route's answer read as the wire contract: its DTO on 2xx (`undefined` on 204), else the error envelope. */
+export interface ApiReply<T> {
+    readonly status: number;
+    readonly body: T | ApiErrorDto;
+}
+
+/** Strict, so a cause leaked into an extra field fails the parse instead of being stripped. */
+const ERROR_ENVELOPE = apiErrorDtoSchema.strict();
+
+export interface ErrorLog {
+    readonly calls: unknown[][];
+}
+
 class RecordingUseCase<T> implements FakeUseCase<T> {
     readonly calls: ExecuteArgs<T>[] = [];
 
@@ -35,10 +48,7 @@ class RecordingUseCase<T> implements FakeUseCase<T> {
     }
 }
 
-/**
- * A platform port nothing may reach: the first use throws, naming the port, and `onBreach`
- * lets the harness fail the request that got there instead of waiting on a connection.
- */
+/** A platform port nothing may reach: first use throws, and `onBreach` fails the request instead of waiting on a connection. */
 function boundaryGuard<T>(port: string, onBreach: (error: Error) => void): T {
     return new Proxy(
         {},
@@ -86,10 +96,10 @@ interface Started {
 }
 
 /**
- * The API launched for real, from its own composition root, on a loopback port: the use cases a
- * test arranges through `fake()` answer in its place, and the platform ports behind them are
- * guarded so an unarranged use case fails the request at once instead of reaching Postgres,
- * Redis or Finnhub. The only test code that knows hono, @hono/node-server or inversify.
+ * The API launched for real from its own composition root on a loopback port. Use cases the test
+ * arranges through `fake()` answer in its place; the platform ports behind them are guarded, so
+ * an unarranged use case fails the request instead of reaching Postgres, Redis or Finnhub.
+ * The only test code that knows hono, @hono/node-server or inversify.
  */
 export class BaseApiHarness implements AsyncDisposable {
     readonly url: string;
@@ -97,6 +107,7 @@ export class BaseApiHarness implements AsyncDisposable {
     private readonly server: ServerType;
     private readonly token: string;
     private readonly breaches: Error[];
+    private errorLog: (ErrorLog & { readonly restore: () => void }) | undefined;
     private closed = false;
 
     constructor({ container, server, url, token, breaches }: Started) {
@@ -130,12 +141,13 @@ export class BaseApiHarness implements AsyncDisposable {
         return new this({ container, server, url, token, breaches });
     }
 
-    /** Stops the server; safe to call twice, and what `await using` calls at the end of the scope. */
+    /** Idempotent; `await using` calls it at scope end. */
     async close(): Promise<void> {
         if (this.closed) {
             return;
         }
         this.closed = true;
+        this.errorLog?.restore();
         if ("closeAllConnections" in this.server) {
             this.server.closeAllConnections();
         }
@@ -152,34 +164,49 @@ export class BaseApiHarness implements AsyncDisposable {
         return this.send("/health", {});
     }
 
-    /** An authenticated GET of any path, for what no route harness owns. */
     get(path: string): Promise<Response> {
         return this.request(path);
     }
 
-    /** `path` without an `Authorization` header. */
     anonymous(path: string, options: RequestOptions = {}): Promise<Response> {
         return this.send(path, options);
     }
 
-    /** A GET of `path` with `authorization` as the raw `Authorization` header value. */
     withAuthorization(path: string, authorization: string): Promise<Response> {
         return this.send(path, { headers: { Authorization: authorization } });
     }
 
-    /** Replaces the use case bound to `token` with a fake answering `result`; returns its recorder. */
+    /**
+     * Mutes `console.error` until `close()`, for a test that provokes a 5xx: the API logs the cause
+     * it hides from the response. The returned calls let the test assert that cause was logged.
+     */
+    silenceErrorLog(): ErrorLog {
+        if (!this.errorLog) {
+            const original = console.error;
+            const calls: unknown[][] = [];
+            console.error = (...args: unknown[]) => {
+                calls.push(args);
+            };
+            this.errorLog = {
+                calls,
+                restore: () => {
+                    console.error = original;
+                },
+            };
+        }
+        return this.errorLog;
+    }
+
     protected fake<T>(token: ServiceIdentifier<T>, result: ExecuteResult<T>): FakeUseCase<T> {
         return this.fakeWith(token, () => result);
     }
 
-    /** Like `fake`, for a use case that throws instead of answering. */
     protected fakeThrowing<T>(token: ServiceIdentifier<T>, error: Error): FakeUseCase<T> {
         return this.fakeWith(token, () => {
             throw error;
         });
     }
 
-    /** `path` with the bearer token, as the web app calls the API. */
     protected request(path: string, options: RequestOptions = {}): Promise<Response> {
         return this.send(path, {
             ...options,
@@ -187,13 +214,24 @@ export class BaseApiHarness implements AsyncDisposable {
         });
     }
 
-    /** `body` as JSON with the bearer token. */
     protected json(path: string, method: string, body: unknown): Promise<Response> {
         return this.request(path, {
             method,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
         });
+    }
+
+    protected async reply<T>(
+        response: Promise<Response>,
+        schema: ZodType<T, ZodTypeDef, unknown>,
+    ): Promise<ApiReply<T>> {
+        const res = await response;
+        const json: unknown = res.status === 204 ? undefined : await res.json();
+        return {
+            status: res.status,
+            body: res.ok ? schema.parse(json) : ERROR_ENVELOPE.parse(json),
+        };
     }
 
     private fakeWith<T>(

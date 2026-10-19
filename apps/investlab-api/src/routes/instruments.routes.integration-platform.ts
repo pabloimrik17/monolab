@@ -1,8 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
-import { apiErrorDtoSchema, PersistenceError } from "@m0n0lab/investlab-core";
+import { describe, expect, it } from "vitest";
 import {
     InstrumentAlreadyExistsError,
-    instrumentDtoSchema,
     InstrumentInUseError,
     InstrumentNotFoundError,
     Sector,
@@ -41,10 +39,10 @@ describe("GET /instruments", () => {
         });
         const list = api.givenInstruments([bare, full]);
 
-        const res = await api.listInstruments();
+        const { status, body } = await api.listInstruments();
 
-        expect(res.status).toBe(200);
-        expect(instrumentDtoSchema.array().parse(await res.json())).toEqual([
+        expect(status).toBe(200);
+        expect(body).toEqual([
             {
                 id: bare.id,
                 symbol: "VTI",
@@ -72,21 +70,10 @@ describe("GET /instruments", () => {
         await using api = await InstrumentsHarness.launch();
         api.givenInstruments([]);
 
-        const res = await api.listInstruments();
+        const { status, body } = await api.listInstruments();
 
-        expect(res.status).toBe(200);
-        expect(await res.json()).toEqual([]);
-    });
-
-    it("hides persistence failures behind a generic 500", async () => {
-        await using api = await InstrumentsHarness.launch();
-        vi.spyOn(console, "error").mockImplementation(() => {});
-        api.givenListFails(new PersistenceError(new Error("db down")));
-
-        const res = await api.listInstruments();
-
-        expect(res.status).toBe(500);
-        expect(apiErrorDtoSchema.parse(await res.json()).code).toBe("PERSISTENCE_ERROR");
+        expect(status).toBe(200);
+        expect(body).toEqual([]);
     });
 });
 
@@ -104,10 +91,10 @@ describe("POST /instruments", () => {
             makeInstrument({ symbol: "VWCE", name: draft.name, replicates: draft.replicates }),
         );
 
-        const res = await api.createInstrument(draft);
+        const { status, body } = await api.createInstrument(draft);
 
-        expect(res.status).toBe(201);
-        expect(instrumentDtoSchema.parse(await res.json())).toMatchObject({
+        expect(status).toBe(201);
+        expect(body).toMatchObject({
             symbol: "VWCE",
             replicates: "FTSE All-World",
             quotable: true,
@@ -119,31 +106,29 @@ describe("POST /instruments", () => {
         await using api = await InstrumentsHarness.launch();
         api.givenCreateFails(new InstrumentAlreadyExistsError("AAPL"));
 
-        const res = await api.createInstrument({
+        const { status, body } = await api.createInstrument({
             symbol: "AAPL",
             name: "Apple Inc.",
             type: "stock",
             assetClass: "equity",
         });
 
-        expect(res.status).toBe(409);
-        expect(apiErrorDtoSchema.parse(await res.json()).code).toBe("INSTRUMENT_ALREADY_EXISTS");
+        expect(status).toBe(409);
+        expect(body).toMatchObject({ code: "INSTRUMENT_ALREADY_EXISTS" });
     });
 
     it("answers 422 with the failing field path for an unknown type", async () => {
         await using api = await InstrumentsHarness.launch();
 
-        const res = await api.createInstrument({
+        const { status, body } = await api.createInstrument({
             symbol: "VWCE",
             name: "Vanguard FTSE All-World",
             type: "warrant",
             assetClass: "equity",
         });
 
-        expect(res.status).toBe(422);
-        const body = apiErrorDtoSchema.parse(await res.json());
-        expect(body.code).toBe("VALIDATION_ERROR");
-        expect(body.issues?.map(({ path }) => path)).toEqual(["type"]);
+        expect(status).toBe(422);
+        expect(body).toMatchObject({ code: "VALIDATION_ERROR", issues: [{ path: "type" }] });
     });
 });
 
@@ -153,10 +138,12 @@ describe("PUT /instruments/:id", () => {
         const instrument = makeInstrument({ symbol: "VTI" });
         const update = api.givenUpdateSucceeds(instrument);
 
-        const res = await api.updateInstrument(instrument.id, { name: "Vanguard Total Market" });
+        const { status, body } = await api.updateInstrument(instrument.id, {
+            name: "Vanguard Total Market",
+        });
 
-        expect(res.status).toBe(200);
-        expect(instrumentDtoSchema.parse(await res.json())).toEqual({
+        expect(status).toBe(200);
+        expect(body).toEqual({
             id: instrument.id,
             symbol: "VTI",
             name: "VTI fund",
@@ -183,14 +170,14 @@ describe("PUT /instruments/:id", () => {
         const instrument = makeInstrument();
         const update = api.givenUpdateSucceeds(instrument);
 
-        const res = await api.updateInstrument(instrument.id, {
+        const { status } = await api.updateInstrument(instrument.id, {
             exchange: "NYSE",
             sector: "technology",
             replicates: "S&P 500",
             quotable: false,
         });
 
-        expect(res.status).toBe(200);
+        expect(status).toBe(200);
         expect(update.calls[0]![1]).toMatchObject({
             exchange: "NYSE",
             sector: "technology",
@@ -204,14 +191,14 @@ describe("PUT /instruments/:id", () => {
         const instrument = makeInstrument({ replicates: "CRSP US Total Market" });
         const update = api.givenUpdateSucceeds(makeInstrument({ symbol: instrument.symbol }));
 
-        const res = await api.updateInstrument(instrument.id, {
+        const { status, body } = await api.updateInstrument(instrument.id, {
             exchange: null,
             sector: null,
             replicates: null,
         });
 
-        expect(res.status).toBe(200);
-        expect(instrumentDtoSchema.parse(await res.json())).not.toHaveProperty("replicates");
+        expect(status).toBe(200);
+        expect(body).not.toHaveProperty("replicates");
         expect(update.calls[0]![1]).toMatchObject({
             exchange: undefined,
             sector: undefined,
@@ -226,29 +213,29 @@ describe("PUT /instruments/:id", () => {
         await using api = await InstrumentsHarness.launch();
         api.givenUpdateFails(new InstrumentAlreadyExistsError("VWCE"));
 
-        const res = await api.updateInstrument(MISSING_ID, { symbol: "VWCE" });
+        const { status, body } = await api.updateInstrument(MISSING_ID, { symbol: "VWCE" });
 
-        expect(res.status).toBe(409);
-        expect(apiErrorDtoSchema.parse(await res.json()).code).toBe("INSTRUMENT_ALREADY_EXISTS");
+        expect(status).toBe(409);
+        expect(body).toMatchObject({ code: "INSTRUMENT_ALREADY_EXISTS" });
     });
 
     it("answers 404 INSTRUMENT_NOT_FOUND for an unknown instrument", async () => {
         await using api = await InstrumentsHarness.launch();
         api.givenUpdateFails(new InstrumentNotFoundError(MISSING_ID));
 
-        const res = await api.updateInstrument(MISSING_ID, { name: "Nothing" });
+        const { status, body } = await api.updateInstrument(MISSING_ID, { name: "Nothing" });
 
-        expect(res.status).toBe(404);
-        expect(apiErrorDtoSchema.parse(await res.json()).code).toBe("INSTRUMENT_NOT_FOUND");
+        expect(status).toBe(404);
+        expect(body).toMatchObject({ code: "INSTRUMENT_NOT_FOUND" });
     });
 
     it("answers 422 for an id that is not a UUID", async () => {
         await using api = await InstrumentsHarness.launch();
 
-        const res = await api.updateInstrument("not-a-uuid", { name: "Nothing" });
+        const { status, body } = await api.updateInstrument("not-a-uuid", { name: "Nothing" });
 
-        expect(res.status).toBe(422);
-        expect(apiErrorDtoSchema.parse(await res.json()).issues?.[0]?.path).toBe("id");
+        expect(status).toBe(422);
+        expect(body).toMatchObject({ issues: [{ path: "id" }] });
     });
 });
 
@@ -258,10 +245,10 @@ describe("DELETE /instruments/:id", () => {
         const instrument = makeInstrument();
         const remove = api.givenDeleteSucceeds();
 
-        const res = await api.deleteInstrument(instrument.id);
+        const { status, body } = await api.deleteInstrument(instrument.id);
 
-        expect(res.status).toBe(204);
-        expect(await res.text()).toBe("");
+        expect(status).toBe(204);
+        expect(body).toBeUndefined();
         expect(remove.calls).toEqual([[instrument.id]]);
     });
 
@@ -269,9 +256,9 @@ describe("DELETE /instruments/:id", () => {
         await using api = await InstrumentsHarness.launch();
         api.givenDeleteFails(new InstrumentInUseError(MISSING_ID));
 
-        const res = await api.deleteInstrument(MISSING_ID);
+        const { status, body } = await api.deleteInstrument(MISSING_ID);
 
-        expect(res.status).toBe(409);
-        expect(apiErrorDtoSchema.parse(await res.json()).code).toBe("INSTRUMENT_IN_USE");
+        expect(status).toBe(409);
+        expect(body).toMatchObject({ code: "INSTRUMENT_IN_USE" });
     });
 });
