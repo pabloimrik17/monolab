@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { relative } from "node:path";
+import path from "node:path";
 import { defineConfig } from "lint-staged/config";
 
 const ESLINT_MAX_WARNINGS = 40;
@@ -10,14 +10,14 @@ const FALLOW_FILES = /\.(?:ts|tsx|js|jsx|mjs|cjs|json|jsonc)$/;
 const RENOVATE_FILES = /(?:^|\/)renovate\.json$/;
 
 function toRelativePath(filename: string): string {
-    return relative(process.cwd(), filename).replace(/\\/g, "/");
+    return path.relative(process.cwd(), filename).replaceAll("\\", "/");
 }
 
 /** lint-staged splits commands with string-argv, which has no escapes: quote with the character the path lacks. */
 function quoted(filename: string): string {
     if (!existsSync(filename)) {
         throw new Error(
-            `lint-staged passed a path that does not exist (it rewrites "\\" in names): ${filename}`,
+            String.raw`lint-staged passed a path that does not exist (it rewrites "\" in names): ${filename}`,
         );
     }
     const quote = filename.includes("'") ? '"' : "'";
@@ -43,16 +43,16 @@ export default defineConfig({
     // Steps run in order, so writers never overlap; an array a step returns runs in parallel.
     "**/*": [
         // nx affected requires CSV format, cannot use simple string command
-        (filenames) =>
+        (filenames: readonly string[]): string =>
             `nx affected --files=${filenames.map(toRelativePath).join(",")} -t lint:eslint:fix -- --max-warnings=${ESLINT_MAX_WARNINGS}`,
         // After ESLint: its unused-import removal leaves code that oxfmt must re-format.
         "oxfmt --no-error-on-unmatched-pattern",
         // Each fixer writes only its own file type, so they can run together.
-        (filenames) => [
+        (filenames: readonly string[]): string[] => [
             ...forStaged(MARKDOWN_FILES, "markdownlint --fix", filenames),
             ...forStaged(STYLE_FILES, "stylelint --fix", filenames),
         ],
-        (filenames) => [
+        (filenames: readonly string[]): string[] => [
             "pnpm run lint:knip",
             // New-only ratchet vs the merge-base; the full-repo lint:fallow gate stays in push CI.
             ...whenStaged(FALLOW_FILES, "fallow audit", filenames),
