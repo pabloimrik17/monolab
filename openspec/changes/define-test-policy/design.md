@@ -73,7 +73,7 @@ ADR 0006's status becomes `amended by ADR-0007, ADR-0008`. ADR 0008 states that 
 | apps/investlab-api | `routes/*.routes.test.ts` (3) | Rename to `*.routes.integration-platform.ts`, rewritten flat on one harness per route file. |
 | | `testing/test-app.ts` | Replaced by `testing/base-api-harness.ts` and `routes/*.harness.ts` (see "How integration-platform tests reach an API"). |
 | | `testing/in-memory-portfolio.ts` | Deleted. Its builders (`makeInstrument` and friends) move to `@m0n0lab/investlab-portfolio/testing` and `@m0n0lab/investlab-quotes/testing`. |
-| | `app.test.ts` | Its `/health`, missing-token and unknown-route cases move to `app.integration-platform.ts` on the base harness. Its cases that wrap `handleError` in a standalone Hono are dropped, because the route tests assert error mapping through real routes. |
+| | `app.test.ts` | Its `/health`, missing-token and unknown-route cases move to `app.integration-platform.ts` on the base harness. Its cases that wrap `handleError` in a standalone Hono are dropped: `app.integration-platform.ts` asserts error hiding through a real route, and the route tests assert each mapped error. |
 | | `errors/error-mapping.test.ts`, `middleware/bearer-auth.test.ts`, `serializers/dto-serializers.test.ts` | Deleted once the integration-platform tests cover their files at least as well as before. |
 | | `container.test.ts` | Deleted. The base harness launches the real `createContainer()`, so every integration-platform test exercises the container wiring. |
 | apps/investlab | all 9 `*.test.ts(x)` | Legacy. |
@@ -83,7 +83,7 @@ ADR 0006's status becomes `amended by ADR-0007, ADR-0008`. ADR 0008 states that 
 | packages/investlab-portfolio | `domain/**` (3) | Unit, unchanged. |
 | | `data/contracts/*.dto.test.ts` (3), `data/server/*.mapper.test.ts` (2) | Legacy. |
 | | `*.integration.ts` (16) | Unchanged. The Vitest projects become `integration:server` and `integration:client`. |
-| | `src/testing/` (new) | Test-data builders moved from investlab-api, exported through a `./testing` subpath. Excluded from coverage. |
+| | `src/domain/**/*.builder.ts` + `src/testing/` (new) | Test-data builders moved from investlab-api, next to their models; `src/testing/index.ts` re-exports them through a `./testing` subpath. Excluded from coverage. |
 | packages/investlab-quotes | `quote.dto.test.ts`, `batch.test.ts` | Legacy. |
 | | `*.integration.ts` (2) | Unchanged; the Vitest projects are renamed as in portfolio. |
 | | `src/testing/` (new) | Quote builders, as in portfolio. |
@@ -112,18 +112,21 @@ BaseApiHarness (apps/investlab-api/src/testing/base-api-harness.ts)
             -> rebind PLATFORM.Db / Redis / HttpClient to boundary guards
             -> serve on 127.0.0.1:0 -> url
   [Symbol.asyncDispose] / close(): idempotent
-  protected: request(path, init) with the bearer token, json(), fake(TOKEN)
+  protected: request(path, init) with the bearer token, json(), fake(TOKEN),
+             reply(response, schema) -> { status, body }
+  public: silenceErrorLog() mutes console.error until close(), returns the calls
   the only test code that imports hono, @hono/node-server or inversify
 
 PortfolioItemsHarness / InstrumentsHarness / QuotesHarness (routes/*.harness.ts)
   public, domain-named: givenItems([...]), givenListFails(error), listItems(),
-  createItem(dto), updateItem(id, dto); return the Response or the DTO parsed
-  with its zod schema; no expect inside
+  createItem(dto), updateItem(id, dto); each request returns { status, body },
+  the body parsed by the DTO's zod schema on 2xx (undefined on 204) or by the
+  strict apiErrorDtoSchema on an error status; no expect inside
 
 test (*.routes.integration-platform.ts)
   await using api = await PortfolioItemsHarness.launch();
-  // Arrange / Act / Assert over harness methods, schemas and expect
-  /health, auth and 404 cases use BaseApiHarness directly (app.integration-platform.ts)
+  // Arrange / Act / Assert over harness methods and expect
+  /health, auth, 404 and error-hiding cases live in app.integration-platform.ts
 ```
 
 - **Real server, real HTTP.** The harness starts the app on an ephemeral loopback port in the Vitest worker and tests use the standard `fetch`. Same process, so fakes bind per test and coverage counts the server. It exercises what in-process calls skip: the Node adapter, real headers, streamed bodies, SSE and client disconnects (qup-api will need those). Start costs about a millisecond.
@@ -135,11 +138,14 @@ test (*.routes.integration-platform.ts)
     - *Hand-built container (today)*: rejected. It tests a wiring production never runs.
 - **Boundary guard.** The three platform ports are rebound to fakes that throw `system boundary reached: PLATFORM.Db` on first use. A use case a test forgot to arrange fails at once with a stack trace naming the route, instead of a Postgres connection timeout. It is MSW's `onUnhandledRequest: error` at the system boundary, and it covers new use cases without a list to maintain.
     - *A "not arranged" fake per use-case token*: rejected. Better message, but a token list that must grow with every use case.
+- **Replies are the wire contract.** A route-harness method parses the body with the DTO's zod schema on a 2xx and with the strict `apiErrorDtoSchema` on an error status, so a route that drifts from its contract fails every test that calls it, and a cause leaked into an extra field fails the parse instead of being stripped. Tests stop parsing bodies and comparing raw `res.json()`; only the base helpers for what no route harness owns (`health`, `get`, `anonymous`, `withAuthorization`) return the `Response`.
+- **Givens take data.** A `given*` method stays generic and takes what it arranges; the package builders supply valid defaults. A scenario-named given is added only when the same arrangement repeats across tests or names a domain state, and it returns what it created so the test can assert on it.
+- **Error hiding tested once.** `app.onError(handleError)` and `errorJson`, shared by `replyJson` and `replyEmpty`, hide causes for every route, so `app.integration-platform.ts` proves it once through one route harness (a thrown error, an unmapped domain error, a persistence failure with its cause logged). Route suites keep their mapped errors (404, 409, 422); `/quotes` also keeps its 500 test, because its route answers the error through its own `match` rather than `replyJson`. The base harness's `silenceErrorLog()` mutes the cause each 5xx logs and restores `console.error` in `close()`.
 - **Fakes record calls.** With the use case faked, the response proves only the route's output side. `api.itemUpdate.calls` proves the input side: the id taken from the path, the body turned into the use-case input, `notes: null` dropped rather than passed. Together they are the route's whole contract; the package mappers below the use case belong to the integration tests.
 - **Lifecycle with `await using`.** The harness implements `Symbol.asyncDispose`; a test opens it with `await using` and the server closes when the scope ends, on failure too. It is a language feature (Node 24 runs it natively, TypeScript 6 types it with `ESNext.Disposable` in `lib`), it shows the resource's lifetime in the test, and it works outside Vitest. No `beforeEach`/`afterEach` for harnesses; one `describe` level at most.
     - *`onTestFinished` registered inside `launch()` (eci-av)*: rejected. Zero ceremony, but it ties the base harness to Vitest and hides the lifetime. A test that writes `const` instead of `await using` leaks a port, which shows as a hanging worker on the first run; `close()` is idempotent so a test may also close early.
     - *`test.extend` fixtures*: rejected. Same coupling, plus a custom `it` import.
-- **Builders in the owning package.** Test-data builders live next to the entities they build, exported through a `./testing` subpath of investlab-portfolio and investlab-quotes, so the investlab web's harness reuses them. They are excluded from coverage like every `**/testing/**`.
+- **Builders in the owning package.** Test-data builders sit next to the model they build (`<model>.builder.ts`) and are re-exported through a `./testing` subpath of investlab-portfolio and investlab-quotes, so the investlab web's harness reuses them. They are excluded from coverage and mutation via `**/*.builder.ts`.
 - **No lint rule** forbidding framework imports in tests. The pattern is applied and corrected in review; agents copy the reference suite. The ADR names `base-api-harness.ts` and `portfolio-items.routes.integration-platform.ts` as the living guide.
 
 ### Load tests are reserved
