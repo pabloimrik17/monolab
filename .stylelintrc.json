@@ -3,6 +3,7 @@
     "rules": {
         "selector-no-invalid": true,
         "selector-no-deprecated": true,
+        "selector-no-unmatchable": true,
         "display-notation": "short",
         "relative-selector-nesting-notation": "explicit",
         "import-notation": "string"
