@@ -5,28 +5,16 @@
     "projectType": "library",
     "targets": {
         "test": {
-            "dependsOn": ["^build", "^test", "build"]
+            "dependsOn": ["^build", "^test"]
         },
         "test:changed": {
-            "dependsOn": ["^build", "build"]
+            "dependsOn": ["^build"]
         },
         "test:coverage": {
-            "dependsOn": ["^build", "^test:coverage", "build"]
+            "dependsOn": ["^build", "^test:coverage"]
         },
         "test:watch": {
-            "dependsOn": ["^build", "^test:watch", "build"]
-        },
-        "test:integration": {
-            "dependsOn": ["^build", "build"]
-        },
-        "test:integration:changed": {
-            "dependsOn": ["^build", "build"]
-        },
-        "test:integration:coverage": {
-            "dependsOn": ["^build", "build"]
-        },
-        "test:integration:watch": {
-            "dependsOn": ["^build", "build"]
+            "dependsOn": ["^build", "^test:watch"]
         }
     }
 }

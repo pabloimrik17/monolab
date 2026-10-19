@@ -22,6 +22,7 @@
 
 <!-- nx configuration end-->
 
+Write the fewest tests that run the most real code. Full policy: [ADR 0008](docs/adr/0008-test-policy.md).
 <!-- Matt Pocock concise rule start-->
 
 In all interactions, plans, and commit messages, be extremely concise and sacrifice grammar for the sake of concision

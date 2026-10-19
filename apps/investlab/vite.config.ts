@@ -3,8 +3,9 @@ import { reactRouter } from "@react-router/dev/vite";
 import { varlockVitePlugin } from "@varlock/vite-integration";
 import { defineConfig, type PluginOption } from "vite";
 
-// Cast: see note in apps/demo/vite.config.ts — drop once @codecov/vite-plugin
-// advertises vite@7 in peerDependencies.
+// codecovVitePlugin still declares vite@^6 in peerDependencies; cast keeps the
+// plugin usable until @codecov/vite-plugin advertises vite@7 support. Drop the
+// cast once the upstream peer range widens.
 const codecovToken = process.env["CODECOV_TOKEN"]?.trim();
 const codecovPlugin = codecovVitePlugin({
     enableBundleAnalysis: Boolean(codecovToken),

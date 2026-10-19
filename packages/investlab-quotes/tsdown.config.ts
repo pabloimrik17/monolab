@@ -2,7 +2,12 @@ import { defineConfig } from "tsdown";
 
 export default defineConfig({
     name: "@m0n0lab/investlab-quotes",
-    entry: ["src/index.ts", "src/server.ts", "src/client.ts"],
+    entry: {
+        index: "src/index.ts",
+        server: "src/server.ts",
+        client: "src/client.ts",
+        testing: "src/testing/index.ts",
+    },
     format: ["esm"],
     fixedExtension: false,
     outDir: "dist",
@@ -25,5 +30,5 @@ export default defineConfig({
     sourcemap: true,
     clean: true,
     minify: false,
-    target: "ES2023",
+    target: "ES2024",
 });

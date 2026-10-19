@@ -14,11 +14,11 @@
         "test": "vitest run",
         "test:changed": "vitest run --changed",
         "test:coverage": "vitest run --coverage",
-        "test:watch": "vitest",
-        "test:unit": "vitest run",
-        "test:unit:changed": "vitest run --changed",
-        "test:unit:watch": "vitest",
-        "test:unit:coverage": "vitest run --coverage"
+        "test:integration-platform": "vitest run --project integration-platform",
+        "test:integration-platform:changed": "vitest run --project integration-platform --changed",
+        "test:integration-platform:coverage": "vitest run --project integration-platform --coverage",
+        "test:integration-platform:watch": "vitest --project integration-platform",
+        "test:watch": "vitest"
     },
     "dependencies": {
         "@hono/node-server": "2.0.10",

@@ -46,6 +46,7 @@ const investlabLayerBoundaries = (() => {
                 ]),
                 layer("contracts", `${mod}/data/contracts`),
                 layer("domain", `${mod}/domain`),
+                layer("testing", `${mod}/testing`),
                 layer("root", mod),
             ],
             "boundaries/files": [
@@ -76,6 +77,7 @@ const investlabLayerBoundaries = (() => {
                             from: from("contracts"),
                             allow: { to: [own("domain"), own("contracts")] },
                         },
+                        { from: from("testing"), allow: { to: [own("domain"), own("testing")] } },
                         {
                             from: from("root", "entry"),
                             allow: { to: [own("domain"), own("contracts")] },
@@ -258,10 +260,18 @@ const investlabLayerRules = (() => {
                     "import `./client` entries from `.server.ts` files only",
                 ),
             ],
-            ["apps/investlab/**/*.server.ts", "apps/investlab/**/*.server.test.ts"],
+            [
+                "apps/investlab/**/*.server.ts",
+                "apps/investlab/**/*.server.test.ts",
+                "apps/investlab/**/*.server.legacy.test.ts",
+            ],
         ),
         group(
-            ["apps/investlab/**/*.server.ts", "apps/investlab/**/*.server.test.ts"],
+            [
+                "apps/investlab/**/*.server.ts",
+                "apps/investlab/**/*.server.test.ts",
+                "apps/investlab/**/*.server.legacy.test.ts",
+            ],
             [serverEntry],
         ),
         group(["apps/investlab-api/**"], [clientEntry]),
@@ -303,6 +313,7 @@ export default tseslint.config(
     {
         files: ["**/*.cjs", "**/*.mjs", "**/*.config.{js,ts,cjs,mjs}"],
         languageOptions: {
+            ecmaVersion: 2025,
             globals: {
                 ...globals.node,
             },

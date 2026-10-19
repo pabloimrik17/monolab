@@ -4,9 +4,9 @@
          * Group 1: Language & Target
          * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
          * Defines the ECMAScript version and language features available.
-         * Target ES2022 for runtime compatibility, lib ES2024 for modern APIs.
+         * Baseline ES2024; see "Target and lib policy" in the README.
          */
-        "target": "ES2022",
+        "target": "ES2024",
         "lib": ["ES2024"],
         "allowJs": true,
         "resolveJsonModule": true,

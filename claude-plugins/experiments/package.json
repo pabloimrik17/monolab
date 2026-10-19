@@ -5,9 +5,17 @@
     "description": "Beta skills and commands staging area for monolab",
     "scripts": {
         "test": "vitest run",
-        "test:unit": "vitest run"
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage",
+        "test:changed": "vitest run --changed",
+        "test:unit": "vitest run --project unit",
+        "test:unit:watch": "vitest --project unit",
+        "test:unit:coverage": "vitest run --project unit --coverage",
+        "test:unit:changed": "vitest run --project unit --changed"
     },
     "devDependencies": {
+        "@m0n0lab/vitest-config": "workspace:*",
+        "@vitest/coverage-v8": "catalog:",
         "vitest": "catalog:"
     }
 }

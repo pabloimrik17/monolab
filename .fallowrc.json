@@ -10,6 +10,8 @@
         "apps/qup-web/src/routes/**/*.tsx",
         // type-level test files are entries for their assertions
         "**/*.test-d.ts",
+        // `./testing` subpath exports: fallow maps dist/testing.js to src/testing.ts, not src/testing/index.ts
+        "packages/investlab-{portfolio,quotes}/src/testing/index.ts",
         // tool-loaded config (validate-branch-name via husky)
         "validate-branch-name.config.cjs"
     ],
@@ -77,6 +79,15 @@
         "require-suppression-reason": "warn"
     },
     "overrides": [
+        {
+            // harnesses come from the generic static `launch()` (`await XHarness.launch()`), whose instance type fallow
+            // cannot follow; their members are called by the `*.integration-platform.ts` tests
+            "files": [
+                "apps/investlab-api/src/testing/base-api-harness.ts",
+                "apps/investlab-api/src/routes/*.harness.ts"
+            ],
+            "rules": { "unused-class-members": "off" }
+        },
         {
             // `json`/`empty` are called by every module's HTTP repositories through `PLATFORM.InvestlabApiClient` (type-only import `audit` does not follow)
             "files": ["packages/investlab-platform/src/client/investlab-api-client.ts"],

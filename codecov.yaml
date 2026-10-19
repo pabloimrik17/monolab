@@ -26,13 +26,6 @@ coverage:
                 flags:
                     - react-clean
 
-            ts-configs:
-                target: auto
-                threshold: 2%
-                informational: false
-                flags:
-                    - ts-configs
-
             ts-types:
                 target: auto
                 threshold: 2%
@@ -138,139 +131,146 @@ coverage:
                 flags:
                     - qup-shared
 
+            plugin-experiments:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - plugin-experiments
+
         # Patch coverage (new/modified code in PRs)
         patch:
             default:
-                target: 50% # New code should have at least 50% coverage (low bar for initial setup)
-                threshold: 10% # Allow up to 10% below target (40% minimum)
+                target: 80%
+                threshold: 0%
                 informational: false # Block PRs with very low coverage on new code
 
             # Per-package patch coverage checks
             react-hooks:
-                target: 50%
-                threshold: 10%
+                target: 80%
+                threshold: 0%
                 informational: false
                 flags:
                     - react-hooks
 
             react-clean:
-                target: 50%
-                threshold: 10%
+                target: 80%
+                threshold: 0%
                 informational: false
                 flags:
                     - react-clean
 
-            ts-configs:
-                target: 50%
-                threshold: 10%
-                informational: false
-                flags:
-                    - ts-configs
-
             ts-types:
-                target: 50%
-                threshold: 10%
+                target: 80%
+                threshold: 0%
                 informational: false
                 flags:
                     - ts-types
 
             drizzle-neverthrow:
-                target: 50%
-                threshold: 10%
+                target: 80%
+                threshold: 0%
                 informational: false
                 flags:
                     - drizzle-neverthrow
 
             http-client:
-                target: 50%
-                threshold: 10%
+                target: 80%
+                threshold: 0%
                 informational: false
                 flags:
                     - http-client
 
             qup-api:
-                target: 50%
-                threshold: 10%
+                target: 80%
+                threshold: 0%
                 informational: false
                 flags:
                     - qup-api
 
             qup-data:
-                target: 50%
-                threshold: 10%
+                target: 80%
+                threshold: 0%
                 informational: false
                 flags:
                     - qup-data
 
             qup-domain:
-                target: 50%
-                threshold: 10%
+                target: 80%
+                threshold: 0%
                 informational: false
                 flags:
                     - qup-domain
 
             solid-clean:
-                target: 50%
-                threshold: 10%
+                target: 80%
+                threshold: 0%
                 informational: false
                 flags:
                     - solid-clean
 
             investlab-core:
-                target: 50%
-                threshold: 10%
+                target: 80%
+                threshold: 0%
                 informational: false
                 flags:
                     - investlab-core
 
             investlab-quotes:
-                target: 50%
-                threshold: 10%
+                target: 80%
+                threshold: 0%
                 informational: false
                 flags:
                     - investlab-quotes
 
             investlab-portfolio:
-                target: 50%
-                threshold: 10%
+                target: 80%
+                threshold: 0%
                 informational: false
                 flags:
                     - investlab-portfolio
 
             green-beard:
-                target: 50%
-                threshold: 10%
+                target: 80%
+                threshold: 0%
                 informational: false
                 flags:
                     - green-beard
 
             qup-web:
-                target: 50%
-                threshold: 10%
+                target: 80%
+                threshold: 0%
                 informational: false
                 flags:
                     - qup-web
 
             investlab:
-                target: 50%
-                threshold: 10%
+                target: 80%
+                threshold: 0%
                 informational: false
                 flags:
                     - investlab
 
             investlab-api:
-                target: 50%
-                threshold: 10%
+                target: 80%
+                threshold: 0%
                 informational: false
                 flags:
                     - investlab-api
 
             qup-shared:
-                target: 50%
-                threshold: 10%
+                target: 80%
+                threshold: 0%
                 informational: false
                 flags:
                     - qup-shared
+
+            plugin-experiments:
+                target: 80%
+                threshold: 0%
+                informational: false
+                flags:
+                    - plugin-experiments
 
 # Files and directories to ignore from coverage calculations
 ignore:
@@ -314,12 +314,6 @@ flags:
             - packages/react-clean/
         carryforward: true
 
-    ts-configs:
-        paths:
-            - packages/ts-configs/
-        carryforward: true
-
-    ts-types:
         paths:
             - packages/ts-types/
         carryforward: true
@@ -392,4 +386,9 @@ flags:
     qup-shared:
         paths:
             - packages/qup-shared/
+        carryforward: true
+
+    plugin-experiments:
+        paths:
+            - claude-plugins/experiments/
         carryforward: true

@@ -13,3 +13,6 @@ export const sharedConfig: ViteUserConfig = {
         maxConcurrency: 10,
     },
 };
+
+export { coverageThresholds } from "./coverage-thresholds.ts";
+export type { CoverageThresholds } from "./coverage-thresholds.ts";

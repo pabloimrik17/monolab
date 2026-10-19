@@ -20,11 +20,11 @@ const STATUS_BY_CODE = {
     PERSISTENCE_ERROR: 500,
 } as const satisfies Record<ApiDomainErrorCode, number>;
 
-export function errorToHttp(error: ApiDomainError): number {
+function errorToHttp(error: ApiDomainError): number {
     return STATUS_BY_CODE[error.code];
 }
 
-export function toApiError(error: ApiDomainError): ApiErrorDto {
+function toApiError(error: ApiDomainError): ApiErrorDto {
     const statusCode = errorToHttp(error);
     return {
         code: error.code,
