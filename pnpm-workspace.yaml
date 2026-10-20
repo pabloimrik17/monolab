@@ -25,6 +25,18 @@ allowBuilds:
 
 blockExoticSubdeps: true
 
+trustPolicy: no-downgrade
+
+trustPolicyExclude:
+    # Maintainer published 4.0.2/4.0.3 locally (no provenance); tarball matches upstream tag, no advisories
+    - chokidar@4.0.3
+    # Backport of the ReDoS fix to the 6.x line, published without provenance; tarball identical to upstream tag v6.3.1
+    - semver@6.3.1
+    # Maintainer arcanis published 3.2.2 by hand (no provenance); tarball matches upstream berry 2eb98307, no advisories
+    - "@yarnpkg/libzip@3.2.2"
+
+strictDepBuilds: true
+
 strictPeerDependencies: false
 autoInstallPeers: true
 
