@@ -30,7 +30,7 @@ The system SHALL provide an `@m0n0lab/http-client` package with complete directo
   - Exports field pointing to `./dist/index.js` and `./dist/index.d.ts`
   - Repository metadata with directory field
   - Node.js engine: `^20.18.0 || >=22.0.0`
-  - pnpm version: `10.27.0`
+  - pnpm version: `12.14.0`
   - Scripts for build, lint, test, typecheck
   - publishConfig with npm registry information
 
