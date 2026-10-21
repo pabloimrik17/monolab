@@ -4,23 +4,21 @@ packages:
     - claude-plugins/*
 
 allowBuilds:
-    # builds the native FS-watcher from source if no prebuilt; needed for nx watch/daemon
-    "@parcel/watcher": true
-    # postinstall links the native SWC binding; needed by @swc-node/register (nx) transpile
-    "@swc/core": true
-    # postinstall validates/links the native esbuild binary; needed by vite/vitest
-    esbuild: true
-    # postinstall sets up nx native bindings (hashing/daemon); needed to run nx
-    nx: true
-    # postinstall runs `msw init` only if msw.workerDirectory is set; not needed (unset here)
+    # builds from source only if npm_config_build_from_source is set; not needed (prebuilt binaries)
+    "@parcel/watcher": false
+    # postinstall only checks the native binding; not needed (prebuilt @swc/core-* on every platform)
+    "@swc/core": false
+    # postinstall only swaps in the native binary as a speed-up; not needed (@esbuild/* prebuilt)
+    esbuild: false
+    # postinstall pre-fetches the Nx Cloud client; not needed (@nx/nx-* prebuilt, client fetched on demand)
+    nx: false
+    # postinstall only acts when msw.workerDirectory is set; not needed (unset here)
     msw: false
-    # no install script, ships prebuilt binaries; not needed (nothing to build)
-    oxc-resolver: false
-    # node-gyp build of an optional ssh2 addon; not needed (pure-JS fallback, no ssh)
+    # node-gyp build of ssh2's optional CPU probe; not needed (ssh2 falls back without it)
     cpu-features: false
-    # postinstall only patches a version-scheme check; not needed (no runtime effect)
+    # only warns on a version-scheme mismatch; not needed
     protobufjs: false
-    # install.js builds optional native crypto speed-up; not needed (docker socket, no ssh)
+    # node-gyp build of an optional crypto binding; not needed (pure-JS fallback)
     ssh2: false
 
 strictPeerDependencies: false
