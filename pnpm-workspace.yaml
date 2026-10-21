@@ -23,8 +23,6 @@ allowBuilds:
     # optional native crypto speed-up for the testcontainers ssh transport; unused (local docker socket) -> deny
     ssh2: false
 
-blockExoticSubdeps: true
-
 strictPeerDependencies: false
 
 catalog:
