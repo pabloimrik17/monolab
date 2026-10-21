@@ -92,7 +92,7 @@ corepack enable
 2. Activate pnpm version 10.27.0:
 
 ```bash
-corepack prepare pnpm@10.27.0 --activate
+corepack prepare pnpm@12.14.0 --activate
 ```
 
 3. Verify the installation:

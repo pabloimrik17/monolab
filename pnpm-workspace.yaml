@@ -26,7 +26,6 @@ allowBuilds:
 blockExoticSubdeps: true
 
 strictPeerDependencies: false
-autoInstallPeers: true
 
 catalog:
     "@arethetypeswrong/cli": 0.18.5
