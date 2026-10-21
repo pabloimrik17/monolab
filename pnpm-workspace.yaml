@@ -4,23 +4,23 @@ packages:
     - claude-plugins/*
 
 allowBuilds:
-    # builds/links native FS-watcher binary (prebuilt + node-gyp fallback); nx watch/daemon use it. safe + needed -> allow
+    # builds the native FS-watcher from source if no prebuilt; needed for nx watch/daemon
     "@parcel/watcher": true
-    # postinstall sets up the native SWC compiler binding; used by @swc-node/register (nx) + fast transpile. safe + needed -> allow
+    # postinstall links the native SWC binding; needed by @swc-node/register (nx) transpile
     "@swc/core": true
-    # postinstall installs the native esbuild binary; used by vite/vitest. safe + needed -> allow
+    # postinstall validates/links the native esbuild binary; needed by vite/vitest
     esbuild: true
-    # postinstall builds nx native bindings (hashing/daemon); core monorepo tool. safe + needed -> allow
+    # postinstall sets up nx native bindings (hashing/daemon); needed to run nx
     nx: true
-    # postinstall runs `msw init` only when a package sets msw.workerDirectory (none here) -> no-op. not needed -> deny
+    # postinstall runs `msw init` only if msw.workerDirectory is set; not needed (unset here)
     msw: false
-    # ships prebuilt platform binaries, no install hook -> nothing to build. not needed -> deny
+    # no install script, ships prebuilt binaries; not needed (nothing to build)
     oxc-resolver: false
-    # optional native addon of ssh2 (testcontainers dep); pure-JS fallback works, docker socket needs no ssh -> deny
+    # node-gyp build of an optional ssh2 addon; not needed (pure-JS fallback, no ssh)
     cpu-features: false
-    # postinstall only patches a version-scheme check, no runtime effect here -> deny
+    # postinstall only patches a version-scheme check; not needed (no runtime effect)
     protobufjs: false
-    # optional native crypto speed-up for the testcontainers ssh transport; unused (local docker socket) -> deny
+    # install.js builds optional native crypto speed-up; not needed (docker socket, no ssh)
     ssh2: false
 
 strictPeerDependencies: false
