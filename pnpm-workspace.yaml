@@ -79,3 +79,9 @@ minimumReleaseAge: 1440
 
 patchedDependencies:
     "@codecov/sveltekit-plugin@2.0.1": patches/@codecov__sveltekit-plugin@2.0.1.patch
+
+permissions:
+    fallow:
+        skills: true
+    varlock:
+        skills: true
