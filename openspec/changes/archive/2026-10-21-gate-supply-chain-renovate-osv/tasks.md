@@ -14,7 +14,7 @@
 ## 3. Integration
 
 - [x] 3.1 Run `openspec validate gate-supply-chain-renovate-osv --strict` and the repo's format/lint checks on the touched files (prettier `--tab-width 4` for JSON/YAML)
-- [ ] 3.2 Open PR against `develop` with a conventional title (`fix(renovate): gate supply chain with OSV alerts and release ages`) justified on its own merits; verify CI is green
+- [x] 3.2 Open PR against `develop` with a conventional title (`fix(renovate): gate supply chain with OSV alerts and release ages`) justified on its own merits; verify CI is green
 
 ## Workflow follow-up
 

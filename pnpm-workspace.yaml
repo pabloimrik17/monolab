@@ -4,23 +4,21 @@ packages:
     - claude-plugins/*
 
 allowBuilds:
-    # builds/links native FS-watcher binary (prebuilt + node-gyp fallback); nx watch/daemon use it. safe + needed -> allow
-    "@parcel/watcher": true
-    # postinstall sets up the native SWC compiler binding; used by @swc-node/register (nx) + fast transpile. safe + needed -> allow
-    "@swc/core": true
-    # postinstall installs the native esbuild binary; used by vite/vitest. safe + needed -> allow
-    esbuild: true
-    # postinstall builds nx native bindings (hashing/daemon); core monorepo tool. safe + needed -> allow
-    nx: true
-    # postinstall runs `msw init` only when a package sets msw.workerDirectory (none here) -> no-op. not needed -> deny
+    # builds from source only if npm_config_build_from_source is set; not needed (prebuilt binaries)
+    "@parcel/watcher": false
+    # postinstall only checks the native binding; not needed (prebuilt @swc/core-* on every platform)
+    "@swc/core": false
+    # postinstall only swaps in the native binary as a speed-up; not needed (@esbuild/* prebuilt)
+    esbuild: false
+    # postinstall pre-fetches the Nx Cloud client; not needed (@nx/nx-* prebuilt, client fetched on demand)
+    nx: false
+    # postinstall only acts when msw.workerDirectory is set; not needed (unset here)
     msw: false
-    # ships prebuilt platform binaries, no install hook -> nothing to build. not needed -> deny
-    oxc-resolver: false
-    # optional native addon of ssh2 (testcontainers dep); pure-JS fallback works, docker socket needs no ssh -> deny
+    # node-gyp build of ssh2's optional CPU probe; not needed (ssh2 falls back without it)
     cpu-features: false
-    # postinstall only patches a version-scheme check, no runtime effect here -> deny
+    # only warns on a version-scheme mismatch; not needed
     protobufjs: false
-    # optional native crypto speed-up for the testcontainers ssh transport; unused (local docker socket) -> deny
+    # node-gyp build of an optional crypto binding; not needed (pure-JS fallback)
     ssh2: false
 
 blockExoticSubdeps: true
@@ -38,7 +36,6 @@ trustPolicyExclude:
 strictDepBuilds: true
 
 strictPeerDependencies: false
-autoInstallPeers: true
 
 catalog:
     "@arethetypeswrong/cli": 0.18.5

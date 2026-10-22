@@ -15,7 +15,7 @@
 
 ### Core Technologies
 - **Node.js**: 24.21.0 (managed via `.nvmrc`)
-- **Package Manager**: pnpm 10.27.0 (locked with sha512 hash)
+- **Package Manager**: pnpm 12.14.0 (pinned in `packageManager`)
 - **Language**: TypeScript 5.9.2 (strict mode enabled)
 - **Monorepo Tool**: Nx 21.3.11 with @nx/js plugin
 
@@ -202,7 +202,7 @@
 
 **Runtime Requirements**:
 - **Node.js**: Exactly 24.21.0 (enforced via package.json engines field and `.nvmrc`)
-- **pnpm**: Exactly 10.27.0 with specific sha512 hash (use `corepack prepare pnpm@10.27.0 --activate`)
+- **pnpm**: Exactly 12.14.0 (use `corepack prepare pnpm@12.14.0 --activate`)
 - Use `nvm use` to automatically switch to the correct Node version
 
 **TypeScript Strictness**:
