@@ -24,7 +24,6 @@ export default mergeConfig(
             },
             projects: [
                 {
-                    extends: true,
                     test: {
                         name: "integration-platform",
                         include: ["src/**/*.integration-platform.ts"],

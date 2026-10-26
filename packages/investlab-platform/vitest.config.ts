@@ -10,9 +10,8 @@ export default mergeConfig(
                 junit: "./test-results.junit.xml",
             },
             projects: [
-                { extends: true, test: { name: "unit", include: ["src/**/*.test.ts"] } },
+                { test: { name: "unit", include: ["src/**/*.test.ts"] } },
                 {
-                    extends: true,
                     test: { name: "integration", include: ["src/**/*.integration.ts"] },
                 },
             ],
