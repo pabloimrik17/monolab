@@ -30,9 +30,8 @@ export default mergeConfig(
                 reportsDirectory: "./coverage",
             },
             projects: [
-                { extends: true, test: { name: "unit" } },
+                { test: { name: "unit" } },
                 {
-                    extends: true,
                     test: {
                         name: "types",
                         typecheck: { enabled: true, only: true, tsconfig: "./tsconfig.test.json" },

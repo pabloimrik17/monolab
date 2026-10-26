@@ -6,7 +6,6 @@ import type { ViteUserConfig } from "vitest/config";
  */
 export const sharedConfig: ViteUserConfig = {
     test: {
-        clearMocks: true,
         restoreMocks: true,
         unstubEnvs: true,
         unstubGlobals: true,

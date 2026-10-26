@@ -119,6 +119,9 @@ coverage
 *junit*.xml
 test-results*.xml
 
+# Vitest 5 output (browser failure screenshots)
+.vitest
+
 # Vitest HTML reporter output
 html
 
