@@ -30,9 +30,8 @@ export default mergeConfig(
                 }),
             },
             projects: [
-                { extends: true, test: { name: "unit", include: ["src/**/*.test.ts"] } },
+                { test: { name: "unit", include: ["src/**/*.test.ts"] } },
                 {
-                    extends: true,
                     test: {
                         name: "integration:server",
                         include: ["src/application/server/**/*.integration.ts"],
@@ -44,7 +43,6 @@ export default mergeConfig(
                     },
                 },
                 {
-                    extends: true,
                     test: {
                         name: "integration:client",
                         include: ["src/application/client/**/*.integration.ts"],

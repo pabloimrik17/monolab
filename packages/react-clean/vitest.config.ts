@@ -43,7 +43,6 @@ export default mergeConfig(
             },
             projects: [
                 {
-                    extends: true,
                     test: {
                         name: "unit",
                         include: ["**/*.{test,spec}.{ts,tsx}"],
@@ -51,7 +50,6 @@ export default mergeConfig(
                     },
                 },
                 {
-                    extends: true,
                     test: {
                         name: "integration",
                         include: ["src/**/*.integration.{ts,tsx}"],
@@ -59,7 +57,6 @@ export default mergeConfig(
                     },
                 },
                 {
-                    extends: true,
                     test: {
                         name: "types",
                         typecheck: { enabled: true, only: true, tsconfig: "./tsconfig.test.json" },
