@@ -42,7 +42,8 @@ jobs:
             - name: Set Nx SHA
               uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
               with:
-                  main-branch-name: develop
+                  # Push only: base = last green run on the pushed branch. PRs ignore it (merge-base with base.ref).
+                  main-branch-name: ${{ github.ref_name }}
 
             - name: Restore cached npm dependencies
               id: cache-dependencies-restore
@@ -146,7 +147,8 @@ jobs:
             - name: Set Nx SHA
               uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
               with:
-                  main-branch-name: develop
+                  # Push only: base = last green run on the pushed branch. PRs ignore it (merge-base with base.ref).
+                  main-branch-name: ${{ github.ref_name }}
 
             - name: Restore cached npm dependencies
               id: cache-dependencies-restore
@@ -299,7 +301,8 @@ jobs:
             - name: Set Nx SHA
               uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
               with:
-                  main-branch-name: develop
+                  # Push only: base = last green run on the pushed branch. PRs ignore it (merge-base with base.ref).
+                  main-branch-name: ${{ github.ref_name }}
 
             - name: Restore cached npm dependencies
               id: cache-dependencies-restore
