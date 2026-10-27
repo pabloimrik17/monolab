@@ -1,8 +1,8 @@
 ## ADDED Requirements
 
-### Requirement: Material entity
+### Requirement: Material model
 
-The system SHALL model Material as a domain entity in `green-beard-domain` with: id (UUID), nombre (string, non-empty, trimmed), precioLitro (number, positive). Private constructor with `static create()` returning `Result<Material, ValidationError>` and `static reconstitute()`.
+The system SHALL model Material in `domain/model/material.model.ts` of `@m0n0lab/green-beard-nursery` with: id (UUID), nombre (string, non-empty, trimmed), precioLitro (number, positive). Private constructor with `static create()` returning `Result<Material, ValidationError>` and `static reconstitute()`.
 
 #### Scenario: Create valid material
 - **WHEN** `Material.create({ nombre: "Perlita", precioLitro: 2.50 })` is called
@@ -18,7 +18,7 @@ The system SHALL model Material as a domain entity in `green-beard-domain` with:
 
 ### Requirement: MaterialRepository port
 
-The system SHALL define a `MaterialRepository` interface with `ResultAsync` methods: `save`, `findById`, `findAll` (ordered by nombre), `findByIds(ids[])`, `update`, `delete`, `existsByNombre`.
+The system SHALL define a `MaterialRepository` port in `domain/repository/material.repository.ts` and implement it in `data/server/repository/material-pg.repository.ts`, with `ResultAsync` methods: `save`, `findById`, `findAll` (ordered by nombre), `findByIds(ids[])`, `update`, `delete`, `existsByNombre`.
 
 #### Scenario: Find materials by IDs
 - **WHEN** `findByIds(["id1", "id2"])` is called
@@ -26,21 +26,21 @@ The system SHALL define a `MaterialRepository` interface with `ResultAsync` meth
 
 ### Requirement: Material CRUD use cases
 
-The system SHALL provide injectable use cases: `CreateMaterialUseCase` (validates nombre uniqueness), `GetMaterialesUseCase`, `GetMaterialByIdUseCase`, `UpdateMaterialUseCase`, `DeleteMaterialUseCase`.
+The system SHALL provide injectable use cases: `MaterialCreateUseCase` (validates nombre uniqueness), `MaterialListUseCase`, `MaterialGetByIdUseCase`, `MaterialUpdateUseCase`, `MaterialDeleteUseCase`.
 
-`DeleteMaterialUseCase` SHALL check if the material is used by any sustrato and return `DomainError` if so.
+Use cases live in `application/server/use-case/material-<verb>.use-case.ts`. `MaterialDeleteUseCase` SHALL check, through `SustratoRepository.existsMaterialUsage`, whether any sustrato uses the material and return a `MaterialInUseError` (`domain/error/material.error.ts`) if so.
 
 #### Scenario: Delete material used by sustrato
-- **WHEN** `DeleteMaterialUseCase` is executed for a material referenced in sustrato_materiales
+- **WHEN** `MaterialDeleteUseCase` is executed for a material referenced in sustrato_materiales
 - **THEN** it returns an error indicating the material is in use
 
 #### Scenario: Create material with duplicate nombre
-- **WHEN** `CreateMaterialUseCase` is executed with an existing nombre
+- **WHEN** `MaterialCreateUseCase` is executed with an existing nombre
 - **THEN** it returns `Err<DuplicateError>`
 
 ### Requirement: Drizzle materiales table
 
-The system SHALL define a `materiales` table: `id` (UUID PK, default random), `nombre` (VARCHAR 100, NOT NULL, UNIQUE), `precio_litro` (NUMERIC(10,2), NOT NULL).
+The system SHALL define a `materiales` table in `data/server/infra/db/material.table.ts`: `id` (UUID PK, default random), `nombre` (VARCHAR 100, NOT NULL, UNIQUE), `precio_litro` (NUMERIC(10,2), NOT NULL).
 
 #### Scenario: Unique nombre constraint
 - **WHEN** two materials with the same nombre are inserted
@@ -48,7 +48,7 @@ The system SHALL define a `materiales` table: `id` (UUID PK, default random), `n
 
 ### Requirement: Material DTOs
 
-The system SHALL define in `green-beard-shared`: `MaterialDto` (`{ id, nombre, precioLitro }`), `CreateMaterialRequest` (`{ nombre, precioLitro }`), `UpdateMaterialRequest` (`{ nombre?, precioLitro? }`).
+The system SHALL define in `data/shared/dto/material.dto.ts`: `MaterialDto` (`{ id, nombre, precioLitro }`), `MaterialCreateRequest` (`{ nombre, precioLitro }`), `MaterialUpdateRequest` (`{ nombre?, precioLitro? }`).
 
 #### Scenario: DTO precioLitro is a number
 - **WHEN** API returns a material
@@ -56,7 +56,7 @@ The system SHALL define in `green-beard-shared`: `MaterialDto` (`{ id, nombre, p
 
 ### Requirement: Material API routes
 
-The system SHALL expose: `GET /materiales`, `GET /materiales/:id`, `POST /materiales`, `PATCH /materiales/:id`, `DELETE /materiales/:id`.
+The system SHALL expose, from `src/nursery/route/material.route.ts` in `apps/green-beard-api`: `GET /materiales`, `GET /materiales/:id`, `POST /materiales`, `PATCH /materiales/:id`, `DELETE /materiales/:id`.
 
 #### Scenario: Create material via API
 - **WHEN** `POST /materiales` with `{ "nombre": "Perlita", "precioLitro": 2.50 }`

@@ -1,5 +1,5 @@
 ---
-status: amended by ADR-0007
+status: amended by ADR-0007, ADR-0009
 ---
 
 # InvestLab datasources only for multi-source repositories; cross-aggregate reads are queries
