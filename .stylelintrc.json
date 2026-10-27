@@ -6,6 +6,15 @@
         "selector-no-unmatchable": true,
         "display-notation": "short",
         "relative-selector-nesting-notation": "explicit",
-        "import-notation": "string"
+        "import-notation": "string",
+        "property-layout-mappings": "flow-relative",
+        "unit-layout-mappings": "flow-relative",
+        "value-keyword-layout-mappings": "flow-relative"
+    },
+    "languageOptions": {
+        "directionality": {
+            "block": "top-to-bottom",
+            "inline": "left-to-right"
+        }
     }
 }
