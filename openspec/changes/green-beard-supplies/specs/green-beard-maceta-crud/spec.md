@@ -2,7 +2,7 @@
 
 ### Requirement: MacetaMaterial value object
 
-The system SHALL define a `MacetaMaterial` type as a string union: `"terracota" | "plastico" | "ceramica" | "fibra_coco" | "tela"`. A validation function SHALL verify input is one of the allowed values.
+The system SHALL define a `MacetaMaterial` type in `domain/value-object/maceta-material.value-object.ts` as a string union: `"terracota" | "plastico" | "ceramica" | "fibra_coco" | "tela"`. A validation function SHALL verify input is one of the allowed values.
 
 #### Scenario: Valid material
 - **WHEN** "terracota" is validated as MacetaMaterial
@@ -12,9 +12,9 @@ The system SHALL define a `MacetaMaterial` type as a string union: `"terracota" 
 - **WHEN** "madera" is validated as MacetaMaterial
 - **THEN** a ValidationError is returned
 
-### Requirement: Maceta entity
+### Requirement: Maceta model
 
-The system SHALL model Maceta as a domain entity with: id (UUID), nombre (string, non-empty), material (MacetaMaterial), diametroCm (number, positive), altoCm (number, positive), volumenLitros (number, positive), coste (number, positive), margen (number, 0-1 inclusive). Private constructor with `create()`, `reconstitute()`, `update()`.
+The system SHALL model Maceta in `domain/model/maceta.model.ts` with: id (UUID), nombre (string, non-empty), material (MacetaMaterial), diametroCm (number, positive), altoCm (number, positive), volumenLitros (number, positive), coste (number, positive), margen (number, 0-1 inclusive). Private constructor with `create()`, `reconstitute()`, `update()`.
 
 PVP is a computed getter: `coste × (1 + margen)`, rounded to 2 decimals. NOT stored.
 
@@ -32,7 +32,7 @@ PVP is a computed getter: `coste × (1 + margen)`, rounded to 2 decimals. NOT st
 
 ### Requirement: MacetaRepository port
 
-The system SHALL define a `MacetaRepository` interface with `ResultAsync` methods: `save`, `findById`, `findAll` (ordered by nombre), `update`, `delete`, `existsByNombre`.
+The system SHALL define a `MacetaRepository` port in `domain/repository/maceta.repository.ts`, implemented in `data/server/repository/maceta-pg.repository.ts`, with `ResultAsync` methods: `save`, `findById`, `findAll` (ordered by nombre), `update`, `delete`, `existsByNombre`.
 
 #### Scenario: Find all macetas
 - **WHEN** `findAll()` is called
@@ -40,15 +40,15 @@ The system SHALL define a `MacetaRepository` interface with `ResultAsync` method
 
 ### Requirement: Maceta CRUD use cases
 
-The system SHALL provide injectable use cases: `CreateMacetaUseCase` (validates nombre uniqueness), `GetMacetasUseCase`, `GetMacetaByIdUseCase`, `UpdateMacetaUseCase`, `DeleteMacetaUseCase`.
+The system SHALL provide injectable use cases in `application/server/use-case/maceta-<verb>.use-case.ts`: `MacetaCreateUseCase` (validates nombre uniqueness), `MacetaListUseCase`, `MacetaGetByIdUseCase`, `MacetaUpdateUseCase`, `MacetaDeleteUseCase`.
 
 #### Scenario: Create maceta with duplicate nombre
-- **WHEN** `CreateMacetaUseCase` is executed with an existing nombre
+- **WHEN** `MacetaCreateUseCase` is executed with an existing nombre
 - **THEN** it returns `Err<DuplicateError>`
 
 ### Requirement: Drizzle macetas table
 
-The system SHALL define a `macetas` table: `id` (UUID PK), `nombre` (VARCHAR 100, NOT NULL, UNIQUE), `material` (VARCHAR 20, NOT NULL), `diametro_cm` (NUMERIC(10,2), NOT NULL), `alto_cm` (NUMERIC(10,2), NOT NULL), `volumen_litros` (NUMERIC(10,2), NOT NULL), `coste` (NUMERIC(10,2), NOT NULL), `margen` (NUMERIC(5,2), NOT NULL).
+The system SHALL define a `macetas` table in `data/server/infra/db/maceta.table.ts`: `id` (UUID PK), `nombre` (VARCHAR 100, NOT NULL, UNIQUE), `material` (VARCHAR 20, NOT NULL), `diametro_cm` (NUMERIC(10,2), NOT NULL), `alto_cm` (NUMERIC(10,2), NOT NULL), `volumen_litros` (NUMERIC(10,2), NOT NULL), `coste` (NUMERIC(10,2), NOT NULL), `margen` (NUMERIC(5,2), NOT NULL).
 
 #### Scenario: Table schema correct
 - **WHEN** macetas table is inspected
@@ -56,7 +56,7 @@ The system SHALL define a `macetas` table: `id` (UUID PK), `nombre` (VARCHAR 100
 
 ### Requirement: Maceta DTOs
 
-The system SHALL define: `MacetaDto` (`{ id, nombre, material, diametroCm, altoCm, volumenLitros, coste, margen, pvp }`). Note: `pvp` is computed and included in the DTO. `CreateMacetaRequest`, `UpdateMacetaRequest`.
+The system SHALL define in `data/shared/dto/maceta.dto.ts`: `MacetaDto` (`{ id, nombre, material, diametroCm, altoCm, volumenLitros, coste, margen, pvp }`). Note: `pvp` is computed and included in the DTO. `MacetaCreateRequest`, `MacetaUpdateRequest`.
 
 #### Scenario: DTO includes computed pvp
 - **WHEN** API returns a maceta with coste=3.00, margen=0.30
@@ -64,7 +64,7 @@ The system SHALL define: `MacetaDto` (`{ id, nombre, material, diametroCm, altoC
 
 ### Requirement: Maceta API routes
 
-The system SHALL expose: `GET /macetas`, `GET /macetas/:id`, `POST /macetas`, `PATCH /macetas/:id`, `DELETE /macetas/:id`.
+The system SHALL expose, from `src/nursery/route/maceta.route.ts` in `apps/green-beard-api`: `GET /macetas`, `GET /macetas/:id`, `POST /macetas`, `PATCH /macetas/:id`, `DELETE /macetas/:id`.
 
 #### Scenario: Create maceta via API
 - **WHEN** `POST /macetas` with valid body

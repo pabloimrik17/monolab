@@ -1,73 +1,73 @@
-## 1. Scaffold packages
+# Tasks
 
-- [ ] 1.1 Create `packages/green-beard-domain/` — package.json (name: `@m0n0lab/green-beard-domain`, private, ESM, inversify+neverthrow deps), tsconfig, project.json, tsdown.config.ts
-- [ ] 1.2 Create `packages/green-beard-data/` — package.json (deps: `workspace:*` gb-domain, drizzle-orm, pg, drizzle-kit dev), tsconfig, project.json, tsdown.config.ts
-- [ ] 1.3 Create `packages/green-beard-shared/` — package.json (zero runtime deps), tsconfig, project.json, tsdown.config.ts
-- [ ] 1.4 Create `apps/green-beard-api/` — package.json (deps: gb-domain, gb-data, gb-shared, hono, @hono/node-server, inversify), tsconfig, project.json, tsdown.config.ts
-- [ ] 1.5 Run `pnpm install` from workspace root, verify all packages resolve
-- [ ] 1.6 Verify `pnpm nx run-many -t build --projects=@m0n0lab/green-beard-domain,@m0n0lab/green-beard-data,@m0n0lab/green-beard-shared,@m0n0lab/green-beard-api` succeeds
+Planned only: nothing here starts until every task in group 1 is done. Paths follow `clean-architecture-layout` and design §2. Copy file shapes (`package.json`, `tsdown.config.ts`, `vitest.config.ts`, `project.json`) from the matching InvestLab project. Tasks marked **[attw]** change package exports and must pass `build:check-exports`.
 
-## 2. Domain foundation (green-beard-domain)
+## 1. Gates
 
-- [ ] 2.1 Create error hierarchy: `DomainError` (abstract), `ValidationError`, `NotFoundError(entity, id)`, `DuplicateError(entity, field)`, `PersistenceError(cause)`
-- [ ] 2.2 Create `tokens.ts` with DI symbols for all repositories and use cases
-- [ ] 2.3 Create `Familia` entity — private constructor, `create()`, `reconstitute()`, `update()`, getters
-- [ ] 2.4 Create `FamiliaRepository` port interface
-- [ ] 2.5 Create Familia use cases: `CreateFamiliaUseCase`, `GetFamiliasUseCase`, `GetFamiliaByIdUseCase`, `UpdateFamiliaUseCase`, `DeleteFamiliaUseCase` — all @injectable
-- [ ] 2.6 Create `Planta` entity — private constructor, `create()`, `reconstitute()`, `update()`, FK to familiaId, nullable fotoUrl
-- [ ] 2.7 Create `PlantaRepository` port interface (includes `findByFamiliaId`)
-- [ ] 2.8 Create Planta use cases: `CreatePlantaUseCase` (validates familiaId via FamiliaRepository), `GetPlantasUseCase`, `GetPlantaByIdUseCase`, `UpdatePlantaUseCase`, `DeletePlantaUseCase`
-- [ ] 2.9 Create `domainModule` ContainerModule binding all use cases
-- [ ] 2.10 Export everything from `index.ts`
-- [ ] 2.11 Write unit tests for Familia entity (create, update, validation)
-- [ ] 2.12 Write unit tests for Planta entity (create, update, validation)
-- [ ] 2.13 Write unit tests for key use cases (create with duplicate, create with non-existent FK)
-- [ ] 2.14 Verify `pnpm nx run @m0n0lab/green-beard-domain:test:unit` passes
+- [ ] 1.1 Confirm `clean-architecture-layout` is archived: `openspec list` does not show it, `openspec/specs/clean-architecture-layout/spec.md` exists, and `eslint.config.ts` exports the `cleanArchitectureLint` factory.
+- [ ] 1.2 Confirm a Docker-compatible daemon runs (`docker info` exits 0), because Testcontainers and Docker Compose need it.
 
-## 3. Shared DTOs (green-beard-shared)
+## 2. Core package
 
-- [ ] 3.1 Create `FamiliaDto`, `CreateFamiliaRequest`, `UpdateFamiliaRequest`
-- [ ] 3.2 Create `PlantaDto` (includes `familiaName`), `CreatePlantaRequest`, `UpdatePlantaRequest`
-- [ ] 3.3 Create `ApiErrorDto` type
-- [ ] 3.4 Export from `index.ts`, verify `pnpm nx run @m0n0lab/green-beard-shared:build` succeeds
+- [ ] 2.1 Scaffold `packages/green-beard-core` (`@m0n0lab/green-beard-core`, private, ESM) with a single root entry, `src/index.ts`, then run `pnpm install` and `pnpm nx sync`. Verify `pnpm nx show project @m0n0lab/green-beard-core` lists `build`, `typecheck` and `lint:eslint`.
+- [ ] 2.2 Add the kernel errors (design §7) as `src/domain/error/<concept>.error.ts` (`domain`, `validation`, `not-found`, `duplicate`, `persistence`, `network`), and the error envelope zod schema in `src/data/shared/dto/api-error.dto.ts`. Export them from `src/index.ts`. Verify **[attw]**: `pnpm nx run @m0n0lab/green-beard-core:typecheck`, `:build` and `:build:check-exports` pass.
+- [ ] 2.3 Add `paths` (`#domain/*`, `#data/*`) to the core tsconfig, and add `cleanArchitectureLint({ product: "green-beard", modules: ["nursery"] })` to `eslint.config.ts`. Verify `pnpm nx run @m0n0lab/green-beard-core:lint:eslint` passes and that the core imports no `@m0n0lab/green-beard-*` package and no infrastructure library.
 
-## 4. Data layer (green-beard-data)
+## 3. Platform package
 
-- [ ] 4.1 Create Docker Compose with PostgreSQL (`green_beard` db)
-- [ ] 4.2 Create Drizzle config (`drizzle.config.ts`)
-- [ ] 4.3 Create `familias` schema — id UUID PK, nombre VARCHAR(100) UNIQUE NOT NULL
-- [ ] 4.4 Create `plantas` schema — id UUID PK, nombre VARCHAR(150) UNIQUE NOT NULL, familia_id UUID FK→familias, foto_url TEXT nullable
-- [ ] 4.5 Generate initial migration via `pnpm nx run @m0n0lab/green-beard-data:db:generate`
-- [ ] 4.6 Create Familia mapper (`toDomain`, `toRow`)
-- [ ] 4.7 Create Planta mapper (`toDomain`, `toRow`)
-- [ ] 4.8 Create `PgFamiliaRepository` implementing FamiliaRepository — all methods with ResultAsync
-- [ ] 4.9 Create `PgPlantaRepository` implementing PlantaRepository
-- [ ] 4.10 Create `DATA_TOKENS` with DrizzleDb symbol
-- [ ] 4.11 Create `dataModule` ContainerModule binding repositories
-- [ ] 4.12 Export from `index.ts`, verify `pnpm nx run @m0n0lab/green-beard-data:build` succeeds
+- [ ] 3.1 Scaffold `packages/green-beard-platform` (`@m0n0lab/green-beard-platform`) with the `./server` and `./client` entries only (`src/server.ts`, `src/client.ts`), depending on core; run `pnpm install` and `pnpm nx sync`.
+- [ ] 3.2 Add the server side: `server/config/server.config.ts` (port), `server/config/process-env.config.ts` (adapter), `server/db/pg.client.ts` (Postgres handle), `server/tokens.ts` and `di/server.module.ts`. Cover the adapter and the module through integration tests on the `./server` entry. Verify with `pnpm nx run @m0n0lab/green-beard-platform:test`.
+- [ ] 3.3 Add the client side: `client/config/client.config.ts`, `client/config/ssr-env.config.ts` (reads `GREEN_BEARD_API_URL`), `client/http/http.client.ts`, `client/http/green-beard-api.client.ts` (parses the error envelope from core), `client/tokens.ts` and `di/client.module.ts`. Test the API client against an MSW fake. Verify with `pnpm nx run @m0n0lab/green-beard-platform:test`.
+- [ ] 3.4 Add `paths` (`#server/*`, `#client/*`, `#di/*`). Verify **[attw]**: `pnpm nx run @m0n0lab/green-beard-platform:lint:eslint`, `:typecheck`, `:test`, `:build` and `:build:check-exports` all pass, and no file outside `server/config/` and `client/config/` reads the environment.
 
-## 5. API layer (green-beard-api)
+## 4. Database package
 
-- [ ] 5.1 Create error mapping: `errorToHttp()` + `toApiError()` (NotFound→404, Validation→422, Duplicate→409, Persistence→500)
-- [ ] 5.2 Create DTO serializers (`toFamiliaDto`, `toPlantaDto`)
-- [ ] 5.3 Create `familiaRoutes(container)` — GET /, POST /, PATCH /:id, DELETE /:id
-- [ ] 5.4 Create `plantaRoutes(container)` — GET / (?familiaId filter), GET /:id, POST /, PATCH /:id, DELETE /:id
-- [ ] 5.5 Create `createContainer()` composition root loading domainModule + dataModule, binding DrizzleDb
-- [ ] 5.6 Create `app.ts` wiring Hono app with routes, CORS middleware
-- [ ] 5.7 Create `index.ts` entry point with @hono/node-server
-- [ ] 5.8 Add `dev` script (tsx watch) and `start` script
-- [ ] 5.9 Verify `pnpm nx run @m0n0lab/green-beard-api:dev` starts and responds to requests
+- [ ] 4.1 Scaffold `packages/green-beard-database` (`@m0n0lab/green-beard-database`): `drizzle.config.ts` with `schema` set to the glob `../green-beard-*/src/data/server/infra/db/*.table.ts`, an empty `drizzle/` folder, `migrate(databaseUrl)` exported from `src/index.ts`, and the `db:generate` and `db:migrate` scripts. Run `pnpm install` and `pnpm nx sync`. Verify **[attw]**: `pnpm nx run @m0n0lab/green-beard-database:build` and `:build:check-exports` pass.
 
-## 6. SvelteKit BFF wiring
+## 5. Nursery module
 
-- [ ] 6.1 Create API client utility in `apps/green-beard/src/lib/server/api-client.ts` for typed HTTP calls to Hono API
-- [ ] 6.2 Add `GREEN_BEARD_API_URL` env var support
-- [ ] 6.3 Create Familia pages: list (+page.server.ts load), create form, edit form, delete action
-- [ ] 6.4 Create Planta pages: list (with familia filter), create form (familia select), edit form, delete action
-- [ ] 6.5 Verify full flow: Docker up → API dev → SvelteKit dev → CRUD operations work in browser
+- [ ] 5.1 Scaffold `packages/green-beard-nursery` (`@m0n0lab/green-beard-nursery`) with the `.`, `./server`, `./client` and `./testing` entries (`src/index.ts`, `src/server.ts`, `src/client.ts`, `src/testing.ts`), depending on core, platform and database. Enable `experimentalDecorators` and `emitDecoratorMetadata`. Add the Vitest projects `unit`, `integration:server` and `integration:client` with the `test:unit` and `test:integration` scripts (ADR 0008). Run `pnpm install` and `pnpm nx sync`.
+- [ ] 5.2 Add test support in `src/testing/`: in `server/`, a global setup that starts Postgres with Testcontainers and runs `migrate()`, plus `given.ts`; in `client/`, the MSW setup and `given.ts`. Verify `pnpm nx run @m0n0lab/green-beard-nursery:typecheck` passes.
+- [ ] 5.3 Add `application/server/tokens.ts`, `application/client/tokens.ts`, and empty `di/server.module.ts` and `di/client.module.ts` exported from `./server` and `./client`. Add `paths` (`#domain/*`, `#application/*`, `#data/*`, `#di/*`, `#testing/*`). Verify **[attw]**: `pnpm nx run @m0n0lab/green-beard-nursery:lint:eslint`, `:typecheck`, `:build` and `:build:check-exports` all pass.
 
-## 7. Verification
+## 6. API app
 
-- [ ] 7.1 `pnpm nx run-many -t build` — all projects build
-- [ ] 7.2 `pnpm nx run @m0n0lab/green-beard-domain:test:unit` — tests pass
-- [ ] 7.3 Manual E2E: create familia → create planta with that familia → update → delete
+- [ ] 6.1 Scaffold `apps/green-beard-api` (`@m0n0lab/green-beard-api`) with `hono`, `@hono/node-server` and `inversify`, depending on the nursery (`.`, `./server`), platform (`./server`), core and database packages. Add `dev` (tsx watch), `start`, `build` and `test:integration-platform` scripts, and `paths` (`#core/*`, `#di/*`, `#nursery/*`). Run `pnpm install` and `pnpm nx sync`.
+- [ ] 6.2 Add `src/di/container.ts` (binds the process-env `Config` adapter, loads the platform and nursery server modules), `src/app.ts` (mounts module sub-apps, registers `onError`), `src/index.ts` (Node server), `src/core/mapper/error-http.mapper.ts` (design §4) and `src/core/middleware/request-validation.middleware.ts` (422 on an invalid body).
+- [ ] 6.3 Add the base harness `src/core/harness/api.harness.ts` per ADR 0008: real container, `Config` bound to constants, boundary guards on the Postgres handle, `fake(TOKEN)`, `silenceErrorLog()`, and `await using` with an idempotent `close()`.
+- [ ] 6.4 Add `apps/green-beard-api/docker-compose.yml` with PostgreSQL and a `green_beard` database. Verify `docker compose up -d` in `apps/green-beard-api` starts it and `pg_isready -h localhost -p 5432` succeeds.
+- [ ] 6.5 Verify `pnpm nx run @m0n0lab/green-beard-api:lint:eslint`, `:typecheck` and `:build` pass, and `pnpm nx run @m0n0lab/green-beard-api:dev` starts and listens.
+
+## 7. SvelteKit app
+
+- [ ] 7.1 Alias check: add `kit.alias` (`#core`, `#di`, `#nursery`) to `apps/green-beard/svelte.config.js` and switch one import to an alias. Verify `pnpm nx run @m0n0lab/green-beard:typecheck`, `:build` and `:test` pass, and `pnpm nx run @m0n0lab/green-beard:dev` serves the page.
+- [ ] 7.2 Remove `src/lib/` (no catch-all folders): move `favicon.svg` to `static/` and reference it from `+layout.svelte`. Verify `:build` passes and the dev page shows the favicon.
+- [ ] 7.3 Add dependencies on the nursery (`.`, `./client`), platform (`./client`) and core packages, and `src/di/container.server.ts` binding the SSR env `Config` adapter and loading the platform and nursery client modules. Verify `pnpm nx run @m0n0lab/green-beard:lint:eslint`, `:typecheck` and `:build` pass, and that no file imports a `./server` entry.
+
+## 8. Familia slice
+
+- [ ] 8.1 Add `domain/model/familia.model.ts` with `familia.model.test.ts`, and `testing/shared/builder/familia.builder.ts` re-exported from `src/testing.ts`. Verify **[attw]**: `pnpm nx run @m0n0lab/green-beard-nursery:test:unit` and `:build:check-exports` pass.
+- [ ] 8.2 Add `data/server/infra/db/familia.table.ts`. Run `pnpm nx run @m0n0lab/green-beard-database:db:generate` to create the first migration, then `:db:migrate` against the Docker Compose database; verify the `familias` table exists with the unique `nombre`.
+- [ ] 8.3 Add the `FamiliaRepository` port, `FamiliaPgRepository` (private row mapping), the five server use cases, and their bindings in `di/server.module.ts`, with one `familia-<verb>.use-case.integration.ts` per use case covering the Familia spec scenarios. Verify **[attw]**: `pnpm nx run @m0n0lab/green-beard-nursery:test:integration` and `:build:check-exports` pass.
+- [ ] 8.4 Add `data/shared/dto/familia.dto.ts` (exported from `.`), `FamiliaApiRepository`, the five client use cases and their bindings in `di/client.module.ts`, with integration tests against the API faked with MSW. Verify **[attw]**: `pnpm nx run @m0n0lab/green-beard-nursery:test:integration` and `:build:check-exports` pass.
+- [ ] 8.5 Add `src/nursery/route/familia.route.ts`, mounted at `/familias`, with `familia.route.harness.ts` and `familia.route.integration-platform.ts` covering the Familia API scenarios. Add `src/app.integration-platform.ts` for error hiding (ADR 0008). Verify `pnpm nx run @m0n0lab/green-beard-api:test:integration-platform` passes.
+- [ ] 8.6 Add the Familia UI in `apps/green-beard/src/nursery/`: list and edit pages, components (`<x>.component.svelte`), `familia-list.loader.server.ts`, `familia.action.server.ts` and the form parser in `form/`, with thin files in `src/routes/familias/`. Verify `pnpm nx run @m0n0lab/green-beard:lint:eslint`, `:typecheck` and `:build` pass, then by hand: list, create, edit and delete a familia.
+
+## 9. Planta slice
+
+- [ ] 9.1 Add `domain/model/planta.model.ts` with `planta.model.test.ts`, and `testing/shared/builder/planta.builder.ts` re-exported from `src/testing.ts`. Verify **[attw]**: `pnpm nx run @m0n0lab/green-beard-nursery:test:unit` and `:build:check-exports` pass.
+- [ ] 9.2 Add `data/server/infra/db/planta.table.ts` with the foreign key to `familias`. Run `pnpm nx run @m0n0lab/green-beard-database:db:generate` and `:db:migrate`; verify the `plantas` table exists with its foreign key and unique `nombre`.
+- [ ] 9.3 Add the `PlantaRepository` port, the `PlantaWithFamiliaQuery` port and read model (design §5), `PlantaPgRepository`, `PlantaWithFamiliaPgQuery` (SQL join), the five server use cases and their bindings, with integration tests covering the Planta spec scenarios. Verify **[attw]**: `pnpm nx run @m0n0lab/green-beard-nursery:test:integration` and `:build:check-exports` pass.
+- [ ] 9.4 Add `data/shared/dto/planta.dto.ts`, `PlantaApiRepository`, `PlantaWithFamiliaApiQuery`, the five client use cases and their bindings, with integration tests against MSW. Verify **[attw]**: `pnpm nx run @m0n0lab/green-beard-nursery:test:integration` and `:build:check-exports` pass.
+- [ ] 9.5 Add `src/nursery/route/planta.route.ts`, mounted at `/plantas` with the `?familiaId` filter, plus its harness and integration-platform test covering the Planta API scenarios. Verify `pnpm nx run @m0n0lab/green-beard-api:test:integration-platform` passes.
+- [ ] 9.6 Add the Planta UI in `apps/green-beard/src/nursery/`: list with a familia filter, create and edit forms with a familia select, and a delete action, with thin files in `src/routes/plantas/`. Verify `pnpm nx run @m0n0lab/green-beard:typecheck` and `:build` pass, then by hand: create, filter, edit and delete a planta.
+
+## 10. Verification
+
+- [ ] 10.1 Run `pnpm nx run-many -t test:coverage -p '@m0n0lab/green-beard*'` and set each project's coverage floors in `vitest.config.ts` per ADR 0008 (measured value rounded down to a multiple of 5).
+- [ ] 10.2 Verify `pnpm nx run-many -t lint:eslint typecheck test build -p '@m0n0lab/green-beard*'` is green, and `pnpm run lint:fallow` and `pnpm run lint:knip` pass.
+- [ ] 10.3 Manual end to end: `docker compose up -d`, `pnpm nx run @m0n0lab/green-beard-database:db:migrate`, then `pnpm nx run-many -t dev -p @m0n0lab/green-beard-api @m0n0lab/green-beard`. Create a familia, create a planta in it, update both, then delete the planta and the familia. The browser's network panel shows no request to the API's origin.
+
+## Workflow follow-up
+
+- Archive `green-beard-foundation` after review.
