@@ -4,10 +4,6 @@ export default {
     ignore: ["validate-branch-name.config.cjs", ".expect/**"],
     // POSIX `diff` (root `lint:legacy-tests`), a system binary, not a package
     ignoreBinaries: ["diff"],
-    ignoreExportsUsedInFile: {
-        interface: true,
-        type: true,
-    },
     paths: {
         "*.svg?react": ["node_modules/vite-plugin-svgr/client.d.ts"],
     },
