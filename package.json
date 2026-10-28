@@ -12,7 +12,7 @@
         "investlab:dev": "nx run-many -t dev -p @m0n0lab/investlab @m0n0lab/investlab-api",
         "investlab:test": "nx run-many -t test -p @m0n0lab/investlab @m0n0lab/investlab-api",
         "lint:fallow": "fallow dead-code --fail-on-issues",
-        "lint:knip": "knip --max-issues 60",
+        "lint:knip": "knip --files --dependencies --exports --cycles --max-issues 60",
         "lint:legacy-tests": "git ls-files '*.legacy.test.*' | diff docs/legacy-tests.txt -",
         "lint:knip:fix": "knip --fix",
         "lint:markdownlint": "markdownlint .",

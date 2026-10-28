@@ -4,6 +4,7 @@ export default {
     ignore: ["validate-branch-name.config.cjs", ".expect/**"],
     // POSIX `diff` (root `lint:legacy-tests`), a system binary, not a package
     ignoreBinaries: ["diff"],
+    rules: { cycles: "error" },
     ignoreExportsUsedInFile: {
         interface: true,
         type: true,

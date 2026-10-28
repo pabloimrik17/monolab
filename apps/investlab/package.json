@@ -7,7 +7,7 @@
         "build": "react-router build",
         "dev": "react-router dev",
         "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 60 .",
-        "lint:knip": "knip --max-issues 60 --exclude catalogReferences",
+        "lint:knip": "knip --files --dependencies --exports --cycles --max-issues 60 --exclude catalogReferences",
         "start": "varlock run -- react-router-serve ./build/server/index.js",
         "test": "vitest run",
         "test:changed": "vitest run --changed",
@@ -46,5 +46,10 @@
         "node": "24.21.0",
         "pnpm": "12.14.0"
     },
-    "packageManager": "pnpm@12.14.0"
+    "packageManager": "pnpm@12.14.0",
+    "knip": {
+        "rules": {
+            "cycles": "error"
+        }
+    }
 }
