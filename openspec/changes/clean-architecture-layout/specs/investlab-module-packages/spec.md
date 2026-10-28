@@ -32,6 +32,11 @@ Inside a package, `domain/` and `application/` SHALL NOT import `data/`, the pla
 - **WHEN** `di/server.module.ts` imports a repository port from `domain/repository/`
 - **THEN** the boundary lint check passes
 
+#### Scenario: Module file binds domain tokens
+
+- **WHEN** `di/client.module.ts` imports a repository port from `domain/repository/` and its token from `application/client/tokens.ts`
+- **THEN** the boundary lint check passes
+
 #### Scenario: Root entry reaches server code
 
 - **WHEN** `index.ts` imports a file from `data/server/`
