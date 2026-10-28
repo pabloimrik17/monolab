@@ -25,3 +25,14 @@ The system SHALL require API key at datasource creation. The key SHALL come from
 #### Scenario: Key absent from the browser
 - **WHEN** the web app is built for the browser
 - **THEN** the bundle contains no Finnhub API key and no `VITE_FINNHUB_API_KEY` variable
+
+### Requirement: Respect rate limits
+The system SHALL enforce concurrency limits to avoid exceeding Finnhub API rate limits (60 req/min). The Finnhub datasource SHALL fetch batches with a fixed concurrency of 10 and SHALL take no concurrency option.
+
+#### Scenario: Default concurrency
+- **WHEN** the Finnhub datasource fetches quotes for 20 symbols
+- **THEN** it sends at most 10 Finnhub requests at a time
+
+#### Scenario: Custom concurrency
+- **WHEN** the Finnhub datasource is created
+- **THEN** it accepts no concurrency option and always uses a concurrency of 10

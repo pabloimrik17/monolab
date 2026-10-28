@@ -8,7 +8,7 @@ Redis-backed cache for Finnhub quote API responses. Configurable TTL, transparen
 
 ### Requirement: Quote repository combines cache and Finnhub datasources
 
-The system SHALL implement the `QuoteRepository` port from `investlab-domain` in `investlab-data-server` as a quote repository that combines a Redis cache datasource and a Finnhub datasource: it reads the cache first, falls back to Finnhub, and writes fetched quotes back to the cache. Consumers do not need to know whether a response is cached. Only `apps/investlab-api` SHALL bind this repository.
+The system SHALL implement the `QuoteRepository` port of `@m0n0lab/investlab-quotes` in that module's `data/server/` folder as a quote repository that combines a Redis cache datasource and a Finnhub datasource: it reads the cache first, falls back to Finnhub, and writes fetched quotes back to the cache. Consumers do not need to know whether a response is cached. Only the quotes server container module SHALL bind this repository, using the Redis client provided by the platform, and only `apps/investlab-api` SHALL load that module.
 
 #### Scenario: Cache miss fetches from Finnhub
 

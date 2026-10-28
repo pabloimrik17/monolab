@@ -8,7 +8,7 @@ Models the user's portfolio holdings: the `PortfolioItem` entity (instrument, br
 
 ### Requirement: PortfolioItem entity
 
-The system SHALL model PortfolioItem as an entity in `investlab-domain` with: id (UUID), instrumentId (UUID, references Instrument), broker (string), targetWeight (number, 0-100), currentValue (number, >= 0), notes (optional string), createdAt (Date), updatedAt (Date). `PortfolioItem.create()` SHALL validate input and return `Result<PortfolioItem, ValidationError>`.
+The system SHALL model PortfolioItem as an entity in the `domain/` folder of `@m0n0lab/investlab-portfolio` with: id (UUID), instrumentId (UUID, references Instrument), broker (string), targetWeight (number, 0-100), currentValue (number, >= 0), notes (optional string), createdAt (Date), updatedAt (Date). `PortfolioItem.create()` SHALL validate input and return `Result<PortfolioItem, ValidationError>`.
 
 #### Scenario: Create a valid portfolio item
 
@@ -37,7 +37,7 @@ The system SHALL model PortfolioItem as an entity in `investlab-domain` with: id
 
 ### Requirement: PortfolioItem repository interface
 
-The system SHALL define a `PortfolioItemRepository` interface in `investlab-domain` with methods returning `ResultAsync`: `save(item)`, `findById(id)`, `findAll()`, `update(item)`, `delete(id)`. Further `findByX` methods SHALL be added only when a use case needs them; there SHALL be no generic `findBy(filters)`.
+The system SHALL define a `PortfolioItemRepository` port in the `domain/` folder of `@m0n0lab/investlab-portfolio` with methods returning `ResultAsync`: `save(item)`, `findById(id)`, `findAll()`, `update(item)`, `delete(id)`, `existsForInstrument(instrumentId)`. Further `findByX` methods SHALL be added only when a use case needs them; there SHALL be no generic `findBy(filters)`.
 
 #### Scenario: Find all portfolio items
 
@@ -48,6 +48,11 @@ The system SHALL define a `PortfolioItemRepository` interface in `investlab-doma
 
 - **WHEN** `delete(id)` is called with a valid ID
 - **THEN** the item is removed and `Ok<void>` is returned
+
+#### Scenario: Instrument referenced by an item
+
+- **WHEN** `existsForInstrument(instrumentId)` is called and an item references that instrument
+- **THEN** it returns `Ok<true>`
 
 ### Requirement: PortfolioItemCreate use case
 
@@ -93,7 +98,7 @@ The system SHALL provide a `PortfolioItemDeleteUseCase` that removes a portfolio
 
 ### Requirement: PortfolioItemList use case
 
-The system SHALL provide a `PortfolioItemListUseCase` that returns all portfolio items with their resolved Instrument data (name, symbol, type, assetClass, replicates) through a portfolio read-query port declared in `investlab-domain`. The server implementation SHALL resolve items and instruments in a single SQL query.
+The system SHALL provide a `PortfolioItemListUseCase` that returns all portfolio items with their resolved Instrument data (name, symbol, type, assetClass, replicates) through a portfolio read-query port declared in the `domain/` folder of `@m0n0lab/investlab-portfolio`. The server implementation SHALL resolve items and instruments in a single SQL query.
 
 #### Scenario: List all items with instrument data
 
@@ -125,7 +130,7 @@ The system SHALL define a `portfolio_items` table: `id` (UUID PK), `instrument_i
 
 ### Requirement: PortfolioItem domain-persistence mapping
 
-The system SHALL provide `toDomain(row)` and `toRow(entity)` mapper functions for PortfolioItem in a non-exported module of `investlab-data-server`.
+The system SHALL provide `toDomain(row)` and `toRow(entity)` mapper functions for PortfolioItem in a non-exported module of the `data/server/` folder of `@m0n0lab/investlab-portfolio`.
 
 #### Scenario: Round-trip mapping
 

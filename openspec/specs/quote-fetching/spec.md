@@ -7,7 +7,7 @@ Fetch current stock quotes from Finnhub API with batch support and rate limit ha
 ## Requirements
 
 ### Requirement: Fetch single quote
-The system SHALL fetch current quote data for a single ticker symbol from Finnhub API through a Finnhub datasource in `investlab-data-server`. Only the quote repository SHALL use the datasource, and only `apps/investlab-api` SHALL run it.
+The system SHALL fetch current quote data for a single ticker symbol from Finnhub API through a Finnhub datasource in the `data/server/` folder of `@m0n0lab/investlab-quotes`, built on the platform HTTP client. Only the quote repository SHALL use the datasource, and only `apps/investlab-api` SHALL run it.
 
 #### Scenario: Fetch valid ticker
 - **WHEN** getQuote("AAPL") is called
@@ -33,15 +33,15 @@ The system SHALL fetch quotes for multiple tickers efficiently using parallel re
 - **THEN** returns Map with AAPL and MSFT quotes, INVALID excluded
 
 ### Requirement: Respect rate limits
-The system SHALL enforce concurrency limits to avoid exceeding Finnhub API rate limits (60 req/min).
+The system SHALL enforce concurrency limits to avoid exceeding Finnhub API rate limits (60 req/min). The Finnhub datasource SHALL fetch batches with a fixed concurrency of 10 and SHALL take no concurrency option.
 
 #### Scenario: Default concurrency
-- **WHEN** the Finnhub datasource is created without options
-- **THEN** uses default concurrency of 10
+- **WHEN** the Finnhub datasource fetches quotes for 20 symbols
+- **THEN** it sends at most 10 Finnhub requests at a time
 
 #### Scenario: Custom concurrency
-- **WHEN** the Finnhub datasource is created with { concurrency: 5 }
-- **THEN** uses concurrency of 5
+- **WHEN** the Finnhub datasource is created
+- **THEN** it accepts no concurrency option and always uses a concurrency of 10
 
 ### Requirement: Quote data structure
 The system SHALL return quote data with standard fields.
@@ -51,7 +51,7 @@ The system SHALL return quote data with standard fields.
 - **THEN** Quote contains: symbol (string), price (number), change (number), changePercent (number), updatedAt (Date)
 
 ### Requirement: API key configuration
-The system SHALL require API key at datasource creation. The key SHALL come from the `apps/investlab-api` environment and SHALL never be part of the web app's environment or browser bundle.
+The system SHALL require API key at datasource creation. The key SHALL come from the server `Config` (`finnhub.apiKey`), filled from the `apps/investlab-api` environment, and SHALL never be part of the web app's environment, `Config` or browser bundle.
 
 #### Scenario: Create client with API key
 - **WHEN** the Finnhub datasource is created with "api-key-123"
