@@ -34,6 +34,8 @@
         "tslib",
         // loaded by husky hook via CLI, never imported
         "validate-branch-name",
+        // loaded by eslint-plugin-boundaries through the `import/resolver` setting, never imported
+        "eslint-import-resolver-typescript",
         // scoped intent: driver used by drizzle in *-data workspaces only
         "pg",
         // scoped intent: deliberate keep in apps/qup-web (mirrors knip decision)

@@ -20,6 +20,8 @@ allowBuilds:
     protobufjs: false
     # node-gyp build of an optional crypto binding; not needed (pure-JS fallback)
     ssh2: false
+    # postinstall only checks the native binding; not needed (prebuilt @unrs/resolver-binding-* on every platform)
+    unrs-resolver: false
 
 blockExoticSubdeps: true
 
