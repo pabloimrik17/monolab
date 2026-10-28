@@ -1,3 +1,7 @@
+## Purpose
+
+Defines `apps/investlab-api`, the Hono HTTP API that is InvestLab's only process talking to Postgres, Redis and Finnhub: its routes, bearer-token protection, request validation and error responses keyed by code.
+
 ## ADDED Requirements
 
 ### Requirement: InvestLab HTTP API owns persistence and external quotes

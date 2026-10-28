@@ -1,3 +1,7 @@
+## Purpose
+
+Models the user's portfolio holdings: the `PortfolioItem` entity (instrument, broker, target weight, current value, notes), its repository and use cases, its persistence, and the `/portfolio` table view.
+
 ## ADDED Requirements
 
 ### Requirement: PortfolioItem entity
