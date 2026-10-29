@@ -1,5 +1,5 @@
 import { useFetcher } from "react-router";
-import type { PortfolioItemView } from "./types";
+import type { PortfolioItemView } from "../view-model/portfolio.view-model";
 
 const currency = new Intl.NumberFormat("en-US", {
     style: "currency",

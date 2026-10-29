@@ -1,5 +1,5 @@
-import { PortfolioItemRow } from "./portfolio-item-row";
-import type { PortfolioItemView } from "./types";
+import { PortfolioItemRow } from "./portfolio-item-row.component";
+import type { PortfolioItemView } from "../view-model/portfolio.view-model";
 
 export interface PortfolioTableProps {
     items: PortfolioItemView[];

@@ -1,9 +1,10 @@
 apps/investlab/src/lib/container.server.legacy.test.ts
-apps/investlab/src/lib/portfolio-item-form.legacy.test.ts
 apps/investlab/src/lib/remote-error.legacy.test.ts
+apps/investlab/src/portfolio/action/portfolio.action.server.legacy.test.ts
+apps/investlab/src/portfolio/form/portfolio-item.form.legacy.test.ts
+apps/investlab/src/portfolio/loader/portfolio.loader.server.legacy.test.ts
 apps/investlab/src/root.legacy.test.tsx
 apps/investlab/src/routes/api.quotes.legacy.test.ts
-apps/investlab/src/routes/portfolio.legacy.test.ts
 apps/investlab/src/ticker/quote-poller.legacy.test.ts
 apps/investlab/src/ticker/route-quote-source.legacy.test.ts
 apps/investlab/src/ticker/ticker-store.legacy.test.ts

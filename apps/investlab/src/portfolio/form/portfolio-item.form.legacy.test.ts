@@ -3,7 +3,7 @@ import {
     createPortfolioItemFormSchema,
     portfolioItemIdFormSchema,
     updatePortfolioItemFormSchema,
-} from "./portfolio-item-form";
+} from "./portfolio-item.form";
 
 const ID = "6b3389b3-bff8-416e-93ad-e6d411808d95";
 
