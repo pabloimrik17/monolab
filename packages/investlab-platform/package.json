@@ -19,6 +19,7 @@
         "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
         "lint:eslint:fix": "eslint --cache --concurrency=auto --max-warnings 40 --fix .",
         "test": "vitest run",
+        "test:browser": "vitest run --project browser",
         "test:changed": "vitest run --changed",
         "test:coverage": "vitest run --coverage",
         "test:integration": "vitest run --project integration",

@@ -49,7 +49,6 @@ export class InvestlabApiClient {
     }
 
     /** A JSON success body, validated with `schema`; a body failing it is a `NetworkError`. */
-    // fallow-ignore-next-line unused-class-member -- moved verbatim (clean-architecture-layout)
     json<S extends z.ZodTypeAny, E = never>(
         method: HttpMethod,
         path: string,
@@ -65,7 +64,6 @@ export class InvestlabApiClient {
     }
 
     /** A success whose body, if any, the caller does not need. */
-    // fallow-ignore-next-line unused-class-member -- moved verbatim (clean-architecture-layout)
     empty<E = never>(
         method: HttpMethod,
         path: string,

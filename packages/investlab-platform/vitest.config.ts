@@ -1,5 +1,6 @@
-import { defineConfig, mergeConfig } from "vitest/config";
+import { configDefaults, defineConfig, mergeConfig } from "vitest/config";
 import { coverageThresholds, sharedConfig } from "@m0n0lab/vitest-config";
+import { headlessChromium } from "@m0n0lab/vitest-config/browser";
 
 export default mergeConfig(
     sharedConfig,
@@ -10,7 +11,20 @@ export default mergeConfig(
                 junit: "./test-results.junit.xml",
             },
             projects: [
-                { test: { name: "unit", include: ["src/**/*.test.ts"] } },
+                {
+                    test: {
+                        name: "unit",
+                        include: ["src/**/*.test.ts"],
+                        exclude: [...configDefaults.exclude, "src/**/local.storage.test.ts"],
+                    },
+                },
+                {
+                    test: {
+                        name: "browser",
+                        include: ["src/**/local.storage.test.ts"],
+                        browser: headlessChromium(),
+                    },
+                },
                 {
                     test: { name: "integration", include: ["src/**/*.integration.ts"] },
                 },
