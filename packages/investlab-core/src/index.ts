@@ -12,4 +12,4 @@ export {
     type ApiErrorCode,
     type ApiErrorDto,
     type ApiErrorIssueDto,
-} from "./api-error.dto.ts";
+} from "./data/shared/dto/api-error.dto.ts";

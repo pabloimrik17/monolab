@@ -10,7 +10,7 @@ apps/investlab/app/ticker/ticker-store.legacy.test.ts
 apps/qup-api/src/errors/error-mapping.legacy.test.ts
 apps/qup-api/src/middleware/admin-only.legacy.test.ts
 apps/qup-api/src/services/event-bus.legacy.test.ts
-packages/investlab-core/src/api-error.dto.legacy.test.ts
+packages/investlab-core/src/data/shared/dto/api-error.dto.legacy.test.ts
 packages/investlab-portfolio/src/data/contracts/instrument.dto.legacy.test.ts
 packages/investlab-portfolio/src/data/contracts/portfolio-item-list.dto.legacy.test.ts
 packages/investlab-portfolio/src/data/contracts/portfolio-item.dto.legacy.test.ts
