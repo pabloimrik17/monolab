@@ -9,8 +9,37 @@ import {
     validateId,
     validateJsonBody,
 } from "../../core/middleware/request-validation.middleware.ts";
-import { toPortfolioItemDto, toPortfolioItemListDto } from "../../serializers/dto-serializers.ts";
+import { toInstrumentDto } from "../mapper/instrument-dto.mapper.ts";
+import type {
+    PortfolioItem,
+    PortfolioItemDto,
+    PortfolioItemListDto,
+} from "@m0n0lab/investlab-portfolio";
+import type { PortfolioItemList } from "@m0n0lab/investlab-portfolio/server";
 import type { Container } from "inversify";
+
+function toPortfolioItemDto(item: PortfolioItem): PortfolioItemDto {
+    return {
+        id: item.id,
+        instrumentId: item.instrumentId,
+        broker: item.broker,
+        targetWeight: item.targetWeight,
+        currentValue: item.currentValue,
+        ...(item.notes != null && { notes: item.notes }),
+        createdAt: item.createdAt.toISOString(),
+        updatedAt: item.updatedAt.toISOString(),
+    };
+}
+
+function toPortfolioItemListDto({ items, instruments }: PortfolioItemList): PortfolioItemListDto {
+    return {
+        items: items.map(({ item, instrument }) => ({
+            item: toPortfolioItemDto(item),
+            instrument: toInstrumentDto(instrument),
+        })),
+        instruments: instruments.map(toInstrumentDto),
+    };
+}
 
 export function portfolioItemRoutes(container: Container) {
     const app = new Hono();

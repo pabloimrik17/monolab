@@ -6,7 +6,7 @@ import {
     validateId,
     validateJsonBody,
 } from "../../core/middleware/request-validation.middleware.ts";
-import { toInstrumentDto } from "../../serializers/dto-serializers.ts";
+import { toInstrumentDto } from "../mapper/instrument-dto.mapper.ts";
 import type {
     AssetClass,
     InstrumentType,
