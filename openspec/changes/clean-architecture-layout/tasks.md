@@ -4,8 +4,8 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
 
 ## 1. Gates
 
-- [ ] 1.1 Confirm `investlab-modular-packages` is archived: `openspec list` no longer shows it, `openspec/specs/investlab-module-packages/spec.md` and `openspec/specs/investlab-use-case-testing/spec.md` exist, and `openspec validate clean-architecture-layout --strict` prints no "Archive would refuse this delta" line. Groups 3–9 do not start before this passes.
-- [ ] 1.2 Alias toolchain check on `@m0n0lab/investlab-quotes` in a throwaway branch: add `paths` (`#domain/*`, `#application/*`, `#data/*`) and switch one import per kind of file to an alias. Then verify:
+- [x] 1.1 Confirm `investlab-modular-packages` is archived: `openspec list` no longer shows it, `openspec/specs/investlab-module-packages/spec.md` and `openspec/specs/investlab-use-case-testing/spec.md` exist, and `openspec validate clean-architecture-layout --strict` prints no "Archive would refuse this delta" line. Groups 3–9 do not start before this passes.
+- [x] 1.2 Alias toolchain check on `@m0n0lab/investlab-quotes` in a throwaway branch: add `paths` (`#domain/*`, `#application/*`, `#data/*`) and switch one import per kind of file to an alias. Then verify:
     - `pnpm nx run @m0n0lab/investlab-quotes:typecheck` passes;
     - `:test:integration` passes with `resolve.tsconfigPaths: true`;
     - after `:build`, `grep -rn '"#' packages/investlab-quotes/dist` finds nothing;
@@ -21,25 +21,25 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
 
 ## 2. Tooling
 
-- [ ] 2.1 Add `eslint-import-resolver-typescript` as a root devDependency (exact version, per `.npmrc`) and set `import/resolver.typescript` in the boundaries settings; verify `pnpm nx run-many -t lint:eslint -p '@m0n0lab/investlab*'` is still green.
-- [ ] 2.2 Add the `cleanArchitectureLint({ product, modules, migrated })` factory to `eslint.config.ts` (design §13). It covers:
+- [x] 2.1 Add `eslint-import-resolver-typescript` as a root devDependency (exact version, per `.npmrc`) and set `import/resolver.typescript` in the boundaries settings; verify `pnpm nx run-many -t lint:eslint -p '@m0n0lab/investlab*'` is still green.
+- [x] 2.2 Add the `cleanArchitectureLint({ product, modules, migrated })` factory to `eslint.config.ts` (design §13). It covers:
     - the elements: folder plus suffix, with tests, harnesses and framework suffixes as file categories, and `no-unknown-files`;
     - the dependency direction and the side rules;
     - repository → repository disallowed;
     - `core/` → module disallowed in apps;
     - the `../` ban merged into every `no-restricted-imports` group.
   Call it for `investlab` with an empty `migrated` list, next to the current table; verify the lint output is unchanged.
-- [ ] 2.3 Set `resolve.tsconfigPaths: true` (or the fallback from 1.2) in `packages/vitest-config` `sharedConfig` and in `apps/investlab/vite.config.ts`; verify `pnpm nx run-many -t test -p '@m0n0lab/investlab*'` is green.
+- [x] 2.3 Set `resolve.tsconfigPaths: true` (or the fallback from 1.2) in `packages/vitest-config` `sharedConfig` and in `apps/investlab/vite.config.ts`; verify `pnpm nx run-many -t test -p '@m0n0lab/investlab*'` is green.
 
 ## 3. Core package
 
-- [ ] 3.1 Split `src/errors.ts` into `src/domain/error/<concept>.error.ts`: `domain`, `validation`, `persistence`, `network`, `unauthorized`, `kernel` (union) and `remote-port` (generic). Move `errors.test.ts` and `errors.test-d.ts` next to the subjects they test, and keep `index.ts` exporting the same names. Verify with `pnpm nx run @m0n0lab/investlab-core:test` and `:typecheck`.
-- [ ] 3.2 Move `api-error.dto.ts` and its legacy test to `src/data/shared/dto/`, and update `docs/legacy-tests.txt`; verify `pnpm run lint:legacy-tests` passes.
+- [x] 3.1 Split `src/errors.ts` into `src/domain/error/<concept>.error.ts`: `domain`, `validation`, `persistence`, `network`, `unauthorized`, `kernel` (union) and `remote-port` (generic). Move `errors.test.ts` and `errors.test-d.ts` next to the subjects they test, and keep `index.ts` exporting the same names. Verify with `pnpm nx run @m0n0lab/investlab-core:test` and `:typecheck`.
+- [x] 3.2 Move `api-error.dto.ts` and its legacy test to `src/data/shared/dto/`, and update `docs/legacy-tests.txt`; verify `pnpm run lint:legacy-tests` passes.
 - [ ] 3.3 Add `paths` (`#domain/*`, `#data/*`), rewrite imports to aliases (relative only within one folder), and add core to the factory's `migrated` list. Verify **[attw]**: `pnpm nx run @m0n0lab/investlab-core:lint:eslint`, `:typecheck`, `:test`, `:build` and `:build:check-exports` all pass.
 
 ## 4. Platform package
 
-- [ ] 4.1 Move the platform files into `src/<side>/<medium>/`, with each test next to its subject. `tokens.ts` stays at each side root.
+- [x] 4.1 Move the platform files into `src/<side>/<medium>/`, with each test next to its subject. `tokens.ts` stays at each side root.
     - `shared/http-client.ts` → `shared/http/http.client.ts`
     - `shared/read-env.ts` → `shared/config/read-env.ts`
     - `server/config.ts` → `server/config/server.config.ts`
@@ -52,12 +52,12 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
     - `client/platform-client.module.ts` → `di/client.module.ts`
 
   Verify `pnpm nx run @m0n0lab/investlab-platform:test` passes.
-- [ ] 4.2 Add the key-value storage (design §10):
+- [x] 4.2 Add the key-value storage (design §10):
     - `shared/storage/key-value.storage.ts`: the interface, plus the typed helpers on a base class.
     - `shared/storage/memory.storage.ts`
     - `client/storage/local.storage.ts`
   Cover the `investlab-platform` "Key-value storage" scenarios with tests next to the implementations, the `localStorage` one in the browser Vitest project. Verify with `pnpm nx run @m0n0lab/investlab-platform:test`.
-- [ ] 4.3 Add `di/browser.module.ts`, binding `PLATFORM.KeyValueStorage` to the `localStorage` implementation, and export it and the storage interface from `./client`. Test the "Browser storage resolved without configuration" scenario.
+- [x] 4.3 Add `di/browser.module.ts`, binding `PLATFORM.KeyValueStorage` to the `localStorage` implementation, and export it and the storage interface from `./client`. Test the "Browser storage resolved without configuration" scenario.
 - [ ] 4.4 Add `paths` (`#shared/*`, `#server/*`, `#client/*`, `#di/*`), rewrite imports, and add platform to `migrated`. Verify **[attw]**: `pnpm nx run @m0n0lab/investlab-platform:lint:eslint`, `:typecheck`, `:test`, `:build` and `:build:check-exports` all pass.
 
 ## 5. Portfolio package
@@ -109,7 +109,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
 
 ## 7. API
 
-- [ ] 7.1 Move the API files; `index.ts`, `app.ts` and `app.integration-platform.ts` stay. Verify with `pnpm nx run @m0n0lab/investlab-api:test:integration-platform`.
+- [x] 7.1 Move the API files; `index.ts`, `app.ts` and `app.integration-platform.ts` stay. Verify with `pnpm nx run @m0n0lab/investlab-api:test:integration-platform`.
     - `container.ts` → `di/container.ts`
     - `routes/instruments.routes.ts` → `portfolio/route/instrument.route.ts`
     - `routes/portfolio-items.routes.ts` → `portfolio/route/portfolio-item.route.ts`
@@ -121,8 +121,8 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
     - `errors/error-mapping.ts` → `core/mapper/error-http.mapper.ts`
     - `routes/reply.ts` → `core/mapper/result-http.mapper.ts`
     - `errors/request-validation.error.ts` → `core/error/request-validation.error.ts`
-- [ ] 7.2 Replace `errors/parse-request.ts` with `core/middleware/request-validation.middleware.ts`; verify that the integration-platform tests asserting 422 responses pass unchanged.
-- [ ] 7.3 Split `serializers/dto-serializers.ts`: each `to*Dto` becomes private to the route that uses it, or moves to `<module>/mapper/<concept>-dto.mapper.ts` when two routes share it. Verify no `serializers/` folder remains.
+- [x] 7.2 Replace `errors/parse-request.ts` with `core/middleware/request-validation.middleware.ts`; verify that the integration-platform tests asserting 422 responses pass unchanged.
+- [x] 7.3 Split `serializers/dto-serializers.ts`: each `to*Dto` becomes private to the route that uses it, or moves to `<module>/mapper/<concept>-dto.mapper.ts` when two routes share it. Verify no `serializers/` folder remains.
 - [ ] 7.4 Make each module's route file export a Hono sub-app, mounted by `app.ts`. Add `paths` (`#core/*`, `#di/*`, `#portfolio/*`, `#quotes/*`), rewrite imports, and add the API to `migrated`. Then verify:
     - `pnpm nx run @m0n0lab/investlab-api:lint:eslint`, `:typecheck`, `:test:integration-platform` and `:build` pass;
     - `grep -rn '"#' apps/investlab-api/dist` finds nothing;
