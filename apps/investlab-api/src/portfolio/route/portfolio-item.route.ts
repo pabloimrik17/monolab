@@ -5,7 +5,10 @@ import {
 } from "@m0n0lab/investlab-portfolio";
 import { PORTFOLIO } from "@m0n0lab/investlab-portfolio/server";
 import { replyEmpty, replyJson } from "../../core/mapper/result-http.mapper.ts";
-import { parseId, parseJsonBody } from "../../errors/parse-request.ts";
+import {
+    validateId,
+    validateJsonBody,
+} from "../../core/middleware/request-validation.middleware.ts";
 import { toPortfolioItemDto, toPortfolioItemListDto } from "../../serializers/dto-serializers.ts";
 import type { Container } from "inversify";
 
@@ -18,8 +21,8 @@ export function portfolioItemRoutes(container: Container) {
         return replyJson(c, await uc.execute(), toPortfolioItemListDto);
     });
 
-    app.post("/", async (c) => {
-        const body = await parseJsonBody(c, createPortfolioItemDtoSchema);
+    app.post("/", validateJsonBody(createPortfolioItemDtoSchema), async (c) => {
+        const body = c.get("body");
         const uc = container.get(PORTFOLIO.ItemCreate);
 
         const result = await uc.execute({
@@ -33,9 +36,9 @@ export function portfolioItemRoutes(container: Container) {
         return replyJson(c, result, toPortfolioItemDto, 201);
     });
 
-    app.put("/:id", async (c) => {
-        const id = parseId(c);
-        const body = await parseJsonBody(c, updatePortfolioItemDtoSchema);
+    app.put("/:id", validateId, validateJsonBody(updatePortfolioItemDtoSchema), async (c) => {
+        const id = c.get("id");
+        const body = c.get("body");
         const uc = container.get(PORTFOLIO.ItemUpdate);
 
         const result = await uc.execute(
@@ -52,8 +55,8 @@ export function portfolioItemRoutes(container: Container) {
         return replyJson(c, result, toPortfolioItemDto);
     });
 
-    app.delete("/:id", async (c) => {
-        const id = parseId(c);
+    app.delete("/:id", validateId, async (c) => {
+        const id = c.get("id");
         const uc = container.get(PORTFOLIO.ItemDelete);
 
         return replyEmpty(c, await uc.execute(id));

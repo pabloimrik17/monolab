@@ -2,7 +2,10 @@ import { Hono } from "hono";
 import { createInstrumentDtoSchema, updateInstrumentDtoSchema } from "@m0n0lab/investlab-portfolio";
 import { PORTFOLIO } from "@m0n0lab/investlab-portfolio/server";
 import { replyEmpty, replyJson } from "../../core/mapper/result-http.mapper.ts";
-import { parseId, parseJsonBody } from "../../errors/parse-request.ts";
+import {
+    validateId,
+    validateJsonBody,
+} from "../../core/middleware/request-validation.middleware.ts";
 import { toInstrumentDto } from "../../serializers/dto-serializers.ts";
 import type {
     AssetClass,
@@ -39,8 +42,8 @@ export function instrumentRoutes(container: Container) {
     });
 
     // POST /instruments
-    app.post("/", async (c) => {
-        const body = await parseJsonBody(c, createInstrumentDtoSchema);
+    app.post("/", validateJsonBody(createInstrumentDtoSchema), async (c) => {
+        const body = c.get("body");
         const uc = container.get(PORTFOLIO.InstrumentCreate);
 
         const result = await uc.execute({
@@ -54,17 +57,17 @@ export function instrumentRoutes(container: Container) {
     });
 
     // PUT /instruments/:id
-    app.put("/:id", async (c) => {
-        const id = parseId(c);
-        const body = await parseJsonBody(c, updateInstrumentDtoSchema);
+    app.put("/:id", validateId, validateJsonBody(updateInstrumentDtoSchema), async (c) => {
+        const id = c.get("id");
+        const body = c.get("body");
         const uc = container.get(PORTFOLIO.InstrumentUpdate);
 
         return replyJson(c, await uc.execute(id, toInstrumentChanges(body)), toInstrumentDto);
     });
 
     // DELETE /instruments/:id
-    app.delete("/:id", async (c) => {
-        const id = parseId(c);
+    app.delete("/:id", validateId, async (c) => {
+        const id = c.get("id");
         const uc = container.get(PORTFOLIO.InstrumentDelete);
 
         return replyEmpty(c, await uc.execute(id));
