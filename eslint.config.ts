@@ -81,12 +81,14 @@ const investlabLayerBoundaries = (() => {
                     pattern: `${platform}/${side}`,
                     partialMatch: false,
                 })),
+                { type: "platform-di", pattern: `${platform}/di`, partialMatch: false },
                 { type: "platform-root", pattern: platform, partialMatch: false },
                 ...sides.flatMap((side) => [
                     layer(`application-${side}`, `${mod}/application/${side}`),
                     layer(`data-${side}`, `${mod}/data/${side}`),
                 ]),
                 layer("contracts", `${mod}/data/contracts`),
+                layer("di", `${mod}/di`),
                 layer("domain", `${mod}/domain`),
                 layer("testing", `${mod}/testing`),
                 layer("root", mod),
@@ -125,6 +127,35 @@ const investlabLayerBoundaries = (() => {
                             allow: { to: [own("domain"), own("contracts")] },
                         },
                         {
+                            from: from("di"),
+                            allow: {
+                                to: [
+                                    own("di"),
+                                    own("domain"),
+                                    ...sides.flatMap((side) => [
+                                        own(`application-${side}`),
+                                        own(`data-${side}`),
+                                    ]),
+                                ],
+                            },
+                        },
+                        {
+                            from: from("platform-di"),
+                            allow: {
+                                to: {
+                                    element: {
+                                        types: {
+                                            anyOf: [
+                                                "platform-di",
+                                                "platform-shared",
+                                                ...sides.map((side) => `platform-${side}`),
+                                            ],
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                        {
                             from: from("platform-shared"),
                             allow: { to: { element: { type: "platform-shared" } } },
                         },
@@ -135,7 +166,9 @@ const investlabLayerBoundaries = (() => {
                             },
                             {
                                 from: from(`application-${side}`, "side-test"),
-                                allow: { to: [rootFile(`module-${side}`), own("contracts")] },
+                                allow: {
+                                    to: [rootFile(`module-${side}`), own("di"), own("contracts")],
+                                },
                             },
                             {
                                 from: from(`data-${side}`),
@@ -160,6 +193,7 @@ const investlabLayerBoundaries = (() => {
                                         own("domain"),
                                         own(`application-${side}`),
                                         rootFile(`module-${side}`),
+                                        own("di"),
                                     ],
                                 },
                             },
@@ -172,7 +206,11 @@ const investlabLayerBoundaries = (() => {
                                     to: {
                                         element: {
                                             types: {
-                                                anyOf: [`platform-${side}`, "platform-shared"],
+                                                anyOf: [
+                                                    `platform-${side}`,
+                                                    "platform-shared",
+                                                    "platform-di",
+                                                ],
                                             },
                                         },
                                     },
