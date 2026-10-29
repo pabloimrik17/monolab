@@ -35,7 +35,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
 
 - [x] 3.1 Split `src/errors.ts` into `src/domain/error/<concept>.error.ts`: `domain`, `validation`, `persistence`, `network`, `unauthorized`, `kernel` (union) and `remote-port` (generic). Move `errors.test.ts` and `errors.test-d.ts` next to the subjects they test, and keep `index.ts` exporting the same names. Verify with `pnpm nx run @m0n0lab/investlab-core:test` and `:typecheck`.
 - [x] 3.2 Move `api-error.dto.ts` and its legacy test to `src/data/shared/dto/`, and update `docs/legacy-tests.txt`; verify `pnpm run lint:legacy-tests` passes.
-- [ ] 3.3 Add `paths` (`#domain/*`, `#data/*`), rewrite imports to aliases (relative only within one folder), and add core to the factory's `migrated` list. Verify **[attw]**: `pnpm nx run @m0n0lab/investlab-core:lint:eslint`, `:typecheck`, `:test`, `:build` and `:build:check-exports` all pass.
+- [x] 3.3 Add `paths` (`#domain/*`, `#data/*`), rewrite imports to aliases (relative only within one folder), and add core to the factory's `migrated` list. Verify **[attw]**: `pnpm nx run @m0n0lab/investlab-core:lint:eslint`, `:typecheck`, `:test`, `:build` and `:build:check-exports` all pass.
 
 ## 4. Platform package
 
@@ -58,7 +58,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
     - `client/storage/local.storage.ts`
   Cover the `investlab-platform` "Key-value storage" scenarios with tests next to the implementations, the `localStorage` one in the browser Vitest project. Verify with `pnpm nx run @m0n0lab/investlab-platform:test`.
 - [x] 4.3 Add `di/browser.module.ts`, binding `PLATFORM.KeyValueStorage` to the `localStorage` implementation, and export it and the storage interface from `./client`. Test the "Browser storage resolved without configuration" scenario.
-- [ ] 4.4 Add `paths` (`#shared/*`, `#server/*`, `#client/*`, `#di/*`), rewrite imports, and add platform to `migrated`. Verify **[attw]**: `pnpm nx run @m0n0lab/investlab-platform:lint:eslint`, `:typecheck`, `:test`, `:build` and `:build:check-exports` all pass.
+- [x] 4.4 Add `paths` (`#shared/*`, `#server/*`, `#client/*`, `#di/*`), rewrite imports, and add platform to `migrated`. Verify **[attw]**: `pnpm nx run @m0n0lab/investlab-platform:lint:eslint`, `:typecheck`, `:test`, `:build` and `:build:check-exports` all pass.
 
 ## 5. Portfolio package
 
@@ -91,21 +91,21 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
 
 ## 6. Quotes package
 
-- [ ] 6.1 Split `domain/quote.ts` into `domain/model/quote.model.ts` and `domain/repository/quote.repository.ts`, and move `quote.builder.ts` to `src/testing/shared/builder/`. Verify with `pnpm nx run @m0n0lab/investlab-quotes:typecheck`.
-- [ ] 6.2 Application moves as in 5.2; verify `:test:integration`.
-- [ ] 6.3 Data moves; `data/server/tokens.ts` stays. Verify `:test:integration`.
+- [x] 6.1 Split `domain/quote.ts` into `domain/model/quote.model.ts` and `domain/repository/quote.repository.ts`, and move `quote.builder.ts` to `src/testing/shared/builder/`. Verify with `pnpm nx run @m0n0lab/investlab-quotes:typecheck`.
+- [x] 6.2 Application moves as in 5.2; verify `:test:integration`.
+- [x] 6.3 Data moves; `data/server/tokens.ts` stays. Verify `:test:integration`.
     - `data/contracts/` → `data/shared/dto/`
     - `http-quote.repository.ts` → `data/client/repository/quote-api.repository.ts`
     - `cached-quote.repository.ts` → `data/server/repository/quote-cached.repository.ts`
     - `redis-quote.datasource.ts` → `data/server/datasource/quote-redis.datasource.ts`
     - `finnhub-quote.datasource.ts` → `data/server/datasource/quote-finnhub.datasource.ts`. Its HTTP calls and the Finnhub response types move to `data/server/infra/http/finnhub.client.ts`.
     - `batch.ts` becomes private to the Finnhub client. Delete its legacy test once the server quote-list integration test covers more symbols than one batch; add that case if it's missing.
-- [ ] 6.4 Followed tickers (design §9):
+- [x] 6.4 Followed tickers (design §9):
     - **New files:** `domain/model/ticker.model.ts`, `domain/repository/ticker.repository.ts`, `data/client/repository/ticker-storage.repository.ts` over `KeyValueStorage`, and `application/client/use-case/ticker-{list,add,remove}.use-case.ts`.
     - **Tests:** integration tests over the in-memory storage, covering every `ticker-management` scenario. That includes the list saved before the change and the corrupt value, as well as alphabetical order and the add/remove requirements.
     - **Wiring:** `di/browser.module.ts`, exported from `./client`.
     - Verify with `:test:integration`.
-- [ ] 6.5 Do the moves in 5.6 for quotes, add `paths` as in 5.7, and add quotes to `migrated`. Verify **[attw]**: `pnpm nx run @m0n0lab/investlab-quotes:lint:eslint`, `:typecheck`, `:test`, `:build`, `:build:check-exports`, `pnpm run lint:legacy-tests` and `pnpm run lint:fallow` all pass.
+- [x] 6.5 Do the moves in 5.6 for quotes, add `paths` as in 5.7, and add quotes to `migrated`. Verify **[attw]**: `pnpm nx run @m0n0lab/investlab-quotes:lint:eslint`, `:typecheck`, `:test`, `:build`, `:build:check-exports`, `pnpm run lint:legacy-tests` and `pnpm run lint:fallow` all pass.
 
 ## 7. API
 
@@ -130,15 +130,15 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
 
 ## 8. Web
 
-- [ ] 8.1 Set `appDirectory: "src"` in `react-router.config.ts`, move `app/` to `src/` (`root.tsx`, `entry.server.tsx`, `routes.ts` and `app.css` at its root), and regenerate the route types; verify `pnpm nx run @m0n0lab/investlab:typecheck`.
-- [ ] 8.2 Portfolio module. Verify that the portfolio legacy tests still pass at their new paths, and update `docs/legacy-tests.txt`.
+- [x] 8.1 Set `appDirectory: "src"` in `react-router.config.ts`, move `app/` to `src/` (`root.tsx`, `entry.server.tsx`, `routes.ts` and `app.css` at its root), and regenerate the route types; verify `pnpm nx run @m0n0lab/investlab:typecheck`.
+- [x] 8.2 Portfolio module. Verify that the portfolio legacy tests still pass at their new paths, and update `docs/legacy-tests.txt`.
     - `components/portfolio/portfolio-page.tsx` → `portfolio/page/portfolio.page.tsx`
     - the other components → `portfolio/component/<x>.component.tsx`
     - `use-portfolio-view-model.ts` → `portfolio/view-model/portfolio.view-model.ts`, absorbing the view types from `types.ts`
     - `lib/portfolio-item-form.ts` → `portfolio/form/portfolio-item.form.ts`
     - the loader and action → `portfolio/loader/portfolio.loader.server.ts` and `portfolio/action/portfolio.action.server.ts`, absorbing `lib/portfolio.server.ts`
     - `routes/portfolio.tsx` becomes a shell that only re-exports
-- [ ] 8.3 Quotes module and core. Verify with `:typecheck`.
+- [x] 8.3 Quotes module and core. Verify with `:typecheck`.
     - The index page → `quotes/page/ticker.page.tsx`, and the ticker components → `quotes/component/<x>.component.tsx`.
     - The `/api/quotes` loader → `quotes/loader/quote-list.loader.server.ts`, absorbing `lib/quotes.server.ts`.
     - `routes/_index.tsx` and `routes/api.quotes.ts` become shells.
@@ -160,7 +160,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
 - [ ] 9.1 Delete the old InvestLab boundaries table and the `no-restricted-imports` groups the factory replaced, and give the factory the full InvestLab project set. Verify:
     - `pnpm nx run-many -t lint:eslint` is green;
     - a deliberate violation of each rule fails: an unknown file, a folder/suffix mismatch, `../`, repository → repository, `core/` → module, and server → client.
-- [ ] 9.2 Remove what is left of the `.fallowrc.json` testing entry; verify `pnpm run lint:fallow` and `pnpm run lint:knip` pass.
+- [x] 9.2 Remove what is left of the `.fallowrc.json` testing entry; verify `pnpm run lint:fallow` and `pnpm run lint:knip` pass.
 - [ ] 9.3 Propose to the owner one `AGENTS.md` line pointing to ADR 0009, and add it only if approved. Verify with `git diff AGENTS.md`.
 - [ ] 9.4 Final check: `pnpm nx run-many -t lint:eslint typecheck test build build:check-exports -p '@m0n0lab/investlab*'`, `pnpm run lint:legacy-tests`, `pnpm run lint:fallow` and `pnpm run lint:knip` all green. Then a manual pass on the web: portfolio create/update/delete, add and remove a ticker, quotes refreshing.
 
