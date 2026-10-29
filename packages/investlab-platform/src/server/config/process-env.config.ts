@@ -1,5 +1,5 @@
-import { readEnv } from "../shared/read-env.ts";
-import type { ServerConfig } from "./config.ts";
+import { readEnv } from "../../shared/config/read-env.ts";
+import type { ServerConfig } from "./server.config.ts";
 
 function parsePort(raw: string): number {
     const port = Number(raw);

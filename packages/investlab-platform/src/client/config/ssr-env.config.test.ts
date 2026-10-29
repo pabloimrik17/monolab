@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { SsrEnvConfig } from "./ssr-env-config.ts";
+import { SsrEnvConfig } from "./ssr-env.config.ts";
 
 describe("SsrEnvConfig", () => {
     it("groups the web env keys under api", () => {

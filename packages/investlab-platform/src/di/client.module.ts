@@ -1,7 +1,7 @@
 import { ContainerModule } from "inversify";
-import { HttpClient } from "../shared/http-client.ts";
-import { InvestlabApiClient } from "./investlab-api-client.ts";
-import { PLATFORM } from "./tokens.ts";
+import { InvestlabApiClient } from "../client/http/investlab-api.client.ts";
+import { PLATFORM } from "../client/tokens.ts";
+import { HttpClient } from "../shared/http/http.client.ts";
 
 /** Infrastructure built from `PLATFORM.Config`, which the composition root binds. */
 export const platformClientModule = new ContainerModule(({ bind }) => {

@@ -1,6 +1,6 @@
-import type { HttpClient } from "../shared/http-client.ts";
-import type { ServerConfig } from "./config.ts";
-import type { Db } from "./db.ts";
+import type { HttpClient } from "../shared/http/http.client.ts";
+import type { ServerConfig } from "./config/server.config.ts";
+import type { Db } from "./db/pg.client.ts";
 import type { ServiceIdentifier } from "inversify";
 import type Redis from "ioredis";
 

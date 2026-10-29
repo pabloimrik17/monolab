@@ -1,5 +1,5 @@
-import { readEnv } from "../shared/read-env.ts";
-import type { ClientConfig } from "./config.ts";
+import { readEnv } from "../../shared/config/read-env.ts";
+import type { ClientConfig } from "./client.config.ts";
 
 /**
  * `ClientConfig` from the SSR server's `process.env`. Varlock fills it: the Vite plugin's SSR init

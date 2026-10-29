@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ProcessEnvConfig } from "./process-env-config.ts";
+import { ProcessEnvConfig } from "./process-env.config.ts";
 
 const ENV = {
     DATABASE_URL: "postgres://investlab:investlab@localhost:5433/investlab",

@@ -1,8 +1,8 @@
 import { Container } from "inversify";
 import { describe, expect, it } from "vitest";
-import { platformServerModule } from "./platform-server.module.ts";
-import { PLATFORM } from "./tokens.ts";
-import type { ServerConfig } from "./config.ts";
+import { PLATFORM } from "../server/tokens.ts";
+import { platformServerModule } from "./server.module.ts";
+import type { ServerConfig } from "../server/config/server.config.ts";
 
 /** Nothing listens on port 1, so any connection attempt would fail the test. */
 const CONFIG: ServerConfig = {

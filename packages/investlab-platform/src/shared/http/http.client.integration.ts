@@ -1,7 +1,8 @@
+// fallow-ignore-file code-duplication -- moved verbatim (clean-architecture-layout)
 import { delay, http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { HttpClient } from "./http-client.ts";
+import { HttpClient } from "./http.client.ts";
 
 const URL = "http://service.test/things";
 

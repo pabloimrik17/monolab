@@ -11,9 +11,9 @@ import {
     type KernelErrorCode,
     type RemotePortError,
 } from "@m0n0lab/investlab-core";
-import { PLATFORM } from "./tokens.ts";
-import type { HttpClient, HttpMethod } from "../shared/http-client.ts";
-import type { ClientConfig } from "./config.ts";
+import { PLATFORM } from "../tokens.ts";
+import type { HttpClient, HttpMethod } from "../../shared/http/http.client.ts";
+import type { ClientConfig } from "../config/client.config.ts";
 import type { z } from "zod";
 
 /** Wire codes a module rebuilds itself; kernel codes, `UNAUTHORIZED` and `INTERNAL_ERROR` are the platform's. */
@@ -49,6 +49,7 @@ export class InvestlabApiClient {
     }
 
     /** A JSON success body, validated with `schema`; a body failing it is a `NetworkError`. */
+    // fallow-ignore-next-line unused-class-member -- moved verbatim (clean-architecture-layout)
     json<S extends z.ZodTypeAny, E = never>(
         method: HttpMethod,
         path: string,
@@ -64,6 +65,7 @@ export class InvestlabApiClient {
     }
 
     /** A success whose body, if any, the caller does not need. */
+    // fallow-ignore-next-line unused-class-member -- moved verbatim (clean-architecture-layout)
     empty<E = never>(
         method: HttpMethod,
         path: string,
