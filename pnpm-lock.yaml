@@ -754,6 +754,9 @@ importers:
         specifier: 3.25.76
         version: 3.25.76
     devDependencies:
+      '@arethetypeswrong/cli':
+        specifier: 'catalog:'
+        version: 0.18.5
       '@m0n0lab/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
@@ -822,6 +825,9 @@ importers:
         specifier: 3.25.76
         version: 3.25.76
     devDependencies:
+      '@arethetypeswrong/cli':
+        specifier: 'catalog:'
+        version: 0.18.5
       '@m0n0lab/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
@@ -865,6 +871,9 @@ importers:
         specifier: 3.25.76
         version: 3.25.76
     devDependencies:
+      '@arethetypeswrong/cli':
+        specifier: 'catalog:'
+        version: 0.18.5
       '@m0n0lab/investlab-database':
         specifier: workspace:*
         version: link:../investlab-database
@@ -917,6 +926,9 @@ importers:
         specifier: 3.25.76
         version: 3.25.76
     devDependencies:
+      '@arethetypeswrong/cli':
+        specifier: 'catalog:'
+        version: 0.18.5
       '@m0n0lab/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
