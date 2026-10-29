@@ -1,8 +1,8 @@
 import { serve, type ServerType } from "@hono/node-server";
 import { apiErrorDtoSchema, type ApiErrorDto } from "@m0n0lab/investlab-core";
 import { PLATFORM, type ServerConfig } from "@m0n0lab/investlab-platform/server";
-import { createApp } from "../app.ts";
-import { createContainer } from "../container.ts";
+import { createApp } from "../../app.ts";
+import { createContainer } from "../../di/container.ts";
 import type { Container, ServiceIdentifier } from "inversify";
 import type { ZodType, ZodTypeDef } from "zod";
 
@@ -101,7 +101,7 @@ interface Started {
  * an unarranged use case fails the request instead of reaching Postgres, Redis or Finnhub.
  * The only test code that knows hono, @hono/node-server or inversify.
  */
-export class BaseApiHarness implements AsyncDisposable {
+export class ApiHarness implements AsyncDisposable {
     readonly url: string;
     private readonly container: Container;
     private readonly server: ServerType;
@@ -118,7 +118,7 @@ export class BaseApiHarness implements AsyncDisposable {
         this.breaches = breaches;
     }
 
-    static async launch<H extends BaseApiHarness>(
+    static async launch<H extends ApiHarness>(
         this: new (started: Started) => H,
         options: LaunchOptions = {},
     ): Promise<H> {

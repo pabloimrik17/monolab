@@ -5,7 +5,7 @@ import {
     PortfolioItemNotFoundError,
 } from "@m0n0lab/investlab-portfolio";
 import { makeInstrument, makePortfolioItem } from "@m0n0lab/investlab-portfolio/testing";
-import { PortfolioItemsHarness } from "./portfolio-items.harness.ts";
+import { PortfolioItemsHarness } from "./portfolio-item.route.harness.ts";
 
 const MISSING_ID = "6b3389b3-bff8-416e-93ad-e6d411808d95";
 

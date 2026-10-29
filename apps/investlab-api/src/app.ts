@@ -1,10 +1,10 @@
 import { Hono } from "hono";
-import { handleError } from "./errors/error-mapping.ts";
-import { bearerAuth } from "./middleware/bearer-auth.ts";
-import { healthRoutes } from "./routes/health.routes.ts";
-import { instrumentRoutes } from "./routes/instruments.routes.ts";
-import { portfolioItemRoutes } from "./routes/portfolio-items.routes.ts";
-import { quoteRoutes } from "./routes/quotes.routes.ts";
+import { handleError } from "./core/mapper/error-http.mapper.ts";
+import { bearerAuth } from "./core/middleware/bearer-auth.middleware.ts";
+import { healthRoutes } from "./core/route/health.route.ts";
+import { instrumentRoutes } from "./portfolio/route/instrument.route.ts";
+import { portfolioItemRoutes } from "./portfolio/route/portfolio-item.route.ts";
+import { quoteRoutes } from "./quotes/route/quote.route.ts";
 import type { Container } from "inversify";
 
 interface AppOptions {

@@ -4,9 +4,9 @@ import {
     updatePortfolioItemDtoSchema,
 } from "@m0n0lab/investlab-portfolio";
 import { PORTFOLIO } from "@m0n0lab/investlab-portfolio/server";
-import { parseId, parseJsonBody } from "../errors/parse-request.ts";
-import { toPortfolioItemDto, toPortfolioItemListDto } from "../serializers/dto-serializers.ts";
-import { replyEmpty, replyJson } from "./reply.ts";
+import { replyEmpty, replyJson } from "../../core/mapper/result-http.mapper.ts";
+import { parseId, parseJsonBody } from "../../errors/parse-request.ts";
+import { toPortfolioItemDto, toPortfolioItemListDto } from "../../serializers/dto-serializers.ts";
 import type { Container } from "inversify";
 
 export function portfolioItemRoutes(container: Container) {

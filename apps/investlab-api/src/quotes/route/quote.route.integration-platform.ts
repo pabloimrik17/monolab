@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { QUOTE_LIST_MAX_SYMBOLS } from "@m0n0lab/investlab-quotes";
 import { makeQuote } from "@m0n0lab/investlab-quotes/testing";
-import { QuotesHarness } from "./quotes.harness.ts";
+import { QuotesHarness } from "./quote.route.harness.ts";
 
 describe("GET /quotes", () => {
     it("rejects a request without a token", async () => {

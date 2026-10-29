@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DomainError, PersistenceError, type ApiErrorDto } from "@m0n0lab/investlab-core";
-import { PortfolioItemsHarness } from "./routes/portfolio-items.harness.ts";
-import { BaseApiHarness } from "./testing/base-api-harness.ts";
+import { ApiHarness } from "./core/harness/api.harness.ts";
+import { PortfolioItemsHarness } from "./portfolio/route/portfolio-item.route.harness.ts";
 
 const TOKEN = "s3cret-token";
 
@@ -19,7 +19,7 @@ const INTERNAL_ERROR = {
 
 describe("the API as a platform", () => {
     it("serves GET /health without a token", async () => {
-        await using api = await BaseApiHarness.launch();
+        await using api = await ApiHarness.launch();
 
         const res = await api.health();
 
@@ -28,7 +28,7 @@ describe("the API as a platform", () => {
     });
 
     it("answers unknown routes 404 once authenticated", async () => {
-        await using api = await BaseApiHarness.launch();
+        await using api = await ApiHarness.launch();
 
         const res = await api.get("/nope");
 
@@ -36,7 +36,7 @@ describe("the API as a platform", () => {
     });
 
     it("fails a request whose use case reaches a guarded platform port, naming the port", async () => {
-        await using api = await BaseApiHarness.launch();
+        await using api = await ApiHarness.launch();
         api.silenceErrorLog();
 
         await expect(api.get("/portfolio-items")).rejects.toThrow(
@@ -94,7 +94,7 @@ describe("errors hidden behind a 500", () => {
 
 describe("bearer authentication", () => {
     it("rejects a request without an Authorization header", async () => {
-        await using api = await BaseApiHarness.launch();
+        await using api = await ApiHarness.launch();
 
         const res = await api.anonymous("/portfolio-items");
 
@@ -103,7 +103,7 @@ describe("bearer authentication", () => {
     });
 
     it("rejects a wrong token", async () => {
-        await using api = await BaseApiHarness.launch();
+        await using api = await ApiHarness.launch();
 
         const res = await api.withAuthorization("/portfolio-items", "Bearer wrong-token");
 
@@ -112,7 +112,7 @@ describe("bearer authentication", () => {
     });
 
     it("rejects a token of the same length but different content", async () => {
-        await using api = await BaseApiHarness.launch();
+        await using api = await ApiHarness.launch();
 
         const res = await api.withAuthorization(
             "/portfolio-items",
@@ -124,7 +124,7 @@ describe("bearer authentication", () => {
     });
 
     it("rejects a non-Bearer scheme", async () => {
-        await using api = await BaseApiHarness.launch();
+        await using api = await ApiHarness.launch();
 
         const res = await api.withAuthorization("/portfolio-items", `Basic ${TOKEN}`);
 
@@ -133,7 +133,7 @@ describe("bearer authentication", () => {
     });
 
     it("rejects every request while no token is configured, even an empty bearer", async () => {
-        await using api = await BaseApiHarness.launch({ token: "" });
+        await using api = await ApiHarness.launch({ token: "" });
 
         const responses = await Promise.all([
             api.withAuthorization("/portfolio-items", "Bearer "),

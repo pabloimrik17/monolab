@@ -1,10 +1,10 @@
 import { okAsync } from "neverthrow";
 import { quoteDtoSchema } from "@m0n0lab/investlab-quotes";
 import { QUOTES } from "@m0n0lab/investlab-quotes/server";
-import { BaseApiHarness } from "../testing/base-api-harness.ts";
+import { ApiHarness } from "../../core/harness/api.harness.ts";
 import type { Quote } from "@m0n0lab/investlab-quotes";
 
-export class QuotesHarness extends BaseApiHarness {
+export class QuotesHarness extends ApiHarness {
     givenQuotes(quotes: Quote[]) {
         return this.fake(QUOTES.List, okAsync(quotes));
     }

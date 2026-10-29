@@ -85,8 +85,8 @@
             // harnesses come from the generic static `launch()` (`await XHarness.launch()`), whose instance type fallow
             // cannot follow; their members are called by the `*.integration-platform.ts` tests
             "files": [
-                "apps/investlab-api/src/testing/base-api-harness.ts",
-                "apps/investlab-api/src/routes/*.harness.ts"
+                "apps/investlab-api/src/core/harness/api.harness.ts",
+                "apps/investlab-api/src/**/*.route.harness.ts"
             ],
             "rules": { "unused-class-members": "off" }
         },

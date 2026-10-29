@@ -2,7 +2,7 @@ import { errAsync, okAsync } from "neverthrow";
 import { z } from "zod";
 import { instrumentDtoSchema } from "@m0n0lab/investlab-portfolio";
 import { PORTFOLIO } from "@m0n0lab/investlab-portfolio/server";
-import { BaseApiHarness } from "../testing/base-api-harness.ts";
+import { ApiHarness } from "../../core/harness/api.harness.ts";
 import type { Instrument } from "@m0n0lab/investlab-portfolio";
 import type {
     InstrumentCreateError,
@@ -10,7 +10,7 @@ import type {
     InstrumentUpdateError,
 } from "@m0n0lab/investlab-portfolio/server";
 
-export class InstrumentsHarness extends BaseApiHarness {
+export class InstrumentsHarness extends ApiHarness {
     givenInstruments(instruments: Instrument[]) {
         return this.fake(PORTFOLIO.InstrumentList, okAsync(instruments));
     }

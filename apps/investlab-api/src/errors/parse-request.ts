@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { RequestValidationError } from "./request-validation.error.ts";
+import { RequestValidationError } from "../core/error/request-validation.error.ts";
 import type { Context } from "hono";
 import type { ZodType, ZodTypeDef } from "zod";
 

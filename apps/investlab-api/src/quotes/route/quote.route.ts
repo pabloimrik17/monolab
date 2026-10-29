@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { quoteListQueryDtoSchema } from "@m0n0lab/investlab-quotes";
 import { QUOTES } from "@m0n0lab/investlab-quotes/server";
-import { parseWith } from "../errors/parse-request.ts";
-import { toQuoteDto } from "../serializers/dto-serializers.ts";
-import { replyJson } from "./reply.ts";
+import { replyJson } from "../../core/mapper/result-http.mapper.ts";
+import { parseWith } from "../../errors/parse-request.ts";
+import { toQuoteDto } from "../../serializers/dto-serializers.ts";
 import type { Container } from "inversify";
 
 export function quoteRoutes(container: Container) {

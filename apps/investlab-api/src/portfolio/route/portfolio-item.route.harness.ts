@@ -2,7 +2,7 @@ import { errAsync, okAsync } from "neverthrow";
 import { z } from "zod";
 import { portfolioItemDtoSchema, portfolioItemListDtoSchema } from "@m0n0lab/investlab-portfolio";
 import { PORTFOLIO } from "@m0n0lab/investlab-portfolio/server";
-import { BaseApiHarness } from "../testing/base-api-harness.ts";
+import { ApiHarness } from "../../core/harness/api.harness.ts";
 import type { PortfolioItem } from "@m0n0lab/investlab-portfolio";
 import type {
     PortfolioItemCreateError,
@@ -12,7 +12,7 @@ import type {
     PortfolioItemUpdateError,
 } from "@m0n0lab/investlab-portfolio/server";
 
-export class PortfolioItemsHarness extends BaseApiHarness {
+export class PortfolioItemsHarness extends ApiHarness {
     givenItems(list: PortfolioItemList) {
         return this.fake(PORTFOLIO.ItemList, okAsync(list));
     }

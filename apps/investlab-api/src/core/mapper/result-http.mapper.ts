@@ -1,4 +1,4 @@
-import { errorJson, type ApiDomainError } from "../errors/error-mapping.ts";
+import { errorJson, type ApiDomainError } from "./error-http.mapper.ts";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { Result } from "neverthrow";
