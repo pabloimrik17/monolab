@@ -62,7 +62,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
 
 ## 5. Portfolio package
 
-- [ ] 5.1 Domain moves. Verify with `pnpm nx run @m0n0lab/investlab-portfolio:test:unit`.
+- [x] 5.1 Domain moves. Verify with `pnpm nx run @m0n0lab/investlab-portfolio:test:unit`.
     - `entities/<x>.ts` → `model/<x>.model.ts`, with tests `<x>.model.test.ts`.
     - Builders → `src/testing/shared/builder/<x>.builder.ts`.
     - `value-objects/<x>.ts` → `value-object/<x>.value-object.ts`.
@@ -70,24 +70,24 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
     - `ports/<x>.repository.ts` → `repository/`, and `ports/<x>.query.ts` → `query/`.
     - `errors.ts` → `error/instrument.error.ts`, `error/portfolio-item.error.ts` and `error/portfolio-remote.error.ts`, with tests next to them.
     - `domain/GLOSSARY.md` stays.
-- [ ] 5.2 Application moves. Verify with `:test:integration`.
+- [x] 5.2 Application moves. Verify with `:test:integration`.
     - `application/<side>/<x>.use-case.ts` → `application/<side>/use-case/`.
     - `<x>.integration.ts` → `use-case/<x>.use-case.integration.ts`.
     - `given.ts`, `vitest-integration-setup.ts` and `vitest-integration-global-setup.ts` → `src/testing/<side>/`; update `globalSetup` and `setupFiles` in `vitest.config.ts`.
-- [ ] 5.3 Data moves and renames, each class renamed like its file:
+- [x] 5.3 Data moves and renames, each class renamed like its file:
     - `data/contracts/` → `data/shared/dto/`
     - `pg-<x>.repository.ts` → `data/server/repository/<x>-pg.repository.ts`
     - `pg-<x>.query.ts` → `data/server/query/<x>-pg.query.ts`
     - `http-<x>.repository.ts` → `data/client/repository/<x>-api.repository.ts`
     - `http-<x>.query.ts` → `data/client/query/<x>-api.query.ts`
   Verify with `:typecheck` and `:test:integration`.
-- [ ] 5.4 Mappers (design §4):
+- [x] 5.4 Mappers (design §4):
     - A mapper with one importer becomes a private method there. Before deleting its legacy test, confirm the integration tests assert the mapped fields.
     - A mapper with two or more importers becomes `mapper/<x>-pg.mapper.ts` or `mapper/<x>-dto.mapper.ts`.
   Update `docs/legacy-tests.txt`; verify `pnpm run lint:legacy-tests` and `:test:integration` pass.
-- [ ] 5.5 Split `data/server/schema.ts` into `data/server/infra/db/instrument.table.ts` and `portfolio-item.table.ts`. Move `pg-violation.ts` to the platform as `server/db/pg-violation.ts` and export it from `./server` **[attw]**. Point `packages/investlab-database/drizzle.config.ts` `schema` at the glob `../investlab-*/src/data/server/infra/db/*.table.ts`. Verify `pnpm --filter @m0n0lab/investlab-database db:generate` reports no schema changes.
-- [ ] 5.6 Move `module.server.ts` → `di/server.module.ts` and `module.client.ts` → `di/client.module.ts`. Replace `src/testing/index.ts` with `src/testing.ts`, exporting builders only. Set tsdown's `testing` entry to `src/testing.ts`, and drop portfolio from the `.fallowrc.json` testing entry. Verify `pnpm run lint:fallow`.
-- [ ] 5.7 Add `paths` (`#domain/*`, `#application/*`, `#data/*`, `#di/*`, `#testing/*`), rewrite imports, and add portfolio to `migrated`. Verify **[attw]**: `pnpm nx run @m0n0lab/investlab-portfolio:lint:eslint`, `:typecheck`, `:test`, `:build`, `:build:check-exports` and `pnpm run lint:legacy-tests` all pass.
+- [x] 5.5 Split `data/server/schema.ts` into `data/server/infra/db/instrument.table.ts` and `portfolio-item.table.ts`. Move `pg-violation.ts` to the platform as `server/db/pg-violation.ts` and export it from `./server` **[attw]**. Point `packages/investlab-database/drizzle.config.ts` `schema` at the glob `../investlab-*/src/data/server/infra/db/*.table.ts`. Verify `pnpm --filter @m0n0lab/investlab-database db:generate` reports no schema changes.
+- [x] 5.6 Move `module.server.ts` → `di/server.module.ts` and `module.client.ts` → `di/client.module.ts`. Replace `src/testing/index.ts` with `src/testing.ts`, exporting builders only. Set tsdown's `testing` entry to `src/testing.ts`, and drop portfolio from the `.fallowrc.json` testing entry. Verify `pnpm run lint:fallow`.
+- [x] 5.7 Add `paths` (`#domain/*`, `#application/*`, `#data/*`, `#di/*`, `#testing/*`), rewrite imports, and add portfolio to `migrated`. Verify **[attw]**: `pnpm nx run @m0n0lab/investlab-portfolio:lint:eslint`, `:typecheck`, `:test`, `:build`, `:build:check-exports` and `pnpm run lint:legacy-tests` all pass.
 
 ## 6. Quotes package
 
