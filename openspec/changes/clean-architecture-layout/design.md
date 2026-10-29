@@ -113,13 +113,21 @@ Each tool needs its own setting:
 | Tool | Support |
 | --- | --- |
 | `tsc` | `paths` |
-| Vite 8 (InvestLab web, every Vitest config) | `resolve.tsconfigPaths: true`, still experimental; `vite-tsconfig-paths` as fallback |
-| tsdown | reads the tsconfig by default (`tsconfig: true`) |
+| Vite 8 (InvestLab web, every Vitest config) | `resolve.tsconfigPaths: true`, still experimental; verified, but only for files the tsconfig includes (see below) |
+| tsdown | verified with its defaults (JS and bundled `.d.ts`) |
 | tsx (API dev) | reads `paths` |
 | SvelteKit | `kit.alias`, which generates `paths` |
 | SolidStart (Vite 6.4) | `vite-tsconfig-paths`, in the qup change |
-| `eslint-plugin-boundaries` | needs `eslint-import-resolver-typescript` |
-| fallow, knip | expected to read `paths`; verified in task 1 |
+| `eslint-plugin-boundaries` | `eslint-import-resolver-typescript`, set in a block next to `createConfig` |
+| fallow, knip | read `paths`; verified in task 1 |
+
+**Verified in task 1** (2026-10-28; Vite 8.1.5, Vitest 5.0.5, tsdown 0.22.9, TypeScript 6.0.3):
+- **Vitest:** `resolve.tsconfigPaths: true` in `sharedConfig` reaches every project. It applies only to files the tsconfig includes (`vite-tsconfig-paths` too), so each project gets a `tsconfig.test.json` (all of `src/`, own `outDir` and `tsBuildInfoFile`), referenced from `tsconfig.json`. Owner decision: tests get aliases and are typechecked.
+- **tsdown:** the `dist` check is `grep -rn --exclude='*.map' '"#' dist`; only `sourcesContent` in the maps keeps `#`.
+- **ESLint:** without the resolver an alias import escapes the layer table. `createConfig` rejects settings outside `boundaries/*`, so `import/resolver: { typescript: { project: "packages/investlab-*/tsconfig.json" } }` sits in its own block. It needs `unrs-resolver: false` in `allowBuilds` and a fallow `ignoreDependencies` entry.
+- **fallow, knip:** an unresolved `#` import fails fallow; knip lists it but stays under `--max-issues`, so fallow is the gate.
+- **attw:** `build:check-exports` on the InvestLab packages uses `--profile esm-only` (owner decision): private ESM-only packages resolve only through `bundler` and `node16` ESM, and subpath-only exports fail `node10`. Published libraries keep `strict`.
+- **Browser bundle (1.3):** failed. `./client` from a `*.client.ts` file put `HttpQuoteRepository`, `InvestlabApiClient` and the platform client module in the route chunk (token and env name stay out). Cause: top-level decorator and `ContainerModule` side effects, no `sideEffects` flag. Probes: `"sideEffects": false` alone does nothing; with tsdown `unbundle: true` it passes. Owner deferred the decision; not applied.
 
 *Alternatives*:
 - One alias per kind (`#repository/*`): rejected, because `repository/`, `query/`, `use-case/` and `port/` exist on more than one side or layer.
@@ -136,7 +144,7 @@ Each tool needs its own setting:
   - apps by `apps/<product>*/src/<module|core|di|routes>/`.
 - **Elements:** each element is a folder plus a file suffix. Tests, harnesses and framework suffixes are file categories, so `no-unknown-files` can reject everything else.
 - **Import rules:**
-  - The `../` ban joins each `no-restricted-imports` group. Flat config replaces a rule's options per file, so it cannot live in a separate block.
+  - The `../` ban and the subfolder ban (`./sub/x`, except `./+types/`) join each `no-restricted-imports` group. Flat config replaces a rule's options per file, so it cannot live in a separate block.
   - Cycles between app modules are left to `lint:fallow` (`fallow dead-code`), which already reports circular dependencies in CI.
 - **Rollout:** during the migration the factory takes a list of migrated projects, and the old InvestLab table is deleted when the list is complete.
 
@@ -151,7 +159,7 @@ Each tool needs its own setting:
 - **[Vite 8's `resolve.tsconfigPaths` is experimental]** → Task 1 tests it in a package's Vitest run and in the web build. If either fails, use `vite-tsconfig-paths` instead.
 - **[tsdown's bundled `.d.ts` keeps `#` specifiers]** → Task 1 builds a package and greps `dist/` for `"#`. If any remain, set `paths` in tsdown's `dts.compilerOptions` or resolve them with its `alias` option before migrating.
 - **[`./client` drags server-side client code into the browser bundle]** The browser container imports `./client` for the browser modules. Inversify-decorated classes are hard to tree-shake, so the API client could land in the browser.
-  → Task 1 checks the bundle against the existing "browser bundle stays free of server code" scenario.
+  → Task 1 checks the bundle against the existing "browser bundle stays free of server code" scenario. It failed (see §12); the owner deferred the decision.
   → If it fails, stop and ask the owner. The way out is a `./browser` entry, and the owner fixed the entries.
 - **[Open branches and pending changes collide with moved paths]** → The PR lists every move. Pending InvestLab changes are already stale (see Non-Goals).
 - **[Splitting `schema.ts` changes the drizzle snapshot]** → A spec scenario requires `db:generate` to report no change right after the split.
