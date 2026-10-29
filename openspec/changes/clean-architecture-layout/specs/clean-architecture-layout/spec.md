@@ -365,7 +365,7 @@ Each project SHALL declare, as a closed list, one `#<folder>/*` alias for each t
 
 ### Requirement: Import paths
 
-An import SHALL be relative only when its target sits in the same folder; every other import inside a project SHALL use an alias. No import SHALL contain `../`. An alias SHALL NOT resolve outside its own project.
+An import SHALL be relative only when its target sits in the same folder; every other import inside a project SHALL use an alias. No import SHALL contain `../`, and none SHALL enter a subfolder (`./sub/x`), except `./+types/` (React Router's generated route types). An alias SHALL NOT resolve outside its own project.
 
 #### Scenario: Parent-relative import
 
@@ -375,6 +375,16 @@ An import SHALL be relative only when its target sits in the same folder; every 
 #### Scenario: Same-folder import
 
 - **WHEN** a use case imports `./instrument-list.use-case.ts` from the same folder
+- **THEN** the lint passes
+
+#### Scenario: Subfolder-relative import
+
+- **WHEN** a file imports `./model/instrument.model.ts`
+- **THEN** the lint fails
+
+#### Scenario: Generated route types
+
+- **WHEN** a route module imports `./+types/instrument`
 - **THEN** the lint passes
 
 ### Requirement: Layer dependency direction

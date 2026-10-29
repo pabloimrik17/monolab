@@ -677,14 +677,19 @@ const scopedPolicy = ({ root }: LayoutProject, policy: LayoutPolicy) => {
           };
 };
 
-// The InvestLab package-specifier rules on the new layout. The `../` ban joins every group, because each file keeps
+// The InvestLab package-specifier rules on the new layout. The folder bans join every group, because each file keeps
 // the options of the last group that matches it.
 const parentFolder = ban(
     "(^|/)\\.\\.(/|$)",
     "import another folder through its # alias, never through ../",
 );
+// `./+types/` holds React Router's generated route types.
+const subFolder = ban(
+    "^\\./(?!\\+types/)[^/]+/",
+    "import a subfolder through its # alias; ./ is for the same folder only",
+);
 const layoutGroup = (files: string[], bans: Ban[], ignores: string[] = []) =>
-    importBans(files, [...bans, parentFolder], ignores);
+    importBans(files, [...bans, parentFolder, subFolder], ignores);
 
 const productBans = (product: string) => {
     const ours = `^@m0n0lab/${product}-`;
