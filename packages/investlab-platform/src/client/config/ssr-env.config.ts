@@ -1,4 +1,4 @@
-import { readEnv } from "../../shared/config/read-env.ts";
+import { readEnv } from "#shared/config/read-env.ts";
 import type { ClientConfig } from "./client.config.ts";
 
 /**

@@ -1,5 +1,5 @@
 import { injectable } from "inversify";
-import { BaseKeyValueStorage } from "../../shared/storage/key-value.storage.ts";
+import { BaseKeyValueStorage } from "#shared/storage/key-value.storage.ts";
 
 /** The part of the DOM `Storage` used here; this package compiles without the DOM lib. */
 interface WebStorage {

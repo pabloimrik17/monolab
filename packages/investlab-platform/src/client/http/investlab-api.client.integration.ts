@@ -4,8 +4,8 @@ import { delay, http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { z } from "zod";
-import { platformClientModule } from "../../di/client.module.ts";
-import { PLATFORM } from "../tokens.ts";
+import { PLATFORM } from "#client/tokens.ts";
+import { platformClientModule } from "#di/client.module.ts";
 import type { ApiErrorDto } from "@m0n0lab/investlab-core";
 
 const BASE_URL = "http://investlab-api.test";

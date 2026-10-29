@@ -1,7 +1,7 @@
-import type { HttpClient } from "../shared/http/http.client.ts";
-import type { KeyValueStorage } from "../shared/storage/key-value.storage.ts";
-import type { ClientConfig } from "./config/client.config.ts";
-import type { InvestlabApiClient } from "./http/investlab-api.client.ts";
+import type { ClientConfig } from "#client/config/client.config.ts";
+import type { InvestlabApiClient } from "#client/http/investlab-api.client.ts";
+import type { HttpClient } from "#shared/http/http.client.ts";
+import type { KeyValueStorage } from "#shared/storage/key-value.storage.ts";
 import type { ServiceIdentifier } from "inversify";
 
 export const PLATFORM = {

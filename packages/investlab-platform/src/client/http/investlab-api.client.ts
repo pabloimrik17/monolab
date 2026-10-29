@@ -1,5 +1,6 @@
 import { inject, injectable } from "inversify";
 import { err, ok, type Result, type ResultAsync } from "neverthrow";
+import { PLATFORM } from "#client/tokens.ts";
 import {
     apiErrorDtoSchema,
     NetworkError,
@@ -11,9 +12,8 @@ import {
     type KernelErrorCode,
     type RemotePortError,
 } from "@m0n0lab/investlab-core";
-import { PLATFORM } from "../tokens.ts";
-import type { HttpClient, HttpMethod } from "../../shared/http/http.client.ts";
-import type { ClientConfig } from "../config/client.config.ts";
+import type { ClientConfig } from "#client/config/client.config.ts";
+import type { HttpClient, HttpMethod } from "#shared/http/http.client.ts";
 import type { z } from "zod";
 
 /** Wire codes a module rebuilds itself; kernel codes, `UNAUTHORIZED` and `INTERNAL_ERROR` are the platform's. */

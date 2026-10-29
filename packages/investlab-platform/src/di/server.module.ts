@@ -1,8 +1,8 @@
 import { ContainerModule } from "inversify";
 import Redis from "ioredis";
-import { closeDb, createDb } from "../server/db/pg.client.ts";
-import { PLATFORM } from "../server/tokens.ts";
-import { HttpClient } from "../shared/http/http.client.ts";
+import { closeDb, createDb } from "#server/db/pg.client.ts";
+import { PLATFORM } from "#server/tokens.ts";
+import { HttpClient } from "#shared/http/http.client.ts";
 
 /**
  * While Redis is unreachable, commands fail at once instead of waiting through the reconnect

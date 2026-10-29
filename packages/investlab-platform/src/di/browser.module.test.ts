@@ -1,7 +1,7 @@
 import { Container } from "inversify";
 import { describe, expect, it } from "vitest";
-import { LocalStorage } from "../client/storage/local.storage.ts";
-import { PLATFORM } from "../client/tokens.ts";
+import { LocalStorage } from "#client/storage/local.storage.ts";
+import { PLATFORM } from "#client/tokens.ts";
 import { platformBrowserModule } from "./browser.module.ts";
 
 describe("platformBrowserModule", () => {
