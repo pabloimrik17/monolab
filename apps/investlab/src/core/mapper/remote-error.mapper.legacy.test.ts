@@ -12,7 +12,7 @@ import {
     PortfolioItemConflictError,
     PortfolioItemNotFoundError,
 } from "@m0n0lab/investlab-portfolio";
-import { remoteErrorMessage, remoteErrorStatus } from "./remote-error";
+import { remoteErrorMessage, remoteErrorStatus } from "./remote-error.mapper";
 
 describe("remoteErrorMessage", () => {
     it("tells the user the service is unavailable when the API cannot be reached", () => {

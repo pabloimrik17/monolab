@@ -1,7 +1,7 @@
 import { createServer, type Server } from "node:http";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { QUOTE_LIST_MAX_SYMBOLS } from "@m0n0lab/investlab-quotes";
-import type { Route } from "./+types/api.quotes";
+import type { LoaderFunctionArgs } from "react-router";
 
 const TOKEN = "test-token";
 const AAPL = {
@@ -36,13 +36,13 @@ beforeAll(async () => {
 
 afterAll(() => new Promise<void>((resolve) => api.close(() => resolve())));
 
-function get(query: string): Route.LoaderArgs {
-    return { request: new Request(`http://localhost/api/quotes${query}`) } as Route.LoaderArgs;
+function get(query: string): LoaderFunctionArgs {
+    return { request: new Request(`http://localhost/api/quotes${query}`) } as LoaderFunctionArgs;
 }
 
 describe("quotes resource route", () => {
     it("answers the quotes the API has for the requested symbols", async () => {
-        const { loader } = await import("./api.quotes");
+        const { loader } = await import("./quote-list.loader.server");
 
         const response = await loader(get("?symbols=AAPL,MSFT"));
 
@@ -52,7 +52,7 @@ describe("quotes resource route", () => {
     });
 
     it("rejects a request without symbols with 422 and never calls the API", async () => {
-        const { loader } = await import("./api.quotes");
+        const { loader } = await import("./quote-list.loader.server");
         const callsBefore = apiRequests.length;
 
         const response = await loader(get(""));
@@ -62,7 +62,7 @@ describe("quotes resource route", () => {
     });
 
     it("rejects too many or malformed symbols with 422 and never calls the API", async () => {
-        const { loader } = await import("./api.quotes");
+        const { loader } = await import("./quote-list.loader.server");
         const callsBefore = apiRequests.length;
         const tooMany = Array.from({ length: QUOTE_LIST_MAX_SYMBOLS + 1 }, (_, i) => `S${i}`);
 
@@ -75,7 +75,7 @@ describe("quotes resource route", () => {
     });
 
     it("answers 503 when the API cannot be used", async () => {
-        const { loader } = await import("./api.quotes");
+        const { loader } = await import("./quote-list.loader.server");
 
         const response = await loader(get("?symbols=CRASH"));
 

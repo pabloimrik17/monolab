@@ -1,6 +1,6 @@
 import { PORTFOLIO } from "@m0n0lab/investlab-portfolio/client";
+import { remoteErrorMessage, remoteErrorStatus } from "../../core/mapper/remote-error.mapper";
 import { getContainer } from "../../lib/container.server";
-import { remoteErrorMessage, remoteErrorStatus } from "../../lib/remote-error";
 import type { LoaderFunctionArgs } from "react-router";
 
 export async function loader(_: LoaderFunctionArgs) {

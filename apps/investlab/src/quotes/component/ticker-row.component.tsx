@@ -1,4 +1,4 @@
-import type { Quote, Ticker } from "../ticker/types";
+import type { Quote, Ticker } from "../../ticker/types";
 
 interface TickerRowProps {
     ticker: Ticker;
