@@ -2,12 +2,12 @@ import { Container } from "inversify";
 import Redis from "ioredis";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, inject } from "vitest";
+import { quotesServerModule } from "#di/server.module.ts";
 import {
     PLATFORM,
     platformServerModule,
     type ServerConfig,
 } from "@m0n0lab/investlab-platform/server";
-import { quotesServerModule } from "../../module.server.ts";
 
 /** Finnhub for this file; `given.ts` declares its answers, anything undeclared fails the test. */
 export const finnhub = setupServer();

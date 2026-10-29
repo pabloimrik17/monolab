@@ -1,4 +1,4 @@
-import type { Quote } from "./quote.ts";
+import type { Quote } from "#domain/model/quote.model.ts";
 
 export function makeQuote(overrides: Partial<Quote> = {}): Quote {
     return {

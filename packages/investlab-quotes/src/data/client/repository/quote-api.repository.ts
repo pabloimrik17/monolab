@@ -1,10 +1,11 @@
 import { inject, injectable } from "inversify";
 import { errAsync, okAsync, type ResultAsync } from "neverthrow";
 import { z } from "zod";
+import { quoteDtoSchema } from "#data/shared/dto/quote.dto.ts";
 import { PersistenceError, type RemotePortError } from "@m0n0lab/investlab-core";
 import { PLATFORM, type InvestlabApiClient } from "@m0n0lab/investlab-platform/client";
-import { quoteDtoSchema } from "../contracts/quote.dto.ts";
-import type { Quote, QuoteRepository } from "../../domain/quote.ts";
+import type { Quote } from "#domain/model/quote.model.ts";
+import type { QuoteRepository } from "#domain/repository/quote.repository.ts";
 
 const quoteListSchema = z.array(quoteDtoSchema);
 
@@ -12,7 +13,7 @@ const quoteListSchema = z.array(quoteDtoSchema);
 const QUOTES_TIMEOUT_MS = 60_000;
 
 @injectable()
-export class HttpQuoteRepository implements QuoteRepository<RemotePortError> {
+export class QuoteApiRepository implements QuoteRepository<RemotePortError> {
     constructor(@inject(PLATFORM.InvestlabApiClient) private readonly api: InvestlabApiClient) {}
 
     getQuote(symbol: string): ResultAsync<Quote, RemotePortError> {

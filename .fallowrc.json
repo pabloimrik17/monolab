@@ -10,8 +10,6 @@
         "apps/qup-web/src/routes/**/*.tsx",
         // type-level test files are entries for their assertions
         "**/*.test-d.ts",
-        // `./testing` subpath exports: fallow maps dist/testing.js to src/testing.ts, not src/testing/index.ts
-        "packages/investlab-quotes/src/testing/index.ts",
         // tool-loaded config (validate-branch-name via husky)
         "validate-branch-name.config.cjs"
     ],

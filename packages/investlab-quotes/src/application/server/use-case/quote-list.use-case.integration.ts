@@ -1,11 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { QUOTES } from "#application/server/tokens.ts";
 import {
     givenMarketDataRejectsTheKey,
     givenMarketDataUnavailable,
     givenQuotesFor,
-} from "./given.ts";
-import { QUOTES } from "./tokens.ts";
-import { container, containerWithCacheDown, FINNHUB_API_KEY } from "./vitest-integration-setup.ts";
+} from "#testing/server/given.ts";
+import {
+    container,
+    containerWithCacheDown,
+    FINNHUB_API_KEY,
+} from "#testing/server/vitest-integration-setup.ts";
 import type { QuoteListUseCase } from "./quote-list.use-case.ts";
 
 const APPLE = { price: 190.5, change: 1.5, changePercent: 0.79 };
@@ -75,6 +79,15 @@ describe("listing quotes", () => {
         expect(logged).toContain("check FINNHUB_API_KEY");
         expect(logged).not.toContain(FINNHUB_API_KEY);
         log.mockRestore();
+    });
+
+    it("fetches more symbols than one batch of requests holds", async () => {
+        const symbols = Array.from({ length: 25 }, (_, i) => `S${i}`);
+        givenQuotesFor(Object.fromEntries(symbols.map((symbol) => [symbol, APPLE])));
+
+        const quotes = (await list.execute(symbols))._unsafeUnwrap();
+
+        expect(quotes.map((quote) => quote.symbol).sort()).toEqual([...symbols].sort());
     });
 
     it("lists each symbol once, whatever its case or padding", async () => {

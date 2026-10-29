@@ -1,10 +1,11 @@
 import { inject, injectable } from "inversify";
 import { errAsync, ResultAsync } from "neverthrow";
+import { QUOTES_DATA } from "#data/server/tokens.ts";
 import { PersistenceError } from "@m0n0lab/investlab-core";
-import { QUOTES_DATA } from "./tokens.ts";
-import type { Quote, QuoteRepository } from "../../domain/quote.ts";
-import type { FinnhubQuoteDatasource } from "./finnhub-quote.datasource.ts";
-import type { RedisQuoteDatasource } from "./redis-quote.datasource.ts";
+import type { QuoteFinnhubDatasource } from "#data/server/datasource/quote-finnhub.datasource.ts";
+import type { QuoteRedisDatasource } from "#data/server/datasource/quote-redis.datasource.ts";
+import type { Quote } from "#domain/model/quote.model.ts";
+import type { QuoteRepository } from "#domain/repository/quote.repository.ts";
 
 function normalizeSymbol(symbol: string): string {
     return symbol.trim().toUpperCase();
@@ -12,11 +13,11 @@ function normalizeSymbol(symbol: string): string {
 
 /** Cache first, then Finnhub, writing fetched quotes through to the cache. Cache failures never fail a request. */
 @injectable()
-export class CachedQuoteRepository implements QuoteRepository {
+export class QuoteCachedRepository implements QuoteRepository {
     constructor(
-        @inject(QUOTES_DATA.RedisQuoteDatasource) private readonly cache: RedisQuoteDatasource,
-        @inject(QUOTES_DATA.FinnhubQuoteDatasource)
-        private readonly finnhub: FinnhubQuoteDatasource,
+        @inject(QUOTES_DATA.QuoteRedisDatasource) private readonly cache: QuoteRedisDatasource,
+        @inject(QUOTES_DATA.QuoteFinnhubDatasource)
+        private readonly finnhub: QuoteFinnhubDatasource,
     ) {}
 
     getQuote(symbol: string): ResultAsync<Quote, PersistenceError> {

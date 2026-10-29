@@ -1,5 +1,5 @@
-import type { QuoteRepository } from "../../domain/quote.ts";
-import type { QuoteListUseCase } from "./quote-list.use-case.ts";
+import type { QuoteListUseCase } from "#application/server/use-case/quote-list.use-case.ts";
+import type { QuoteRepository } from "#domain/repository/quote.repository.ts";
 import type { ServiceIdentifier } from "inversify";
 
 /** Server use cases of the quotes module. */

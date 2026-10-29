@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { QUOTES } from "#application/client/tokens.ts";
+import { givenApiUnavailable, givenQuotesFor, givenTokenRejected } from "#testing/client/given.ts";
+import { container } from "#testing/client/vitest-integration-setup.ts";
 import { NetworkError, UnauthorizedError } from "@m0n0lab/investlab-core";
-import { givenApiUnavailable, givenQuotesFor, givenTokenRejected } from "./given.ts";
-import { QUOTES } from "./tokens.ts";
-import { container } from "./vitest-integration-setup.ts";
 import type { QuoteListUseCase } from "./quote-list.use-case.ts";
 
 const SPY = {

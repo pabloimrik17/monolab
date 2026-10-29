@@ -1,13 +1,6 @@
+import type { Quote } from "#domain/model/quote.model.ts";
 import type { PersistenceError } from "@m0n0lab/investlab-core";
 import type { ResultAsync } from "neverthrow";
-
-export interface Quote {
-    symbol: string;
-    price: number;
-    change: number;
-    changePercent: number;
-    updatedAt: Date;
-}
 
 export interface QuoteRepository<E extends Error = PersistenceError> {
     getQuote(symbol: string): ResultAsync<Quote, E>;

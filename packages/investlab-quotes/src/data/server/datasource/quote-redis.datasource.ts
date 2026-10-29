@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 import { PLATFORM } from "@m0n0lab/investlab-platform/server";
-import type { Quote } from "../../domain/quote.ts";
+import type { Quote } from "#domain/model/quote.model.ts";
 import type Redis from "ioredis";
 
 const TTL_SECONDS = 3600;
@@ -24,7 +24,7 @@ function parseQuote(raw: string | null): Quote | null {
 
 /** Quotes cached by normalized symbol. Redis failures reject; the repository decides how to degrade. */
 @injectable()
-export class RedisQuoteDatasource {
+export class QuoteRedisDatasource {
     constructor(@inject(PLATFORM.Redis) private readonly redis: Redis) {}
 
     async get(symbol: string): Promise<Quote | null> {
