@@ -1,14 +1,14 @@
-import type { InstrumentRepository } from "../../domain/ports/instrument.repository.ts";
-import type { PortfolioItemQuery } from "../../domain/ports/portfolio-item.query.ts";
-import type { PortfolioItemRepository } from "../../domain/ports/portfolio-item.repository.ts";
-import type { InstrumentCreateUseCase } from "./instrument-create.use-case.ts";
-import type { InstrumentDeleteUseCase } from "./instrument-delete.use-case.ts";
-import type { InstrumentListUseCase } from "./instrument-list.use-case.ts";
-import type { InstrumentUpdateUseCase } from "./instrument-update.use-case.ts";
-import type { PortfolioItemCreateUseCase } from "./portfolio-item-create.use-case.ts";
-import type { PortfolioItemDeleteUseCase } from "./portfolio-item-delete.use-case.ts";
-import type { PortfolioItemListUseCase } from "./portfolio-item-list.use-case.ts";
-import type { PortfolioItemUpdateUseCase } from "./portfolio-item-update.use-case.ts";
+import type { InstrumentCreateUseCase } from "#application/server/use-case/instrument-create.use-case.ts";
+import type { InstrumentDeleteUseCase } from "#application/server/use-case/instrument-delete.use-case.ts";
+import type { InstrumentListUseCase } from "#application/server/use-case/instrument-list.use-case.ts";
+import type { InstrumentUpdateUseCase } from "#application/server/use-case/instrument-update.use-case.ts";
+import type { PortfolioItemCreateUseCase } from "#application/server/use-case/portfolio-item-create.use-case.ts";
+import type { PortfolioItemDeleteUseCase } from "#application/server/use-case/portfolio-item-delete.use-case.ts";
+import type { PortfolioItemListUseCase } from "#application/server/use-case/portfolio-item-list.use-case.ts";
+import type { PortfolioItemUpdateUseCase } from "#application/server/use-case/portfolio-item-update.use-case.ts";
+import type { PortfolioItemQuery } from "#domain/query/portfolio-item.query.ts";
+import type { InstrumentRepository } from "#domain/repository/instrument.repository.ts";
+import type { PortfolioItemRepository } from "#domain/repository/portfolio-item.repository.ts";
 import type { ServiceIdentifier } from "inversify";
 
 /** Server use cases of the portfolio module. */

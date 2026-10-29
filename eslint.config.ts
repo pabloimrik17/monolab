@@ -43,7 +43,7 @@ const importBans = (
 const investlabLayout: CleanArchitectureOptions = {
     product: "investlab",
     modules: ["portfolio", "quotes"],
-    migrated: [],
+    migrated: ["packages/investlab-portfolio"],
 };
 
 // InvestLab layer table inside the module and platform packages (openspec change investlab-modular-packages,
