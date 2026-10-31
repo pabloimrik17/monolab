@@ -42,7 +42,7 @@ const importBans = (
 const investlabLayout: CleanArchitectureOptions = {
     product: "investlab",
     modules: ["portfolio", "quotes"],
-    migrated: [
+    projects: [
         "packages/investlab-core",
         "packages/investlab-platform",
         "packages/investlab-portfolio",
@@ -58,17 +58,18 @@ type CleanArchitectureOptions = {
     product: string;
     /** Module packages (`packages/<product>-<module>`); they also name the app module folders. */
     modules: readonly string[];
-    /** Roots of the projects already on the layout (`packages/investlab-core`); only these are checked. */
-    migrated: readonly string[];
+    /** Roots of the product's projects on the layout (the database package is not one; it gets only its import ban). */
+    projects: readonly string[];
 };
 
 const cleanArchitectureLint = (options: CleanArchitectureOptions) => {
-    const projects = options.migrated.map((root) => layoutProject(root, options));
-    if (projects.length === 0) {
-        return [];
+    const layoutProjects = options.projects.map((root) => layoutProject(root, options));
+    const outsideLayout = outsideLayoutBans(layoutProjects, options);
+    if (layoutProjects.length === 0) {
+        return outsideLayout;
     }
     const boundaries = boundariesConfig({
-        files: projects.map(({ root }) => `${root}/src/**/*.{ts,tsx}`),
+        files: layoutProjects.map(({ root }) => `${root}/src/**/*.{ts,tsx}`),
         settings: {
             "boundaries/root-path": import.meta.dirname,
             "boundaries/legacy-templates": false,
@@ -76,7 +77,7 @@ const cleanArchitectureLint = (options: CleanArchitectureOptions) => {
             // Element descriptors match folders only, so a layout element (folder plus suffix) is a file category.
             // With no folder element, a file in no category is unknown and `no-unknown-files` reports it.
             "boundaries/elements": [],
-            "boundaries/files": projects.flatMap((project) =>
+            "boundaries/files": layoutProjects.flatMap((project) =>
                 layoutElements[project.kind](options.modules).flatMap((element) =>
                     fileCategories(project, element),
                 ),
@@ -91,7 +92,7 @@ const cleanArchitectureLint = (options: CleanArchitectureOptions) => {
                     checkInternals: true,
                     message:
                         "{{from.file.categories}} may not import {{to.file.categories}} (clean architecture layout)",
-                    policies: projects.flatMap((project) =>
+                    policies: layoutProjects.flatMap((project) =>
                         layoutPolicies[project.kind].map((policy) => scopedPolicy(project, policy)),
                     ),
                 },
@@ -101,9 +102,10 @@ const cleanArchitectureLint = (options: CleanArchitectureOptions) => {
     return [
         withTypescriptResolver(
             boundaries,
-            projects.map(({ root }) => root),
+            layoutProjects.map(({ root }) => root),
         ),
-        ...projects.flatMap((project) => layoutImportBans[project.kind](project, options)),
+        ...outsideLayout,
+        ...layoutProjects.flatMap((project) => layoutImportBans[project.kind](project, options)),
     ];
 };
 
@@ -662,28 +664,33 @@ const layoutImportBans: Record<LayoutKind, LayoutBans> = {
     "api-app": apiAppBans,
 };
 
-// InvestLab package-specifier rules outside the layout: the database package is exempt from it, and the apps' tool
-// configs sit outside `src/`, so the layout's folder bans do not apply.
-const investlabOutsideLayoutBans = (() => {
-    const bans = productBans(investlabLayout.product);
+// Package-specifier rules outside the layout: the database package is exempt from it, and the apps' tool configs sit
+// outside `src/`, so the layout's folder bans do not apply.
+const outsideLayoutBans = (
+    layoutProjects: LayoutProject[],
+    { product }: CleanArchitectureOptions,
+) => {
+    const bans = productBans(product);
+    const appBans: Partial<Record<LayoutKind, Ban[]>> = {
+        "ui-app": [bans.serverEntry, bans.webClientEntry, bans.webBrowserEntry],
+        "api-app": [bans.clientEntry],
+    };
     return [
         importBans(
-            ["packages/investlab-database/src/**"],
+            [`packages/${product}-database/src/**`],
             [
                 ban(
-                    "^@m0n0lab/investlab-",
-                    "the database package imports no other InvestLab package",
+                    `^@m0n0lab/${product}-`,
+                    `the database package imports no other ${product} package`,
                 ),
             ],
         ),
-        importBans(
-            ["apps/investlab/**"],
-            [bans.serverEntry, bans.webClientEntry, bans.webBrowserEntry],
-            ["apps/investlab/src/**"],
-        ),
-        importBans(["apps/investlab-api/**"], [bans.clientEntry], ["apps/investlab-api/src/**"]),
+        ...layoutProjects.flatMap(({ root, kind }) => {
+            const list = appBans[kind];
+            return list ? [importBans([`${root}/**`], list, [`${root}/src/**`])] : [];
+        }),
     ];
-})();
+};
 
 export default tseslint.config(
     {
@@ -782,6 +789,5 @@ export default tseslint.config(
             "@typescript-eslint/no-empty-object-type": "off",
         },
     },
-    ...investlabOutsideLayoutBans,
     ...cleanArchitectureLint(investlabLayout),
 );
