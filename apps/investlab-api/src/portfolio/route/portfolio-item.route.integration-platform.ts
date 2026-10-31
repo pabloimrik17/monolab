@@ -5,13 +5,13 @@ import {
     PortfolioItemNotFoundError,
 } from "@m0n0lab/investlab-portfolio";
 import { makeInstrument, makePortfolioItem } from "@m0n0lab/investlab-portfolio/testing";
-import { PortfolioItemsHarness } from "./portfolio-item.route.harness.ts";
+import { PortfolioItemRouteHarness } from "./portfolio-item.route.harness.ts";
 
 const MISSING_ID = "6b3389b3-bff8-416e-93ad-e6d411808d95";
 
 describe("portfolio item routes", () => {
     it("reject every route without a token", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
 
         const responses = await Promise.all([
             api.anonymous("/portfolio-items"),
@@ -26,7 +26,7 @@ describe("portfolio item routes", () => {
 
 describe("GET /portfolio-items", () => {
     it("lists items with their instrument and the catalog", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
         const instrument = makeInstrument();
         const spare = makeInstrument({ symbol: "VTI" });
         const item = makePortfolioItem({ instrumentId: instrument.id, notes: "core" });
@@ -51,7 +51,7 @@ describe("GET /portfolio-items", () => {
     });
 
     it("answers an empty portfolio", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
         api.givenItems({ items: [], instruments: [] });
 
         const { status, body } = await api.listItems();
@@ -63,7 +63,7 @@ describe("GET /portfolio-items", () => {
 
 describe("POST /portfolio-items", () => {
     it("creates an item from the whole body and answers 201 with its DTO", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
         const instrument = makeInstrument();
         const draft = {
             instrumentId: instrument.id,
@@ -82,7 +82,7 @@ describe("POST /portfolio-items", () => {
     });
 
     it("passes only the fields the body carries, so currentValue defaults to 0", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
         const draft = { instrumentId: makeInstrument().id, broker: "MyInvestor", targetWeight: 25 };
         const create = api.givenCreateSucceeds(makePortfolioItem(draft));
 
@@ -94,7 +94,7 @@ describe("POST /portfolio-items", () => {
     });
 
     it("answers 404 INSTRUMENT_NOT_FOUND for an unknown instrument", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
         api.givenCreateFails(new InstrumentNotFoundError(MISSING_ID));
 
         const { status, body } = await api.createItem({
@@ -108,7 +108,7 @@ describe("POST /portfolio-items", () => {
     });
 
     it("answers 422 with the failing field path when targetWeight is out of range", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
 
         const { status, body } = await api.createItem({
             instrumentId: MISSING_ID,
@@ -125,7 +125,7 @@ describe("POST /portfolio-items", () => {
     });
 
     it("answers 422 when the body is not valid JSON", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
 
         const { status, body } = await api.createItemFromRaw("{nope");
 
@@ -139,7 +139,7 @@ describe("POST /portfolio-items", () => {
 
 describe("PUT /portfolio-items/:id", () => {
     it("updates the item against the version the caller read and answers 200 with its DTO", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
         const item = makePortfolioItem({ targetWeight: 25 });
         const expectedUpdatedAt = item.updatedAt.toISOString();
         const update = api.givenUpdateSucceeds(item);
@@ -157,7 +157,7 @@ describe("PUT /portfolio-items/:id", () => {
     });
 
     it("clears notes when the body sets them to null", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
         const item = makePortfolioItem();
         const update = api.givenUpdateSucceeds(item);
 
@@ -172,7 +172,7 @@ describe("PUT /portfolio-items/:id", () => {
     });
 
     it("passes every changed field and keeps notes when the body omits them", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
         const item = makePortfolioItem({ notes: "core" });
         const update = api.givenUpdateSucceeds(item);
 
@@ -193,7 +193,7 @@ describe("PUT /portfolio-items/:id", () => {
     });
 
     it("answers 404 PORTFOLIO_ITEM_NOT_FOUND for an unknown item", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
         api.givenUpdateFails(new PortfolioItemNotFoundError(MISSING_ID));
 
         const { status, body } = await api.updateItem(MISSING_ID, {
@@ -206,7 +206,7 @@ describe("PUT /portfolio-items/:id", () => {
     });
 
     it("answers 422 for an id that is not a UUID", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
 
         const { status, body } = await api.updateItem("not-a-uuid", {
             targetWeight: 25,
@@ -218,7 +218,7 @@ describe("PUT /portfolio-items/:id", () => {
     });
 
     it("answers 422 for an invalid body without reaching the use case", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
         const item = makePortfolioItem();
         const update = api.givenUpdateSucceeds(item);
 
@@ -232,7 +232,7 @@ describe("PUT /portfolio-items/:id", () => {
     });
 
     it("answers 409 PORTFOLIO_ITEM_CONFLICT for a stale version", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
         const item = makePortfolioItem();
         api.givenUpdateFails(new PortfolioItemConflictError(item.id));
         const stale = new Date(item.updatedAt.getTime() - 1).toISOString();
@@ -247,7 +247,7 @@ describe("PUT /portfolio-items/:id", () => {
     });
 
     it("answers 422 when the body omits expectedUpdatedAt", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
 
         const { status, body } = await api.updateItem(MISSING_ID, { targetWeight: 25 });
 
@@ -261,7 +261,7 @@ describe("PUT /portfolio-items/:id", () => {
 
 describe("DELETE /portfolio-items/:id", () => {
     it("deletes the item and answers 204 without a body", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
         const item = makePortfolioItem();
         const remove = api.givenDeleteSucceeds();
 
@@ -273,7 +273,7 @@ describe("DELETE /portfolio-items/:id", () => {
     });
 
     it("answers 404 PORTFOLIO_ITEM_NOT_FOUND for an unknown item", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
         api.givenDeleteFails(new PortfolioItemNotFoundError(MISSING_ID));
 
         const { status, body } = await api.deleteItem(MISSING_ID);
@@ -283,7 +283,7 @@ describe("DELETE /portfolio-items/:id", () => {
     });
 
     it("answers 422 for an id that is not a UUID", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
 
         const { status } = await api.deleteItem("nope");
 

@@ -10,7 +10,7 @@ import type {
     InstrumentUpdateError,
 } from "@m0n0lab/investlab-portfolio/server";
 
-export class InstrumentsHarness extends ApiHarness {
+export class InstrumentRouteHarness extends ApiHarness {
     givenInstruments(instruments: Instrument[]) {
         return this.fake(PORTFOLIO.InstrumentList, okAsync(instruments));
     }

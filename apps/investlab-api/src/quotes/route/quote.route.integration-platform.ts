@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { QUOTE_LIST_MAX_SYMBOLS } from "@m0n0lab/investlab-quotes";
 import { makeQuote } from "@m0n0lab/investlab-quotes/testing";
-import { QuotesHarness } from "./quote.route.harness.ts";
+import { QuoteRouteHarness } from "./quote.route.harness.ts";
 
 describe("GET /quotes", () => {
     it("rejects a request without a token", async () => {
-        await using api = await QuotesHarness.launch();
+        await using api = await QuoteRouteHarness.launch();
 
         const res = await api.anonymous("/quotes?symbols=AAPL");
 
@@ -13,7 +13,7 @@ describe("GET /quotes", () => {
     });
 
     it("asks for the symbols once, in capitals, and answers the quotes found", async () => {
-        await using api = await QuotesHarness.launch();
+        await using api = await QuoteRouteHarness.launch();
         const aapl = makeQuote({ symbol: "AAPL" });
         const list = api.givenQuotes([aapl]);
 
@@ -25,7 +25,7 @@ describe("GET /quotes", () => {
     });
 
     it("answers 422 VALIDATION_ERROR without a symbols parameter", async () => {
-        await using api = await QuotesHarness.launch();
+        await using api = await QuoteRouteHarness.launch();
 
         const { status, body } = await api.listQuotes();
 
@@ -34,7 +34,7 @@ describe("GET /quotes", () => {
     });
 
     it("answers 422 VALIDATION_ERROR for more symbols than the maximum, without fetching", async () => {
-        await using api = await QuotesHarness.launch();
+        await using api = await QuoteRouteHarness.launch();
         const list = api.givenQuotes([]);
         const symbols = Array.from({ length: QUOTE_LIST_MAX_SYMBOLS + 1 }, (_, i) => `S${i}`);
 
@@ -46,7 +46,7 @@ describe("GET /quotes", () => {
     });
 
     it("answers 422 VALIDATION_ERROR for a malformed symbol, without fetching", async () => {
-        await using api = await QuotesHarness.launch();
+        await using api = await QuoteRouteHarness.launch();
         const list = api.givenQuotes([]);
 
         const { status, body } = await api.listQuotes(["AAPL", "BAD SYMBOL"]);

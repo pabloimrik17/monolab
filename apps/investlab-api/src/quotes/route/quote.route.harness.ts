@@ -4,7 +4,7 @@ import { quoteDtoSchema } from "@m0n0lab/investlab-quotes";
 import { QUOTES } from "@m0n0lab/investlab-quotes/server";
 import type { Quote } from "@m0n0lab/investlab-quotes";
 
-export class QuotesHarness extends ApiHarness {
+export class QuoteRouteHarness extends ApiHarness {
     givenQuotes(quotes: Quote[]) {
         return this.fake(QUOTES.List, okAsync(quotes));
     }

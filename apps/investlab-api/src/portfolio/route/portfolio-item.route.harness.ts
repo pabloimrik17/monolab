@@ -12,7 +12,7 @@ import type {
     PortfolioItemUpdateError,
 } from "@m0n0lab/investlab-portfolio/server";
 
-export class PortfolioItemsHarness extends ApiHarness {
+export class PortfolioItemRouteHarness extends ApiHarness {
     givenItems(list: PortfolioItemList) {
         return this.fake(PORTFOLIO.ItemList, okAsync(list));
     }

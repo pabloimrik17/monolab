@@ -6,13 +6,13 @@ import {
     Sector,
 } from "@m0n0lab/investlab-portfolio";
 import { makeInstrument } from "@m0n0lab/investlab-portfolio/testing";
-import { InstrumentsHarness } from "./instrument.route.harness.ts";
+import { InstrumentRouteHarness } from "./instrument.route.harness.ts";
 
 const MISSING_ID = "6b3389b3-bff8-416e-93ad-e6d411808d95";
 
 describe("instrument routes", () => {
     it("reject every route without a token", async () => {
-        await using api = await InstrumentsHarness.launch();
+        await using api = await InstrumentRouteHarness.launch();
 
         const responses = await Promise.all([
             api.anonymous("/instruments"),
@@ -27,7 +27,7 @@ describe("instrument routes", () => {
 
 describe("GET /instruments", () => {
     it("lists the catalog as DTOs, with the optional fields only when set", async () => {
-        await using api = await InstrumentsHarness.launch();
+        await using api = await InstrumentRouteHarness.launch();
         const bare = makeInstrument({ symbol: "VTI" });
         const full = makeInstrument({
             symbol: "AAPL",
@@ -67,7 +67,7 @@ describe("GET /instruments", () => {
     });
 
     it("answers an empty catalog", async () => {
-        await using api = await InstrumentsHarness.launch();
+        await using api = await InstrumentRouteHarness.launch();
         api.givenInstruments([]);
 
         const { status, body } = await api.listInstruments();
@@ -79,7 +79,7 @@ describe("GET /instruments", () => {
 
 describe("POST /instruments", () => {
     it("creates the instrument from the body and answers 201 with its DTO", async () => {
-        await using api = await InstrumentsHarness.launch();
+        await using api = await InstrumentRouteHarness.launch();
         const draft = {
             symbol: "vwce",
             name: "Vanguard FTSE All-World",
@@ -103,7 +103,7 @@ describe("POST /instruments", () => {
     });
 
     it("answers 409 INSTRUMENT_ALREADY_EXISTS for a symbol in the catalog", async () => {
-        await using api = await InstrumentsHarness.launch();
+        await using api = await InstrumentRouteHarness.launch();
         api.givenCreateFails(new InstrumentAlreadyExistsError("AAPL"));
 
         const { status, body } = await api.createInstrument({
@@ -118,7 +118,7 @@ describe("POST /instruments", () => {
     });
 
     it("answers 422 with the failing field path for an unknown type", async () => {
-        await using api = await InstrumentsHarness.launch();
+        await using api = await InstrumentRouteHarness.launch();
 
         const { status, body } = await api.createInstrument({
             symbol: "VWCE",
@@ -134,7 +134,7 @@ describe("POST /instruments", () => {
 
 describe("PUT /instruments/:id", () => {
     it("passes the changed fields, keeps the others and answers 200 with the DTO", async () => {
-        await using api = await InstrumentsHarness.launch();
+        await using api = await InstrumentRouteHarness.launch();
         const instrument = makeInstrument({ symbol: "VTI" });
         const update = api.givenUpdateSucceeds(instrument);
 
@@ -166,7 +166,7 @@ describe("PUT /instruments/:id", () => {
     });
 
     it("sets exchange, sector and the tracked index when the body carries them", async () => {
-        await using api = await InstrumentsHarness.launch();
+        await using api = await InstrumentRouteHarness.launch();
         const instrument = makeInstrument();
         const update = api.givenUpdateSucceeds(instrument);
 
@@ -187,7 +187,7 @@ describe("PUT /instruments/:id", () => {
     });
 
     it("clears exchange, sector and the tracked index when the body sets them to null", async () => {
-        await using api = await InstrumentsHarness.launch();
+        await using api = await InstrumentRouteHarness.launch();
         const instrument = makeInstrument({ replicates: "CRSP US Total Market" });
         const update = api.givenUpdateSucceeds(makeInstrument({ symbol: instrument.symbol }));
 
@@ -210,7 +210,7 @@ describe("PUT /instruments/:id", () => {
     });
 
     it("answers 409 INSTRUMENT_ALREADY_EXISTS for a taken symbol", async () => {
-        await using api = await InstrumentsHarness.launch();
+        await using api = await InstrumentRouteHarness.launch();
         api.givenUpdateFails(new InstrumentAlreadyExistsError("VWCE"));
 
         const { status, body } = await api.updateInstrument(MISSING_ID, { symbol: "VWCE" });
@@ -220,7 +220,7 @@ describe("PUT /instruments/:id", () => {
     });
 
     it("answers 404 INSTRUMENT_NOT_FOUND for an unknown instrument", async () => {
-        await using api = await InstrumentsHarness.launch();
+        await using api = await InstrumentRouteHarness.launch();
         api.givenUpdateFails(new InstrumentNotFoundError(MISSING_ID));
 
         const { status, body } = await api.updateInstrument(MISSING_ID, { name: "Nothing" });
@@ -230,7 +230,7 @@ describe("PUT /instruments/:id", () => {
     });
 
     it("answers 422 for an id that is not a UUID", async () => {
-        await using api = await InstrumentsHarness.launch();
+        await using api = await InstrumentRouteHarness.launch();
 
         const { status, body } = await api.updateInstrument("not-a-uuid", { name: "Nothing" });
 
@@ -241,7 +241,7 @@ describe("PUT /instruments/:id", () => {
 
 describe("DELETE /instruments/:id", () => {
     it("removes an unused instrument and answers 204 without a body", async () => {
-        await using api = await InstrumentsHarness.launch();
+        await using api = await InstrumentRouteHarness.launch();
         const instrument = makeInstrument();
         const remove = api.givenDeleteSucceeds();
 
@@ -253,7 +253,7 @@ describe("DELETE /instruments/:id", () => {
     });
 
     it("answers 409 INSTRUMENT_IN_USE while a portfolio item references it", async () => {
-        await using api = await InstrumentsHarness.launch();
+        await using api = await InstrumentRouteHarness.launch();
         api.givenDeleteFails(new InstrumentInUseError(MISSING_ID));
 
         const { status, body } = await api.deleteInstrument(MISSING_ID);

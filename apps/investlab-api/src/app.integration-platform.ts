@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ApiHarness } from "#core/harness/api.harness.ts";
-import { PortfolioItemsHarness } from "#portfolio/route/portfolio-item.route.harness.ts";
+import { PortfolioItemRouteHarness } from "#portfolio/route/portfolio-item.route.harness.ts";
 import { DomainError, PersistenceError, type ApiErrorDto } from "@m0n0lab/investlab-core";
 
 const TOKEN = "s3cret-token";
@@ -48,7 +48,7 @@ describe("the API as a platform", () => {
 // Every route answers through the same `errorJson` and `app.onError`, so one route proves it.
 describe("errors hidden behind a 500", () => {
     it("answers a generic 500 for a use case that throws and logs the cause", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
         const log = api.silenceErrorLog();
         const error = new Error("leaky");
         api.givenListThrows(error);
@@ -64,7 +64,7 @@ describe("errors hidden behind a 500", () => {
         class UnmappedError extends DomainError<"UNMAPPED"> {
             readonly code = "UNMAPPED";
         }
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
         api.silenceErrorLog();
         api.givenListThrows(new UnmappedError("leaky"));
 
@@ -75,7 +75,7 @@ describe("errors hidden behind a 500", () => {
     });
 
     it("answers 500 PERSISTENCE_ERROR without its message and logs the cause", async () => {
-        await using api = await PortfolioItemsHarness.launch();
+        await using api = await PortfolioItemRouteHarness.launch();
         const log = api.silenceErrorLog();
         const error = new PersistenceError(new Error("db down"));
         api.givenListFails(error);
