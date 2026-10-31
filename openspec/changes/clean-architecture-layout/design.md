@@ -187,7 +187,8 @@ Each tool needs its own setting:
   - The `../` ban and the subfolder ban (`./sub/x`, except `./+types/`) join each `no-restricted-imports` group. Flat config replaces a rule's options per file, so it cannot live in a separate block.
   - Cycles between app modules are left to `lint:fallow` (`fallow dead-code`), which already reports circular dependencies in CI.
   - Device rules (§8) match by path: the source in a `data/client/` file name in packages, the medium folder in the platform, the container file in the web, and the `di/` and `testing/` folders that alone may import a device runtime's entry.
-- **Rollout:** during the migration the factory takes a list of migrated projects, and the old InvestLab table is deleted when the list is complete.
+- **Outside the layout:** the same call bans the imports of the product's database package (`packages/<product>-database`, exempt from the layout) and of its apps' tool configs outside `src/`, so a new product gets them without hand-written rules (owner, 2026-10-31, after verify).
+- **Rollout:** during the migration the factory took a list of migrated projects, and the old InvestLab table was deleted when the list was complete. The option is now `projects`: the product's projects on the layout.
 
 ### 14. Migration mechanics
 

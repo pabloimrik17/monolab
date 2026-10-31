@@ -523,12 +523,17 @@ Domain SHALL import only domain and the core package. Application SHALL import d
 
 ### Requirement: Layout enforced by one lint per product
 
-One lint configuration, built from a single factory per product prefix, SHALL check every project in scope for unknown files, folder and suffix agreement, dependency direction, sides and import paths, and CI SHALL fail on a violation. Adding a product SHALL take only a new call to the factory.
+One lint configuration, built from a single factory per product prefix, SHALL check every project in scope for unknown files, folder and suffix agreement, dependency direction, sides and import paths, and CI SHALL fail on a violation. Adding a product SHALL take only a new call to the factory, which SHALL also ban the imports of the product's database package and of its apps' tool configs outside `src/`.
 
 #### Scenario: New product
 
 - **WHEN** green-beard's packages and app are added to the lint
 - **THEN** the change to the lint configuration is one factory call with the `green-beard` prefix
+
+#### Scenario: Database package of a new product
+
+- **WHEN** a file in `packages/green-beard-database/src/` imports another `green-beard` package, after that one factory call
+- **THEN** the lint fails
 
 #### Scenario: Unknown file
 
