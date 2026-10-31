@@ -36,7 +36,7 @@ ADR 0007 settled the package split: one package per module, plus core, platform 
     - The platform gains a key-value storage for it.
     - The quote polling stays in the web, as a hook.
     - **BREAKING** for open branches that touch these paths.
-- **Package entries**: one per runtime. The platform and quotes gain `./browser`, which takes their browser code out of `./client`; `./client` keeps the code of a consumer that holds the API credential. Portfolio's entries do not change.
+- **Package entries**: one per runtime. The platform and quotes gain `./browser`, which takes their browser code out of `./client`; `./client` keeps the code of a consumer that holds the API credential. Only compositions import a device runtime's entry. The platform also gains a root `.` entry for its side-free pieces, which its runtime entries stop re-exporting. Portfolio's entries do not change.
 
 ## Capabilities
 
@@ -49,7 +49,7 @@ ADR 0007 settled the package split: one package per module, plus core, platform 
 The first four capabilities come from `investlab-modular-packages`. That change must be archived before this one is applied.
 
 - `investlab-module-packages`: point seven requirements at the new layout: layer folders, the layer lint, entries, container module and entry imports, the test file exemption, the web's imports, and composition roots. A module with browser code gains a `./browser` entry. The web gets a browser container, imports `./client` entries only from its route files and server container, and `./browser` entries only from its browser container.
-- `investlab-platform`: adds a key-value storage (a text interface, typed helpers, and `localStorage` and in-memory implementations), and a third entry, `./browser`, whose container module binds it without `Config` or the API client.
+- `investlab-platform`: adds a key-value storage (a text interface, typed helpers, and `localStorage` and in-memory implementations), a root entry `.` for its side-free pieces, and a `./browser` entry whose container module binds the storage without `Config` or the API client.
 - `investlab-use-case-testing`: integration tests take their use case's full name, and setup files and `given.ts` move to `src/testing/<side>/`. This replaces the rule that no `src/testing/` folder exists.
 - `investlab-persistence`: each aggregate declares its table in `data/server/infra/db/<concept>.table.ts`, and the database package's drizzle config lists them by glob.
 - `ticker-management`: the followed tickers move from the web's ticker store to the quotes module, with a repository over the platform's key-value storage. The storage key and stored format stay the same, so lists saved before the change still load.
@@ -63,7 +63,7 @@ The first four capabilities come from `investlab-modular-packages`. That change 
     - The shared Vitest and Vite configs: `resolve.tsconfigPaths`.
     - `.fallowrc.json`: drop the `src/testing/index.ts` entry workaround.
     - `docs/legacy-tests.txt`: moved legacy tests.
-- **Exports**: a new `./browser` subpath in the platform and quotes, and the `testing` build entry moves from `src/testing/index.ts` to `src/testing.ts`, so the package builds are validated with `attw` again.
+- **Exports**: a new `./browser` subpath in the platform and quotes, a root `.` entry in the platform, and the `testing` build entry moves from `src/testing/index.ts` to `src/testing.ts`, so the package builds are validated with `attw` again.
 - **Dependencies**: root devDependency `eslint-import-resolver-typescript`. No runtime or peer dependency changes.
 - **Docs**:
     - New: ADR 0009.

@@ -26,23 +26,21 @@ The platform SHALL offer a key-value storage: a side-free interface with text ge
 
 ### Requirement: Browser container module
 
-The `./browser` entry SHALL export the key-value storage interface, its in-memory implementation, its token, and a browser container module that binds it to the `localStorage` implementation. That module SHALL import nothing that needs `Config` or the InvestLab API client, so the web's browser container never holds the API token.
+The `./browser` entry SHALL export only a browser container module that binds the key-value storage token to the `localStorage` implementation; the interface, the in-memory implementation and the token come from the root entry. That module SHALL import nothing that needs `Config` or the InvestLab API client, so the web's browser container never holds the API token.
 
 #### Scenario: Browser storage resolved without configuration
 
 - **WHEN** a container loads only the platform browser module and resolves the key-value storage
 - **THEN** it gets the `localStorage` implementation and no `Config` binding is required
 
-## MODIFIED Requirements
+### Requirement: Platform root and runtime entries
 
-### Requirement: Platform entries
+`@m0n0lab/investlab-platform` SHALL export exactly four entries: the root entry `.` with its side-free pieces (the key-value storage interface, its in-memory implementation and token, and the `HttpClient` types), and one per runtime its consumers run in: `./server`, `./client` and `./browser`. A runtime entry SHALL NOT re-export a side-free piece. The platform MAY import `@m0n0lab/investlab-core`. It SHALL NOT import any business module or `@m0n0lab/investlab-database`.
 
-`@m0n0lab/investlab-platform` SHALL export exactly three entries, one per runtime its consumers run in: `./server`, `./client` and `./browser`, and no root entry. A side-free piece SHALL be re-exported by each runtime entry that needs it. It MAY import `@m0n0lab/investlab-core`. It SHALL NOT import any business module or `@m0n0lab/investlab-database`.
+#### Scenario: Side-free pieces from the root entry
 
-#### Scenario: No root entry
-
-- **WHEN** code imports `@m0n0lab/investlab-platform` without a subpath
-- **THEN** the import fails to resolve
+- **WHEN** the quotes ticker storage repository needs the `KeyValueStorage` interface and its token
+- **THEN** it imports them from `@m0n0lab/investlab-platform`, and no runtime entry exports them
 
 #### Scenario: Kernel errors come from core
 
@@ -53,3 +51,11 @@ The `./browser` entry SHALL export the key-value storage interface, its in-memor
 
 - **WHEN** the platform is built
 - **THEN** `dist/browser.js` and the chunks it imports contain no InvestLab API client, no `Config` adapter and no token that names either
+
+## REMOVED Requirements
+
+### Requirement: Platform entries
+
+**Reason**: It allowed only `./server` and `./client` and forbade a root entry. The platform now has a side-free root entry `.` next to one entry per runtime.
+
+**Migration**: Replaced by "Platform root and runtime entries". Side-free pieces (the key-value storage and the `HttpClient` types) come from `@m0n0lab/investlab-platform`; runtime pieces from `./server`, `./client` or `./browser`.

@@ -23,7 +23,7 @@ See proposal.md for the motivation. State this design starts from, once `investl
 **Non-Goals:**
 
 - Migrating qup or green-beard. Their plans are updated in sibling changes of the same PR.
-- Renaming business concepts or changing HTTP behaviour. Package entries change only to add one per device runtime (§8).
+- Renaming business concepts or changing HTTP behaviour. Package entries change only to add one per device runtime (§8) and the platform's side-free root entry (§10).
 - Replacing legacy tests beyond the ones whose subject is rewritten here (the followed-ticker store, the quote poller and the route quote source).
 - Fixing the seven pending InvestLab changes (`investlab-roger-*`, `investlab-portfolio-returns`, `investlab-portfolio-allocations`, `investlab-overview`). They already name `investlab-domain`, which ADR 0007 removed; they need a separate rewrite.
 
@@ -79,11 +79,12 @@ Sides and runtimes are two axes. A side is the end of the product's HTTP contrac
   - `di/client.module.ts` → `./client`: a consumer that holds the API credential, the web's server today, a worker or CLI later.
   - `di/browser.module.ts` → `./browser`: the browser.
   - A package with no code for a runtime has no module or entry for it: portfolio keeps `.`, `./server`, `./client` and `./testing`.
-- **Credentialed and device adapters:** the source in a `data/client/` file name already tells them apart (`<concept>-<source>.<kind>.ts`). An `api` file reaches the product's API with the consumer's credential, a `storage` file uses the device's storage. A device module imports only device adapters, and they reach the platform only through `./browser`, so a device entry cannot contain credentialed code. The platform applies the same rule through its medium folders: `di/browser.module.ts` imports only `shared/` and `client/storage/`.
+- **Credentialed and device adapters:** the source in a `data/client/` file name already tells them apart (`<concept>-<source>.<kind>.ts`). An `api` file reaches the product's API with the consumer's credential, a `storage` file uses the device's storage. A device module imports only device adapters, and they take platform pieces only from its side-free `.` entry, so a device entry cannot contain credentialed code. The platform applies the same rule through its medium folders: `di/browser.module.ts` imports only `shared/` and `client/storage/`.
+- **Runtime entries only in compositions:** a device runtime's entry (`./browser`, later `./native`) is imported only by compositions: a package's `di/` and `testing/` setups, and an app's `di/`. Adapters, use cases and views never import one; they take ports and side-free pieces from `.` or their side's entry. An adapter that imported `./browser` would know its runtime, the coupling that sank D: on React Native, `ticker-storage.repository.ts` would import something named "browser".
 - **The web** gains `di/container.client.ts`, React Router's browser-only suffix. It loads only the `./browser` entries of the platform (key-value storage over `localStorage`) and quotes (followed tickers), so it never holds `Config` or the API token. `di/container.server.ts` replaces `lib/container.server.ts`.
 - **Framework suffixes in `di/`:** `di/` is the app's composition root, the same framework edge as `routes/`, so both containers keep React Router's suffixes. `.server` makes the build fail if browser code reaches the server container, and `.client` keeps the browser container out of server rendering.
 - **Who imports which entry in the web:** `./client` only from `src/routes/` and `src/di/container.server.ts`, `./browser` only from `src/di/container.client.ts`. Hooks get the use cases from `di/container.client.ts`. The types the view needs come from the package's `.` entry, as `Ticker` does, or are re-exported by `di/`. Type-only imports get no exception (§12).
-- **A new device** adds one module and one entry. A React Native app would add `di/native.module.ts` → `./native`, reuse `application/client/`, and bind `KeyValueStorage` to the platform's storage for that device. The spec states the rule, one entry per runtime, and names no `./native`. A device holds no API credential; how a future device authenticates (through the web, or with user auth in the API) is an auth decision outside this change.
+- **A new device** adds one module and one entry. A React Native app would add `di/native.module.ts` → `./native`, reuse `application/client/` and `ticker-storage.repository.ts` unchanged, and bind `KeyValueStorage` to the platform's storage for that device. The spec states the rule, one entry per runtime, and names no `./native`. A device holds no API credential; how a future device authenticates (through the web, or with user auth in the API) is an auth decision outside this change.
 
 *Alternatives*:
 - Build the ticker pieces by hand in the hook, as `wealth.ts` does today. Rejected: it means exporting the repository and having a second wiring site.
@@ -107,7 +108,9 @@ The platform gets three files:
 
 A typed read of an unreadable value returns no value. New helpers are added when a consumer needs one.
 
-The `./browser` entry exports the interface, the in-memory implementation and the browser module that binds the `localStorage` one. The storage token moves to `shared/tokens.ts`: the client `PLATFORM` tokens name the API client and `Config`, and the browser entry carries neither. Side-free pieces are re-exported by each runtime entry that needs them, as `HttpClient` already is, so the platform still has no root entry.
+The platform gets a root entry `.` (`src/index.ts`), like the module packages' side-free `.`. It exports every side-free piece from `shared/`: the `KeyValueStorage` interface, `MemoryStorage`, the storage token and the `HttpClient` types (`HttpClient`, `HttpMethod`, `HttpRequest`, `HttpResponse`). `./server` and `./client` stop re-exporting them, and `./browser` exports only `platformBrowserModule`, which binds the `localStorage` implementation. The platform has four entries: `.`, `./server`, `./client` and `./browser`.
+
+The storage token moves from `client/tokens.ts` to `shared/tokens.ts`, next to its interface, as `PLATFORM_SHARED.KeyValueStorage`. A second tokens object takes its folder as a suffix, as `QUOTES_PORTS` and `QUOTES_DATA` do, and the side objects keep the name `PLATFORM`. A file that needs both, such as quotes' client test setup, imports both without an alias.
 
 ### 11. No catch-all folders
 
@@ -164,6 +167,7 @@ Each tool needs its own setting:
   - A, `"sideEffects": false` plus tsdown `unbundle: true`: a bundler patch over the mixing, which stays in the code.
   - D, sides renamed per runtime (`api`, `web`, `browser`): it puts the device in application and data folders, so a React Native app replicating the web would duplicate the followed-ticker use cases.
 - **Adapter marker:** the source already in a `data/client/` file name (`-api` credentialed, `-storage` device), fixed by "File names start with the concept". No file moves, and the lint checks it by path. A new device medium joins the spec and the lint together, like a kind.
+- **Platform root entry** (owner, 2026-10-31): replaces the first E amendment, where each runtime entry re-exported the side-free pieces it needed. That made `ticker-storage.repository.ts` import `KeyValueStorage` from `./browser`, so an adapter knew its runtime, the coupling that sank D. Chosen: a `.` entry for `shared/` pieces, runtime entries that stop re-exporting them, and device runtime entries imported only by compositions (§8, §10). The storage token sits in `shared/tokens.ts` because it names a side-free piece, not to keep the API client's name out of a grep. Rejected for the token's name: one `PLATFORM` in all three `tokens.ts`, aliased on import wherever two meet.
 - **Type-only imports from `./client` in the view:** no exception (option 2). Types the view needs come from `.` or are re-exported by `di/`. Fallback if that proves too strict (option 1): `allowTypeImports: true` on the web's `./client` ban, plus one scenario allowing `import type` from `./client` in a component.
 - **Follow-up, out of scope:** run `typecheck`, `test` and `build` with `APP_ENV=ci`, so local checks never reach 1Password.
 
@@ -179,7 +183,7 @@ Each tool needs its own setting:
 - **Import rules:**
   - The `../` ban and the subfolder ban (`./sub/x`, except `./+types/`) join each `no-restricted-imports` group. Flat config replaces a rule's options per file, so it cannot live in a separate block.
   - Cycles between app modules are left to `lint:fallow` (`fallow dead-code`), which already reports circular dependencies in CI.
-  - Device rules (§8) match by path: the source in a `data/client/` file name in packages, the medium folder in the platform, and the container file in the web.
+  - Device rules (§8) match by path: the source in a `data/client/` file name in packages, the medium folder in the platform, the container file in the web, and the `di/` and `testing/` folders that alone may import a device runtime's entry.
 - **Rollout:** during the migration the factory takes a list of migrated projects, and the old InvestLab table is deleted when the list is complete.
 
 ### 14. Migration mechanics
@@ -204,7 +208,7 @@ Each tool needs its own setting:
 
 1. **Gates**: `investlab-modular-packages` archived, and the alias toolchain verified.
 2. **Tooling**: aliases in every InvestLab tsconfig and Vite config, the lint factory with an empty migrated list, and `eslint-import-resolver-typescript`.
-3. **Projects in dependency order**: core, platform (key-value storage and `./browser` included), portfolio, quotes (followed tickers and `./browser` included), API, web (browser container included). Each one joins the factory's migrated list.
+3. **Projects in dependency order**: core, platform (key-value storage, `.` and `./browser` included), portfolio, quotes (followed tickers and `./browser` included), API, web (browser container included). Each one joins the factory's migrated list.
 4. **Cleanup**: delete the old InvestLab lint table, the fallow workaround and the `module.*.ts` leftovers, and update ADR 0007's status.
 
 Nothing is deployed differently. Rollback is reverting the PR; no data migration runs, and the watchlist format is unchanged.

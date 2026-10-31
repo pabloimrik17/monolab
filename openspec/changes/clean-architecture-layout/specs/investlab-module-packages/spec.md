@@ -11,7 +11,7 @@ A module package SHALL follow the package layout of `clean-architecture-layout`:
 
 ### Requirement: Layer rule enforced by lint
 
-Inside a package, `domain/` and `application/` SHALL NOT import `data/`, the platform, `@m0n0lab/investlab-database` or infrastructure libraries; they MAY import `@m0n0lab/investlab-core`. Only `data/server/`, `data/client/` and `di/` MAY import the platform entries of their side: `./server` on the server side, `./client` on the client side and `./browser` for device code; `data/shared/` SHALL NOT. Code under a `server/` folder SHALL NOT import a `client/` folder, nor the reverse. A lint check in CI SHALL fail on a violation.
+Inside a package, `domain/` and `application/` SHALL NOT import `data/`, the platform, `@m0n0lab/investlab-database` or infrastructure libraries; they MAY import `@m0n0lab/investlab-core`. Only `data/server/`, `data/client/` and `di/` MAY import the platform: its side-free `.` entry and the entry of their side, `./server` or `./client`; only `di/` MAY import `./browser`. `data/shared/` SHALL NOT. Code under a `server/` folder SHALL NOT import a `client/` folder, nor the reverse. A lint check in CI SHALL fail on a violation.
 
 #### Scenario: Use case imports a repository implementation
 
@@ -44,7 +44,7 @@ A module package SHALL export `.` (domain and DTOs), `./server` (server containe
 
 ### Requirement: Container module and entry imports
 
-`di/server.module.ts` MAY import `domain/`, `application/server/`, `data/server/` and the platform `./server` entry; `di/client.module.ts` mirrors it for the client side with the platform `./client` entry. `di/browser.module.ts` MAY import `domain/`, `application/client/`, the device adapters of `data/client/` and the platform `./browser` entry. The entry files MAY import: `index.ts` → `domain/` and `data/shared/`; `server.ts` → `domain/`, `application/server/` and `di/server.module.ts`; `client.ts` → `domain/`, `application/client/` and `di/client.module.ts`; `browser.ts` → `domain/`, `application/client/` and `di/browser.module.ts`; `testing.ts` → `testing/shared/`. The boundary lint check SHALL fail on any other import from these files.
+`di/server.module.ts` MAY import `domain/`, `application/server/`, `data/server/` and the platform `.` and `./server` entries; `di/client.module.ts` mirrors it for the client side with the platform `.` and `./client` entries. `di/browser.module.ts` MAY import `domain/`, `application/client/`, the device adapters of `data/client/` and the platform `.` and `./browser` entries. The entry files MAY import: `index.ts` → `domain/` and `data/shared/`; `server.ts` → `domain/`, `application/server/` and `di/server.module.ts`; `client.ts` → `domain/`, `application/client/` and `di/client.module.ts`; `browser.ts` → `domain/`, `application/client/` and `di/browser.module.ts`; `testing.ts` → `testing/shared/`. The boundary lint check SHALL fail on any other import from these files.
 
 #### Scenario: Module file binds a repository to its port
 
@@ -78,7 +78,7 @@ A module package SHALL export `.` (domain and DTOs), `./server` (server containe
 
 ### Requirement: Test files may reach the composition
 
-Use-case integration tests (`*.use-case.integration.ts`) and the files under `testing/server/` and `testing/client/` SHALL be exempt from the `application/` import rule: they MAY import the module's container modules in `di/`, the platform entries of their side, `@m0n0lab/investlab-database` (server side), `testing/shared/` and test libraries. Use-case files SHALL remain bound by it.
+Use-case integration tests (`*.use-case.integration.ts`) and the files under `testing/server/` and `testing/client/` SHALL be exempt from the `application/` import rule: they MAY import the module's container modules in `di/`, the platform `.` entry and the platform entries of their side's runtimes, `@m0n0lab/investlab-database` (server side), `testing/shared/` and test libraries. Use-case files SHALL remain bound by it.
 
 #### Scenario: Server setup builds the container
 
@@ -92,7 +92,7 @@ Use-case integration tests (`*.use-case.integration.ts`) and the files under `te
 
 ### Requirement: Apps import only their side
 
-`apps/investlab` SHALL import module packages only through `.`, `./client` and `./browser` and the platform only through `./client` and `./browser`. It SHALL import any `./client` entry only from its route files in `src/routes/` and its server container `src/di/container.server.ts`, and any `./browser` entry only from its browser container `src/di/container.client.ts`. A type-only import SHALL follow the same rule: types the view needs come from the package's `.` entry or are re-exported by `src/di/`. `apps/investlab-api` SHALL import module packages only through `.` and `./server` and the platform only through `./server`. Both apps MAY import `@m0n0lab/investlab-core`; `apps/investlab` SHALL NOT import `@m0n0lab/investlab-database`. A lint check SHALL fail CI on any other import.
+`apps/investlab` SHALL import module packages and the platform only through `.`, `./client` and `./browser`. It SHALL import any `./client` entry only from its route files in `src/routes/` and its server container `src/di/container.server.ts`, and any `./browser` entry only from its browser container `src/di/container.client.ts`. A type-only import SHALL follow the same rule: types the view needs come from the package's `.` entry or are re-exported by `src/di/`. `apps/investlab-api` SHALL import module packages and the platform only through `.` and `./server`. Both apps MAY import `@m0n0lab/investlab-core`; `apps/investlab` SHALL NOT import `@m0n0lab/investlab-database`. A lint check SHALL fail CI on any other import.
 
 #### Scenario: Web imports a server entry
 

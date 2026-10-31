@@ -60,14 +60,18 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
   Cover the `investlab-platform` "Key-value storage" scenarios with tests next to the implementations, the `localStorage` one in the browser Vitest project. Verify with `pnpm nx run @m0n0lab/investlab-platform:test`.
 - [x] 4.3 Add `di/browser.module.ts`, binding `PLATFORM.KeyValueStorage` to the `localStorage` implementation, and export it and the storage interface from `./client`. Test the "Browser storage resolved without configuration" scenario. (Superseded: they move to `./browser` in 4.5, design §8.)
 - [x] 4.4 Add `paths` (`#shared/*`, `#server/*`, `#client/*`, `#di/*`), rewrite imports, and add platform to `migrated`. Verify **[attw]**: `pnpm nx run @m0n0lab/investlab-platform:lint:eslint`, `:typecheck`, `:test`, `:build` and `:build:check-exports` all pass.
-- [ ] 4.5 Platform `./browser` entry (design §8, §10) **[attw]**:
-    - New `src/browser.ts` exporting `platformBrowserModule`, the `KeyValueStorage` interface, `MemoryStorage` and the storage token; `client.ts` stops exporting them.
-    - Move the storage token from `client/tokens.ts` to `shared/tokens.ts`, so `di/browser.module.ts` imports only `shared/` and `client/storage/`.
-    - Add `./browser` to `package.json` `exports` and to tsdown's `entry`.
-    - In the same commit, switch the importers to `./browser`: quotes' `ticker-storage.repository.ts` and `testing/client/vitest-integration-setup.ts`, and the platform import in the web's `di/container.client.ts`.
+- [ ] 4.5 Platform `.` and `./browser` entries (design §8, §10) **[attw]**:
+    - Move the storage token from `client/tokens.ts` to `PLATFORM_SHARED` in a new `shared/tokens.ts`, so `di/browser.module.ts` imports only `shared/` and `client/storage/`.
+    - New `src/index.ts` exporting the side-free pieces from `shared/`: the `KeyValueStorage` interface, `MemoryStorage`, `PLATFORM_SHARED` and the `HttpClient` types (`HttpClient`, `HttpMethod`, `HttpRequest`, `HttpResponse`).
+    - New `src/browser.ts` exporting only `platformBrowserModule`. `server.ts` and `client.ts` stop exporting side-free pieces, and `client.ts` stops exporting the browser module.
+    - Add `.` and `./browser` to `package.json` `exports`, and `src/index.ts` and `src/browser.ts` to tsdown's `entry`.
+    - In the same commit, switch the importers:
+        - quotes' `ticker-storage.repository.ts` and `testing/client/vitest-integration-setup.ts` take `KeyValueStorage`, `MemoryStorage` and `PLATFORM_SHARED` from `.` (the other quotes and portfolio testing setups use no side-free piece), and the comment in quotes' `di/browser.module.ts` names `PLATFORM_SHARED.KeyValueStorage`;
+        - quotes' `finnhub.client.ts` takes `HttpClient` from `.`;
+        - the web's `di/container.client.ts` takes `platformBrowserModule` from `./browser`.
   Then verify:
     - `pnpm nx run @m0n0lab/investlab-platform:lint:eslint`, `:typecheck`, `:test`, `:build` and `:build:check-exports` pass;
-    - `pnpm nx run-many -t typecheck -p @m0n0lab/investlab-quotes,@m0n0lab/investlab` passes;
+    - `pnpm nx run-many -t typecheck -p @m0n0lab/investlab-portfolio,@m0n0lab/investlab-quotes,@m0n0lab/investlab-api,@m0n0lab/investlab` passes;
     - `dist/browser.js` and the chunks it imports contain none of `InvestlabApiClient`, `SsrEnvConfig` and `INVESTLAB_API_TOKEN`.
 
 ## 5. Portfolio package
@@ -191,12 +195,13 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
 
 ## 9. Cleanup and integration
 
-- [ ] 9.1 Delete the old InvestLab boundaries table and the `no-restricted-imports` groups the factory replaced, and give the factory the full InvestLab project set. Add the device rules (spec "Device compositions hold no credentialed code", design §8):
-    - packages: `di/browser.module.ts` and `browser.ts` import from `data/client/` only files named for a device medium (`storage`); those files never import an `api` file nor the platform `./client`; `client.ts` never imports `di/browser.module.ts`;
-    - platform: `di/browser.module.ts` and `browser.ts` import only `shared/` and `client/storage/`.
+- [ ] 9.1 Delete the old InvestLab boundaries table and the `no-restricted-imports` groups the factory replaced, and give the factory the full InvestLab project set. Add the device rules (spec "Device compositions hold no credentialed code" and "Runtime entries only in compositions", design §8):
+    - packages: `di/browser.module.ts` and `browser.ts` import from `data/client/` only files named for a device medium (`storage`); those files never import an `api` file and take platform pieces only from `.`; `client.ts` never imports `di/browser.module.ts`;
+    - every package and app: a `./browser` entry is imported only from a package's `di/` and `testing/` files and an app's `src/di/`;
+    - platform: `di/browser.module.ts` and `browser.ts` import only `shared/` and `client/storage/`; `index.ts` exports only `shared/` code, and no other entry exports it.
   Verify:
     - `pnpm nx run-many -t lint:eslint` is green;
-    - a deliberate violation of each rule fails: an unknown file, a folder/suffix mismatch, `../`, repository → repository, `core/` → module, server → client, a browser module importing an `api` repository, a `storage` adapter importing the platform `./client`, and the platform browser module importing `client/http/`.
+    - a deliberate violation of each rule fails: an unknown file, a folder/suffix mismatch, `../`, repository → repository, `core/` → module, server → client, a browser module importing an `api` repository, a `storage` adapter importing the platform `./client`, a `storage` adapter importing the platform `./browser`, the platform browser module importing `client/http/`, and the platform `client.ts` exporting `MemoryStorage`.
 - [x] 9.2 Remove what is left of the `.fallowrc.json` testing entry; verify `pnpm run lint:fallow` and `pnpm run lint:knip` pass.
 - [x] 9.3 Propose to the owner one `AGENTS.md` line pointing to ADR 0009, and add it only if approved. Verify with `git diff AGENTS.md`. The owner declined it (design §12).
 - [ ] 9.4 Final check: `pnpm nx run-many -t lint:eslint typecheck test build build:check-exports -p '@m0n0lab/investlab*'`, `pnpm run lint:legacy-tests`, `pnpm run lint:fallow` and `pnpm run lint:knip` all green. Then a manual pass on the web: portfolio create/update/delete, add and remove a ticker, quotes refreshing.

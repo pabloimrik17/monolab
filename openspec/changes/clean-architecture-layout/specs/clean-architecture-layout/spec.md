@@ -252,7 +252,7 @@ A package SHALL wire each runtime its consumers run in with one container module
 
 ### Requirement: Device compositions hold no credentialed code
 
-In `data/client/`, a file named for the `api` source is credentialed and one named for a device medium (`storage`) is a device adapter. A device container module and its entry SHALL import from `data/client/` only device adapters, which SHALL NOT import a credentialed file nor the platform's `./client` entry. A platform's device module SHALL import only `shared/` and `client/storage/`. A new device medium SHALL join this spec and the lint together.
+In `data/client/`, a file named for the `api` source is credentialed and one named for a device medium (`storage`) is a device adapter. A device container module and its entry SHALL import from `data/client/` only device adapters, which SHALL NOT import a credentialed file and SHALL take platform pieces only from its side-free root entry `.`. A platform's device module SHALL import only `shared/` and `client/storage/`. A new device medium SHALL join this spec and the lint together.
 
 #### Scenario: Browser module imports an API repository
 
@@ -268,6 +268,20 @@ In `data/client/`, a file named for the `api` source is credentialed and one nam
 
 - **WHEN** `packages/investlab-platform/src/di/browser.module.ts` imports `client/http/investlab-api.client.ts`
 - **THEN** the layer lint fails
+
+### Requirement: Runtime entries only in compositions
+
+An entry for one device runtime, such as `./browser`, SHALL be imported only by compositions: a package's `di/` and `testing/` files and an app's `src/di/`. Adapters, use cases and views SHALL NOT import one; they take ports and side-free pieces from the package's `.` entry or from their side's entry, so they never know which device runs them.
+
+#### Scenario: Device adapter imports a runtime entry
+
+- **WHEN** `packages/investlab-quotes/src/data/client/repository/ticker-storage.repository.ts` imports `@m0n0lab/investlab-platform/browser`
+- **THEN** the layer lint fails
+
+#### Scenario: Composition imports a runtime entry
+
+- **WHEN** `apps/investlab/src/di/container.client.ts` imports `platformBrowserModule` from `@m0n0lab/investlab-platform/browser`
+- **THEN** the layer lint passes
 
 ### Requirement: Tests next to their subject
 
@@ -322,12 +336,17 @@ A core package SHALL follow the package layers with no side in its own code: ker
 
 ### Requirement: Platform package layout
 
-A platform package SHALL nest by side, then medium: `src/<side>/<medium>/` (for example `shared/http/http.client.ts`, `client/storage/local.storage.ts`, `server/config/process-env.config.ts`), plus `src/di/` and its entry files. It SHALL have no layer folders.
+A platform package SHALL nest by side, then medium: `src/<side>/<medium>/` (for example `shared/http/http.client.ts`, `client/storage/local.storage.ts`, `server/config/process-env.config.ts`), plus `src/di/` and its entry files. It SHALL have no layer folders. Its root entry `index.ts` SHALL export only `shared/` code, including the tokens of side-free pieces in `shared/tokens.ts`, and no other entry SHALL export `shared/` code.
 
 #### Scenario: Platform HTTP client
 
 - **WHEN** the generic HTTP client of `@m0n0lab/investlab-platform` is located
 - **THEN** it is `packages/investlab-platform/src/shared/http/http.client.ts`
+
+#### Scenario: Runtime entry re-exports a side-free piece
+
+- **WHEN** `packages/investlab-platform/src/client.ts` exports `MemoryStorage` from `shared/storage/memory.storage.ts`
+- **THEN** the layer lint fails
 
 ### Requirement: App layout
 
