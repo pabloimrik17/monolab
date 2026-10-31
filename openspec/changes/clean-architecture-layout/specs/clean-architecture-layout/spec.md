@@ -182,12 +182,12 @@ A file that exports one class SHALL name it like the file, in PascalCase, kind i
 
 ### Requirement: Framework and test suffixes go last
 
-A suffix a framework requires, such as `.server.ts` or `.client.ts`, and a test suffix SHALL come after the kind suffix: `portfolio.loader.server.ts`, `di/container.client.ts`, `instrument.model.test.ts`.
+A suffix a framework requires, such as `.server.ts` or `.client.ts`, and a test suffix SHALL come after the kind suffix: `di/container.server.ts`, `di/container.client.ts`, `instrument.model.test.ts`.
 
-#### Scenario: Server-only loader
+#### Scenario: Server-only container
 
-- **WHEN** a React Router loader that imports a `./client` entry is located
-- **THEN** its file is named `<concept>.loader.server.ts`
+- **WHEN** the web's server container is located
+- **THEN** its file is `apps/investlab/src/di/container.server.ts`, so the build fails if browser code imports it
 
 ### Requirement: Repositories stay inside their aggregate
 
@@ -260,12 +260,22 @@ Test support SHALL live in `src/testing/`: builders in `testing/shared/builder/<
 
 ### Requirement: Harness next to its entry point
 
-An app harness SHALL sit next to the entry point it drives, named after it (`route/instrument.route.harness.ts`, `page/portfolio.page.harness.ts`). The base harness SHALL live in `core/harness/`.
+An app harness SHALL sit next to the entry point it drives, named after it (`route/instrument.route.harness.ts`, `page/portfolio.page.harness.ts`). The base harness SHALL live in `core/harness/`. A `*.harness.ts` file MAY import the app entry it drives (`#app` in an API app); no other file in `core/` or a module SHALL import it.
 
 #### Scenario: API harness
 
 - **WHEN** the harness for the instruments routes is located
 - **THEN** it is `apps/investlab-api/src/portfolio/route/instrument.route.harness.ts` and extends `core/harness/api.harness.ts`
+
+#### Scenario: Harness imports the app entry
+
+- **WHEN** `apps/investlab-api/src/core/harness/api.harness.ts` imports `createApp` from `#app`
+- **THEN** the layer lint passes
+
+#### Scenario: Other file imports the app entry
+
+- **WHEN** a file in `apps/investlab-api/src/core/mapper/` imports `#app`
+- **THEN** the layer lint fails
 
 ### Requirement: Core package layout
 
@@ -308,27 +318,55 @@ Each module folder of an app SHALL be named after a module package of its produc
 - **WHEN** `portfolio/` imports `quotes/` and `quotes/` imports `portfolio/`
 - **THEN** the CI circular dependency check fails
 
-### Requirement: Framework route files are thin shells
+### Requirement: Route files are the framework adapters
 
-A file in a framework's route tree SHALL only bind a URL to a module's page, loader or action and SHALL hold no logic. A Hono app SHALL keep each module's routes in `src/<module>/route/` and mount them in `src/app.ts`.
+A file in a framework's route tree SHALL hold its route's loader and action, when it has them, and the route component that renders a module's page (`+page.server.ts` and `+page.svelte` in SvelteKit). Each SHALL be typed with the framework's generated route types and SHALL declare its return type.
 
 #### Scenario: React Router route
 
 - **WHEN** `apps/investlab/src/routes/portfolio.tsx` is read
-- **THEN** it only re-exports the portfolio page, loader and action from `src/portfolio/`
+- **THEN** it holds the portfolio `loader`, `action` and route component, typed with `Route.LoaderArgs`, `Route.ActionArgs` and `Route.ComponentProps` from `./+types/portfolio`, each with a declared return type, and the component renders the portfolio page from `src/portfolio/`
+
+#### Scenario: Loader and page out of step
+
+- **WHEN** the portfolio loader returns data that the portfolio page's props do not accept
+- **THEN** the type check fails
+
+### Requirement: Route files hold no business logic
+
+A loader or action SHALL resolve use cases from the app's server container, call them, and turn their results into the page's view data or the action's result; the route component SHALL pass them to the page as props. A route file SHALL hold no other logic.
+
+#### Scenario: Portfolio loader
+
+- **WHEN** the `/portfolio` loader runs
+- **THEN** it resolves the client portfolio item list use case from `apps/investlab/src/di/container.server.ts`, calls it, and returns the result converted to the portfolio page's view data
+
+### Requirement: Typed action results
+
+An action SHALL return the result type declared in its module's `form/` file, and the module's components SHALL read it through the framework's typed form state.
+
+#### Scenario: Typed action result
+
+- **WHEN** a portfolio component reads the result of the portfolio action
+- **THEN** it calls `useFetcher<PortfolioActionResult>()`, with `PortfolioActionResult` declared in `portfolio/form/portfolio-item.form.ts` and returned by the route's action
 
 ### Requirement: UI app kinds
 
-A UI app module SHALL use the kinds `page/`, `component/`, `hook/`, `view-model/`, `loader/`, `action/`, `form/`, `mapper/` and `error/`, with matching suffixes: `portfolio.page.tsx`, `instrument-row.component.tsx` (`.component.svelte` in Svelte), `use-instruments.hook.ts`, `portfolio-item.form.ts`.
+A UI app module SHALL use the kinds `page/`, `component/`, `hook/`, `view-model/`, `form/`, `mapper/` and `error/`, with matching suffixes: `portfolio.page.tsx`, `instrument-row.component.tsx` (`.component.svelte` in Svelte), `use-instruments.hook.ts`, `portfolio-item.form.ts`. Loaders and actions SHALL live in the route files, not in a module.
 
 #### Scenario: Component suffix
 
 - **WHEN** a file is added at `apps/investlab/src/portfolio/component/instrument-row.tsx`
 - **THEN** the layer lint fails
 
+#### Scenario: Loader in a module
+
+- **WHEN** a file is added at `apps/investlab/src/portfolio/loader/portfolio.loader.server.ts`
+- **THEN** the layer lint fails
+
 ### Requirement: API app kinds
 
-An API app module SHALL use the kinds `route/`, `middleware/`, `mapper/` and `error/`, with matching suffixes: `instrument.route.ts`, `bearer-auth.middleware.ts`, `error-http.mapper.ts`, `request-validation.error.ts`. The base harness SHALL use `core/harness/`.
+An API app module SHALL use the kinds `route/`, `middleware/`, `mapper/` and `error/`, with matching suffixes: `instrument.route.ts`, `bearer-auth.middleware.ts`, `error-http.mapper.ts`, `request-validation.error.ts`. The base harness SHALL use `core/harness/`. A Hono app SHALL keep each module's routes in `src/<module>/route/` and mount them in `src/app.ts`.
 
 #### Scenario: Route file name
 
@@ -351,12 +389,17 @@ An app SHALL wire its dependencies in `src/di/`, one container per runtime: `con
 
 ### Requirement: Path aliases per top-level folder
 
-Each project SHALL declare, as a closed list, one `#<folder>/*` alias for each top-level folder of `src/` that other folders import from: in packages `#domain`, `#application`, `#data`, `#di` and `#testing`; in apps `#core`, `#di` and one per module. The framework route tree SHALL get no alias.
+Each project SHALL declare, as a closed list, one `#<folder>/*` alias for each top-level folder of `src/` that other folders import from: in packages `#domain`, `#application`, `#data`, `#di` and `#testing`; in apps `#core`, `#di` and one per module. An API app SHALL also declare `#app` for its entry file `src/app.ts`. The framework route tree SHALL get no alias.
 
 #### Scenario: Package import through an alias
 
 - **WHEN** a use case imports the instrument model
 - **THEN** the specifier is `#domain/model/instrument.model.ts`
+
+#### Scenario: API app entry alias
+
+- **WHEN** the API's base harness imports the app it drives
+- **THEN** the specifier is `#app`, which resolves to `apps/investlab-api/src/app.ts`
 
 #### Scenario: Folder outside the list
 

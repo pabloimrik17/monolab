@@ -123,8 +123,9 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
     - `errors/request-validation.error.ts` → `core/error/request-validation.error.ts`
 - [x] 7.2 Replace `errors/parse-request.ts` with `core/middleware/request-validation.middleware.ts`; verify that the integration-platform tests asserting 422 responses pass unchanged.
 - [x] 7.3 Split `serializers/dto-serializers.ts`: each `to*Dto` becomes private to the route that uses it, or moves to `<module>/mapper/<concept>-dto.mapper.ts` when two routes share it. Verify no `serializers/` folder remains.
-- [ ] 7.4 Make each module's route file export a Hono sub-app, mounted by `app.ts`. Add `paths` (`#core/*`, `#di/*`, `#portfolio/*`, `#quotes/*`), rewrite imports, and add the API to `migrated`. Then verify:
+- [ ] 7.4 Make each module's route file export a Hono sub-app, mounted by `app.ts`. Add `paths` (`#core/*`, `#di/*`, `#portfolio/*`, `#quotes/*`, and `#app` → `src/app.ts`), rewrite imports, and add the API to `migrated`. In the factory, let `*.harness.ts` files import the app entry they drive (design §12). Then verify:
     - `pnpm nx run @m0n0lab/investlab-api:lint:eslint`, `:typecheck`, `:test:integration-platform` and `:build` pass;
+    - a non-harness file in `core/` or a module that imports `#app` fails `:lint:eslint`;
     - `grep -rn '"#' apps/investlab-api/dist` finds nothing;
     - `pnpm --filter @m0n0lab/investlab-api dev` starts.
 
@@ -137,11 +138,11 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
     - `use-portfolio-view-model.ts` → `portfolio/view-model/portfolio.view-model.ts`, absorbing the view types from `types.ts`
     - `lib/portfolio-item-form.ts` → `portfolio/form/portfolio-item.form.ts`
     - the loader and action → `portfolio/loader/portfolio.loader.server.ts` and `portfolio/action/portfolio.action.server.ts`, absorbing `lib/portfolio.server.ts`
-    - `routes/portfolio.tsx` becomes a shell that only re-exports
+    - `routes/portfolio.tsx` becomes a shell that only re-exports (superseded: the loader and action move into the route file in 8.5, design §7)
 - [x] 8.3 Quotes module and core. Verify with `:typecheck`.
     - The index page → `quotes/page/ticker.page.tsx`, and the ticker components → `quotes/component/<x>.component.tsx`.
     - The `/api/quotes` loader → `quotes/loader/quote-list.loader.server.ts`, absorbing `lib/quotes.server.ts`.
-    - `routes/_index.tsx` and `routes/api.quotes.ts` become shells.
+    - `routes/_index.tsx` and `routes/api.quotes.ts` become shells (superseded: the loader moves into the route file in 8.5, design §7).
     - `lib/remote-error.ts` → `core/mapper/remote-error.mapper.ts`, and components no module owns → `core/component/`.
 - [ ] 8.4 Composition:
     - `lib/container.server.ts` and its legacy test → `di/container.server.ts`.
@@ -149,8 +150,16 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
     - `quotes/hook/use-followed-tickers.hook.ts`, resolving the ticker use cases from it.
     - `quotes/hook/use-quote-polling.hook.ts`, holding the poller and the route request, validated with `quoteDtoSchema`. The poller and route-source legacy tests merge into `use-quote-polling.hook.legacy.test.ts`.
     - Delete `lib/wealth.ts`, the `ticker/` folder and `ticker-store.legacy.test.ts` (replaced by the 6.4 tests), and update `docs/legacy-tests.txt`.
-    - Verify with `:test` and `pnpm run lint:legacy-tests`.
-- [ ] 8.5 Add `paths` (`#core/*`, `#di/*`, `#portfolio/*`, `#quotes/*`), rewrite imports, and add the web to `migrated`. Then verify:
+    - Lower the web's coverage floors in `vitest.config.ts` to 45/40/40/45 (lines, branches, functions, statements), a one-off exception recorded in design §12.
+    - Verify with `:test`, `:test:coverage` and `pnpm run lint:legacy-tests`.
+- [ ] 8.5 Route adapters (design §7) and aliases:
+    - Move each module loader and action (`portfolio/loader/`, `portfolio/action/`, `quotes/loader/`) into its route file (`routes/portfolio.tsx`, `routes/api.quotes.ts`), typed with `Route.LoaderArgs`, `Route.ActionArgs` and `Route.ComponentProps` from `./+types/<route>`, each with an explicit return type. Each page route declares its route component, which passes the loader data to the module's page as props.
+    - Move their legacy tests next to the route file (the portfolio loader and action tests merge into `routes/portfolio.legacy.test.ts`), and update `docs/legacy-tests.txt`.
+    - Add `PortfolioActionResult` to `portfolio/form/portfolio-item.form.ts`, return it from the action, and read it with `useFetcher<PortfolioActionResult>()` in the portfolio components.
+    - In the factory, drop `loader` and `action` from the UI app kinds, and allow a `./client` entry in the web only from `src/routes/` and `src/di/`.
+    - Add `paths` (`#core/*`, `#di/*`, `#portfolio/*`, `#quotes/*`), rewrite imports, and add the web to `migrated`.
+
+  Then verify:
     - `pnpm nx run @m0n0lab/investlab:lint:eslint`, `:typecheck`, `:test` and `:build` pass;
     - the client assets contain none of the strings from 1.3;
     - by hand: with `wealth-tracker-tickers` set in the old format before loading the page, the same tickers show and quotes refresh.
@@ -161,7 +170,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
     - `pnpm nx run-many -t lint:eslint` is green;
     - a deliberate violation of each rule fails: an unknown file, a folder/suffix mismatch, `../`, repository → repository, `core/` → module, and server → client.
 - [x] 9.2 Remove what is left of the `.fallowrc.json` testing entry; verify `pnpm run lint:fallow` and `pnpm run lint:knip` pass.
-- [x] 9.3 Propose to the owner one `AGENTS.md` line pointing to ADR 0009, and add it only if approved. Verify with `git diff AGENTS.md`.
+- [x] 9.3 Propose to the owner one `AGENTS.md` line pointing to ADR 0009, and add it only if approved. Verify with `git diff AGENTS.md`. The owner declined it (design §12).
 - [ ] 9.4 Final check: `pnpm nx run-many -t lint:eslint typecheck test build build:check-exports -p '@m0n0lab/investlab*'`, `pnpm run lint:legacy-tests`, `pnpm run lint:fallow` and `pnpm run lint:knip` all green. Then a manual pass on the web: portfolio create/update/delete, add and remove a ticker, quotes refreshing.
 
 ## Workflow follow-up

@@ -57,14 +57,25 @@ A repository never imports another aggregate's repository, which the lint can ch
 
 `instrument-create.use-case.integration.ts` repeats the subject's full name, so a test and its subject sort together and a search for the subject finds both. Builders move to `testing/shared/builder/`, and the `./testing` entry is built from `src/testing.ts`. That puts the entry where fallow expects it, so the `.fallowrc.json` workaround goes away. `given.ts` and the setup files move to `testing/<side>/`; they are support, not subjects.
 
-### 7. Apps: modules, `core/`, `di/`; route trees as shells
+### 7. Apps: modules, `core/`, `di/`; route files as framework adapters
 
-App modules mirror the module packages (`portfolio/`, `quotes/`). There is no `presentation/` folder, because an app holds only that layer. React Router and SvelteKit keep their route tree in `src/routes/`, and each route file only re-exports the module's page, loader and action. The web moves to `appDirectory: "src"`, which also moves React Router's type generation (`.react-router/types/src/...`), so the `rootDirs` setup stays as it is. Hono has no route tree: each module's `route/` files export a Hono sub-app, and `src/app.ts` mounts them.
+App modules mirror the module packages (`portfolio/`, `quotes/`). There is no `presentation/` folder, because an app holds only that layer. The web moves to `appDirectory: "src"`, which also moves React Router's type generation (`.react-router/types/src/...`), so the `rootDirs` setup stays as it is. Hono has no route tree: each module's `route/` files export a Hono sub-app, and `src/app.ts` mounts them.
+
+React Router and SvelteKit keep their route tree in `src/routes/`, and each route file is the framework adapter of its URL:
+- **What it holds:** the `loader`, the `action` and the route component, typed with the generated route types (`Route.LoaderArgs`, `Route.ActionArgs`, `Route.ComponentProps` from `./+types/<route>`), each with an explicit return type. SvelteKit's `+page.server.ts` already works this way.
+- **What it does:** it resolves use cases from `di/container.server.ts`, calls them, and passes props to the module's page. The conversion of a use-case result to the page's view data stays inside the loader. No business logic.
+- **Typed action results:** the form contract `PortfolioActionResult` (`{ ok: true } | { error: string; fieldErrors?: PortfolioFieldErrors }`) lives in `portfolio/form/portfolio-item.form.ts`. The route action returns it, and components read it with `useFetcher<PortfolioActionResult>()`.
+
+Why (owner, 2026-10-30): loaders and actions carry the framework's signature and semantics; a loader throws a `Response` for the error boundary. The view already depends on the framework (`useFetcher`), so moving action logic out of it buys little. And with the loader in the route file, the generated types check the loader against the page again, which was lost when the page typed `loaderData` by hand.
+
+*Alternative*: `loader/` and `action/` kinds in each module, with route files that only re-export them. This was the first plan, applied in tasks 8.2–8.3 and undone in 8.5.
 
 ### 8. Composition per runtime
 
 - **Packages** wire each side in `di/server.module.ts` and `di/client.module.ts`. Code that only runs in the browser goes in `di/browser.module.ts`, exported from `./client`, so the four entries stay.
 - **The web** gains `di/container.client.ts`, React Router's browser-only suffix. It loads only the browser modules of the platform (key-value storage over `localStorage`) and quotes (followed tickers), so it never holds `Config` or the API token. `di/container.server.ts` replaces `lib/container.server.ts`.
+- **Framework suffixes in `di/`:** `di/` is the app's composition root, the same framework edge as `routes/`, so both containers keep React Router's suffixes. `.server` makes the build fail if browser code reaches the server container, and `.client` keeps the browser container out of server rendering.
+- **Who imports `./client` in the web:** only `src/routes/` and `src/di/`. Hooks get the use cases from `di/container.client.ts`, and the types the view needs come from the package's `.` entry, as `Ticker` does. Type-only imports get no exception.
 
 *Alternative*: build the ticker pieces by hand in the hook, as `wealth.ts` does today. Rejected: it means exporting the repository and having a second wiring site.
 
@@ -101,12 +112,12 @@ A file that fits no kind is private to its only user, or moves to the kind it ac
 | platform `shared/read-env.ts` | platform `shared/config/read-env.ts` |
 | web `lib/remote-error.ts` | `core/mapper/remote-error.mapper.ts` |
 | web `lib/portfolio-item-form.ts` | `portfolio/form/portfolio-item.form.ts` (new `form/` kind) |
-| web `lib/portfolio.server.ts`, `lib/quotes.server.ts` | folded into the loaders and actions that call them |
+| web `lib/portfolio.server.ts`, `lib/quotes.server.ts` | folded into the route files' loaders and actions (§7) |
 | web `components/portfolio/types.ts`, `ticker/types.ts` | view types into the view model, props types into their component, `Ticker` into the quotes package |
 
 ### 12. Path aliases: tsconfig `paths`, `#` prefix, one per top-level folder
 
-The owner chose tsconfig `paths` over `package.json` `imports`. The `#` prefix tells our code apart from `@m0n0lab/*` packages, can never collide with an npm scope, and keeps a later move to `imports` free of import rewrites. Aliases are a closed list per project: a folder outside it cannot be imported by alias.
+The owner chose tsconfig `paths` over `package.json` `imports`. The `#` prefix tells our code apart from `@m0n0lab/*` packages, can never collide with an npm scope, and keeps a later move to `imports` free of import rewrites. Aliases are a closed list per project: a folder outside it cannot be imported by alias. The one file alias is `#app` → `src/app.ts` in an API app (owner, 2026-10-30): the base harness drives the app it imports, and without `../` it has no other way to reach the entry. Only `*.harness.ts` files may import it.
 
 Each tool needs its own setting:
 
@@ -133,6 +144,11 @@ Each tool needs its own setting:
 - One alias per kind (`#repository/*`): rejected, because `repository/`, `query/`, `use-case/` and `port/` exist on more than one side or layer.
 - One root alias (`#/*`): rejected by the owner, because the alias should say where code comes from.
 - The `@` prefix: rejected, because it looks like a package and could collide with a real scope.
+
+**Decided during apply** (owner, 2026-10-30/31):
+- **Web coverage floors (8.4):** lowered to 45/40/40/45 (lines, branches, functions, statements), the measured value rounded down. This is a one-off exception to ADR 0008's "floors are never lowered". The covered `ticker-store.ts` moved to quotes, where the 6.4 tests cover it. No test was lost, and what stays in the web was already untested in the page. `agentic-task-3ao3` (UI harness) will raise them.
+- **`AGENTS.md` (9.3):** the owner declined the line pointing to ADR 0009; none was added.
+- **Follow-up, out of scope:** the package sides `server`/`client` mean "API" and "API consumer (the web)". That clashes with React Router's `.server`/`.client`, which mean "web server" and "browser". Renaming the sides is a separate change.
 
 ### 13. One lint factory per product
 

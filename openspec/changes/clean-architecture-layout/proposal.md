@@ -14,7 +14,7 @@ ADR 0007 settled the package split: one package per module, plus core, platform 
 ## What Changes
 
 - **One layout for every Clean Architecture project** ([ADR 0009](../../../docs/adr/0009-clean-architecture-layout.md), amending ADR 0007). It applies to module, core and platform packages and to apps. Published libraries and the database package are out of scope.
-    - Packages hold `domain/`, `application/` and `data/`, nested layer → side → kind. Apps hold presentation only: one folder per module, plus `core/` and `di/`.
+    - Packages hold `domain/`, `application/` and `data/`, nested layer → side → kind. Apps hold presentation only: one folder per module, plus `core/` and `di/`. Route files are the framework adapters: loader, action and route component.
     - Each kind of code gets one singular kebab-case folder, named like the file suffix: `model/instrument.model.ts`, `use-case/instrument-create.use-case.ts`.
     - Names start with the business concept, then the source or strategy: `instrument-pg.repository.ts`, `quote-cached.repository.ts`.
     - Business ports live in domain and technical ports in application.
@@ -23,7 +23,7 @@ ADR 0007 settled the package split: one package per module, plus core, platform 
     - Aggregate rules: a repository never depends on another aggregate's repository, use cases orchestrate writes that touch several aggregates, and reads across aggregates are read queries.
     - Tests sit next to their subject and are named after it. Test support lives in `src/testing/`, and only builders are exported through `./testing`.
 - **Path aliases**:
-    - Each project maps `#<top-level folder>/*` to `src/<folder>/*` in its tsconfig `paths`; SvelteKit takes them in `kit.alias`.
+    - Each project maps `#<top-level folder>/*` to `src/<folder>/*` in its tsconfig `paths`; SvelteKit takes them in `kit.alias`. An API app also maps `#app` to `src/app.ts`, for its harnesses.
     - Relative imports only inside one folder, never `../`.
     - An alias never reaches into another package.
 - **One layer lint for every product**:
@@ -47,7 +47,7 @@ ADR 0007 settled the package split: one package per module, plus core, platform 
 
 The first four capabilities come from `investlab-modular-packages`. That change must be archived before this one is applied.
 
-- `investlab-module-packages`: point six requirements at the new layout: layer folders, the layer lint, container module and entry imports, the test file exemption, the web's imports, and composition roots. The last two now allow a browser container in the web.
+- `investlab-module-packages`: point six requirements at the new layout: layer folders, the layer lint, container module and entry imports, the test file exemption, the web's imports, and composition roots. The last two now allow a browser container in the web, and the web imports `./client` entries only from its route files and `di/`.
 - `investlab-platform`: adds a key-value storage (a text interface, typed helpers, and `localStorage` and in-memory implementations) and a browser container module that binds it without `Config`.
 - `investlab-use-case-testing`: integration tests take their use case's full name, and setup files and `given.ts` move to `src/testing/<side>/`. This replaces the rule that no `src/testing/` folder exists.
 - `investlab-persistence`: each aggregate declares its table in `data/server/infra/db/<concept>.table.ts`, and the database package's drizzle config lists them by glob.

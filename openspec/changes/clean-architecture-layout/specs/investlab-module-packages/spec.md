@@ -63,7 +63,7 @@ Use-case integration tests (`*.use-case.integration.ts`) and the files under `te
 
 ### Requirement: Apps import only their side
 
-`apps/investlab` SHALL import module packages only through `.` and `./client` and the platform only through `./client`, and any `./client` entry only from `.server.ts` files and from its browser container `src/di/container.client.ts`, which SHALL load only browser modules. `apps/investlab-api` SHALL import module packages only through `.` and `./server` and the platform only through `./server`. Both apps MAY import `@m0n0lab/investlab-core`; `apps/investlab` SHALL NOT import `@m0n0lab/investlab-database`. A lint check SHALL fail CI on any other import.
+`apps/investlab` SHALL import module packages only through `.` and `./client` and the platform only through `./client`, and any `./client` entry only from its route files in `src/routes/` and its composition root in `src/di/`; its browser container `src/di/container.client.ts` SHALL load only browser modules. A type-only import SHALL follow the same rule: types the view needs come from the package's `.` entry. `apps/investlab-api` SHALL import module packages only through `.` and `./server` and the platform only through `./server`. Both apps MAY import `@m0n0lab/investlab-core`; `apps/investlab` SHALL NOT import `@m0n0lab/investlab-database`. A lint check SHALL fail CI on any other import.
 
 #### Scenario: Web imports a server entry
 
@@ -79,6 +79,16 @@ Use-case integration tests (`*.use-case.integration.ts`) and the files under `te
 
 - **WHEN** a file in `apps/investlab/src/quotes/component/` imports `@m0n0lab/investlab-quotes/client`
 - **THEN** the boundary lint check fails
+
+#### Scenario: Component imports a client type
+
+- **WHEN** a file in `apps/investlab/src/quotes/component/` has `import type` from `@m0n0lab/investlab-quotes/client`
+- **THEN** the boundary lint check fails
+
+#### Scenario: Route file imports a client entry
+
+- **WHEN** `apps/investlab/src/routes/portfolio.tsx` imports `@m0n0lab/investlab-portfolio/client`
+- **THEN** the boundary lint check passes
 
 ### Requirement: Apps are composition roots
 
