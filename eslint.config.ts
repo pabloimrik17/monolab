@@ -48,6 +48,7 @@ const investlabLayout: CleanArchitectureOptions = {
         "packages/investlab-platform",
         "packages/investlab-portfolio",
         "packages/investlab-quotes",
+        "apps/investlab-api",
     ],
 };
 
@@ -657,6 +658,8 @@ const appPolicies = [
     allow("di", ["module/**", "core/**", "di"]),
     allow("routes", ["module/**", "core/**"]),
     allow("entry", ["**"]),
+    // a harness boots the app entry it drives
+    allow("{harness,core/harness}", ["entry", "module/**", "core/**", "di"]),
     disallow("core/**", ["module/**"], "core/ never imports a module"),
     disallow("framework/client", ["framework/server"], ".client files never import .server files"),
     disallow("framework/server", ["framework/client"], ".server files never import .client files"),

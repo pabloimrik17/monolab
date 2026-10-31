@@ -1,8 +1,8 @@
 import { Hono } from "hono";
+import { replyJson } from "#core/mapper/result-http.mapper.ts";
+import { validateQuery } from "#core/middleware/request-validation.middleware.ts";
 import { quoteListQueryDtoSchema } from "@m0n0lab/investlab-quotes";
 import { QUOTES } from "@m0n0lab/investlab-quotes/server";
-import { replyJson } from "../../core/mapper/result-http.mapper.ts";
-import { validateQuery } from "../../core/middleware/request-validation.middleware.ts";
 import type { Quote, QuoteDto } from "@m0n0lab/investlab-quotes";
 import type { Container } from "inversify";
 

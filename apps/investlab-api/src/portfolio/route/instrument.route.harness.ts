@@ -1,8 +1,8 @@
 import { errAsync, okAsync } from "neverthrow";
 import { z } from "zod";
+import { ApiHarness } from "#core/harness/api.harness.ts";
 import { instrumentDtoSchema } from "@m0n0lab/investlab-portfolio";
 import { PORTFOLIO } from "@m0n0lab/investlab-portfolio/server";
-import { ApiHarness } from "../../core/harness/api.harness.ts";
 import type { Instrument } from "@m0n0lab/investlab-portfolio";
 import type {
     InstrumentCreateError,

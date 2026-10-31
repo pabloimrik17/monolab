@@ -1,6 +1,6 @@
 import { createMiddleware } from "hono/factory";
 import { z } from "zod";
-import { RequestValidationError } from "../error/request-validation.error.ts";
+import { RequestValidationError } from "#core/error/request-validation.error.ts";
 import type { ZodType, ZodTypeDef } from "zod";
 
 type Schema<T> = ZodType<T, ZodTypeDef, unknown>;

@@ -9,7 +9,14 @@
         "composite": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-        "types": ["node"]
+        "types": ["node"],
+        "paths": {
+            "#app": ["./src/app.ts"],
+            "#core/*": ["./src/core/*"],
+            "#di/*": ["./src/di/*"],
+            "#portfolio/*": ["./src/portfolio/*"],
+            "#quotes/*": ["./src/quotes/*"]
+        }
     },
     "include": ["src/**/*"],
     "exclude": ["**/*.test.ts", "**/*.spec.ts"],
@@ -31,6 +38,9 @@
       },
       {
         "path": "./tsconfig.node.json"
+      },
+      {
+        "path": "./tsconfig.test.json"
       }
     ]
 }

@@ -1,8 +1,8 @@
 import { serve, type ServerType } from "@hono/node-server";
+import { createApp } from "#app";
+import { createContainer } from "#di/container.ts";
 import { apiErrorDtoSchema, type ApiErrorDto } from "@m0n0lab/investlab-core";
 import { PLATFORM, type ServerConfig } from "@m0n0lab/investlab-platform/server";
-import { createApp } from "../../app.ts";
-import { createContainer } from "../../di/container.ts";
 import type { Container, ServiceIdentifier } from "inversify";
 import type { ZodType, ZodTypeDef } from "zod";
 

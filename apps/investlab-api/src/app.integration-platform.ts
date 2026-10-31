@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { ApiHarness } from "#core/harness/api.harness.ts";
+import { PortfolioItemsHarness } from "#portfolio/route/portfolio-item.route.harness.ts";
 import { DomainError, PersistenceError, type ApiErrorDto } from "@m0n0lab/investlab-core";
-import { ApiHarness } from "./core/harness/api.harness.ts";
-import { PortfolioItemsHarness } from "./portfolio/route/portfolio-item.route.harness.ts";
 
 const TOKEN = "s3cret-token";
 

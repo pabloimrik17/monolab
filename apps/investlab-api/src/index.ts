@@ -1,8 +1,8 @@
 import "varlock/auto-load";
 import { serve } from "@hono/node-server";
+import { createContainer } from "#di/container.ts";
 import { PLATFORM } from "@m0n0lab/investlab-platform/server";
 import { createApp } from "./app.ts";
-import { createContainer } from "./di/container.ts";
 
 const container = createContainer();
 const { api } = container.get(PLATFORM.Config);

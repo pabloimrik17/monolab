@@ -1,7 +1,7 @@
 import { okAsync } from "neverthrow";
+import { ApiHarness } from "#core/harness/api.harness.ts";
 import { quoteDtoSchema } from "@m0n0lab/investlab-quotes";
 import { QUOTES } from "@m0n0lab/investlab-quotes/server";
-import { ApiHarness } from "../../core/harness/api.harness.ts";
 import type { Quote } from "@m0n0lab/investlab-quotes";
 
 export class QuotesHarness extends ApiHarness {

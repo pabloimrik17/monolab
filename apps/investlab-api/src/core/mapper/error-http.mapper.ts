@@ -1,5 +1,5 @@
+import { RequestValidationError } from "#core/error/request-validation.error.ts";
 import { DomainError, type ApiErrorDto, type KernelErrorCode } from "@m0n0lab/investlab-core";
-import { RequestValidationError } from "../error/request-validation.error.ts";
 import type { PortfolioErrorCode } from "@m0n0lab/investlab-portfolio";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
