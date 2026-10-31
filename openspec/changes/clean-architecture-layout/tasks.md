@@ -12,7 +12,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
     - `:lint:eslint`, with `eslint-import-resolver-typescript`, fails on a layer violation written through an alias;
     - `pnpm run lint:knip` and `pnpm run lint:fallow` report no unresolved `#` import.
   Record the result in design §12. Wherever Vite's option fails, use `vite-tsconfig-paths` instead.
-- [ ] 1.3 Browser bundle check in the same throwaway branch:
+- [x] 1.3 Browser bundle check in the same throwaway branch:
     - Add a dummy `di/browser.module.ts` to quotes and import it from a browser-only file in `apps/investlab`.
     - Run `pnpm nx run @m0n0lab/investlab:build`, then grep the client assets for `InvestlabApiClient`, `INVESTLAB_API_TOKEN`, `drizzle`, `ioredis` and `pg`. The check passes when none is found.
     - If any is found, stop and ask the owner (design, Risks).
@@ -185,7 +185,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
     - `pnpm nx run @m0n0lab/investlab:lint:eslint`, `:typecheck`, `:test` and `:build` pass;
     - the client assets contain none of the strings from 1.3 (passes once 8.6 is done);
     - by hand: with `wealth-tracker-tickers` set in the old format before loading the page, the same tickers show and quotes refresh.
-- [ ] 8.6 Browser container on `./browser` entries (design §8), before 8.5's client assets check:
+- [x] 8.6 Browser container on `./browser` entries (design §8), before 8.5's client assets check:
     - `di/container.client.ts` imports only `./browser` entries (switched in 4.5 and 6.6); confirm no `./client` import or re-export remains in it.
     - In the factory, allow a `./client` entry in the web only from `src/routes/` and `src/di/container.server.ts`, and a `./browser` entry only from `src/di/container.client.ts`. Type-only imports get no exception: types the view needs come from `.` or are re-exported by `src/di/`.
   Then verify:
@@ -195,7 +195,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
 
 ## 9. Cleanup and integration
 
-- [ ] 9.1 Delete the old InvestLab boundaries table and the `no-restricted-imports` groups the factory replaced, and give the factory the full InvestLab project set. Add the device rules (spec "Device compositions hold no credentialed code" and "Runtime entries only in compositions", design §8):
+- [x] 9.1 Delete the old InvestLab boundaries table and the `no-restricted-imports` groups the factory replaced, and give the factory the full InvestLab project set. Add the device rules (spec "Device compositions hold no credentialed code" and "Runtime entries only in compositions", design §8):
     - packages: `di/browser.module.ts` and `browser.ts` import from `data/client/` only files named for a device medium (`storage`); those files never import an `api` file and take platform pieces only from `.`; `client.ts` never imports `di/browser.module.ts`;
     - every package and app: a `./browser` entry is imported only from a package's `di/` and `testing/` files and an app's `src/di/`;
     - platform: `di/browser.module.ts` and `browser.ts` import only `shared/` and `client/storage/`; `index.ts` exports only `shared/` code, and no other entry exports it.
