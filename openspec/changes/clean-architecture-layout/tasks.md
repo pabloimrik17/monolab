@@ -208,12 +208,12 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
 
 ## 10. Verify follow-ups (owner, 2026-10-31)
 
-- [ ] 10.1 Ticker storage treats a list with an invalid `addedAt` as corrupt (empty list, no throw), with the case added to the ticker list integration test.
-- [ ] 10.2 Renames: the three API route harnesses (`InstrumentRouteHarness`, `PortfolioItemRouteHarness`, `QuoteRouteHarness`), and `portfolio-item-api.query.ts` → `portfolio-item-list-api.query.ts` (`PortfolioItemListApiQuery`). The server portfolio item list use case uses the domain read model instead of its copy.
-- [ ] 10.3 Stale comments: the web's coverage floors, and the `tokens.ts` files that still name `module.<side>.ts`.
-- [ ] 10.4 Lint: only test files and harnesses import a `./testing` entry in apps. Probe each new scenario in "Apps import only their side".
-- [ ] 10.5 Spec and design: model and base-class names, the platform's "four code entries", app test imports (design §12). ADR 0008: harness paths and its example's class name.
-- [ ] 10.6 Final check as in 9.4, without the manual pass.
+- [x] 10.1 Ticker storage treats a list with an invalid `addedAt` as corrupt (empty list, no throw), with the case added to the ticker list integration test.
+- [x] 10.2 Renames: the three API route harnesses (`InstrumentRouteHarness`, `PortfolioItemRouteHarness`, `QuoteRouteHarness`), and `portfolio-item-api.query.ts` → `portfolio-item-list-api.query.ts` (`PortfolioItemListApiQuery`). The server portfolio item list use case uses the domain read model instead of its copy.
+- [x] 10.3 Stale comments: the web's coverage floors, and the `tokens.ts` files that still name `module.<side>.ts`.
+- [x] 10.4 Lint: only test files and harnesses import a `./testing` entry in apps. Probe each new scenario in "Apps import only their side".
+- [x] 10.5 Spec and design: model and base-class names, the platform's "four code entries", app test imports (design §12). ADR 0008: harness paths and its example's class name.
+- [x] 10.6 Final check as in 9.4, without the manual pass.
 
 ## Workflow follow-up
 

@@ -611,7 +611,7 @@ const moduleBans: LayoutBans = ({ root }, { product, modules }) => {
     ];
 };
 
-// Test files and harnesses (design §8): the only app files that may import a package's `./testing` entry.
+// Test files and harnesses (design §12): the only app files that may import a package's `./testing` entry.
 const appTestFiles = (src: string) => [
     `${src}/**/*${oneOf(testSuffixes)}${extension}`,
     `${src}/**/*.harness${extension}`,
