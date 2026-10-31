@@ -26,7 +26,12 @@ export default mergeConfig(
                     },
                 },
                 {
-                    test: { name: "integration", include: ["src/**/*.integration.ts"] },
+                    test: {
+                        name: "integration",
+                        include: ["src/**/*.integration.ts"],
+                        // Container start-up (image pull) is slow on a cold machine
+                        hookTimeout: 120_000,
+                    },
                 },
             ],
             coverage: {

@@ -831,6 +831,9 @@ importers:
       '@m0n0lab/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
+      '@testcontainers/postgresql':
+        specifier: 'catalog:'
+        version: 12.2.0(supports-color@10.2.2)
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.2
