@@ -214,7 +214,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
 - [x] 10.4 Lint: only test files and harnesses import a `./testing` entry in apps. Probe each new scenario in "Apps import only their side".
 - [x] 10.5 Spec and design: model and base-class names, the platform's "four code entries", app test imports (design §12). ADR 0008: harness paths and its example's class name.
 - [x] 10.6 Final check as in 9.4, without the manual pass.
-- [ ] 10.7 Lint factory: the database package's import ban and the apps' outside-`src/` bans come from `cleanArchitectureLint` (design §13), and its option `migrated` becomes `projects`. Prove `--print-config` is unchanged for InvestLab and probe each moved rule.
+- [x] 10.7 Lint factory: the database package's import ban and the apps' outside-`src/` bans come from `cleanArchitectureLint` (design §13), and its option `migrated` becomes `projects`. Prove `--print-config` is unchanged for InvestLab and probe each moved rule.
 
 ## Workflow follow-up
 
