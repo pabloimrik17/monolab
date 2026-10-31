@@ -60,7 +60,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
   Cover the `investlab-platform` "Key-value storage" scenarios with tests next to the implementations, the `localStorage` one in the browser Vitest project. Verify with `pnpm nx run @m0n0lab/investlab-platform:test`.
 - [x] 4.3 Add `di/browser.module.ts`, binding `PLATFORM.KeyValueStorage` to the `localStorage` implementation, and export it and the storage interface from `./client`. Test the "Browser storage resolved without configuration" scenario. (Superseded: they move to `./browser` in 4.5, design §8.)
 - [x] 4.4 Add `paths` (`#shared/*`, `#server/*`, `#client/*`, `#di/*`), rewrite imports, and add platform to `migrated`. Verify **[attw]**: `pnpm nx run @m0n0lab/investlab-platform:lint:eslint`, `:typecheck`, `:test`, `:build` and `:build:check-exports` all pass.
-- [ ] 4.5 Platform `.` and `./browser` entries (design §8, §10) **[attw]**:
+- [x] 4.5 Platform `.` and `./browser` entries (design §8, §10) **[attw]**:
     - Move the storage token from `client/tokens.ts` to `PLATFORM_SHARED` in a new `shared/tokens.ts`, so `di/browser.module.ts` imports only `shared/` and `client/storage/`.
     - New `src/index.ts` exporting the side-free pieces from `shared/`: the `KeyValueStorage` interface, `MemoryStorage`, `PLATFORM_SHARED` and the `HttpClient` types (`HttpClient`, `HttpMethod`, `HttpRequest`, `HttpResponse`).
     - New `src/browser.ts` exporting only `platformBrowserModule`. `server.ts` and `client.ts` stop exporting side-free pieces, and `client.ts` stops exporting the browser module.
