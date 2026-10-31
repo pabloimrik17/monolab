@@ -7,7 +7,9 @@ import type { TickerRepository } from "#domain/repository/ticker.repository.ts";
 /** Key and format of the lists saved by the web's first ticker store; changing either drops saved watchlists. */
 const STORAGE_KEY = "wealth-tracker-tickers";
 
-const storedTickersSchema = z.array(z.object({ symbol: z.string(), addedAt: z.string() }));
+const storedTickersSchema = z.array(
+    z.object({ symbol: z.string(), addedAt: z.string().datetime() }),
+);
 
 @injectable()
 export class TickerStorageRepository implements TickerRepository {

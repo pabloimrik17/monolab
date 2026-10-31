@@ -34,12 +34,14 @@ describe("listing followed tickers", () => {
         ]);
     });
 
-    it.each([["not json"], ['{"symbol":"AAPL"}'], ['[{"symbol":1}]']])(
-        "returns nothing, without failing, when the stored value is %s",
-        (raw) => {
-            givenStoredTickers(raw);
+    it.each([
+        ["not json"],
+        ['{"symbol":"AAPL"}'],
+        ['[{"symbol":1}]'],
+        ['[{"symbol":"AAPL","addedAt":"x"}]'],
+    ])("returns nothing, without failing, when the stored value is %s", (raw) => {
+        givenStoredTickers(raw);
 
-            expect(list.execute()).toEqual([]);
-        },
-    );
+        expect(list.execute()).toEqual([]);
+    });
 });
