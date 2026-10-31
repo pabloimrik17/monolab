@@ -116,7 +116,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
     - **Wiring:** `di/browser.module.ts`, exported from `./client` (superseded: `./browser` in 6.6).
     - Verify with `:test:integration`.
 - [x] 6.5 Do the moves in 5.6 for quotes, add `paths` as in 5.7, and add quotes to `migrated`. Verify **[attw]**: `pnpm nx run @m0n0lab/investlab-quotes:lint:eslint`, `:typecheck`, `:test`, `:build`, `:build:check-exports`, `pnpm run lint:legacy-tests` and `pnpm run lint:fallow` all pass.
-- [ ] 6.6 Quotes `./browser` entry (design §8) **[attw]**:
+- [x] 6.6 Quotes `./browser` entry (design §8) **[attw]**:
     - New `src/browser.ts` exporting `quotesBrowserModule`, the `QUOTES` tokens and the ticker use cases; `client.ts` stops exporting the browser module and the ticker use cases, and keeps `QUOTES` for the quote list.
     - Add `./browser` to `package.json` `exports` and to tsdown's `entry`.
     - The adapter marker needs no move: `quote-api.repository.ts` and `ticker-storage.repository.ts` already name their source. Confirm every `data/client/` file does.
