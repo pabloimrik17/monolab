@@ -421,9 +421,13 @@ const productBans = (product: string) => {
             `${ours}[a-z-]+/client$`,
             "the API imports `.` and `./server` entries only",
         ),
-        clientEntryOutsideRoutesOrDi: ban(
+        webClientEntry: ban(
             `${ours}[a-z-]+/client$`,
-            "import `./client` entries from `src/routes/` and `src/di/` only",
+            "import `./client` entries from `src/routes/` and `src/di/container.server.ts` only",
+        ),
+        webBrowserEntry: ban(
+            `${ours}[a-z-]+/browser$`,
+            "import `./browser` entries from `src/di/container.client.ts` only",
         ),
     };
 };
@@ -504,18 +508,20 @@ const moduleBans: LayoutBans = ({ root }, { product, modules }) => {
     ];
 };
 
-// `./client` entries: the route files and the composition root only
+// `./client` entries: the route files and the server container only; `./browser` entries: the browser container only
 const uiAppBans: LayoutBans = ({ root }, { product }) => {
     const src = `${root}/src`;
     const bans = productBans(product);
-    const clientEntryFiles = [`${src}/routes/**`, `${src}/di/**`];
+    const clientEntryFiles = [`${src}/routes/**`, `${src}/di/container.server.*`];
+    const browserEntryFiles = [`${src}/di/container.client.*`];
     return [
         layoutGroup(
             [`${src}/**`],
-            [bans.serverEntry, bans.clientEntryOutsideRoutesOrDi],
-            clientEntryFiles,
+            [bans.serverEntry, bans.webClientEntry, bans.webBrowserEntry],
+            [...clientEntryFiles, ...browserEntryFiles],
         ),
-        layoutGroup(clientEntryFiles, [bans.serverEntry]),
+        layoutGroup(clientEntryFiles, [bans.serverEntry, bans.webBrowserEntry]),
+        layoutGroup(browserEntryFiles, [bans.serverEntry, bans.webClientEntry]),
     ];
 };
 
@@ -547,7 +553,7 @@ const investlabOutsideLayoutBans = (() => {
         ),
         importBans(
             ["apps/investlab/**"],
-            [bans.serverEntry, bans.clientEntryOutsideRoutesOrDi],
+            [bans.serverEntry, bans.webClientEntry, bans.webBrowserEntry],
             ["apps/investlab/src/**"],
         ),
         importBans(["apps/investlab-api/**"], [bans.clientEntry], ["apps/investlab-api/src/**"]),
