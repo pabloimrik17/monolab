@@ -233,7 +233,7 @@ Outside the kind folders, a package SHALL hold only its entry files at the `src/
 
 ### Requirement: Package composition per runtime
 
-A package SHALL wire each runtime its consumers run in with one container module `src/di/<runtime>.module.ts`, exported through the entry `./<runtime>`: `server` for the API, `client` for a consumer that holds the API credential, and one per device runtime, such as `browser`. A package with no code for a runtime SHALL have no module or entry for it. Each token SHALL stay in the `tokens.ts` of the side folder that injects it.
+A package SHALL wire each runtime its consumers run in with one container module `src/di/<runtime>.module.ts`, exported through the entry `./<runtime>`: `server` for the API, `client` for a consumer holding the API credential, and one per device runtime, such as `browser`. A package with no code for a runtime SHALL have no module or entry for it.
 
 #### Scenario: Server module location
 
@@ -249,6 +249,15 @@ A package SHALL wire each runtime its consumers run in with one container module
 
 - **WHEN** the entries of `@m0n0lab/investlab-portfolio` are listed
 - **THEN** none is `./browser`
+
+### Requirement: Token location
+
+A token SHALL stay in the `tokens.ts` of the side folder that injects it. The token of a side-free piece that a device composition binds SHALL live in `shared/tokens.ts`, so the composition need not import the client tokens that name credentialed pieces.
+
+#### Scenario: Side-free token
+
+- **WHEN** the platform storage token is located
+- **THEN** it is `PLATFORM_SHARED.KeyValueStorage` in `packages/investlab-platform/src/shared/tokens.ts`, not in `client/tokens.ts`
 
 ### Requirement: Device compositions hold no credentialed code
 
