@@ -1,1 +1,1 @@
-export { default } from "../quotes/page/ticker.page";
+export { default } from "#quotes/page/ticker.page";

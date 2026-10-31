@@ -1,7 +1,10 @@
-import { PortfolioItemForm } from "../component/portfolio-item-form.component";
-import { PortfolioTable } from "../component/portfolio-table.component";
-import { usePortfolioViewModel } from "../view-model/portfolio.view-model";
-import type { InstrumentOption, PortfolioItemView } from "../view-model/portfolio.view-model";
+import { PortfolioItemForm } from "#portfolio/component/portfolio-item-form.component";
+import { PortfolioTable } from "#portfolio/component/portfolio-table.component";
+import { usePortfolioViewModel } from "#portfolio/view-model/portfolio.view-model";
+import type {
+    InstrumentOption,
+    PortfolioItemView,
+} from "#portfolio/view-model/portfolio.view-model";
 
 export interface PortfolioPageProps {
     loaderData: { items: PortfolioItemView[]; instruments: InstrumentOption[] };

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getContainer, QUOTES } from "../../di/container.client";
+import { getContainer, QUOTES } from "#di/container.client";
 import type { Ticker } from "@m0n0lab/investlab-quotes";
 
 /** The followed tickers, read from browser storage after mount so server render never touches it. */

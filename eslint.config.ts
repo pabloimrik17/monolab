@@ -49,6 +49,7 @@ const investlabLayout: CleanArchitectureOptions = {
         "packages/investlab-portfolio",
         "packages/investlab-quotes",
         "apps/investlab-api",
+        "apps/investlab",
     ],
 };
 

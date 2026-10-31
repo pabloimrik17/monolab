@@ -5,7 +5,7 @@ import type {
     PortfolioFieldErrors,
     PortfolioFormField,
     PortfolioItemView,
-} from "../view-model/portfolio.view-model";
+} from "#portfolio/view-model/portfolio.view-model";
 
 interface PortfolioItemFormProps {
     instruments: InstrumentOption[];

@@ -1,8 +1,8 @@
-import { AddTicker } from "../component/add-ticker.component";
-import { RefreshIndicator } from "../component/refresh-indicator.component";
-import { TickerList } from "../component/ticker-list.component";
-import { useFollowedTickers } from "../hook/use-followed-tickers.hook";
-import { useQuotePolling } from "../hook/use-quote-polling.hook";
+import { AddTicker } from "#quotes/component/add-ticker.component";
+import { RefreshIndicator } from "#quotes/component/refresh-indicator.component";
+import { TickerList } from "#quotes/component/ticker-list.component";
+import { useFollowedTickers } from "#quotes/hook/use-followed-tickers.hook";
+import { useQuotePolling } from "#quotes/hook/use-quote-polling.hook";
 
 export default function TickerPage() {
     const { tickers, add, remove } = useFollowedTickers();

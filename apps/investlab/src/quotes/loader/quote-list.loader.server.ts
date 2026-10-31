@@ -1,7 +1,7 @@
+import { remoteErrorMessage, remoteErrorStatus } from "#core/mapper/remote-error.mapper";
+import { getContainer } from "#di/container.server";
 import { quoteListQueryDtoSchema, type QuoteDto } from "@m0n0lab/investlab-quotes";
 import { QUOTES } from "@m0n0lab/investlab-quotes/client";
-import { remoteErrorMessage, remoteErrorStatus } from "../../core/mapper/remote-error.mapper";
-import { getContainer } from "../../di/container.server";
 import type { LoaderFunctionArgs } from "react-router";
 
 /** `GET /api/quotes?symbols=AAPL,MSFT`: the browser ticker poller's only way to the API's quotes. */

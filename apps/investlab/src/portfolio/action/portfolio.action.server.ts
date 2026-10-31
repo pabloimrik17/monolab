@@ -1,12 +1,12 @@
-import { PORTFOLIO } from "@m0n0lab/investlab-portfolio/client";
-import { remoteErrorMessage } from "../../core/mapper/remote-error.mapper";
-import { getContainer } from "../../di/container.server";
+import { remoteErrorMessage } from "#core/mapper/remote-error.mapper";
+import { getContainer } from "#di/container.server";
 import {
     createPortfolioItemFormSchema,
     portfolioItemIdFormSchema,
     updatePortfolioItemFormSchema,
-} from "../form/portfolio-item.form";
-import type { PortfolioFieldErrors } from "../view-model/portfolio.view-model";
+} from "#portfolio/form/portfolio-item.form";
+import { PORTFOLIO } from "@m0n0lab/investlab-portfolio/client";
+import type { PortfolioFieldErrors } from "#portfolio/view-model/portfolio.view-model";
 import type { PortfolioRemoteError } from "@m0n0lab/investlab-portfolio";
 import type { ActionFunctionArgs } from "react-router";
 import type { z } from "zod";
