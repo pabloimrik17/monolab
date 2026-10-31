@@ -174,7 +174,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
     - Delete `lib/wealth.ts`, the `ticker/` folder and `ticker-store.legacy.test.ts` (replaced by the 6.4 tests), and update `docs/legacy-tests.txt`.
     - Lower the web's coverage floors in `vitest.config.ts` to 45/40/40/45 (lines, branches, functions, statements), a one-off exception recorded in design §12.
     - Verify with `:test`, `:test:coverage` and `pnpm run lint:legacy-tests`.
-- [ ] 8.5 Route adapters (design §7) and aliases:
+- [x] 8.5 Route adapters (design §7) and aliases:
     - Move each module loader and action (`portfolio/loader/`, `portfolio/action/`, `quotes/loader/`) into its route file (`routes/portfolio.tsx`, `routes/api.quotes.ts`), typed with `Route.LoaderArgs`, `Route.ActionArgs` and `Route.ComponentProps` from `./+types/<route>`, each with an explicit return type. Each page route declares its route component, which passes the loader data to the module's page as props.
     - Move their legacy tests next to the route file (the portfolio loader and action tests merge into `routes/portfolio.legacy.test.ts`), and update `docs/legacy-tests.txt`.
     - Add `PortfolioActionResult` to `portfolio/form/portfolio-item.form.ts`, return it from the action, and read it with `useFetcher<PortfolioActionResult>()` in the portfolio components.
