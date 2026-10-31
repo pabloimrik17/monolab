@@ -9,7 +9,7 @@ import type { PortfolioItemList } from "#domain/read-model/portfolio-item-list.r
 import type { ResultAsync } from "neverthrow";
 
 @injectable()
-export class PortfolioItemApiQuery implements PortfolioItemListQuery<PortfolioRemoteError> {
+export class PortfolioItemListApiQuery implements PortfolioItemListQuery<PortfolioRemoteError> {
     constructor(@inject(PLATFORM.InvestlabApiClient) private readonly api: InvestlabApiClient) {}
 
     list(): ResultAsync<PortfolioItemList, PortfolioRemoteError> {

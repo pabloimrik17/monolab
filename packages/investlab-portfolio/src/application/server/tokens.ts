@@ -39,7 +39,7 @@ export const PORTFOLIO = {
     ) as ServiceIdentifier<InstrumentDeleteUseCase>,
 } as const;
 
-/** Ports the server use cases depend on; bound by `module.server.ts`, never exported. */
+/** Ports the server use cases depend on; bound by `di/server.module.ts`, never exported. */
 export const PORTFOLIO_PORTS = {
     InstrumentRepository: Symbol.for(
         "investlab.portfolio.server.InstrumentRepository",

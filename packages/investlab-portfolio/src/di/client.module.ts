@@ -9,7 +9,7 @@ import { PortfolioItemCreateUseCase } from "#application/client/use-case/portfol
 import { PortfolioItemDeleteUseCase } from "#application/client/use-case/portfolio-item-delete.use-case.ts";
 import { PortfolioItemListUseCase } from "#application/client/use-case/portfolio-item-list.use-case.ts";
 import { PortfolioItemUpdateUseCase } from "#application/client/use-case/portfolio-item-update.use-case.ts";
-import { PortfolioItemApiQuery } from "#data/client/query/portfolio-item-api.query.ts";
+import { PortfolioItemListApiQuery } from "#data/client/query/portfolio-item-list-api.query.ts";
 import { InstrumentApiRepository } from "#data/client/repository/instrument-api.repository.ts";
 import { PortfolioItemApiRepository } from "#data/client/repository/portfolio-item-api.repository.ts";
 
@@ -17,7 +17,7 @@ import { PortfolioItemApiRepository } from "#data/client/repository/portfolio-it
 export const portfolioClientModule = new ContainerModule(({ bind }) => {
     bind(PORTFOLIO_PORTS.InstrumentRepository).to(InstrumentApiRepository);
     bind(PORTFOLIO_PORTS.PortfolioItemRepository).to(PortfolioItemApiRepository);
-    bind(PORTFOLIO_PORTS.PortfolioItemListQuery).to(PortfolioItemApiQuery);
+    bind(PORTFOLIO_PORTS.PortfolioItemListQuery).to(PortfolioItemListApiQuery);
     bind(PORTFOLIO.ItemCreate).to(PortfolioItemCreateUseCase);
     bind(PORTFOLIO.ItemUpdate).to(PortfolioItemUpdateUseCase);
     bind(PORTFOLIO.ItemDelete).to(PortfolioItemDeleteUseCase);
