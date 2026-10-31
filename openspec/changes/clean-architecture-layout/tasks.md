@@ -123,7 +123,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
     - `errors/request-validation.error.ts` → `core/error/request-validation.error.ts`
 - [x] 7.2 Replace `errors/parse-request.ts` with `core/middleware/request-validation.middleware.ts`; verify that the integration-platform tests asserting 422 responses pass unchanged.
 - [x] 7.3 Split `serializers/dto-serializers.ts`: each `to*Dto` becomes private to the route that uses it, or moves to `<module>/mapper/<concept>-dto.mapper.ts` when two routes share it. Verify no `serializers/` folder remains.
-- [ ] 7.4 Make each module's route file export a Hono sub-app, mounted by `app.ts`. Add `paths` (`#core/*`, `#di/*`, `#portfolio/*`, `#quotes/*`, and `#app` → `src/app.ts`), rewrite imports, and add the API to `migrated`. In the factory, let `*.harness.ts` files import the app entry they drive (design §12). Then verify:
+- [x] 7.4 Make each module's route file export a Hono sub-app, mounted by `app.ts`. Add `paths` (`#core/*`, `#di/*`, `#portfolio/*`, `#quotes/*`, and `#app` → `src/app.ts`), rewrite imports, and add the API to `migrated`. In the factory, let `*.harness.ts` files import the app entry they drive (design §12). Then verify:
     - `pnpm nx run @m0n0lab/investlab-api:lint:eslint`, `:typecheck`, `:test:integration-platform` and `:build` pass;
     - a non-harness file in `core/` or a module that imports `#app` fails `:lint:eslint`;
     - `grep -rn '"#' apps/investlab-api/dist` finds nothing;
@@ -144,7 +144,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
     - The `/api/quotes` loader → `quotes/loader/quote-list.loader.server.ts`, absorbing `lib/quotes.server.ts`.
     - `routes/_index.tsx` and `routes/api.quotes.ts` become shells (superseded: the loader moves into the route file in 8.5, design §7).
     - `lib/remote-error.ts` → `core/mapper/remote-error.mapper.ts`, and components no module owns → `core/component/`.
-- [ ] 8.4 Composition:
+- [x] 8.4 Composition:
     - `lib/container.server.ts` and its legacy test → `di/container.server.ts`.
     - New `di/container.client.ts`, loading only the platform and quotes browser modules.
     - `quotes/hook/use-followed-tickers.hook.ts`, resolving the ticker use cases from it.
