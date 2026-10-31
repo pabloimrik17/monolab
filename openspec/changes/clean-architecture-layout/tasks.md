@@ -206,6 +206,15 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
 - [x] 9.3 Propose to the owner one `AGENTS.md` line pointing to ADR 0009, and add it only if approved. Verify with `git diff AGENTS.md`. The owner declined it (design §12).
 - [x] 9.4 Final check: `pnpm nx run-many -t lint:eslint typecheck test build build:check-exports -p '@m0n0lab/investlab*'`, `pnpm run lint:legacy-tests`, `pnpm run lint:fallow` and `pnpm run lint:knip` all green. Then a manual pass on the web: portfolio create/update/delete, add and remove a ticker, quotes refreshing.
 
+## 10. Verify follow-ups (owner, 2026-10-31)
+
+- [ ] 10.1 Ticker storage treats a list with an invalid `addedAt` as corrupt (empty list, no throw), with the case added to the ticker list integration test.
+- [ ] 10.2 Renames: the three API route harnesses (`InstrumentRouteHarness`, `PortfolioItemRouteHarness`, `QuoteRouteHarness`), and `portfolio-item-api.query.ts` → `portfolio-item-list-api.query.ts` (`PortfolioItemListApiQuery`). The server portfolio item list use case uses the domain read model instead of its copy.
+- [ ] 10.3 Stale comments: the web's coverage floors, and the `tokens.ts` files that still name `module.<side>.ts`.
+- [ ] 10.4 Lint: only test files and harnesses import a `./testing` entry in apps. Probe each new scenario in "Apps import only their side".
+- [ ] 10.5 Spec and design: model and base-class names, the platform's "four code entries", app test imports (design §12). ADR 0008: harness paths and its example's class name.
+- [ ] 10.6 Final check as in 9.4, without the manual pass.
+
 ## Workflow follow-up
 
 - Archive `clean-architecture-layout` after review, then confirm `openspec/specs/clean-architecture-layout/spec.md` exists and the modified specs carry the new requirements.

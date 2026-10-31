@@ -178,12 +178,27 @@ A file name SHALL start with its business concept, then the source or strategy w
 
 ### Requirement: Class named like its file
 
-A file that exports one class SHALL name it like the file, in PascalCase, kind included: `instrument-pg.repository.ts` exports `InstrumentPgRepository`.
+A file that exports one class SHALL name it like the file, in PascalCase, kind included: `instrument-pg.repository.ts` exports `InstrumentPgRepository`. A domain model SHALL take its concept alone: `instrument.model.ts` exports `Instrument`. An abstract base class MAY share the file of the interface it implements, named `Base<Interface>`.
 
 #### Scenario: Repository class name
 
 - **WHEN** `data/server/repository/instrument-pg.repository.ts` is read
 - **THEN** it exports a class named `InstrumentPgRepository`
+
+#### Scenario: Model class name
+
+- **WHEN** `domain/model/instrument.model.ts` is read
+- **THEN** it exports a class named `Instrument`
+
+#### Scenario: Harness class name
+
+- **WHEN** `apps/investlab-api/src/portfolio/route/instrument.route.harness.ts` is read
+- **THEN** it exports a class named `InstrumentRouteHarness`
+
+#### Scenario: Base class next to its interface
+
+- **WHEN** `packages/investlab-platform/src/shared/storage/key-value.storage.ts` is read
+- **THEN** it exports the `KeyValueStorage` interface and the abstract class `BaseKeyValueStorage` that implements it
 
 ### Requirement: Framework and test suffixes go last
 

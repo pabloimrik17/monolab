@@ -35,7 +35,7 @@ The `./browser` entry SHALL export only a browser container module that binds th
 
 ### Requirement: Platform root and runtime entries
 
-`@m0n0lab/investlab-platform` SHALL export exactly four entries: the root entry `.` with its side-free pieces (the key-value storage interface, its in-memory implementation and token, and the `HttpClient` types), and one per runtime its consumers run in: `./server`, `./client` and `./browser`. A runtime entry SHALL NOT re-export a side-free piece. The platform MAY import `@m0n0lab/investlab-core`. It SHALL NOT import any business module or `@m0n0lab/investlab-database`.
+`@m0n0lab/investlab-platform` SHALL export exactly four code entries: the root entry `.` with its side-free pieces (the key-value storage interface, its in-memory implementation and token, and the `HttpClient` types), and one per runtime its consumers run in: `./server`, `./client` and `./browser`. A runtime entry SHALL NOT re-export a side-free piece. The platform MAY import `@m0n0lab/investlab-core`. It SHALL NOT import any business module or `@m0n0lab/investlab-database`.
 
 #### Scenario: Side-free pieces from the root entry
 

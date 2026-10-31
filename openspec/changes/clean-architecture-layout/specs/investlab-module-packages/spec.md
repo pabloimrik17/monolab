@@ -92,7 +92,7 @@ Use-case integration tests (`*.use-case.integration.ts`) and the files under `te
 
 ### Requirement: Apps import only their side
 
-`apps/investlab` SHALL import module packages and the platform only through `.`, `./client` and `./browser`. It SHALL import any `./client` entry only from its route files in `src/routes/` and its server container `src/di/container.server.ts`, and any `./browser` entry only from its browser container `src/di/container.client.ts`. A type-only import SHALL follow the same rule: types the view needs come from the package's `.` entry or are re-exported by `src/di/`. `apps/investlab-api` SHALL import module packages and the platform only through `.` and `./server`. Both apps MAY import `@m0n0lab/investlab-core`; `apps/investlab` SHALL NOT import `@m0n0lab/investlab-database`. A lint check SHALL fail CI on any other import.
+`apps/investlab` SHALL import module packages and the platform only through `.`, `./client` and `./browser`. It SHALL import any `./client` entry only from its route files in `src/routes/` and its server container `src/di/container.server.ts`, and any `./browser` entry only from its browser container `src/di/container.client.ts`. A type-only import SHALL follow the same rule: types the view needs come from the package's `.` entry or are re-exported by `src/di/`. `apps/investlab-api` SHALL import module packages and the platform only through `.` and `./server`. In both apps, a test file MAY import the entries its subject may, and only test files and harnesses MAY import `./testing`. Both apps MAY import `@m0n0lab/investlab-core`; `apps/investlab` SHALL NOT import `@m0n0lab/investlab-database`. A lint check SHALL fail CI on any other import.
 
 #### Scenario: Web imports a server entry
 
@@ -122,6 +122,21 @@ Use-case integration tests (`*.use-case.integration.ts`) and the files under `te
 #### Scenario: Browser container imports a client entry
 
 - **WHEN** `apps/investlab/src/di/container.client.ts` imports `@m0n0lab/investlab-quotes/client`
+- **THEN** the boundary lint check fails
+
+#### Scenario: Server container test imports a client entry
+
+- **WHEN** `apps/investlab/src/di/container.server.legacy.test.ts` imports `@m0n0lab/investlab-portfolio/client`
+- **THEN** the boundary lint check passes
+
+#### Scenario: API test imports builders
+
+- **WHEN** `apps/investlab-api/src/portfolio/route/instrument.route.integration-platform.ts` imports `@m0n0lab/investlab-portfolio/testing`
+- **THEN** the boundary lint check passes
+
+#### Scenario: Production code imports builders
+
+- **WHEN** a file in `apps/investlab-api/src/core/mapper/` imports `@m0n0lab/investlab-portfolio/testing`
 - **THEN** the boundary lint check fails
 
 ### Requirement: Apps are composition roots
