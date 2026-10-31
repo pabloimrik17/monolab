@@ -453,6 +453,10 @@ const productBans = (product: string) => {
             `${ours}[a-z-]+/(server|client|browser)(/|$)`,
             "side-neutral code never imports a ./server, ./client or ./browser entry",
         ),
+        testingEntry: ban(
+            `${ours}[a-z-]+/testing$`,
+            "only test files and harnesses import a `./testing` entry",
+        ),
         browserEntry: ban(
             `${ours}[a-z-]+/browser$`,
             "only compositions import a `./browser` entry: a package's di/ and testing/, an app's src/di/",
@@ -607,26 +611,48 @@ const moduleBans: LayoutBans = ({ root }, { product, modules }) => {
     ];
 };
 
+// Test files and harnesses (design §8): the only app files that may import a package's `./testing` entry.
+const appTestFiles = (src: string) => [
+    `${src}/**/*${oneOf(testSuffixes)}${extension}`,
+    `${src}/**/*.harness${extension}`,
+    `${src}/core/harness/**`,
+];
+
+// A group for every app file, and its twin that adds the `./testing` ban to the files that are not tests.
+const withTestingBan = (
+    src: string,
+    files: string[],
+    bans: Ban[],
+    testingEntry: Ban,
+    ignores: string[] = [],
+) => [
+    layoutGroup(files, bans, ignores),
+    layoutGroup(files, [...bans, testingEntry], [...ignores, ...appTestFiles(src)]),
+];
+
 // `./client` entries: the route files and the server container only; `./browser` entries: the browser container only
 const uiAppBans: LayoutBans = ({ root }, { product }) => {
     const src = `${root}/src`;
     const bans = productBans(product);
     const clientEntryFiles = [`${src}/routes/**`, `${src}/di/container.server.*`];
     const browserEntryFiles = [`${src}/di/container.client.*`];
+    const twin = (files: string[], list: Ban[], ignores: string[] = []) =>
+        withTestingBan(src, files, list, bans.testingEntry, ignores);
     return [
-        layoutGroup(
+        ...twin(
             [`${src}/**`],
             [bans.serverEntry, bans.webClientEntry, bans.webBrowserEntry],
             [...clientEntryFiles, ...browserEntryFiles],
         ),
-        layoutGroup(clientEntryFiles, [bans.serverEntry, bans.webBrowserEntry]),
-        layoutGroup(browserEntryFiles, [bans.serverEntry, bans.webClientEntry]),
+        ...twin(clientEntryFiles, [bans.serverEntry, bans.webBrowserEntry]),
+        ...twin(browserEntryFiles, [bans.serverEntry, bans.webClientEntry]),
     ];
 };
 
-const apiAppBans: LayoutBans = ({ root }, { product }) => [
-    layoutGroup([`${root}/src/**`], [productBans(product).clientEntry]),
-];
+const apiAppBans: LayoutBans = ({ root }, { product }) => {
+    const bans = productBans(product);
+    return withTestingBan(`${root}/src`, [`${root}/src/**`], [bans.clientEntry], bans.testingEntry);
+};
 
 const layoutImportBans: Record<LayoutKind, LayoutBans> = {
     core: coreBans,
