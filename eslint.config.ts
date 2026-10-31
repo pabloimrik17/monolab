@@ -153,6 +153,11 @@ const sharedDataKinds = ["dto", "mapper"];
 const uiAppKinds = ["page", "component", "hook", "view-model", "form", "mapper", "error"];
 const apiAppKinds = ["route", "middleware", "mapper", "error"];
 const diModules = { server: "di/server.module", client: "di/{client,browser}.module" };
+const sideEntries = { server: "server", client: "{client,browser}" };
+// Device code (design §8) is matched by path: the medium in a `data/client/` file name (`ticker-storage.repository`)
+// and the platform's medium folder (`client/storage/`). A new medium joins the spec and this list together.
+const deviceMedia = ["storage"];
+const credentialedSource = "api";
 // framework entry files at an app's `src/` root: React Router, Hono, SolidStart and SvelteKit
 const appEntryFiles = [
     "index",
@@ -187,6 +192,12 @@ const sharedLayerElements: LayoutElement[] = [
     { category: "shared/entry", path: "index" },
 ];
 
+// Device categories sit on files that already have a client category, so they never make an off-layout file known.
+const deviceCompositions: LayoutElement[] = [
+    { category: "device/composition", path: "di/browser.module" },
+    { category: "device/composition", path: "browser" },
+];
+
 const moduleElements: LayoutElement[] = [
     ...sharedLayerElements,
     { category: "shared/testing/builder", path: "testing/shared/builder/*.builder" },
@@ -197,7 +208,15 @@ const moduleElements: LayoutElement[] = [
         ...dataFolders(side, sideDataKinds),
         { category: `${side}/di`, path: diModules[side] },
         { category: `${side}/testing`, path: `testing/${side}/{given,vitest-*}` },
-        { category: `${side}/entry`, path: side === "client" ? "{client,browser}" : side },
+        { category: `${side}/entry`, path: sideEntries[side] },
+    ]),
+    ...deviceCompositions,
+    ...sideDataKinds.flatMap((kind) => [
+        ...deviceMedia.map((medium) => ({
+            category: "device/adapter",
+            path: `data/client/${kind}/*-${medium}.${kind}`,
+        })),
+        { category: "credentialed", path: `data/client/${kind}/*-${credentialedSource}.${kind}` },
     ]),
 ];
 
@@ -208,10 +227,9 @@ const platformElements: LayoutElement[] = [
     ]),
     ...sides.map((side) => ({ category: `${side}/di`, path: diModules[side] })),
     { category: "shared/entry", path: "index" },
-    ...sides.map((side) => ({
-        category: `${side}/entry`,
-        path: side === "client" ? "{client,browser}" : side,
-    })),
+    ...sides.map((side) => ({ category: `${side}/entry`, path: sideEntries[side] })),
+    ...deviceCompositions,
+    ...deviceMedia.map((medium) => ({ category: "device/medium", path: `client/${medium}/*` })),
 ];
 
 const appElements = (kinds: readonly string[], modules: readonly string[]): LayoutElement[] => [
@@ -271,10 +289,10 @@ const appFileCategories = (file: string, category: string) => {
 type Categories = string | { allOf: string[]; noneOf?: string[] };
 type LayoutPolicy =
     | { from: Categories; allow: string[] }
-    | { from: Categories; disallow: string[]; message: string };
+    | { from: Categories; disallow: Categories | string[]; message: string };
 
 const allow = (from: Categories, to: string[]): LayoutPolicy => ({ from, allow: to });
-const disallow = (from: Categories, to: string[], message: string): LayoutPolicy => ({
+const disallow = (from: Categories, to: Categories | string[], message: string): LayoutPolicy => ({
     from,
     disallow: to,
     message,
@@ -286,6 +304,14 @@ const sideRules = [
     disallow("client/**", ["server/**"], "client code never imports server code"),
     disallow("shared/**", ["{server,client}/**"], "shared code imports only shared code"),
 ];
+
+// Device compositions hold no credentialed code (design §8); their tests may reach further.
+const deviceComposition = { allOf: ["device/composition"], noneOf: ["test"] };
+const clientEntryWithoutDevice = disallow(
+    { allOf: ["client/entry"], noneOf: ["device/composition", "test"] },
+    ["device/composition"],
+    "client.ts never imports a device module",
+);
 
 // Dependency direction: domain ← application ← data, and `di/` composes its side.
 const sharedLayerPolicies = [
@@ -326,16 +352,39 @@ const modulePolicies = [
         ["*/data/repository"],
         "a repository never imports another repository; a use case coordinates aggregates",
     ),
+    disallow(
+        deviceComposition,
+        { allOf: ["client/data/**"], noneOf: ["device/adapter"] },
+        "a device composition takes from data/client/ only device adapters (storage)",
+    ),
+    disallow(
+        deviceComposition,
+        { allOf: ["client/di"], noneOf: ["device/composition"] },
+        "a device composition never imports the credentialed client module",
+    ),
+    disallow(
+        { allOf: ["device/adapter"], noneOf: ["test"] },
+        ["credentialed"],
+        "a device adapter never imports an api file",
+    ),
+    clientEntryWithoutDevice,
 ];
 
+// Side entries export only their side; `index.ts` alone exports `shared/` code.
 const platformPolicies = [
     allow("shared/{medium,tokens,entry}", ["shared/{medium,tokens}"]),
     ...sides.flatMap((side) => [
         allow(`${side}/{medium,tokens,di}`, [`${side}/{medium,tokens}`, "shared/{medium,tokens}"]),
-        allow(`${side}/entry`, [`${side}/{medium,tokens,di}`, "shared/{medium,tokens}"]),
+        allow(`${side}/entry`, [`${side}/{medium,tokens,di}`]),
         allow({ allOf: ["test", `${side}/**`] }, [`${side}/di`]),
     ]),
     ...sideRules,
+    disallow(
+        deviceComposition,
+        { allOf: ["client/**"], noneOf: ["device/**"] },
+        "a device composition imports only shared/ and client/storage/",
+    ),
+    clientEntryWithoutDevice,
 ];
 
 const appPolicies = [
@@ -391,18 +440,26 @@ const layoutGroup = (files: string[], bans: Ban[], ignores: string[] = []) =>
 
 const productBans = (product: string) => {
     const ours = `^@m0n0lab/${product}-`;
-    const opposite = { server: "client", client: "server" } as const;
+    const opposite = { server: ["client", "browser"], client: ["server"] } as const;
     return {
         packages: (names: readonly string[], message: string) =>
             ban(`${ours}(${names.join("|")})(/|$)`, message),
         otherSide: (side: (typeof sides)[number]) =>
             ban(
-                `${ours}[a-z-]+/${opposite[side]}(/|$)`,
-                `${side} code never imports a ./${opposite[side]} entry`,
+                `${ours}[a-z-]+/(${opposite[side].join("|")})(/|$)`,
+                `${side} code never imports a ${opposite[side].map((entry) => `./${entry}`).join(" or ")} entry`,
             ),
         anySide: ban(
-            `${ours}[a-z-]+/(server|client)(/|$)`,
-            "side-neutral code never imports a ./server or ./client entry",
+            `${ours}[a-z-]+/(server|client|browser)(/|$)`,
+            "side-neutral code never imports a ./server, ./client or ./browser entry",
+        ),
+        browserEntry: ban(
+            `${ours}[a-z-]+/browser$`,
+            "only compositions import a `./browser` entry: a package's di/ and testing/, an app's src/di/",
+        ),
+        devicePlatform: ban(
+            `${ours}platform/client$`,
+            "device code takes platform pieces from its side-free `.` entry, never the credentialed `./client`",
         ),
         infra: ban(
             "^(pg|drizzle-orm|ioredis|msw|varlock)(/|$)",
@@ -418,7 +475,7 @@ const productBans = (product: string) => {
             "the web imports `.` and `./client` entries only",
         ),
         clientEntry: ban(
-            `${ours}[a-z-]+/client$`,
+            `${ours}[a-z-]+/(client|browser)$`,
             "the API imports `.` and `./server` entries only",
         ),
         webClientEntry: ban(
@@ -453,12 +510,17 @@ const platformBans: LayoutBans = ({ root }, { product, modules }) => {
     );
     return [
         layoutGroup([`${src}/shared/**`, `${src}/index.ts`], [notModules, bans.anySide]),
-        ...sides.map((side) =>
-            layoutGroup(
-                [`${src}/${side}/**`, `${src}/${side}.ts`, `${src}/${diModules[side]}.*`],
-                [notModules, bans.otherSide(side)],
-            ),
-        ),
+        ...sides.flatMap((side) => {
+            // server code already bans `./browser` as the other side
+            const notComposition = side === "client" ? [bans.browserEntry] : [];
+            return [
+                layoutGroup(
+                    [`${src}/${side}/**`, `${src}/${sideEntries[side]}.ts`],
+                    [notModules, bans.otherSide(side), ...notComposition],
+                ),
+                layoutGroup([`${src}/${diModules[side]}.*`], [notModules, bans.otherSide(side)]),
+            ];
+        }),
     ];
 };
 
@@ -480,10 +542,9 @@ const moduleBans: LayoutBans = ({ root }, { product, modules }) => {
         layoutGroup(sideNeutral, [independent, bans.infra, bans.platformOrDb, bans.anySide]),
         ...sides.flatMap((side) => {
             const clientDb = side === "client" ? [bans.database] : [];
-            const tests = [
-                `${src}/application/${side}/**/*.integration.ts`,
-                `${src}/testing/${side}/**`,
-            ];
+            // server code already bans `./browser` as the other side
+            const notComposition = side === "client" ? [bans.browserEntry] : [];
+            const useCaseTests = `${src}/application/${side}/**/*.integration.ts`;
             const testLibraries = ban(
                 "^(drizzle-orm|varlock)(/|$)",
                 "use-case tests use the module container, raw pg/ioredis and a constant Config",
@@ -491,20 +552,58 @@ const moduleBans: LayoutBans = ({ root }, { product, modules }) => {
             return [
                 layoutGroup(
                     [`${src}/application/${side}/**`],
-                    [independent, bans.infra, bans.platformOrDb, bans.otherSide(side)],
-                    tests,
+                    [
+                        independent,
+                        bans.infra,
+                        bans.platformOrDb,
+                        bans.otherSide(side),
+                        ...notComposition,
+                    ],
+                    [useCaseTests],
                 ),
-                layoutGroup(tests, [independent, testLibraries, bans.otherSide(side), ...clientDb]),
                 layoutGroup(
-                    [`${src}/data/${side}/**`, `${src}/${diModules[side]}.*`],
+                    [useCaseTests],
+                    [
+                        independent,
+                        testLibraries,
+                        bans.otherSide(side),
+                        ...clientDb,
+                        ...notComposition,
+                    ],
+                ),
+                layoutGroup(
+                    [`${src}/testing/${side}/**`],
+                    [independent, testLibraries, bans.otherSide(side), ...clientDb],
+                ),
+                layoutGroup(
+                    [`${src}/data/${side}/**`],
+                    [independent, bans.otherSide(side), ...clientDb, ...notComposition],
+                ),
+                layoutGroup(
+                    [`${src}/${diModules[side]}.*`],
                     [independent, bans.otherSide(side), ...clientDb],
                 ),
                 layoutGroup(
-                    [`${src}/${side}.ts`],
-                    [independent, bans.platformOrDb, bans.otherSide(side)],
+                    [`${src}/${sideEntries[side]}.ts`],
+                    [independent, bans.platformOrDb, bans.otherSide(side), ...notComposition],
                 ),
             ];
         }),
+        // Device code, after the client groups so these lists win.
+        layoutGroup(
+            deviceMedia.map((medium) => `${src}/data/client/*/*-${medium}.*`),
+            [
+                independent,
+                bans.otherSide("client"),
+                bans.database,
+                bans.browserEntry,
+                bans.devicePlatform,
+            ],
+        ),
+        layoutGroup(
+            [`${src}/di/browser.module.*`],
+            [independent, bans.otherSide("client"), bans.database, bans.devicePlatform],
+        ),
     ];
 };
 
