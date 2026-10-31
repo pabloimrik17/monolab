@@ -1,71 +1,17 @@
-import { useEffect, useRef, useState } from "react";
-import { createPoller, getTickerStore } from "../../lib/wealth";
 import { AddTicker } from "../component/add-ticker.component";
 import { RefreshIndicator } from "../component/refresh-indicator.component";
 import { TickerList } from "../component/ticker-list.component";
-import type { Quote, Ticker } from "../../lib/wealth";
+import { useFollowedTickers } from "../hook/use-followed-tickers.hook";
+import { useQuotePolling } from "../hook/use-quote-polling.hook";
 
 export default function TickerPage() {
-    const [tickers, setTickers] = useState<Ticker[]>([]);
-    const [quotes, setQuotes] = useState<Map<string, Quote>>(new Map());
-    const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
-    const [isPolling, setIsPolling] = useState(false);
-    const pollerRef = useRef<ReturnType<typeof createPoller> | null>(null);
-
-    useEffect(() => {
-        const store = getTickerStore();
-        const initialTickers = store.getTickers();
-        setTickers(initialTickers);
-
-        const poller = createPoller(
-            (newQuotes) => {
-                setQuotes(newQuotes);
-                setLastUpdate(new Date());
-            },
-            (error) => {
-                console.error("Quote polling error:", error);
-            },
-        );
-        pollerRef.current = poller;
-
-        return () => {
-            poller.stop();
-            setIsPolling(false);
-        };
-    }, []);
-
-    useEffect(() => {
-        const poller = pollerRef.current;
-        if (!poller) return;
-
-        const symbols = tickers.map((t) => t.symbol);
-        if (symbols.length === 0) {
-            poller.stop();
-            setIsPolling(false);
-        } else if (poller.isPolling()) {
-            poller.setTickers(symbols);
-        } else {
-            poller.start(symbols);
-            setIsPolling(true);
-        }
-    }, [tickers]);
-
-    function handleAdd(symbol: string) {
-        const store = getTickerStore();
-        store.add(symbol);
-        setTickers(store.getTickers());
-    }
-
-    function handleRemove(symbol: string) {
-        const store = getTickerStore();
-        store.remove(symbol);
-        setTickers(store.getTickers());
-    }
+    const { tickers, add, remove } = useFollowedTickers();
+    const { quotes, lastUpdate, isPolling } = useQuotePolling(tickers);
 
     return (
         <div className="app">
             <h1>Wealth Tracker</h1>
-            <AddTicker onAdd={handleAdd} />
+            <AddTicker onAdd={add} />
             <RefreshIndicator
                 lastUpdate={lastUpdate}
                 isPolling={isPolling}
@@ -73,7 +19,7 @@ export default function TickerPage() {
             <TickerList
                 tickers={tickers}
                 quotes={quotes}
-                onRemove={handleRemove}
+                onRemove={remove}
             />
         </div>
     );

@@ -1,5 +1,5 @@
 import { TickerRow } from "./ticker-row.component";
-import type { Quote, Ticker } from "../../ticker/types";
+import type { Quote, Ticker } from "@m0n0lab/investlab-quotes";
 
 interface TickerListProps {
     tickers: Ticker[];

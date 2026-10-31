@@ -1,6 +1,6 @@
 import { PORTFOLIO } from "@m0n0lab/investlab-portfolio/client";
 import { remoteErrorMessage } from "../../core/mapper/remote-error.mapper";
-import { getContainer } from "../../lib/container.server";
+import { getContainer } from "../../di/container.server";
 import {
     createPortfolioItemFormSchema,
     portfolioItemIdFormSchema,

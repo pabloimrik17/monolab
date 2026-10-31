@@ -328,20 +328,21 @@ const investlabLayerRules = (() => {
         ),
         group(["packages/investlab-platform/src/shared/**"], [notModules, anySide]),
         ...modules,
-        // `./client` entries are server-only web code (SSR): only `.server.ts` files import them
+        // `./client` entries: `.server.ts` files (SSR) and the browser container only
         group(
             ["apps/investlab/**"],
             [
                 serverEntry,
                 ban(
                     "^@m0n0lab/investlab-[a-z-]+/client$",
-                    "import `./client` entries from `.server.ts` files only",
+                    "import `./client` entries from `.server.ts` files and `src/di/container.client.ts` only",
                 ),
             ],
             [
                 "apps/investlab/**/*.server.ts",
                 "apps/investlab/**/*.server.test.ts",
                 "apps/investlab/**/*.server.legacy.test.ts",
+                "apps/investlab/src/di/container.client.ts",
             ],
         ),
         group(
@@ -349,6 +350,7 @@ const investlabLayerRules = (() => {
                 "apps/investlab/**/*.server.ts",
                 "apps/investlab/**/*.server.test.ts",
                 "apps/investlab/**/*.server.legacy.test.ts",
+                "apps/investlab/src/di/container.client.ts",
             ],
             [serverEntry],
         ),
@@ -730,7 +732,7 @@ const productBans = (product: string) => {
         ),
         clientEntryOutsideServer: ban(
             `${ours}[a-z-]+/client$`,
-            "import `./client` entries from `.server` files only",
+            "import `./client` entries from `.server` files and `src/di/container.client.ts` only",
         ),
     };
 };
@@ -811,14 +813,22 @@ const moduleBans: LayoutBans = ({ root }, { product, modules }) => {
     ];
 };
 
-// `./client` entries are server-only web code (SSR): only `.server` files import them
+// `./client` entries: `.server` files (SSR) and the browser container only
 const uiAppBans: LayoutBans = ({ root }, { product }) => {
     const src = `${root}/src`;
     const bans = productBans(product);
-    const serverOnly = [`${src}/**/*.server.{ts,tsx}`, `${src}/**/*.server.*.{ts,tsx}`];
+    const clientEntryFiles = [
+        `${src}/**/*.server.{ts,tsx}`,
+        `${src}/**/*.server.*.{ts,tsx}`,
+        `${src}/di/container.client.ts`,
+    ];
     return [
-        layoutGroup([`${src}/**`], [bans.serverEntry, bans.clientEntryOutsideServer], serverOnly),
-        layoutGroup(serverOnly, [bans.serverEntry]),
+        layoutGroup(
+            [`${src}/**`],
+            [bans.serverEntry, bans.clientEntryOutsideServer],
+            clientEntryFiles,
+        ),
+        layoutGroup(clientEntryFiles, [bans.serverEntry]),
     ];
 };
 
