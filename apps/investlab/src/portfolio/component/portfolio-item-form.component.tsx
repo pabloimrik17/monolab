@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useFetcher } from "react-router";
+import type { PortfolioActionResult } from "#portfolio/form/portfolio-item.form";
 import type {
     InstrumentOption,
     PortfolioFieldErrors,
@@ -31,16 +32,6 @@ function valuesFrom(item: PortfolioItemView): FormValues {
         currentValue: item.currentValue.toString(),
         notes: item.notes ?? "",
     };
-}
-
-function hasKey<K extends string>(data: unknown, key: K): data is Record<K, unknown> {
-    return typeof data === "object" && data !== null && key in data;
-}
-
-function fieldErrorsFrom(data: unknown): PortfolioFieldErrors {
-    return hasKey(data, "fieldErrors") && typeof data.fieldErrors === "object" && data.fieldErrors
-        ? (data.fieldErrors as PortfolioFieldErrors)
-        : {};
 }
 
 function FieldError({ message }: { message: string | undefined }) {
@@ -79,11 +70,13 @@ function IntentFields({ editing }: { editing: PortfolioItemView | undefined }) {
 }
 
 export function PortfolioItemForm({ instruments, editing, onDone }: PortfolioItemFormProps) {
-    const fetcher = useFetcher();
+    const fetcher = useFetcher<PortfolioActionResult>();
     const [values, setValues] = useState<FormValues>(() =>
         editing ? valuesFrom(editing) : EMPTY_VALUES,
     );
-    const fieldErrors = fieldErrorsFrom(fetcher.data);
+    const result = fetcher.data;
+    const failure = result && "error" in result ? result : undefined;
+    const fieldErrors: PortfolioFieldErrors = failure?.fieldErrors ?? {};
     const bind = (field: PortfolioFormField) => ({
         name: field,
         value: values[field],
@@ -93,8 +86,8 @@ export function PortfolioItemForm({ instruments, editing, onDone }: PortfolioIte
     });
 
     const isSubmitting = fetcher.state !== "idle";
-    const succeeded = fetcher.state === "idle" && hasKey(fetcher.data, "ok");
-    const error = hasKey(fetcher.data, "error") ? String(fetcher.data.error) : null;
+    const succeeded = fetcher.state === "idle" && result !== undefined && "ok" in result;
+    const error = failure?.error ?? null;
 
     useEffect(() => {
         if (succeeded) onDone();

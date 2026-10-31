@@ -7,11 +7,12 @@ import type {
 } from "#portfolio/view-model/portfolio.view-model";
 
 export interface PortfolioPageProps {
-    loaderData: { items: PortfolioItemView[]; instruments: InstrumentOption[] };
+    items: PortfolioItemView[];
+    instruments: InstrumentOption[];
 }
 
-export default function PortfolioPage({ loaderData }: PortfolioPageProps) {
-    const vm = usePortfolioViewModel(loaderData.items, loaderData.instruments);
+export function PortfolioPage({ items, instruments }: PortfolioPageProps) {
+    const vm = usePortfolioViewModel(items, instruments);
 
     return (
         <div className="portfolio">

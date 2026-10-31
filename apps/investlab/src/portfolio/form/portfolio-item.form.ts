@@ -4,6 +4,7 @@ import {
     portfolioItemDtoSchema,
     updatePortfolioItemDtoSchema,
 } from "@m0n0lab/investlab-portfolio";
+import type { PortfolioFieldErrors } from "#portfolio/view-model/portfolio.view-model";
 
 // Bounds come from the DTO schemas; this layer only adapts FormData strings to them.
 function blankToUndefined(value: unknown): unknown {
@@ -46,3 +47,8 @@ export const updatePortfolioItemFormSchema = z.object({
 });
 
 export const portfolioItemIdFormSchema = z.object({ id });
+
+/** What the portfolio route action answers. */
+export type PortfolioActionResult =
+    | { ok: true }
+    | { error: string; fieldErrors?: PortfolioFieldErrors };

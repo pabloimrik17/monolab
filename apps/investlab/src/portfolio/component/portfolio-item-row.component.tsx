@@ -1,4 +1,5 @@
 import { useFetcher } from "react-router";
+import type { PortfolioActionResult } from "#portfolio/form/portfolio-item.form";
 import type { PortfolioItemView } from "#portfolio/view-model/portfolio.view-model";
 
 const currency = new Intl.NumberFormat("en-US", {
@@ -7,19 +8,15 @@ const currency = new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 2,
 });
 
-function deleteErrorOf(data: unknown): string | null {
-    return typeof data === "object" && data !== null && "error" in data ? String(data.error) : null;
-}
-
 export interface PortfolioItemRowProps {
     item: PortfolioItemView;
     onEdit: (item: PortfolioItemView) => void;
 }
 
 export function PortfolioItemRow({ item, onEdit }: PortfolioItemRowProps) {
-    const fetcher = useFetcher();
+    const fetcher = useFetcher<PortfolioActionResult>();
     const isDeleting = fetcher.state !== "idle";
-    const deleteError = deleteErrorOf(fetcher.data);
+    const deleteError = fetcher.data && "error" in fetcher.data ? fetcher.data.error : null;
 
     return (
         <tr>

@@ -1,11 +1,10 @@
 apps/investlab/src/core/mapper/remote-error.mapper.legacy.test.ts
 apps/investlab/src/di/container.server.legacy.test.ts
-apps/investlab/src/portfolio/action/portfolio.action.server.legacy.test.ts
 apps/investlab/src/portfolio/form/portfolio-item.form.legacy.test.ts
-apps/investlab/src/portfolio/loader/portfolio.loader.server.legacy.test.ts
 apps/investlab/src/quotes/hook/use-quote-polling.hook.legacy.test.ts
-apps/investlab/src/quotes/loader/quote-list.loader.server.legacy.test.ts
 apps/investlab/src/root.legacy.test.tsx
+apps/investlab/src/routes/api.quotes.legacy.test.ts
+apps/investlab/src/routes/portfolio.legacy.test.ts
 apps/qup-api/src/errors/error-mapping.legacy.test.ts
 apps/qup-api/src/middleware/admin-only.legacy.test.ts
 apps/qup-api/src/services/event-bus.legacy.test.ts

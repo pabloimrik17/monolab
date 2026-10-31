@@ -458,17 +458,7 @@ const domainKinds = [
 const applicationKinds = ["use-case", "port"];
 const sideDataKinds = ["repository", "query", "datasource", "mapper"];
 const sharedDataKinds = ["dto", "mapper"];
-const uiAppKinds = [
-    "page",
-    "component",
-    "hook",
-    "view-model",
-    "loader",
-    "action",
-    "form",
-    "mapper",
-    "error",
-];
+const uiAppKinds = ["page", "component", "hook", "view-model", "form", "mapper", "error"];
 const apiAppKinds = ["route", "middleware", "mapper", "error"];
 const diModules = { server: "di/server.module", client: "di/{client,browser}.module" };
 // framework entry files at an app's `src/` root: React Router, Hono, SolidStart and SvelteKit
@@ -657,7 +647,9 @@ const appPolicies = [
     allow("module/**", ["module/**", "core/**", "di"]),
     allow("core/**", ["core/**", "di"]),
     allow("di", ["module/**", "core/**", "di"]),
-    allow("routes", ["module/**", "core/**"]),
+    allow("routes", ["module/**", "core/**", "di"]),
+    // a route test imports its route; routes never import each other
+    allow({ allOf: ["test", "routes"] }, ["routes"]),
     allow("entry", ["**"]),
     // a harness boots the app entry it drives
     allow("{harness,core/harness}", ["entry", "module/**", "core/**", "di"]),
@@ -734,9 +726,9 @@ const productBans = (product: string) => {
             `${ours}[a-z-]+/client$`,
             "the API imports `.` and `./server` entries only",
         ),
-        clientEntryOutsideServer: ban(
+        clientEntryOutsideRoutesOrDi: ban(
             `${ours}[a-z-]+/client$`,
-            "import `./client` entries from `.server` files and `src/di/container.client.ts` only",
+            "import `./client` entries from `src/routes/` and `src/di/` only",
         ),
     };
 };
@@ -817,19 +809,15 @@ const moduleBans: LayoutBans = ({ root }, { product, modules }) => {
     ];
 };
 
-// `./client` entries: `.server` files (SSR) and the browser container only
+// `./client` entries: the route files and the composition root only
 const uiAppBans: LayoutBans = ({ root }, { product }) => {
     const src = `${root}/src`;
     const bans = productBans(product);
-    const clientEntryFiles = [
-        `${src}/**/*.server.{ts,tsx}`,
-        `${src}/**/*.server.*.{ts,tsx}`,
-        `${src}/di/container.client.ts`,
-    ];
+    const clientEntryFiles = [`${src}/routes/**`, `${src}/di/**`];
     return [
         layoutGroup(
             [`${src}/**`],
-            [bans.serverEntry, bans.clientEntryOutsideServer],
+            [bans.serverEntry, bans.clientEntryOutsideRoutesOrDi],
             clientEntryFiles,
         ),
         layoutGroup(clientEntryFiles, [bans.serverEntry]),

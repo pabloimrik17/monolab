@@ -2,7 +2,7 @@ import { Container } from "inversify";
 import { platformBrowserModule } from "@m0n0lab/investlab-platform/client";
 import { quotesBrowserModule } from "@m0n0lab/investlab-quotes/client";
 
-// for hooks: outside `.server` files, only this file may import `./client` entries
+// for hooks: only `src/routes/` and `src/di/` may import `./client` entries
 export { QUOTES } from "@m0n0lab/investlab-quotes/client";
 
 /** Browser composition root: browser modules only, so it never holds `Config` or the API token. */

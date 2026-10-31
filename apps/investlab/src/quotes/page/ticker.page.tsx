@@ -4,7 +4,7 @@ import { TickerList } from "#quotes/component/ticker-list.component";
 import { useFollowedTickers } from "#quotes/hook/use-followed-tickers.hook";
 import { useQuotePolling } from "#quotes/hook/use-quote-polling.hook";
 
-export default function TickerPage() {
+export function TickerPage() {
     const { tickers, add, remove } = useFollowedTickers();
     const { quotes, lastUpdate, isPolling } = useQuotePolling(tickers);
 
