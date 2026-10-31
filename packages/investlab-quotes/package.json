@@ -18,6 +18,10 @@
             "types": "./dist/client.d.ts",
             "import": "./dist/client.js"
         },
+        "./browser": {
+            "types": "./dist/browser.d.ts",
+            "import": "./dist/browser.js"
+        },
         "./testing": {
             "types": "./dist/testing.d.ts",
             "import": "./dist/testing.js"

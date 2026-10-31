@@ -197,7 +197,7 @@ const moduleElements: LayoutElement[] = [
         ...dataFolders(side, sideDataKinds),
         { category: `${side}/di`, path: diModules[side] },
         { category: `${side}/testing`, path: `testing/${side}/{given,vitest-*}` },
-        { category: `${side}/entry`, path: side },
+        { category: `${side}/entry`, path: side === "client" ? "{client,browser}" : side },
     ]),
 ];
 

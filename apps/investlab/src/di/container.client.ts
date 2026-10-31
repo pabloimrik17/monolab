@@ -1,9 +1,9 @@
 import { Container } from "inversify";
 import { platformBrowserModule } from "@m0n0lab/investlab-platform/client";
-import { quotesBrowserModule } from "@m0n0lab/investlab-quotes/client";
+import { quotesBrowserModule } from "@m0n0lab/investlab-quotes/browser";
 
-// for hooks: only `src/routes/` and `src/di/` may import `./client` entries
-export { QUOTES } from "@m0n0lab/investlab-quotes/client";
+// for hooks: only `src/di/` may import `./browser` entries
+export { QUOTES } from "@m0n0lab/investlab-quotes/browser";
 
 /** Browser composition root: browser modules only, so it never holds `Config` or the API token. */
 function createContainer(): Container {
