@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 import { z } from "zod";
-import { PLATFORM, type KeyValueStorage } from "@m0n0lab/investlab-platform/client";
+import { PLATFORM_SHARED, type KeyValueStorage } from "@m0n0lab/investlab-platform";
 import type { Ticker } from "#domain/model/ticker.model.ts";
 import type { TickerRepository } from "#domain/repository/ticker.repository.ts";
 
@@ -11,7 +11,9 @@ const storedTickersSchema = z.array(z.object({ symbol: z.string(), addedAt: z.st
 
 @injectable()
 export class TickerStorageRepository implements TickerRepository {
-    constructor(@inject(PLATFORM.KeyValueStorage) private readonly storage: KeyValueStorage) {}
+    constructor(
+        @inject(PLATFORM_SHARED.KeyValueStorage) private readonly storage: KeyValueStorage,
+    ) {}
 
     findAll(): Ticker[] {
         const stored = storedTickersSchema.safeParse(this.storage.getObject<unknown>(STORAGE_KEY));

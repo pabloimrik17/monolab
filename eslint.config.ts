@@ -208,7 +208,10 @@ const platformElements: LayoutElement[] = [
     ]),
     ...sides.map((side) => ({ category: `${side}/di`, path: diModules[side] })),
     { category: "shared/entry", path: "index" },
-    ...sides.map((side) => ({ category: `${side}/entry`, path: side })),
+    ...sides.map((side) => ({
+        category: `${side}/entry`,
+        path: side === "client" ? "{client,browser}" : side,
+    })),
 ];
 
 const appElements = (kinds: readonly string[], modules: readonly string[]): LayoutElement[] => [

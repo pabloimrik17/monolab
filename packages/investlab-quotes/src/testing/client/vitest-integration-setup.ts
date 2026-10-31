@@ -3,7 +3,8 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll } from "vitest";
 import { quotesBrowserModule } from "#di/browser.module.ts";
 import { quotesClientModule } from "#di/client.module.ts";
-import { MemoryStorage, PLATFORM, platformClientModule } from "@m0n0lab/investlab-platform/client";
+import { MemoryStorage, PLATFORM_SHARED } from "@m0n0lab/investlab-platform";
+import { PLATFORM, platformClientModule } from "@m0n0lab/investlab-platform/client";
 
 export const API_URL = "http://investlab-api.test";
 
@@ -18,7 +19,7 @@ container
 
 /** The browser's storage for this file, emptied after each test. */
 export const storage = new MemoryStorage();
-container.bind(PLATFORM.KeyValueStorage).toConstantValue(storage);
+container.bind(PLATFORM_SHARED.KeyValueStorage).toConstantValue(storage);
 container.load(platformClientModule, quotesClientModule, quotesBrowserModule);
 
 beforeAll(() => {

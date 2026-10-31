@@ -1,4 +1,4 @@
-import type { HttpClient } from "@m0n0lab/investlab-platform/server";
+import type { HttpClient } from "@m0n0lab/investlab-platform";
 
 const FINNHUB_BASE_URL = "https://finnhub.io/api/v1";
 const CONCURRENCY = 10;

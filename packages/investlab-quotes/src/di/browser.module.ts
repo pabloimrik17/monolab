@@ -5,7 +5,7 @@ import { TickerListUseCase } from "#application/client/use-case/ticker-list.use-
 import { TickerRemoveUseCase } from "#application/client/use-case/ticker-remove.use-case.ts";
 import { TickerStorageRepository } from "#data/client/repository/ticker-storage.repository.ts";
 
-/** Followed tickers for the web, in the browser's storage. Requires `PLATFORM.KeyValueStorage`, bound by `platformBrowserModule`. */
+/** Followed tickers for the web, in the browser's storage. Requires `PLATFORM_SHARED.KeyValueStorage`, bound by `platformBrowserModule`. */
 export const quotesBrowserModule = new ContainerModule(({ bind }) => {
     bind(QUOTES_PORTS.TickerRepository).to(TickerStorageRepository);
     bind(QUOTES.TickerList).to(TickerListUseCase);

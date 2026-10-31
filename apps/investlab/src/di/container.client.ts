@@ -1,5 +1,5 @@
 import { Container } from "inversify";
-import { platformBrowserModule } from "@m0n0lab/investlab-platform/client";
+import { platformBrowserModule } from "@m0n0lab/investlab-platform/browser";
 import { quotesBrowserModule } from "@m0n0lab/investlab-quotes/browser";
 
 // for hooks: only `src/di/` may import `./browser` entries

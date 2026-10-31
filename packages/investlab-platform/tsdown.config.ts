@@ -2,7 +2,7 @@ import { defineConfig } from "tsdown";
 
 export default defineConfig({
     name: "@m0n0lab/investlab-platform",
-    entry: ["src/server.ts", "src/client.ts"],
+    entry: ["src/index.ts", "src/server.ts", "src/client.ts", "src/browser.ts"],
     format: ["esm"],
     fixedExtension: false,
     outDir: "dist",
