@@ -23,7 +23,7 @@ See proposal.md for the motivation. State this design starts from, once `investl
 **Non-Goals:**
 
 - Migrating qup or green-beard. Their plans are updated in sibling changes of the same PR.
-- Renaming business concepts, changing package entries, or changing HTTP behaviour.
+- Renaming business concepts or changing HTTP behaviour. Package entries change only to add one per device runtime (§8).
 - Replacing legacy tests beyond the ones whose subject is rewritten here (the followed-ticker store, the quote poller and the route quote source).
 - Fixing the seven pending InvestLab changes (`investlab-roger-*`, `investlab-portfolio-returns`, `investlab-portfolio-allocations`, `investlab-overview`). They already name `investlab-domain`, which ADR 0007 removed; they need a separate rewrite.
 
@@ -72,12 +72,22 @@ Why (owner, 2026-10-30): loaders and actions carry the framework's signature and
 
 ### 8. Composition per runtime
 
-- **Packages** wire each side in `di/server.module.ts` and `di/client.module.ts`. Code that only runs in the browser goes in `di/browser.module.ts`, exported from `./client`, so the four entries stay.
-- **The web** gains `di/container.client.ts`, React Router's browser-only suffix. It loads only the browser modules of the platform (key-value storage over `localStorage`) and quotes (followed tickers), so it never holds `Config` or the API token. `di/container.server.ts` replaces `lib/container.server.ts`.
-- **Framework suffixes in `di/`:** `di/` is the app's composition root, the same framework edge as `routes/`, so both containers keep React Router's suffixes. `.server` makes the build fail if browser code reaches the server container, and `.client` keeps the browser container out of server rendering.
-- **Who imports `./client` in the web:** only `src/routes/` and `src/di/`. Hooks get the use cases from `di/container.client.ts`, and the types the view needs come from the package's `.` entry, as `Ticker` does. Type-only imports get no exception.
+Sides and runtimes are two axes. A side is the end of the product's HTTP contract a piece serves: `server` implements it (the API), `client` consumes it (any app, wherever its code runs), `shared` serves both. A runtime is where an app's code executes: the API's server, the web's server or the browser. Application is split only by which system runs the flow, never by device, and a data adapter is bound to a medium, not to a consumer app. The runtime appears only in composition.
 
-*Alternative*: build the ticker pieces by hand in the hook, as `wealth.ts` does today. Rejected: it means exporting the repository and having a second wiring site.
+- **One container module and one entry per runtime:**
+  - `di/server.module.ts` → `./server`: the API.
+  - `di/client.module.ts` → `./client`: a consumer that holds the API credential, the web's server today, a worker or CLI later.
+  - `di/browser.module.ts` → `./browser`: the browser.
+  - A package with no code for a runtime has no module or entry for it: portfolio keeps `.`, `./server`, `./client` and `./testing`.
+- **Credentialed and device adapters:** the source in a `data/client/` file name already tells them apart (`<concept>-<source>.<kind>.ts`). An `api` file reaches the product's API with the consumer's credential, a `storage` file uses the device's storage. A device module imports only device adapters, and they reach the platform only through `./browser`, so a device entry cannot contain credentialed code. The platform applies the same rule through its medium folders: `di/browser.module.ts` imports only `shared/` and `client/storage/`.
+- **The web** gains `di/container.client.ts`, React Router's browser-only suffix. It loads only the `./browser` entries of the platform (key-value storage over `localStorage`) and quotes (followed tickers), so it never holds `Config` or the API token. `di/container.server.ts` replaces `lib/container.server.ts`.
+- **Framework suffixes in `di/`:** `di/` is the app's composition root, the same framework edge as `routes/`, so both containers keep React Router's suffixes. `.server` makes the build fail if browser code reaches the server container, and `.client` keeps the browser container out of server rendering.
+- **Who imports which entry in the web:** `./client` only from `src/routes/` and `src/di/container.server.ts`, `./browser` only from `src/di/container.client.ts`. Hooks get the use cases from `di/container.client.ts`. The types the view needs come from the package's `.` entry, as `Ticker` does, or are re-exported by `di/`. Type-only imports get no exception (§12).
+- **A new device** adds one module and one entry. A React Native app would add `di/native.module.ts` → `./native`, reuse `application/client/`, and bind `KeyValueStorage` to the platform's storage for that device. The spec states the rule, one entry per runtime, and names no `./native`. A device holds no API credential; how a future device authenticates (through the web, or with user auth in the API) is an auth decision outside this change.
+
+*Alternatives*:
+- Build the ticker pieces by hand in the hook, as `wealth.ts` does today. Rejected: it means exporting the repository and having a second wiring site.
+- Other ways to split runtimes (A, D) and adapter markers: §12, "Decided during apply".
 
 ### 9. Followed tickers move to quotes; polling stays in the web
 
@@ -96,6 +106,8 @@ The platform gets three files:
 - `shared/storage/memory.storage.ts`: the in-memory implementation, for tests and server rendering.
 
 A typed read of an unreadable value returns no value. New helpers are added when a consumer needs one.
+
+The `./browser` entry exports the interface, the in-memory implementation and the browser module that binds the `localStorage` one. The storage token moves to `shared/tokens.ts`: the client `PLATFORM` tokens name the API client and `Config`, and the browser entry carries neither. Side-free pieces are re-exported by each runtime entry that needs them, as `HttpClient` already is, so the platform still has no root entry.
 
 ### 11. No catch-all folders
 
@@ -138,7 +150,7 @@ Each tool needs its own setting:
 - **ESLint:** without the resolver an alias import escapes the layer table. `createConfig` rejects settings outside `boundaries/*`, so `import/resolver: { typescript: { project: "packages/investlab-*/tsconfig.json" } }` sits in its own block. It needs `unrs-resolver: false` in `allowBuilds` and a fallow `ignoreDependencies` entry.
 - **fallow, knip:** an unresolved `#` import fails fallow; knip lists it but stays under `--max-issues`, so fallow is the gate.
 - **attw:** `build:check-exports` on the InvestLab packages uses `--profile esm-only` (owner decision): private ESM-only packages resolve only through `bundler` and `node16` ESM, and subpath-only exports fail `node10`. Published libraries keep `strict`.
-- **Browser bundle (1.3):** failed. `./client` from a `*.client.ts` file put `HttpQuoteRepository`, `InvestlabApiClient` and the platform client module in the route chunk (token and env name stay out). Cause: top-level decorator and `ContainerModule` side effects, no `sideEffects` flag. Probes: `"sideEffects": false` alone does nothing; with tsdown `unbundle: true` it passes. Owner deferred the decision; not applied.
+- **Browser bundle (1.3):** failed. `./client` from a `*.client.ts` file put `HttpQuoteRepository`, `InvestlabApiClient` and the platform client module in the route chunk (token and env name stay out). Cause: top-level decorator and `ContainerModule` side effects, no `sideEffects` flag. Probes: `"sideEffects": false` alone does nothing; with tsdown `unbundle: true` it passes. Not applied: the owner chose design E instead (below, and §8).
 
 *Alternatives*:
 - One alias per kind (`#repository/*`): rejected, because `repository/`, `query/`, `use-case/` and `port/` exist on more than one side or layer.
@@ -148,7 +160,12 @@ Each tool needs its own setting:
 **Decided during apply** (owner, 2026-10-30/31):
 - **Web coverage floors (8.4):** lowered to 45/40/40/45 (lines, branches, functions, statements), the measured value rounded down. This is a one-off exception to ADR 0008's "floors are never lowered". The covered `ticker-store.ts` moved to quotes, where the 6.4 tests cover it. No test was lost, and what stays in the web was already untested in the page. `agentic-task-3ao3` (UI harness) will raise them.
 - **`AGENTS.md` (9.3):** the owner declined the line pointing to ADR 0009; none was added.
-- **Follow-up, out of scope:** the package sides `server`/`client` mean "API" and "API consumer (the web)". That clashes with React Router's `.server`/`.client`, which mean "web server" and "browser". Renaming the sides is a separate change.
+- **Runtimes by composition entry (design E, 1.3):** the product runs in three runtimes, but packages had two sides. The `client` side mixed web-server code that needs the API credential (`InvestlabApiClient`, the API repositories) with browser code that must never see it (`localStorage`, followed tickers), and one `./client` entry carried both. tsdown bundles each entry into one file and inversify decorators defeat tree-shaking, so the browser bundle got the API client. The web rule "`./client` only from `.server` files" only compensated for that mixing. Chosen: sides stay the ends of the HTTP contract, and the runtime appears only in composition, one module and one entry per runtime (§8). Side and Runtime are now defined apart in the glossary. Rejected:
+  - A, `"sideEffects": false` plus tsdown `unbundle: true`: a bundler patch over the mixing, which stays in the code.
+  - D, sides renamed per runtime (`api`, `web`, `browser`): it puts the device in application and data folders, so a React Native app replicating the web would duplicate the followed-ticker use cases.
+- **Adapter marker:** the source already in a `data/client/` file name (`-api` credentialed, `-storage` device), fixed by "File names start with the concept". No file moves, and the lint checks it by path. A new device medium joins the spec and the lint together, like a kind.
+- **Type-only imports from `./client` in the view:** no exception (option 2). Types the view needs come from `.` or are re-exported by `di/`. Fallback if that proves too strict (option 1): `allowTypeImports: true` on the web's `./client` ban, plus one scenario allowing `import type` from `./client` in a component.
+- **Follow-up, out of scope:** run `typecheck`, `test` and `build` with `APP_ENV=ci`, so local checks never reach 1Password.
 
 ### 13. One lint factory per product
 
@@ -162,6 +179,7 @@ Each tool needs its own setting:
 - **Import rules:**
   - The `../` ban and the subfolder ban (`./sub/x`, except `./+types/`) join each `no-restricted-imports` group. Flat config replaces a rule's options per file, so it cannot live in a separate block.
   - Cycles between app modules are left to `lint:fallow` (`fallow dead-code`), which already reports circular dependencies in CI.
+  - Device rules (§8) match by path: the source in a `data/client/` file name in packages, the medium folder in the platform, and the container file in the web.
 - **Rollout:** during the migration the factory takes a list of migrated projects, and the old InvestLab table is deleted when the list is complete.
 
 ### 14. Migration mechanics
@@ -174,9 +192,9 @@ Each tool needs its own setting:
 
 - **[Vite 8's `resolve.tsconfigPaths` is experimental]** → Task 1 tests it in a package's Vitest run and in the web build. If either fails, use `vite-tsconfig-paths` instead.
 - **[tsdown's bundled `.d.ts` keeps `#` specifiers]** → Task 1 builds a package and greps `dist/` for `"#`. If any remain, set `paths` in tsdown's `dts.compilerOptions` or resolve them with its `alias` option before migrating.
-- **[`./client` drags server-side client code into the browser bundle]** The browser container imports `./client` for the browser modules. Inversify-decorated classes are hard to tree-shake, so the API client could land in the browser.
-  → Task 1 checks the bundle against the existing "browser bundle stays free of server code" scenario. It failed (see §12); the owner deferred the decision.
-  → If it fails, stop and ask the owner. The way out is a `./browser` entry, and the owner fixed the entries.
+- **[`./client` drags server-side client code into the browser bundle]** Inversify-decorated classes are hard to tree-shake, so a browser container importing `./client` gets the API client.
+  → Task 1.3 checked the bundle against the "browser bundle stays free of server code" scenario. It failed (see §12).
+  → The owner chose design E (§8): the browser container imports only `./browser` entries, which hold no credentialed code by construction. Tasks 4.5, 6.6 and 8.6 apply it, and 1.3 passes once 8.6 is done.
 - **[Open branches and pending changes collide with moved paths]** → The PR lists every move. Pending InvestLab changes are already stale (see Non-Goals).
 - **[Splitting `schema.ts` changes the drizzle snapshot]** → A spec scenario requires `db:generate` to report no change right after the split.
 - **[Users lose their watchlist]** → The storage key and format stay. An integration test reads a value written in the old format.
@@ -186,7 +204,7 @@ Each tool needs its own setting:
 
 1. **Gates**: `investlab-modular-packages` archived, and the alias toolchain verified.
 2. **Tooling**: aliases in every InvestLab tsconfig and Vite config, the lint factory with an empty migrated list, and `eslint-import-resolver-typescript`.
-3. **Projects in dependency order**: core, platform (key-value storage included), portfolio, quotes (followed tickers included), API, web (browser container included). Each one joins the factory's migrated list.
+3. **Projects in dependency order**: core, platform (key-value storage and `./browser` included), portfolio, quotes (followed tickers and `./browser` included), API, web (browser container included). Each one joins the factory's migrated list.
 4. **Cleanup**: delete the old InvestLab lint table, the fallow workaround and the `module.*.ts` leftovers, and update ADR 0007's status.
 
 Nothing is deployed differently. Rollback is reverting the PR; no data migration runs, and the watchlist format is unchanged.

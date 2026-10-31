@@ -2,7 +2,7 @@
 
 ### Requirement: Persist tickers to storage
 
-The system SHALL persist the followed tickers through the quotes module's ticker repository, which stores them in the platform's key-value storage under the key `wealth-tracker-tickers`, as a list of `{ symbol, addedAt }` with `addedAt` in ISO 8601, so lists saved before this change still load. The ticker repository SHALL be bound only in the quotes module's browser container module, which only the web's browser-only container `di/container.client.ts` loads, so server rendering never reads browser storage.
+The system SHALL persist the followed tickers through the quotes module's ticker repository, which stores them in the platform's key-value storage under the key `wealth-tracker-tickers`, as a list of `{ symbol, addedAt }` with `addedAt` in ISO 8601, so lists saved before this change still load. The ticker repository SHALL be bound only in the quotes module's browser container module, exported from its `./browser` entry, which only the web's browser-only container `di/container.client.ts` loads, so server rendering never reads browser storage.
 
 #### Scenario: Persist on add
 

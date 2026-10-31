@@ -50,8 +50,12 @@ The layer that exposes use cases to people or clients. Only apps have it.
 _Avoid_: UI layer, frontend.
 
 **Side**:
-The runtime a piece of code is written for: server, client, or shared by both. Its nature decides it (the runtime it needs, the secrets it holds), not who uses it today.
-_Avoid_: environment, target.
+Which end of the product's own HTTP contract a piece of code belongs to: the server (the API that implements it), the client (an app that consumes it, wherever that app's code runs) or shared by both (domain and DTOs). Not a runtime: client-side code can run on the web's server.
+_Avoid_: environment, target, runtime.
+
+**Runtime**:
+Where an app's code executes: the API's server, the web's server (its server render) or the browser. A framework's server and client file markers name runtimes, not sides.
+_Avoid_: side; "client" for the browser.
 
 **Module**:
 One business area of a product, such as portfolio or quotes: its module package plus, in each app that presents it, a part of the same name.
@@ -62,7 +66,7 @@ What every module of a product shares while owning no business concept of its ow
 _Avoid_: shared, common, kernel.
 
 **Composition root**:
-The place in an app that wires the platform, the module packages and the app's own modules together; one per runtime the app runs in, such as the server and the browser.
+The place in an app that wires the platform, the module packages and the app's own modules together; one per runtime the app runs in, such as the web's server and the browser.
 _Avoid_: bootstrap.
 
 **Use case**:

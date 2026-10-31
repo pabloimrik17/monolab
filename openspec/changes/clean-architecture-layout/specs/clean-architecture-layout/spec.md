@@ -38,7 +38,7 @@ The `src/` folder of a module package SHALL hold only the layer folders `domain/
 
 ### Requirement: Sides per layer
 
-`domain/` SHALL have no side folder. `application/` SHALL split into `server/` and `client/` only. `data/` SHALL split into `shared/`, `server/` and `client/`. The side of a piece SHALL follow the runtime it needs and the secrets it holds, not who uses it today.
+`domain/` SHALL have no side folder. `application/` SHALL split into `server/` and `client/` only. `data/` SHALL split into `shared/`, `server/` and `client/`. A side is an end of the product's own HTTP contract: `server/` for the API that implements it, `client/` for any app that consumes it, wherever that app's code runs, and `shared/` for both. The side of a piece SHALL follow the end of the contract it serves and the secrets it holds, not who uses it today nor the runtime it runs in.
 
 #### Scenario: Domain with a side
 
@@ -54,6 +54,11 @@ The `src/` folder of a module package SHALL hold only the layer folders `domain/
 
 - **WHEN** an infra client needs a third-party secret key
 - **THEN** it lives under `data/server/`, even if only one app uses it
+
+#### Scenario: Browser-only use case
+
+- **WHEN** the followed-ticker use cases, which run only in the browser, are located
+- **THEN** they are in `application/client/use-case/`, and no `application/browser/` folder exists
 
 ### Requirement: Nesting order
 
@@ -214,7 +219,7 @@ A read that combines several aggregates SHALL be a read query: its port in `doma
 
 ### Requirement: Loose files in a package
 
-Outside the kind folders, a package SHALL hold only its entry files at the `src/` root (`index.ts`, `server.ts`, `client.ts`, `testing.ts`) and one `tokens.ts` at the root of a side folder (for example `application/server/tokens.ts`). This rule SHALL cover TypeScript files only.
+Outside the kind folders, a package SHALL hold only its entry files at the `src/` root (`index.ts`, `server.ts`, `client.ts`, `testing.ts`, and one per device runtime, such as `browser.ts`) and one `tokens.ts` at the root of a side folder (for example `application/server/tokens.ts`). This rule SHALL cover TypeScript files only.
 
 #### Scenario: Loose helper
 
@@ -226,14 +231,43 @@ Outside the kind folders, a package SHALL hold only its entry files at the `src/
 - **WHEN** the layer lint runs over `packages/investlab-quotes/src/data/server/tokens.ts`
 - **THEN** it passes
 
-### Requirement: Package composition per side
+### Requirement: Package composition per runtime
 
-A package SHALL wire each side in `src/di/server.module.ts` and `src/di/client.module.ts`. Client code that runs only in the browser SHALL be wired in `src/di/browser.module.ts`. Each token SHALL stay in the `tokens.ts` of the side folder that injects it.
+A package SHALL wire each runtime its consumers run in with one container module `src/di/<runtime>.module.ts`, exported through the entry `./<runtime>`: `server` for the API, `client` for a consumer that holds the API credential, and one per device runtime, such as `browser`. A package with no code for a runtime SHALL have no module or entry for it. Each token SHALL stay in the `tokens.ts` of the side folder that injects it.
 
 #### Scenario: Server module location
 
 - **WHEN** the portfolio server container module is located
 - **THEN** it is `packages/investlab-portfolio/src/di/server.module.ts` and no `module.server.ts` exists
+
+#### Scenario: Browser module entry
+
+- **WHEN** the quotes browser container module is located
+- **THEN** it is `packages/investlab-quotes/src/di/browser.module.ts`, exported from `./browser` and not from `./client`
+
+#### Scenario: Package without browser code
+
+- **WHEN** the entries of `@m0n0lab/investlab-portfolio` are listed
+- **THEN** none is `./browser`
+
+### Requirement: Device compositions hold no credentialed code
+
+In `data/client/`, a file named for the `api` source is credentialed and one named for a device medium (`storage`) is a device adapter. A device container module and its entry SHALL import from `data/client/` only device adapters, which SHALL NOT import a credentialed file nor the platform's `./client` entry. A platform's device module SHALL import only `shared/` and `client/storage/`. A new device medium SHALL join this spec and the lint together.
+
+#### Scenario: Browser module imports an API repository
+
+- **WHEN** `packages/investlab-quotes/src/di/browser.module.ts` imports `data/client/repository/quote-api.repository.ts`
+- **THEN** the layer lint fails
+
+#### Scenario: Device adapter reaches the credentialed platform entry
+
+- **WHEN** `packages/investlab-quotes/src/data/client/repository/ticker-storage.repository.ts` imports `@m0n0lab/investlab-platform/client`
+- **THEN** the layer lint fails
+
+#### Scenario: Platform browser module reaches the API client
+
+- **WHEN** `packages/investlab-platform/src/di/browser.module.ts` imports `client/http/investlab-api.client.ts`
+- **THEN** the layer lint fails
 
 ### Requirement: Tests next to their subject
 
@@ -375,7 +409,7 @@ An API app module SHALL use the kinds `route/`, `middleware/`, `mapper/` and `er
 
 ### Requirement: App composition root per runtime
 
-An app SHALL wire its dependencies in `src/di/`, one container per runtime: `container.ts`, or `container.server.ts` plus `container.client.ts` for a web app whose browser code calls use cases. Each app module's own bindings SHALL live in `src/<module>/di/<module>.module.ts`.
+An app SHALL wire its dependencies in `src/di/`, one container per runtime: `container.ts`, or `container.server.ts` plus `container.client.ts` for a web app whose browser code calls use cases. Each container SHALL load only the package entries of its runtime; a browser container loads only device entries (`./browser`). Each app module's own bindings SHALL live in `src/<module>/di/<module>.module.ts`.
 
 #### Scenario: API container
 
@@ -385,7 +419,7 @@ An app SHALL wire its dependencies in `src/di/`, one container per runtime: `con
 #### Scenario: Browser container
 
 - **WHEN** the web's followed tickers are read in the browser
-- **THEN** the use case comes from the container built in `apps/investlab/src/di/container.client.ts`
+- **THEN** the use case comes from the container built in `apps/investlab/src/di/container.client.ts`, which imports only `./browser` entries
 
 ### Requirement: Path aliases per top-level folder
 
