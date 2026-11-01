@@ -2,7 +2,7 @@
 
 ### Requirement: A test file opens with one describe named after its unit
 
-Every test file, of every kind, legacy and type tests included, SHALL open with exactly one root `describe` named after the unit under test: its class name, or the exact exported symbol when the unit is not a class. Inside the root, each behaviour SHALL have at most one nested `describe`, and no deeper `describe` SHALL exist. Review SHALL check the root `describe` name.
+Every test file, of every kind, legacy and type tests included, SHALL open with exactly one root `describe` named after the unit under test: the exact exported symbol it tests, a class or a function. A file that tests several exported symbols SHALL name its root after the module, without suffix, with one nested `describe` per symbol holding flat tests. Otherwise each behaviour SHALL have at most one nested `describe`. No deeper `describe` SHALL exist. Review SHALL check the root `describe` name.
 
 #### Scenario: Use-case test
 
@@ -13,6 +13,11 @@ Every test file, of every kind, legacy and type tests included, SHALL open with 
 
 - **WHEN** the integration-platform test of the portfolio item routes is read
 - **THEN** it opens with `describe("portfolioItemRoutes")` and each endpoint is one nested `describe`
+
+#### Scenario: Several exported symbols
+
+- **WHEN** `packages/ts-types/src/nullable.test.ts`, which tests `isNullable` and `isNonNullable`, is read
+- **THEN** it opens with `describe("nullable")`, with one nested `describe` per function holding flat `it`s
 
 ### Requirement: Test setup lives inside the root describe
 

@@ -26,7 +26,7 @@ There are five kinds of test, plus type tests for libraries. A kind's file suffi
 
 These rules apply to every kind, legacy and type tests included.
 
-- **One root `describe`, named after the unit under test:** its class name, or the exact exported symbol when the unit is not a class (`describe("portfolioItemRoutes")`, each endpoint a nested `describe`).
+- **One root `describe`, named after the unit under test:** the exact exported symbol it tests, a class or a function (`describe("portfolioItemRoutes")`, each endpoint a nested `describe`). A file that tests several exported symbols names the root after its module, without suffix (`describe("nullable")`), with one nested `describe` per symbol and flat tests inside.
 - **One nested level at most:** one `describe` per behaviour inside the root.
 - **Setup inside the root.** `let` declarations, `beforeEach` and the other hooks live inside the root `describe`, never at file level. Global setup files (`vitest-*-setup.ts`) register project-wide hooks and are exempt.
 - **Linted structure, reviewed name.** ESLint (`@vitest/eslint-plugin`) enforces the structure on every test file, with the fleet's Vitest rules: an invalid `expect` or title fails, a focused or disabled test warns. Review checks the root `describe` name.
