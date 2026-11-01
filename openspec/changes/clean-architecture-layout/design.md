@@ -96,7 +96,7 @@ Sides and runtimes are two axes. A side is the end of the product's HTTP contrac
   - the `Ticker` model and the `TickerRepository` port;
   - `data/client/repository/ticker-storage.repository.ts`, over the platform's `KeyValueStorage`;
   - `ticker-list`, `ticker-add` and `ticker-remove` client use cases.
-- **Data compatibility:** the storage key (`wealth-tracker-tickers`) and the stored format (`{ symbol, addedAt }[]`, ISO dates) do not change, so existing watchlists load.
+- **Data compatibility:** the stored format (`{ symbol, addedAt }[]`, ISO dates) stays; the key becomes `investlab-tickers` without a migration, so lists saved under `wealth-tracker-tickers` are dropped (owner decision).
 - **What stays in the web:** the browser request to `/api/quotes` is the web talking to its own resource route, which already runs the quote list use case on the SSR server. It stays in `quotes/hook/use-quote-polling.hook.ts` and validates responses with `quoteDtoSchema`.
 
 ### 10. Key-value storage in the platform
@@ -205,7 +205,7 @@ Each tool needs its own setting:
   → The owner chose design E (§8): the browser container imports only `./browser` entries, which hold no credentialed code by construction. Tasks 4.5, 6.6 and 8.6 apply it, and 1.3 passes once 8.6 is done.
 - **[Open branches and pending changes collide with moved paths]** → The PR lists every move. Pending InvestLab changes are already stale (see Non-Goals).
 - **[Splitting `schema.ts` changes the drizzle snapshot]** → A spec scenario requires `db:generate` to report no change right after the split.
-- **[Users lose their watchlist]** → The storage key and format stay. An integration test reads a value written in the old format.
+- **[Users lose their watchlist]** → Accepted by the owner: the key is renamed to `investlab-tickers` with no migration. The format stays, and an integration test reads a stored list with its dates.
 - **[New kinds pile up]** → A kind exists only once the spec and the lint list it, and the review of that change is where the owner says no.
 
 ## Migration Plan

@@ -52,7 +52,7 @@ The first four capabilities come from `investlab-modular-packages`. That change 
 - `investlab-platform`: adds a key-value storage (a text interface, typed helpers, and `localStorage` and in-memory implementations), a root entry `.` for its side-free pieces, and a `./browser` entry whose container module binds the storage without `Config` or the API client.
 - `investlab-use-case-testing`: integration tests take their use case's full name, and setup files and `given.ts` move to `src/testing/<side>/`. This replaces the rule that no `src/testing/` folder exists.
 - `investlab-persistence`: each aggregate declares its table in `data/server/infra/db/<concept>.table.ts`, and the database package's drizzle config lists them by glob.
-- `ticker-management`: the followed tickers move from the web's ticker store to the quotes module, with a repository over the platform's key-value storage. The storage key and stored format stay the same, so lists saved before the change still load.
+- `ticker-management`: the followed tickers move from the web's ticker store to the quotes module, with a repository over the platform's key-value storage. The storage key becomes `investlab-tickers` and lists saved under the old key are dropped (owner decision); the stored format stays.
 
 ## Impact
 
