@@ -102,6 +102,25 @@ Domain SHALL hold `model/`, `value-object/`, `read-model/`, `event/`, `error/`, 
 - **WHEN** a file is added at `data/server/dto/instrument.dto.ts`
 - **THEN** the layer lint fails
 
+### Requirement: Domain kind follows identity
+
+A `*.model.ts` file SHALL export a class: a model has an identity that lasts over time and a state that changes only under the business rules the class owns. A business value without identity, never changed once made, SHALL be a value object in `value-object/`; a shape built for one read across several aggregates SHALL be a read model in `read-model/`.
+
+#### Scenario: Model is a class
+
+- **WHEN** `packages/investlab-quotes/src/domain/model/ticker.model.ts` is read
+- **THEN** it exports a class named `Ticker` whose factory normalizes and checks the symbol
+
+#### Scenario: Model built only through its class
+
+- **WHEN** the quotes module makes a ticker
+- **THEN** the add use case calls `Ticker.create` and the ticker repository rebuilds stored tickers with `Ticker.reconstitute`, never a plain object
+
+#### Scenario: Value without identity
+
+- **WHEN** the quote, a symbol's price at one moment, is located
+- **THEN** it is `domain/value-object/quote.value-object.ts`, not a file in `model/`
+
 ### Requirement: New kinds are added deliberately
 
 A file that fits no listed kind SHALL be a private function of the only file that uses it. When it is reused it SHALL move to the kind it acts as, to infra, or to the platform. A new kind SHALL exist only once it is added to this spec and to the lint; no catch-all folder (`util/`, `lib/`, `helpers/`, `common/`) SHALL exist.
