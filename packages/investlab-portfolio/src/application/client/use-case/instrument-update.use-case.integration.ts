@@ -6,44 +6,50 @@ import { container } from "#testing/client/vitest-integration-setup.ts";
 import { NetworkError } from "@m0n0lab/investlab-core";
 import type { InstrumentUpdateUseCase } from "./instrument-update.use-case.ts";
 
-let update: InstrumentUpdateUseCase;
-beforeEach(() => {
-    update = container.get(PORTFOLIO.InstrumentUpdate);
-});
-
-describe("changing an instrument", () => {
-    it("returns the instrument with the change and everything else kept", async () => {
-        givenCatalog(VWCE);
-
-        const changed = (
-            await update.execute(VWCE.id, { name: "Vanguard All-World Acc" })
-        )._unsafeUnwrap();
-
-        expect(changed).toMatchObject({ ...VWCE, name: "Vanguard All-World Acc" });
+describe("InstrumentUpdateUseCase", () => {
+    let update: InstrumentUpdateUseCase;
+    beforeEach(() => {
+        update = container.get(PORTFOLIO.InstrumentUpdate);
     });
 
-    it("clears the exchange when asked to", async () => {
-        givenCatalog(VWCE);
+    describe("changing an instrument", () => {
+        it("returns the instrument with the change and everything else kept", async () => {
+            givenCatalog(VWCE);
 
-        const changed = (await update.execute(VWCE.id, { exchange: undefined }))._unsafeUnwrap();
+            const changed = (
+                await update.execute(VWCE.id, { name: "Vanguard All-World Acc" })
+            )._unsafeUnwrap();
 
-        expect(changed.exchange).toBeUndefined();
-        expect(changed.replicates).toBe(VWCE.replicates);
-    });
+            expect(changed).toMatchObject({ ...VWCE, name: "Vanguard All-World Acc" });
+        });
 
-    it("refuses an instrument that is not in the catalog", async () => {
-        givenCatalog(VWCE);
+        it("clears the exchange when asked to", async () => {
+            givenCatalog(VWCE);
 
-        const error = (await update.execute(UNKNOWN_ID, { name: "Nothing" }))._unsafeUnwrapErr();
+            const changed = (
+                await update.execute(VWCE.id, { exchange: undefined })
+            )._unsafeUnwrap();
 
-        expect(error).toBeInstanceOf(InstrumentNotFoundError);
-    });
+            expect(changed.exchange).toBeUndefined();
+            expect(changed.replicates).toBe(VWCE.replicates);
+        });
 
-    it("fails as unavailable while the service cannot be reached", async () => {
-        givenApiUnavailable();
+        it("refuses an instrument that is not in the catalog", async () => {
+            givenCatalog(VWCE);
 
-        const error = (await update.execute(VWCE.id, { name: "Nothing" }))._unsafeUnwrapErr();
+            const error = (
+                await update.execute(UNKNOWN_ID, { name: "Nothing" })
+            )._unsafeUnwrapErr();
 
-        expect(error).toBeInstanceOf(NetworkError);
+            expect(error).toBeInstanceOf(InstrumentNotFoundError);
+        });
+
+        it("fails as unavailable while the service cannot be reached", async () => {
+            givenApiUnavailable();
+
+            const error = (await update.execute(VWCE.id, { name: "Nothing" }))._unsafeUnwrapErr();
+
+            expect(error).toBeInstanceOf(NetworkError);
+        });
     });
 });

@@ -11,41 +11,43 @@ import { container } from "#testing/client/vitest-integration-setup.ts";
 import { NetworkError, UnauthorizedError } from "@m0n0lab/investlab-core";
 import type { InstrumentListUseCase } from "./instrument-list.use-case.ts";
 
-let list: InstrumentListUseCase;
-beforeEach(() => {
-    list = container.get(PORTFOLIO.InstrumentList);
-});
-
-describe("listing the instrument catalog", () => {
-    it("returns every instrument in the catalog", async () => {
-        givenCatalog(VWCE, BITCOIN);
-
-        const catalog = (await list.execute())._unsafeUnwrap();
-
-        expect(catalog).toMatchObject([VWCE, BITCOIN]);
+describe("InstrumentListUseCase", () => {
+    let list: InstrumentListUseCase;
+    beforeEach(() => {
+        list = container.get(PORTFOLIO.InstrumentList);
     });
 
-    it("returns nothing when the catalog is empty", async () => {
-        givenCatalog();
+    describe("listing the instrument catalog", () => {
+        it("returns every instrument in the catalog", async () => {
+            givenCatalog(VWCE, BITCOIN);
 
-        const catalog = (await list.execute())._unsafeUnwrap();
+            const catalog = (await list.execute())._unsafeUnwrap();
 
-        expect(catalog).toEqual([]);
-    });
+            expect(catalog).toMatchObject([VWCE, BITCOIN]);
+        });
 
-    it("fails as unavailable while the service cannot be reached", async () => {
-        givenApiUnavailable();
+        it("returns nothing when the catalog is empty", async () => {
+            givenCatalog();
 
-        const error = (await list.execute())._unsafeUnwrapErr();
+            const catalog = (await list.execute())._unsafeUnwrap();
 
-        expect(error).toBeInstanceOf(NetworkError);
-    });
+            expect(catalog).toEqual([]);
+        });
 
-    it("fails as unauthorized when the service rejects the web's credentials", async () => {
-        givenTokenRejected();
+        it("fails as unavailable while the service cannot be reached", async () => {
+            givenApiUnavailable();
 
-        const error = (await list.execute())._unsafeUnwrapErr();
+            const error = (await list.execute())._unsafeUnwrapErr();
 
-        expect(error).toBeInstanceOf(UnauthorizedError);
+            expect(error).toBeInstanceOf(NetworkError);
+        });
+
+        it("fails as unauthorized when the service rejects the web's credentials", async () => {
+            givenTokenRejected();
+
+            const error = (await list.execute())._unsafeUnwrapErr();
+
+            expect(error).toBeInstanceOf(UnauthorizedError);
+        });
     });
 });

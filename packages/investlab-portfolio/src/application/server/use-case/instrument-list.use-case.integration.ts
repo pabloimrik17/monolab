@@ -5,31 +5,33 @@ import { container, containerWithDatabaseDown } from "#testing/server/vitest-int
 import { PersistenceError } from "@m0n0lab/investlab-core";
 import type { InstrumentListUseCase } from "./instrument-list.use-case.ts";
 
-let list: InstrumentListUseCase;
-beforeEach(() => {
-    list = container.get(PORTFOLIO.InstrumentList);
-});
-
-describe("listing the instrument catalog", () => {
-    it("starts with the seeded catalog, every instrument quotable", async () => {
-        const catalog = (await list.execute())._unsafeUnwrap();
-
-        expect(catalog.map(({ symbol }) => symbol)).toEqual(
-            expect.arrayContaining([...SEEDED_SYMBOLS]),
-        );
-        expect(catalog.every(({ quotable }) => quotable)).toBe(true);
+describe("InstrumentListUseCase", () => {
+    let list: InstrumentListUseCase;
+    beforeEach(() => {
+        list = container.get(PORTFOLIO.InstrumentList);
     });
 
-    it("includes instruments added to the catalog", async () => {
-        const spy = await givenInstrument("SPY");
-        const vwce = await givenInstrument("VWCE");
+    describe("listing the instrument catalog", () => {
+        it("starts with the seeded catalog, every instrument quotable", async () => {
+            const catalog = (await list.execute())._unsafeUnwrap();
 
-        const catalog = (await list.execute())._unsafeUnwrap();
+            expect(catalog.map(({ symbol }) => symbol)).toEqual(
+                expect.arrayContaining([...SEEDED_SYMBOLS]),
+            );
+            expect(catalog.every(({ quotable }) => quotable)).toBe(true);
+        });
 
-        expect(catalog).toEqual(expect.arrayContaining([spy, vwce]));
+        it("includes instruments added to the catalog", async () => {
+            const spy = await givenInstrument("SPY");
+            const vwce = await givenInstrument("VWCE");
+
+            const catalog = (await list.execute())._unsafeUnwrap();
+
+            expect(catalog).toEqual(expect.arrayContaining([spy, vwce]));
+        });
     });
 
-    describe("while the database is unreachable", () => {
+    describe("listing the instrument catalog while the database is unreachable", () => {
         beforeEach(() => {
             list = containerWithDatabaseDown.get(PORTFOLIO.InstrumentList);
         });

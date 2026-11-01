@@ -13,42 +13,44 @@ import { container } from "#testing/client/vitest-integration-setup.ts";
 import { NetworkError, PersistenceError } from "@m0n0lab/investlab-core";
 import type { PortfolioItemDeleteUseCase } from "./portfolio-item-delete.use-case.ts";
 
-let remove: PortfolioItemDeleteUseCase;
-beforeEach(() => {
-    remove = container.get(PORTFOLIO.ItemDelete);
-});
-
-describe("removing a holding", () => {
-    it("succeeds for a holding in the portfolio", async () => {
-        const holding = holdingOf(VWCE);
-        givenPortfolioWith(holding);
-
-        const result = await remove.execute(holding.item.id);
-
-        expect(result.isOk()).toBe(true);
+describe("PortfolioItemDeleteUseCase", () => {
+    let remove: PortfolioItemDeleteUseCase;
+    beforeEach(() => {
+        remove = container.get(PORTFOLIO.ItemDelete);
     });
 
-    it("refuses a holding that is not in the portfolio", async () => {
-        givenPortfolioWith();
+    describe("removing a holding", () => {
+        it("succeeds for a holding in the portfolio", async () => {
+            const holding = holdingOf(VWCE);
+            givenPortfolioWith(holding);
 
-        const error = (await remove.execute(UNKNOWN_ID))._unsafeUnwrapErr();
+            const result = await remove.execute(holding.item.id);
 
-        expect(error).toBeInstanceOf(PortfolioItemNotFoundError);
-    });
+            expect(result.isOk()).toBe(true);
+        });
 
-    it("fails as a persistence error when the service cannot reach its storage", async () => {
-        givenStorageUnavailable();
+        it("refuses a holding that is not in the portfolio", async () => {
+            givenPortfolioWith();
 
-        const error = (await remove.execute(UNKNOWN_ID))._unsafeUnwrapErr();
+            const error = (await remove.execute(UNKNOWN_ID))._unsafeUnwrapErr();
 
-        expect(error).toBeInstanceOf(PersistenceError);
-    });
+            expect(error).toBeInstanceOf(PortfolioItemNotFoundError);
+        });
 
-    it("fails as unavailable while the service cannot be reached", async () => {
-        givenApiUnavailable();
+        it("fails as a persistence error when the service cannot reach its storage", async () => {
+            givenStorageUnavailable();
 
-        const error = (await remove.execute(UNKNOWN_ID))._unsafeUnwrapErr();
+            const error = (await remove.execute(UNKNOWN_ID))._unsafeUnwrapErr();
 
-        expect(error).toBeInstanceOf(NetworkError);
+            expect(error).toBeInstanceOf(PersistenceError);
+        });
+
+        it("fails as unavailable while the service cannot be reached", async () => {
+            givenApiUnavailable();
+
+            const error = (await remove.execute(UNKNOWN_ID))._unsafeUnwrapErr();
+
+            expect(error).toBeInstanceOf(NetworkError);
+        });
     });
 });

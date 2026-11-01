@@ -5,43 +5,45 @@ import { catalog, givenHolding, givenInstrument, UNKNOWN_ID } from "#testing/ser
 import { container } from "#testing/server/vitest-integration-setup.ts";
 import type { InstrumentDeleteUseCase } from "./instrument-delete.use-case.ts";
 
-let remove: InstrumentDeleteUseCase;
-beforeEach(() => {
-    remove = container.get(PORTFOLIO.InstrumentDelete);
-});
-
-describe("removing an instrument from the catalog", () => {
-    it("removes an instrument no holding uses", async () => {
-        const vwce = await givenInstrument("VWCE");
-
-        (await remove.execute(vwce.id))._unsafeUnwrap();
-
-        expect(await catalog()).not.toContainEqual(vwce);
+describe("InstrumentDeleteUseCase", () => {
+    let remove: InstrumentDeleteUseCase;
+    beforeEach(() => {
+        remove = container.get(PORTFOLIO.InstrumentDelete);
     });
 
-    it("refuses an instrument the portfolio holds and keeps it in the catalog", async () => {
-        const apple = await givenInstrument("AAPL");
-        await givenHolding(apple);
+    describe("removing an instrument from the catalog", () => {
+        it("removes an instrument no holding uses", async () => {
+            const vwce = await givenInstrument("VWCE");
 
-        const error = (await remove.execute(apple.id))._unsafeUnwrapErr();
+            (await remove.execute(vwce.id))._unsafeUnwrap();
 
-        expect(error).toBeInstanceOf(InstrumentInUseError);
-        expect(await catalog()).toContainEqual(apple);
-    });
+            expect(await catalog()).not.toContainEqual(vwce);
+        });
 
-    it("removes it once the last holding of it is gone", async () => {
-        const tesla = await givenInstrument("TSLA");
-        const holding = await givenHolding(tesla);
-        (await container.get(PORTFOLIO.ItemDelete).execute(holding.id))._unsafeUnwrap();
+        it("refuses an instrument the portfolio holds and keeps it in the catalog", async () => {
+            const apple = await givenInstrument("AAPL");
+            await givenHolding(apple);
 
-        (await remove.execute(tesla.id))._unsafeUnwrap();
+            const error = (await remove.execute(apple.id))._unsafeUnwrapErr();
 
-        expect(await catalog()).not.toContainEqual(tesla);
-    });
+            expect(error).toBeInstanceOf(InstrumentInUseError);
+            expect(await catalog()).toContainEqual(apple);
+        });
 
-    it("refuses an instrument that is not in the catalog", async () => {
-        const error = (await remove.execute(UNKNOWN_ID))._unsafeUnwrapErr();
+        it("removes it once the last holding of it is gone", async () => {
+            const tesla = await givenInstrument("TSLA");
+            const holding = await givenHolding(tesla);
+            (await container.get(PORTFOLIO.ItemDelete).execute(holding.id))._unsafeUnwrap();
 
-        expect(error).toBeInstanceOf(InstrumentNotFoundError);
+            (await remove.execute(tesla.id))._unsafeUnwrap();
+
+            expect(await catalog()).not.toContainEqual(tesla);
+        });
+
+        it("refuses an instrument that is not in the catalog", async () => {
+            const error = (await remove.execute(UNKNOWN_ID))._unsafeUnwrapErr();
+
+            expect(error).toBeInstanceOf(InstrumentNotFoundError);
+        });
     });
 });

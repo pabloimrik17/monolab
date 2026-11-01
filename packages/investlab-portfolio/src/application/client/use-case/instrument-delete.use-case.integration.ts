@@ -13,35 +13,37 @@ import { container } from "#testing/client/vitest-integration-setup.ts";
 import { NetworkError } from "@m0n0lab/investlab-core";
 import type { InstrumentDeleteUseCase } from "./instrument-delete.use-case.ts";
 
-let remove: InstrumentDeleteUseCase;
-beforeEach(() => {
-    remove = container.get(PORTFOLIO.InstrumentDelete);
-});
-
-describe("removing an instrument from the catalog", () => {
-    it("succeeds for an instrument no holding uses", async () => {
-        givenCatalog(VWCE, BITCOIN);
-        givenPortfolioWith(holdingOf(VWCE));
-
-        const result = await remove.execute(BITCOIN.id);
-
-        expect(result.isOk()).toBe(true);
+describe("InstrumentDeleteUseCase", () => {
+    let remove: InstrumentDeleteUseCase;
+    beforeEach(() => {
+        remove = container.get(PORTFOLIO.InstrumentDelete);
     });
 
-    it("refuses an instrument the portfolio holds", async () => {
-        givenCatalog(VWCE);
-        givenPortfolioWith(holdingOf(VWCE));
+    describe("removing an instrument from the catalog", () => {
+        it("succeeds for an instrument no holding uses", async () => {
+            givenCatalog(VWCE, BITCOIN);
+            givenPortfolioWith(holdingOf(VWCE));
 
-        const error = (await remove.execute(VWCE.id))._unsafeUnwrapErr();
+            const result = await remove.execute(BITCOIN.id);
 
-        expect(error).toBeInstanceOf(InstrumentInUseError);
-    });
+            expect(result.isOk()).toBe(true);
+        });
 
-    it("fails as unavailable while the service cannot be reached", async () => {
-        givenApiUnavailable();
+        it("refuses an instrument the portfolio holds", async () => {
+            givenCatalog(VWCE);
+            givenPortfolioWith(holdingOf(VWCE));
 
-        const error = (await remove.execute(VWCE.id))._unsafeUnwrapErr();
+            const error = (await remove.execute(VWCE.id))._unsafeUnwrapErr();
 
-        expect(error).toBeInstanceOf(NetworkError);
+            expect(error).toBeInstanceOf(InstrumentInUseError);
+        });
+
+        it("fails as unavailable while the service cannot be reached", async () => {
+            givenApiUnavailable();
+
+            const error = (await remove.execute(VWCE.id))._unsafeUnwrapErr();
+
+            expect(error).toBeInstanceOf(NetworkError);
+        });
     });
 });

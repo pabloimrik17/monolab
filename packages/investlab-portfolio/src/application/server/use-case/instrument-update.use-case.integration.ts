@@ -8,55 +8,59 @@ import { catalog, givenInstrument, UNKNOWN_ID } from "#testing/server/given.ts";
 import { container } from "#testing/server/vitest-integration-setup.ts";
 import type { InstrumentUpdateUseCase } from "./instrument-update.use-case.ts";
 
-let update: InstrumentUpdateUseCase;
-beforeEach(() => {
-    update = container.get(PORTFOLIO.InstrumentUpdate);
-});
-
-describe("changing an instrument", () => {
-    it("records the new name and keeps everything else", async () => {
-        const vti = await givenInstrument("VTI");
-
-        const changed = (
-            await update.execute(vti.id, { name: "Vanguard Total Market" })
-        )._unsafeUnwrap();
-
-        expect(changed).toEqual(
-            expect.objectContaining({
-                id: vti.id,
-                symbol: "VTI",
-                name: "Vanguard Total Market",
-                exchange: "NYSE Arca",
-                replicates: "CRSP US Total Market",
-            }),
-        );
-        expect(await catalog()).toContainEqual(changed);
+describe("InstrumentUpdateUseCase", () => {
+    let update: InstrumentUpdateUseCase;
+    beforeEach(() => {
+        update = container.get(PORTFOLIO.InstrumentUpdate);
     });
 
-    it("clears the exchange and the tracked index when asked to", async () => {
-        const spy = await givenInstrument("SPY");
+    describe("changing an instrument", () => {
+        it("records the new name and keeps everything else", async () => {
+            const vti = await givenInstrument("VTI");
 
-        const changed = (
-            await update.execute(spy.id, { exchange: undefined, replicates: undefined })
-        )._unsafeUnwrap();
+            const changed = (
+                await update.execute(vti.id, { name: "Vanguard Total Market" })
+            )._unsafeUnwrap();
 
-        expect(changed.exchange).toBeUndefined();
-        expect(changed.replicates).toBeUndefined();
-        expect(await catalog()).toContainEqual(changed);
-    });
+            expect(changed).toEqual(
+                expect.objectContaining({
+                    id: vti.id,
+                    symbol: "VTI",
+                    name: "Vanguard Total Market",
+                    exchange: "NYSE Arca",
+                    replicates: "CRSP US Total Market",
+                }),
+            );
+            expect(await catalog()).toContainEqual(changed);
+        });
 
-    it("refuses an instrument that is not in the catalog", async () => {
-        const error = (await update.execute(UNKNOWN_ID, { name: "Nothing" }))._unsafeUnwrapErr();
+        it("clears the exchange and the tracked index when asked to", async () => {
+            const spy = await givenInstrument("SPY");
 
-        expect(error).toBeInstanceOf(InstrumentNotFoundError);
-    });
+            const changed = (
+                await update.execute(spy.id, { exchange: undefined, replicates: undefined })
+            )._unsafeUnwrap();
 
-    it("refuses a symbol another instrument already has and keeps the instrument as it was", async () => {
-        const msft = await givenInstrument("MSFT");
+            expect(changed.exchange).toBeUndefined();
+            expect(changed.replicates).toBeUndefined();
+            expect(await catalog()).toContainEqual(changed);
+        });
 
-        const error = (await update.execute(msft.id, { symbol: "nvda" }))._unsafeUnwrapErr();
+        it("refuses an instrument that is not in the catalog", async () => {
+            const error = (
+                await update.execute(UNKNOWN_ID, { name: "Nothing" })
+            )._unsafeUnwrapErr();
 
-        expect(error).toBeInstanceOf(InstrumentAlreadyExistsError);
-        expect(await catalog()).toContainEqual(msft);
+            expect(error).toBeInstanceOf(InstrumentNotFoundError);
+        });
+
+        it("refuses a symbol another instrument already has and keeps the instrument as it was", async () => {
+            const msft = await givenInstrument("MSFT");
+
+            const error = (await update.execute(msft.id, { symbol: "nvda" }))._unsafeUnwrapErr();
+
+            expect(error).toBeInstanceOf(InstrumentAlreadyExistsError);
+            expect(await catalog()).toContainEqual(msft);
+        });
     });
 });
