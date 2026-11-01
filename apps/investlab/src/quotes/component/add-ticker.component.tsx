@@ -1,16 +1,19 @@
 import { useState } from "react";
 
 interface AddTickerProps {
-    /** Whether the symbol was followed; the input clears only then. */
-    onAdd: (symbol: string) => boolean;
+    /** The refusal when the symbol was not followed; the input clears only on success. */
+    onAdd: (symbol: string) => Error | undefined;
 }
 
 export function AddTicker({ onAdd }: AddTickerProps) {
     const [value, setValue] = useState("");
+    const [refused, setRefused] = useState(false);
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        if (onAdd(value)) {
+        const refusal = onAdd(value);
+        setRefused(refusal !== undefined);
+        if (!refusal) {
             setValue("");
         }
     }
@@ -23,7 +26,12 @@ export function AddTicker({ onAdd }: AddTickerProps) {
             <input
                 type="text"
                 value={value}
-                onChange={(e) => setValue(e.target.value)}
+                onChange={(e) => {
+                    setValue(e.target.value);
+                    setRefused(false);
+                }}
+                aria-invalid={refused || undefined}
+                aria-describedby={refused ? "add-ticker-error" : undefined}
                 placeholder="Enter ticker symbol"
                 aria-label="Ticker symbol"
             />
@@ -33,6 +41,14 @@ export function AddTicker({ onAdd }: AddTickerProps) {
             >
                 Add
             </button>
+            {refused && (
+                <p
+                    id="add-ticker-error"
+                    role="alert"
+                >
+                    Invalid symbol: letters, digits, dot or dash, up to 15
+                </p>
+            )}
         </form>
     );
 }

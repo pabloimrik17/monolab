@@ -10,11 +10,11 @@ export function useFollowedTickers() {
         setTickers(getContainer().get(QUOTES.TickerList).execute());
     }, []);
 
-    function add(symbol: string): boolean {
+    function add(symbol: string): Error | undefined {
         const container = getContainer();
-        const followed = container.get(QUOTES.TickerAdd).execute(symbol).isOk();
+        const added = container.get(QUOTES.TickerAdd).execute(symbol);
         setTickers(container.get(QUOTES.TickerList).execute());
-        return followed;
+        return added.isErr() ? added.error : undefined;
     }
 
     function remove(symbol: string): void {
