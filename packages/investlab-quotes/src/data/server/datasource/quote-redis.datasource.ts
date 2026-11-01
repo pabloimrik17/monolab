@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 import { PLATFORM } from "@m0n0lab/investlab-platform/server";
-import type { Quote } from "#domain/model/quote.model.ts";
+import type { Quote } from "#domain/value-object/quote.value-object.ts";
 import type Redis from "ioredis";
 
 const TTL_SECONDS = 3600;

@@ -1,4 +1,4 @@
-import type { Quote } from "#domain/model/quote.model.ts";
+import type { Quote } from "#domain/value-object/quote.value-object.ts";
 import type { PersistenceError } from "@m0n0lab/investlab-core";
 import type { ResultAsync } from "neverthrow";
 

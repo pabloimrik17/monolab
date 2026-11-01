@@ -4,8 +4,8 @@ import { QUOTES_DATA } from "#data/server/tokens.ts";
 import { PersistenceError } from "@m0n0lab/investlab-core";
 import type { QuoteFinnhubDatasource } from "#data/server/datasource/quote-finnhub.datasource.ts";
 import type { QuoteRedisDatasource } from "#data/server/datasource/quote-redis.datasource.ts";
-import type { Quote } from "#domain/model/quote.model.ts";
 import type { QuoteRepository } from "#domain/repository/quote.repository.ts";
+import type { Quote } from "#domain/value-object/quote.value-object.ts";
 
 function normalizeSymbol(symbol: string): string {
     return symbol.trim().toUpperCase();

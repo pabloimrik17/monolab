@@ -4,8 +4,8 @@ import { z } from "zod";
 import { quoteDtoSchema } from "#data/shared/dto/quote.dto.ts";
 import { PersistenceError, type RemotePortError } from "@m0n0lab/investlab-core";
 import { PLATFORM, type InvestlabApiClient } from "@m0n0lab/investlab-platform/client";
-import type { Quote } from "#domain/model/quote.model.ts";
 import type { QuoteRepository } from "#domain/repository/quote.repository.ts";
+import type { Quote } from "#domain/value-object/quote.value-object.ts";
 
 const quoteListSchema = z.array(quoteDtoSchema);
 

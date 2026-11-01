@@ -4,7 +4,7 @@ import type {
     FinnhubClient,
     FinnhubQuoteResponse,
 } from "#data/server/infra/http/finnhub.client.ts";
-import type { Quote } from "#domain/model/quote.model.ts";
+import type { Quote } from "#domain/value-object/quote.value-object.ts";
 
 function toQuote(symbol: string, { c, d, dp }: FinnhubQuoteResponse): Quote {
     // Finnhub answers unknown symbols with an empty quote (`c: 0`, `d`/`dp` null).

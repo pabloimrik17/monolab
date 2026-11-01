@@ -1,4 +1,4 @@
-export type { Quote } from "#domain/model/quote.model.ts";
+export type { Quote } from "#domain/value-object/quote.value-object.ts";
 export type { Ticker } from "#domain/model/ticker.model.ts";
 export type { QuoteRepository } from "#domain/repository/quote.repository.ts";
 export {
