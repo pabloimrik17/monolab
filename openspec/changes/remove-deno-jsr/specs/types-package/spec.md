@@ -71,7 +71,7 @@ The package SHALL include comprehensive documentation for consumers.
 
 - **GIVEN** generated type declarations from the build
 - **THEN** the index.ts header comment SHALL mention `@m0n0lab/ts-types`
-- **AND** test files SHALL reference `@m0n0lab/ts-types` in describe blocks
+- **AND** test files SHALL follow the test structure rule in ADR 0008 (root `describe` named after the tested symbol or module), not the package name
 
 ### Requirement: Release Configuration
 
