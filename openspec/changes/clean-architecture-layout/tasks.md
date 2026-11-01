@@ -216,6 +216,11 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
 - [x] 10.6 Final check as in 9.4, without the manual pass.
 - [x] 10.7 Lint factory: the database package's import ban and the apps' outside-`src/` bans come from `cleanArchitectureLint` (design §13), and its option `migrated` becomes `projects`. Prove `--print-config` is unchanged for InvestLab and probe each moved rule.
 
+## 11. Review follow-ups (owner, 2026-11-01)
+
+- [x] 11.1 Test structure, every kind: one root `describe` named after the unit, at most one nested `describe` per behaviour, setup inside the root (ADR 0008, `test-policy` delta). `@vitest/eslint-plugin` enforces it on every test file with the fleet's Vitest rule values; every test file is restructured to pass.
+
 ## Workflow follow-up
 
+- Archive `define-test-policy` first: the `test-policy` delta here modifies its requirement "Integration-platform tests are flat".
 - Archive `clean-architecture-layout` after review, then confirm `openspec/specs/clean-architecture-layout/spec.md` exists and the modified specs carry the new requirements.
