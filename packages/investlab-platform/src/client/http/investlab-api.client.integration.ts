@@ -13,10 +13,6 @@ const TOKEN = "s3cret-token";
 
 const server = setupServer();
 
-beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
-
 class ThingNotFoundError extends Error {
     readonly code = "THING_NOT_FOUND";
     constructor(readonly id: string) {
@@ -51,6 +47,10 @@ function apiError(statusCode: number, code: ApiErrorDto["code"], message = "fail
 }
 
 describe("InvestlabApiClient", () => {
+    beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+    afterEach(() => server.resetHandlers());
+    afterAll(() => server.close());
+
     it("returns the success body validated by the caller's schema", async () => {
         fakeApi("get", "/things/1", () => HttpResponse.json({ id: "1" }));
 

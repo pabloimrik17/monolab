@@ -8,11 +8,11 @@ const URL = "http://service.test/things";
 
 const server = setupServer();
 
-beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
-
 describe("HttpClient", () => {
+    beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+    afterEach(() => server.resetHandlers());
+    afterAll(() => server.close());
+
     it("sends the body as JSON with the caller's headers and returns the parsed answer", async () => {
         let received: { body: unknown; contentType: string | null; custom: string | null } | null =
             null;
