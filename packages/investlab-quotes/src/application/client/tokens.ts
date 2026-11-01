@@ -21,7 +21,7 @@ export const QUOTES = {
     ) as ServiceIdentifier<TickerRemoveUseCase>,
 } as const;
 
-/** Ports the client use cases depend on; bound by the `di/` modules, never exported. */
+/** Bound by the `di/` modules; never exported from the package. */
 export const QUOTES_PORTS = {
     QuoteRepository: Symbol.for("investlab.quotes.client.QuoteRepository") as ServiceIdentifier<
         QuoteRepository<RemotePortError>

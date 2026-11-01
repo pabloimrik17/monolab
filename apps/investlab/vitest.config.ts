@@ -25,12 +25,10 @@ export default mergeConfig(
                     "**/.react-router/**",
                     "**/*.d.ts",
                 ],
-                // Below the 80 target of ADR 0008 (docs/adr/0008-test-policy.md): these floors are the
-                // measurement after the clean-architecture-layout change moved the covered ticker store to the
-                // quotes package, rounded down to a multiple of 5. Lowering them was a one-off exception to
-                // ADR 0008's never-lower rule, recorded in that change's design §12. agentic-task-3ao3 (UI
-                // harness) raises them. Whoever adds tests here re-measures with `test:coverage` and
-                // raises every metric that passed its next multiple of 5, until each one reaches 80.
+                // Below ADR 0008's 80 target: a one-off exception to its never-lower rule, recorded in the
+                // clean-architecture-layout design §12. agentic-task-3ao3 (UI harness) raises them. Whoever adds
+                // tests here re-measures with `test:coverage` and raises every metric that passed its next
+                // multiple of 5, until each one reaches 80.
                 thresholds: coverageThresholds({
                     lines: 45,
                     branches: 40,

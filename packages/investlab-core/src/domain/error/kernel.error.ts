@@ -5,5 +5,5 @@ import type { ValidationError } from "./validation.error.ts";
 
 export type KernelErrorCode = "PERSISTENCE_ERROR" | "VALIDATION_ERROR";
 
-/** Failures every remote (HTTP) port can return whatever the module: kernel codes rebuilt as errors plus transport and authorization failures. */
+/** What every remote port can fail with, whatever the module. */
 export type KernelError = ValidationError | PersistenceError | NetworkError | UnauthorizedError;

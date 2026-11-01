@@ -3,7 +3,7 @@ import type { QuoteRedisDatasource } from "#data/server/datasource/quote-redis.d
 import type { FinnhubClient } from "#data/server/infra/http/finnhub.client.ts";
 import type { ServiceIdentifier } from "inversify";
 
-/** Infra and datasources behind the cached quote repository; internal to the module, never exported. */
+/** Never exported from the package. */
 export const QUOTES_DATA = {
     FinnhubClient: Symbol.for(
         "investlab.quotes.server.FinnhubClient",

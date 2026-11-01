@@ -1,7 +1,5 @@
 import { boolean, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 
-// Picked up by the glob in the database package's drizzle.config.ts; `db:generate` diffs it against the migrations.
-
 export const instruments = pgTable("instruments", {
     id: uuid("id").primaryKey().defaultRandom(),
     symbol: varchar("symbol", { length: 20 }).unique().notNull(),

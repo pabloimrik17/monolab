@@ -5,7 +5,7 @@ import { quotesBrowserModule } from "@m0n0lab/investlab-quotes/browser";
 // for hooks: only `src/di/` may import `./browser` entries
 export { QUOTES } from "@m0n0lab/investlab-quotes/browser";
 
-/** Browser composition root: browser modules only, so it never holds `Config` or the API token. */
+/** Browser modules only: the API token must never reach the browser. */
 function createContainer(): Container {
     const container = new Container();
     container.load(platformBrowserModule, quotesBrowserModule);

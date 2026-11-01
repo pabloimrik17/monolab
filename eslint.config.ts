@@ -39,7 +39,6 @@ const importBans = (
     rules: { "no-restricted-imports": ["error", { patterns: bans }] },
 });
 
-// Every InvestLab project is on the layout; the database package is exempt from it.
 const investlabLayout: CleanArchitectureOptions = {
     product: "investlab",
     modules: ["portfolio", "quotes"],
@@ -427,8 +426,8 @@ const scopedPolicy = ({ root }: LayoutProject, policy: LayoutPolicy) => {
           };
 };
 
-// The InvestLab package-specifier rules on the new layout. The folder bans join every group, because each file keeps
-// the options of the last group that matches it.
+// Package-specifier bans. The folder bans join every group, because each file keeps the options of the last group
+// that matches it.
 const parentFolder = ban(
     "(^|/)\\.\\.(/|$)",
     "import another folder through its # alias, never through ../",
@@ -633,7 +632,6 @@ const withTestingBan = (
     layoutGroup(files, [...bans, testingEntry], [...ignores, ...appTestFiles(src)]),
 ];
 
-// `./client` entries: the route files and the server container only; `./browser` entries: the browser container only
 const uiAppBans: LayoutBans = ({ root }, { product }) => {
     const src = `${root}/src`;
     const bans = productBans(product);

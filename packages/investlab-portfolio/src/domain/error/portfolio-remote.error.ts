@@ -17,7 +17,6 @@ export type PortfolioErrorCode =
     | "PORTFOLIO_ITEM_NOT_FOUND"
     | "PORTFOLIO_ITEM_CONFLICT";
 
-/** Every failure a remote (HTTP) portfolio port can return: the kernel failures plus the module errors rebuilt from server codes. */
 export type PortfolioRemoteError = RemotePortError<
     | InstrumentNotFoundError
     | InstrumentInUseError

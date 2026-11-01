@@ -48,7 +48,6 @@ export const updatePortfolioItemFormSchema = z.object({
 
 export const portfolioItemIdFormSchema = z.object({ id });
 
-/** What the portfolio route action answers. */
 export type PortfolioActionResult =
     | { ok: true }
     | { error: string; fieldErrors?: PortfolioFieldErrors };
