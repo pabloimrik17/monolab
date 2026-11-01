@@ -1,5 +1,6 @@
 // @ts-check
 import eslint from "@eslint/js";
+import vitest from "@vitest/eslint-plugin";
 import { createConfig as boundariesConfig } from "eslint-plugin-boundaries/config";
 import regexpPlugin from "eslint-plugin-regexp";
 import globals from "globals";
@@ -787,6 +788,25 @@ export default tseslint.config(
         rules: {
             "@typescript-eslint/no-unused-vars": "off",
             "@typescript-eslint/no-empty-object-type": "off",
+        },
+    },
+    // Test structure (ADR 0008): every file a Vitest config includes, never a harness, given, builder or setup file.
+    // The other four rules carry the fleet's values.
+    {
+        files: [
+            "**/*.{test,spec}.{ts,tsx,mts,cts,svelte.ts,js,jsx,mjs,cjs}",
+            "**/*.{test,spec}-d.{ts,tsx,mts,cts}",
+            "**/*.integration.{ts,tsx}",
+            "**/*.integration-platform.{ts,tsx}",
+        ],
+        plugins: { vitest },
+        rules: {
+            "vitest/require-top-level-describe": ["error", { maxNumberOfTopLevelDescribes: 1 }],
+            "vitest/max-nested-describe": ["error", { max: 2 }],
+            "vitest/valid-expect": "error",
+            "vitest/valid-title": "error",
+            "vitest/no-focused-tests": ["warn", { fixable: true }],
+            "vitest/no-disabled-tests": "warn",
         },
     },
     ...cleanArchitectureLint(investlabLayout),
