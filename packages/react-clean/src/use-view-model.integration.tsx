@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { type Observable, Subject } from "rxjs";
-import { expect, test, vi } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { render } from "vitest-browser-react";
 import { BaseViewModel, useViewModel } from "./index.ts";
 
@@ -31,19 +31,23 @@ function Ticker({
     return <output>{tick}</output>;
 }
 
-test("creates the view model once and releases its subscriptions on unmount", async () => {
-    const ticks$ = new Subject<number>();
-    const createViewModel = vi.fn((onTick: TickListener) => new TickerViewModel(ticks$, onTick));
+describe("useViewModel", () => {
+    test("creates the view model once and releases its subscriptions on unmount", async () => {
+        const ticks$ = new Subject<number>();
+        const createViewModel = vi.fn(
+            (onTick: TickListener) => new TickerViewModel(ticks$, onTick),
+        );
 
-    const screen = await render(<Ticker createViewModel={createViewModel} />);
-    ticks$.next(1);
-    await expect.element(screen.getByRole("status")).toHaveTextContent("1");
-    await screen.rerender(<Ticker createViewModel={createViewModel} />);
+        const screen = await render(<Ticker createViewModel={createViewModel} />);
+        ticks$.next(1);
+        await expect.element(screen.getByRole("status")).toHaveTextContent("1");
+        await screen.rerender(<Ticker createViewModel={createViewModel} />);
 
-    expect(createViewModel).toHaveBeenCalledOnce();
-    expect(ticks$.observed).toBe(true);
+        expect(createViewModel).toHaveBeenCalledOnce();
+        expect(ticks$.observed).toBe(true);
 
-    await screen.unmount();
+        await screen.unmount();
 
-    expect(ticks$.observed).toBe(false);
+        expect(ticks$.observed).toBe(false);
+    });
 });
