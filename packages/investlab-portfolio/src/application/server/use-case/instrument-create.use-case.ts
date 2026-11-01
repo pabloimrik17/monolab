@@ -23,6 +23,7 @@ export class InstrumentCreateUseCase {
         if (result.isErr()) {
             return errAsync(result.error);
         }
+
         return this.instrumentRepo.save(result.value);
     }
 }

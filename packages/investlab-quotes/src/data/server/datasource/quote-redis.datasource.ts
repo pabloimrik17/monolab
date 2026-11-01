@@ -14,6 +14,7 @@ function parseQuote(raw: string | null): Quote | null {
     if (raw === null) {
         return null;
     }
+
     try {
         const parsed = JSON.parse(raw) as Quote;
         return { ...parsed, updatedAt: new Date(parsed.updatedAt) };
@@ -36,6 +37,7 @@ export class QuoteRedisDatasource {
         if (symbols.length === 0) {
             return result;
         }
+
         const values = await this.redis.mget(...symbols.map(cacheKey));
         symbols.forEach((symbol, i) => {
             const quote = parseQuote(values[i] ?? null);

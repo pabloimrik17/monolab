@@ -29,10 +29,12 @@ export class PortfolioItemCreateUseCase {
             if (!instrument) {
                 return errAsync(new InstrumentNotFoundError(props.instrumentId));
             }
+
             const result = PortfolioItem.create(props);
             if (result.isErr()) {
                 return errAsync(result.error);
             }
+
             return this.portfolioItemRepo.save(result.value);
         });
     }

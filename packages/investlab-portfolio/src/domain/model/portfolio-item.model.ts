@@ -79,6 +79,7 @@ export class PortfolioItem {
         if (props.notes != null) {
             this._notes = props.notes;
         }
+
         this.createdAt = props.createdAt;
         this._updatedAt = props.updatedAt;
     }
@@ -110,6 +111,7 @@ export class PortfolioItem {
         if (!instrumentId) {
             return err(new ValidationError("PortfolioItem instrumentId cannot be empty"));
         }
+
         const broker = props.broker.trim();
         const currentValue = props.currentValue ?? 0;
         const now = new Date();
@@ -149,6 +151,7 @@ export class PortfolioItem {
         if ("notes" in props) {
             this._notes = props.notes;
         }
+
         this._updatedAt = new Date();
     }
 }

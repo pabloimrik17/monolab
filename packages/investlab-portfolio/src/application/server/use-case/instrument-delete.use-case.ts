@@ -26,6 +26,7 @@ export class InstrumentDeleteUseCase {
             if (!instrument) {
                 return errAsync(new InstrumentNotFoundError(id));
             }
+
             return this.portfolioItemRepo
                 .existsForInstrument(id)
                 .andThen((inUse) =>

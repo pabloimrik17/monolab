@@ -67,6 +67,7 @@ export class Instrument {
         if (props.replicates != null) {
             this._replicates = props.replicates;
         }
+
         this._quotable = props.quotable;
     }
 
@@ -100,6 +101,7 @@ export class Instrument {
         if (!symbol) {
             return err(new ValidationError("Instrument symbol cannot be empty"));
         }
+
         const name = props.name.trim();
         if (!name) {
             return err(new ValidationError("Instrument name cannot be empty"));
@@ -130,6 +132,7 @@ export class Instrument {
         if (symbol === "") {
             return err(new ValidationError("Instrument symbol cannot be empty"));
         }
+
         const name = changes.name?.trim();
         if (name === "") {
             return err(new ValidationError("Instrument name cannot be empty"));
@@ -149,6 +152,7 @@ export class Instrument {
         if ("replicates" in changes) {
             this._replicates = changes.replicates;
         }
+
         return ok(undefined);
     }
 }

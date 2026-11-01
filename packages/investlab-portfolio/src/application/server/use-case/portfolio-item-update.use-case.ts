@@ -39,10 +39,12 @@ export class PortfolioItemUpdateUseCase {
             if (item.updatedAt.getTime() !== expectedUpdatedAt.getTime()) {
                 return errAsync(new PortfolioItemConflictError(id));
             }
+
             const updateResult = item.update(props);
             if (updateResult.isErr()) {
                 return errAsync(updateResult.error);
             }
+
             return this.portfolioItemRepo.update(item, expectedUpdatedAt);
         });
     }

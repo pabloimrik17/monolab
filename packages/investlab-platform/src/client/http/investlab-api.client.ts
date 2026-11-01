@@ -92,6 +92,7 @@ export class InvestlabApiClient {
                 if (status === HTTP_UNAUTHORIZED) {
                     return err(new UnauthorizedError(payload));
                 }
+
                 const envelope = apiErrorDtoSchema.safeParse(payload);
                 return err(
                     envelope.success

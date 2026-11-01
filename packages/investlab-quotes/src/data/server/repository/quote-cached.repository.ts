@@ -25,6 +25,7 @@ export class QuoteCachedRepository implements QuoteRepository {
         if (!normalized) {
             return errAsync(new PersistenceError(new Error("Invalid empty symbol")));
         }
+
         return ResultAsync.fromPromise(this.fetchQuote(normalized), (e) => new PersistenceError(e));
     }
 
@@ -47,6 +48,7 @@ export class QuoteCachedRepository implements QuoteRepository {
         if (cached !== null) {
             return cached;
         }
+
         const quote = await this.finnhub.getQuote(symbol);
         void this.writeThrough(symbol, quote);
         return quote;
@@ -61,6 +63,7 @@ export class QuoteCachedRepository implements QuoteRepository {
         if (uncached.length === 0) {
             return result;
         }
+
         const fetched = await this.finnhub.getQuotes(uncached);
         for (const [symbol, quote] of fetched) {
             result.set(symbol, quote);

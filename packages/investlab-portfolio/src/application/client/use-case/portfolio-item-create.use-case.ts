@@ -26,6 +26,7 @@ export class PortfolioItemCreateUseCase {
         if (result.isErr()) {
             return errAsync(result.error);
         }
+
         return this.portfolioItemRepo.save(result.value);
     }
 }

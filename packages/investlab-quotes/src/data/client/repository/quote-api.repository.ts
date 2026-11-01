@@ -29,6 +29,7 @@ export class QuoteApiRepository implements QuoteRepository<RemotePortError> {
         if (symbols.length === 0) {
             return okAsync(new Map());
         }
+
         return this.api
             .json(
                 "GET",

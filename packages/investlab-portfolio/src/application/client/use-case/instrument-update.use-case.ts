@@ -24,10 +24,12 @@ export class InstrumentUpdateUseCase {
             if (!instrument) {
                 return errAsync(new InstrumentNotFoundError(id));
             }
+
             const updateResult = instrument.update(changes);
             if (updateResult.isErr()) {
                 return errAsync(updateResult.error);
             }
+
             return this.instrumentRepo.update(instrument);
         });
     }

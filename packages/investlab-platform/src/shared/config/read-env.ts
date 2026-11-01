@@ -9,5 +9,6 @@ export function readEnv<const Key extends string>(
     if (missing.length > 0) {
         throw new Error(`Missing env vars: ${missing.join(", ")}`);
     }
+
     return Object.fromEntries(keys.map((key) => [key, env[key]])) as Record<Key, string>;
 }

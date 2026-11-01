@@ -19,6 +19,7 @@ export class PortfolioItemDeleteUseCase {
             if (!item) {
                 return errAsync(new PortfolioItemNotFoundError(id));
             }
+
             return this.portfolioItemRepo.delete(id);
         });
     }

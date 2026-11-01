@@ -40,6 +40,7 @@ export function errorJson(c: Context, error: ApiDomainError): Response {
         // The response hides the cause, so the log is the only place it survives.
         console.error(`${error.code}:`, error);
     }
+
     return c.json(dto, dto.statusCode as ContentfulStatusCode);
 }
 
