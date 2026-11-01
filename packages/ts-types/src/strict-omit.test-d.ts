@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it } from "vitest";
 import type { StrictOmit } from "./strict-omit.ts";
 
-describe("StrictOmit type", () => {
+describe("StrictOmit", () => {
     interface User {
         id: string;
         name: string;
