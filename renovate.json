@@ -39,7 +39,7 @@
         },
         {
             "description": "Seguir versionado de Expo con ~",
-            "rangeStrategy": "tilde",
+            "rangeStrategy": "replace",
             "matchPackageNames": ["/^expo($|-)/", "/^@expo//"]
         },
         {
