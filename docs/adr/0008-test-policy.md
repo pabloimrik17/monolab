@@ -22,6 +22,15 @@ There are five kinds of test, plus type tests for libraries. A kind's file suffi
 - Node or a browser is the test environment, set by the Vitest project. It is never a kind: no file is named `*.browser.test.*` and no script is named `test:browser`.
 - Type tests guard the public types of published libraries. Another package may add them only for an exported generic other packages build on, such as `RemotePortError<E>` in investlab-core. Apps and plugins carry none.
 
+### Test structure
+
+These rules apply to every kind, legacy and type tests included.
+
+- **One root `describe`, named after the unit under test:** its class name, or the exact exported symbol when the unit is not a class (`describe("portfolioItemRoutes")`, each endpoint a nested `describe`).
+- **One nested level at most:** one `describe` per behaviour inside the root.
+- **Setup inside the root.** `let` declarations, `beforeEach` and the other hooks live inside the root `describe`, never at file level. Global setup files (`vitest-*-setup.ts`) register project-wide hooks and are exempt.
+- **Linted structure, reviewed name.** ESLint (`@vitest/eslint-plugin`) enforces the structure on every test file, with the fleet's Vitest rules: an invalid `expect` or title fails, a focused or disabled test warns. Review checks the root `describe` name.
+
 ## What each project category tests
 
 | Category                              | unit                  | integration                | integration-platform | load                                            |
@@ -49,7 +58,7 @@ An integration-platform test enters an app through a harness.
 - **Base harness, one per app.** It launches the app on its platform, arranges the fakes and hides the framework. It is the only test code that knows the app's framework and how the app is launched, so replacing the framework rewrites the base harness and no test.
 - **One harness per entry point:** a route file for an API, a page for a UI. Its public methods are named after the domain (`givenItems`, `listItems`, `updateItem`). It holds no assertions.
 - **Givens take data.** A `given*` method stays generic and takes what it arranges (`givenItems(list)`, `givenUpdateFails(error)`); the package builders supply valid defaults. A scenario-named given is added only when the same arrangement repeats across tests or names a domain state, and it returns what it created so the test can assert on it.
-- **Flat tests.** A test opens its harness with `await using api = await PortfolioItemRouteHarness.launch()`, then arranges, acts and asserts over harness methods with `expect`. One `describe` level at most; no `beforeEach` or `afterEach` manages a harness. The harness implements `Symbol.asyncDispose`, so the app closes when the scope ends, on failure too; `close()` is idempotent.
+- **Flat tests.** A test opens its harness with `await using api = await PortfolioItemRouteHarness.launch()`, then arranges, acts and asserts over harness methods with `expect`. Two `describe` levels at most: the unit, then the behaviour; no `beforeEach` or `afterEach` manages a harness. The harness implements `Symbol.asyncDispose`, so the app closes when the scope ends, on failure too; `close()` is idempotent.
 - **Test-data builders sit next to the model they build** (`<model>.builder.ts`) and are re-exported through the owning package's `./testing` subpath (`@m0n0lab/investlab-portfolio/testing`, `@m0n0lab/investlab-quotes/testing`) so every app's harness can reuse them, and excluded from coverage.
 
 An API's harness adds these rules:
@@ -61,7 +70,7 @@ An API's harness adds these rules:
 - **The 5xx log is silenced in the base harness.** The API logs the cause of every 5xx it hides. A test that provokes one calls `api.silenceErrorLog()`, which mutes `console.error` until `close()` and returns the logged calls so the test can assert the cause.
 - **Error hiding is tested once.** `app.onError` and `errorJson` hide causes for every route, so `app.integration-platform.ts` proves it through one route harness: a thrown error and an unmapped domain error answer a generic 500 `INTERNAL_ERROR`, and a persistence failure answers 500 `PERSISTENCE_ERROR` with its message hidden and its cause logged. A route suite tests the errors its routes map (404, 409, 422), plus the error branch of a route that answers without `replyJson` or `replyEmpty`.
 
-The living guide is `apps/investlab-api/src/core/harness/api.harness.ts` with `apps/investlab-api/src/portfolio/route/portfolio-item.route.integration-platform.ts`. There is no separate harness document and no lint rule; new suites copy the reference suite and review corrects them. The UI harness follows the same rules; its concrete design is settled with the first UI integration-platform test (`agentic-task-3ao3`).
+The living guide is `apps/investlab-api/src/core/harness/api.harness.ts` with `apps/investlab-api/src/portfolio/route/portfolio-item.route.integration-platform.ts`. There is no separate harness document and no harness lint rule (ESLint checks only the test structure); new suites copy the reference suite and review corrects them. The UI harness follows the same rules; its concrete design is settled with the first UI integration-platform test (`agentic-task-3ao3`).
 
 ## Load tests are reserved
 
