@@ -29,7 +29,7 @@ describe("listing followed tickers", () => {
     it("loads a list saved by the previous ticker store with its dates", () => {
         givenStoredTickers('[{"symbol":"AAPL","addedAt":"2026-09-30T08:15:00.000Z"}]');
 
-        expect(list.execute()).toEqual([
+        expect(list.execute()).toMatchObject([
             { symbol: "AAPL", addedAt: new Date("2026-09-30T08:15:00.000Z") },
         ]);
     });

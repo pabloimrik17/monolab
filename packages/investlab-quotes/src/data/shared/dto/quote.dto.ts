@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Ticker } from "#domain/model/ticker.model.ts";
 
 export const quoteDtoSchema = z.object({
     symbol: z.string().min(1),
@@ -12,7 +13,7 @@ export type QuoteDto = z.infer<typeof quoteDtoSchema>;
 
 export const QUOTE_LIST_MAX_SYMBOLS = 50;
 
-export const quoteSymbolSchema = z.string().regex(/^[a-z0-9.-]{1,15}$/i, "Invalid symbol");
+export const quoteSymbolSchema = z.string().regex(Ticker.SYMBOL_FORMAT, "Invalid symbol");
 
 // `?symbols=AAPL,msft,AAPL` → `["AAPL", "MSFT"]`.
 export const quoteListQueryDtoSchema = z.object({

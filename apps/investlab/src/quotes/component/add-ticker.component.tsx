@@ -1,7 +1,8 @@
 import { useState } from "react";
 
 interface AddTickerProps {
-    onAdd: (symbol: string) => void;
+    /** Whether the symbol was followed; the input clears only then. */
+    onAdd: (symbol: string) => boolean;
 }
 
 export function AddTicker({ onAdd }: AddTickerProps) {
@@ -9,10 +10,9 @@ export function AddTicker({ onAdd }: AddTickerProps) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        const trimmed = value.trim().toUpperCase();
-        if (!trimmed) return;
-        onAdd(trimmed);
-        setValue("");
+        if (onAdd(value)) {
+            setValue("");
+        }
     }
 
     return (

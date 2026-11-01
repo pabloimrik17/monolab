@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify";
 import { z } from "zod";
+import { Ticker } from "#domain/model/ticker.model.ts";
 import { PLATFORM_SHARED, type KeyValueStorage } from "@m0n0lab/investlab-platform";
-import type { Ticker } from "#domain/model/ticker.model.ts";
 import type { TickerRepository } from "#domain/repository/ticker.repository.ts";
 
 /** Key and format of the lists saved by the web's first ticker store; changing either drops saved watchlists. */
@@ -24,7 +24,7 @@ export class TickerStorageRepository implements TickerRepository {
         }
         const tickers = new Map<string, Ticker>();
         for (const { symbol, addedAt } of stored.data) {
-            tickers.set(symbol, { symbol, addedAt: new Date(addedAt) });
+            tickers.set(symbol, Ticker.reconstitute({ symbol, addedAt: new Date(addedAt) }));
         }
         return [...tickers.values()];
     }
@@ -44,7 +44,10 @@ export class TickerStorageRepository implements TickerRepository {
     private save(tickers: Ticker[]): void {
         this.storage.setObject(
             STORAGE_KEY,
-            tickers.map(({ symbol, addedAt }) => ({ symbol, addedAt: addedAt.toISOString() })),
+            tickers.map((ticker) => ({
+                symbol: ticker.symbol,
+                addedAt: ticker.addedAt.toISOString(),
+            })),
         );
     }
 }
