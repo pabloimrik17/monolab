@@ -27,20 +27,20 @@ const api: Server = createServer((request, response) => {
     response.end(JSON.stringify(symbols.split(",").includes("AAPL") ? [AAPL] : []));
 });
 
-beforeAll(async () => {
-    await new Promise<void>((resolve) => api.listen(0, "127.0.0.1", resolve));
-    const { port } = api.address() as { port: number };
-    process.env["INVESTLAB_API_URL"] = `http://127.0.0.1:${port}`;
-    process.env["INVESTLAB_API_TOKEN"] = TOKEN;
-});
-
-afterAll(() => new Promise<void>((resolve) => api.close(() => resolve())));
-
 function get(query: string): Route.LoaderArgs {
     return { request: new Request(`http://localhost/api/quotes${query}`) } as Route.LoaderArgs;
 }
 
-describe("quotes resource route", () => {
+describe("loader", () => {
+    beforeAll(async () => {
+        await new Promise<void>((resolve) => api.listen(0, "127.0.0.1", resolve));
+        const { port } = api.address() as { port: number };
+        process.env["INVESTLAB_API_URL"] = `http://127.0.0.1:${port}`;
+        process.env["INVESTLAB_API_TOKEN"] = TOKEN;
+    });
+
+    afterAll(() => new Promise<void>((resolve) => api.close(() => resolve())));
+
     it("answers the quotes the API has for the requested symbols", async () => {
         const { loader } = await import("./api.quotes");
 

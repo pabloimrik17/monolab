@@ -22,16 +22,16 @@ function createMockQuote(symbol: string): Quote {
     };
 }
 
-describe("createQuotePoller", () => {
-    beforeEach(() => {
-        vi.useFakeTimers();
-    });
+describe("use-quote-polling.hook", () => {
+    describe("createQuotePoller", () => {
+        beforeEach(() => {
+            vi.useFakeTimers();
+        });
 
-    afterEach(() => {
-        vi.useRealTimers();
-    });
+        afterEach(() => {
+            vi.useRealTimers();
+        });
 
-    describe("start", () => {
         it("immediately fetches quotes on start", async () => {
             const client = createMockClient();
             const onUpdate = vi.fn();
@@ -100,9 +100,7 @@ describe("createQuotePoller", () => {
             expect(client.getQuotes).toHaveBeenCalledWith(["AAPL"]);
             poller.stop();
         });
-    });
 
-    describe("stop", () => {
         it("stops polling", async () => {
             const client = createMockClient();
             const onUpdate = vi.fn();
@@ -170,9 +168,7 @@ describe("createQuotePoller", () => {
             expect(onUpdate).toHaveBeenCalledWith(msftQuotes);
             poller.stop();
         });
-    });
 
-    describe("setInterval", () => {
         it("changes polling interval", async () => {
             const client = createMockClient();
             const onUpdate = vi.fn();
@@ -230,9 +226,7 @@ describe("createQuotePoller", () => {
             await vi.advanceTimersByTimeAsync(60000);
             expect(client.getQuotes).toHaveBeenCalledTimes(2);
         });
-    });
 
-    describe("setTickers", () => {
         it("updates ticker list for next poll", async () => {
             const client = createMockClient();
             const onUpdate = vi.fn();
@@ -292,9 +286,7 @@ describe("createQuotePoller", () => {
             expect(client.getQuotes).toHaveBeenCalledWith(["MSFT"]);
             poller.stop();
         });
-    });
 
-    describe("error handling", () => {
         it("calls onError on fetch failure", async () => {
             const client = createMockClient();
             const error = new Error("Network error");
@@ -351,9 +343,7 @@ describe("createQuotePoller", () => {
             expect(onError).toHaveBeenCalledWith(expect.any(Error));
             poller.stop();
         });
-    });
 
-    describe("isPolling", () => {
         it("returns false initially", () => {
             const client = createMockClient();
             const poller = createQuotePoller(client, { onUpdate: vi.fn() });
@@ -380,9 +370,7 @@ describe("createQuotePoller", () => {
 
             expect(poller.isPolling()).toBe(false);
         });
-    });
 
-    describe("polling loop", () => {
         it("polls at configured interval", async () => {
             const client = createMockClient();
             const onUpdate = vi.fn();
@@ -418,98 +406,103 @@ describe("createQuotePoller", () => {
             expect(client.getQuotes).toHaveBeenCalledTimes(1);
         });
     });
-});
 
-const AAPL = {
-    symbol: "AAPL",
-    price: 190.5,
-    change: 1.5,
-    changePercent: 0.79,
-    updatedAt: "2026-10-12T15:30:00.000Z",
-};
-
-function recordingFetch(response: Response) {
-    const body = response.clone();
-    const requests: string[] = [];
-    const fetchFn = async (input: RequestInfo | URL): Promise<Response> => {
-        requests.push(String(input));
-        return body.clone();
+    const AAPL = {
+        symbol: "AAPL",
+        price: 190.5,
+        change: 1.5,
+        changePercent: 0.79,
+        updatedAt: "2026-10-12T15:30:00.000Z",
     };
-    return { requests, fetchFn };
-}
 
-describe("createRouteQuoteSource", () => {
-    it("asks the web quotes route once for every symbol", async () => {
-        const { requests, fetchFn } = recordingFetch(Response.json([]));
+    function recordingFetch(response: Response) {
+        const body = response.clone();
+        const requests: string[] = [];
+        const fetchFn = async (input: RequestInfo | URL): Promise<Response> => {
+            requests.push(String(input));
+            return body.clone();
+        };
+        return { requests, fetchFn };
+    }
 
-        await createRouteQuoteSource(fetchFn).getQuotes(["AAPL", "MSFT"]);
+    describe("createRouteQuoteSource", () => {
+        it("asks the web quotes route once for every symbol", async () => {
+            const { requests, fetchFn } = recordingFetch(Response.json([]));
 
-        expect(requests).toEqual(["/api/quotes?symbols=AAPL%2CMSFT"]);
-    });
+            await createRouteQuoteSource(fetchFn).getQuotes(["AAPL", "MSFT"]);
 
-    it("splits a long ticker list into requests of at most the maximum symbols", async () => {
-        const { requests, fetchFn } = recordingFetch(Response.json([]));
-        const symbols = Array.from({ length: QUOTE_LIST_MAX_SYMBOLS + 1 }, (_, i) => `S${i}`);
+            expect(requests).toEqual(["/api/quotes?symbols=AAPL%2CMSFT"]);
+        });
 
-        await createRouteQuoteSource(fetchFn).getQuotes(symbols);
+        it("splits a long ticker list into requests of at most the maximum symbols", async () => {
+            const { requests, fetchFn } = recordingFetch(Response.json([]));
+            const symbols = Array.from({ length: QUOTE_LIST_MAX_SYMBOLS + 1 }, (_, i) => `S${i}`);
 
-        const requested = requests.map((url) =>
-            new URL(url, "http://web").searchParams.get("symbols")?.split(","),
-        );
-        expect(requested.map((chunk) => chunk?.length)).toEqual([QUOTE_LIST_MAX_SYMBOLS, 1]);
-        expect(requested.flat()).toEqual(symbols);
-    });
+            await createRouteQuoteSource(fetchFn).getQuotes(symbols);
 
-    it("merges the quotes of every chunk", async () => {
-        const MSFT = { ...AAPL, symbol: "MSFT" };
-        const answers = [[AAPL], [MSFT]];
-        const fetchFn = async (): Promise<Response> => Response.json(answers.shift());
-        const symbols = Array.from({ length: QUOTE_LIST_MAX_SYMBOLS + 1 }, (_, i) => `S${i}`);
+            const requested = requests.map((url) =>
+                new URL(url, "http://web").searchParams.get("symbols")?.split(","),
+            );
+            expect(requested.map((chunk) => chunk?.length)).toEqual([QUOTE_LIST_MAX_SYMBOLS, 1]);
+            expect(requested.flat()).toEqual(symbols);
+        });
 
-        const quotes = await createRouteQuoteSource(fetchFn).getQuotes(symbols);
+        it("merges the quotes of every chunk", async () => {
+            const MSFT = { ...AAPL, symbol: "MSFT" };
+            const answers = [[AAPL], [MSFT]];
+            const fetchFn = async (): Promise<Response> => Response.json(answers.shift());
+            const symbols = Array.from({ length: QUOTE_LIST_MAX_SYMBOLS + 1 }, (_, i) => `S${i}`);
 
-        expect([...quotes.keys()]).toEqual(["AAPL", "MSFT"]);
-    });
+            const quotes = await createRouteQuoteSource(fetchFn).getQuotes(symbols);
 
-    it("leaves out symbols the route would reject and still asks for the rest", async () => {
-        const { requests, fetchFn } = recordingFetch(Response.json([]));
+            expect([...quotes.keys()]).toEqual(["AAPL", "MSFT"]);
+        });
 
-        await createRouteQuoteSource(fetchFn).getQuotes(["AAPL", "NOT A TICKER", "aapl", "MSFT"]);
+        it("leaves out symbols the route would reject and still asks for the rest", async () => {
+            const { requests, fetchFn } = recordingFetch(Response.json([]));
 
-        expect(requests).toEqual(["/api/quotes?symbols=AAPL%2CMSFT"]);
-    });
+            await createRouteQuoteSource(fetchFn).getQuotes([
+                "AAPL",
+                "NOT A TICKER",
+                "aapl",
+                "MSFT",
+            ]);
 
-    it("does not call the route when no symbol is valid", async () => {
-        const { requests, fetchFn } = recordingFetch(Response.json([]));
+            expect(requests).toEqual(["/api/quotes?symbols=AAPL%2CMSFT"]);
+        });
 
-        const quotes = await createRouteQuoteSource(fetchFn).getQuotes(["NOT A TICKER"]);
+        it("does not call the route when no symbol is valid", async () => {
+            const { requests, fetchFn } = recordingFetch(Response.json([]));
 
-        expect(requests).toEqual([]);
-        expect(quotes.size).toBe(0);
-    });
+            const quotes = await createRouteQuoteSource(fetchFn).getQuotes(["NOT A TICKER"]);
 
-    it("returns the quotes the route answered, keyed by symbol", async () => {
-        const { fetchFn } = recordingFetch(Response.json([AAPL]));
+            expect(requests).toEqual([]);
+            expect(quotes.size).toBe(0);
+        });
 
-        const quotes = await createRouteQuoteSource(fetchFn).getQuotes(["AAPL", "MSFT"]);
+        it("returns the quotes the route answered, keyed by symbol", async () => {
+            const { fetchFn } = recordingFetch(Response.json([AAPL]));
 
-        expect([...quotes.keys()]).toEqual(["AAPL"]);
-        expect(quotes.get("AAPL")).toEqual({ ...AAPL, updatedAt: new Date(AAPL.updatedAt) });
-    });
+            const quotes = await createRouteQuoteSource(fetchFn).getQuotes(["AAPL", "MSFT"]);
 
-    it("fails when the route answers with an error status", async () => {
-        const { fetchFn } = recordingFetch(
-            Response.json({ message: "unavailable" }, { status: 503 }),
-        );
+            expect([...quotes.keys()]).toEqual(["AAPL"]);
+            expect(quotes.get("AAPL")).toEqual({ ...AAPL, updatedAt: new Date(AAPL.updatedAt) });
+        });
 
-        await expect(createRouteQuoteSource(fetchFn).getQuotes(["AAPL"])).rejects.toThrow(
-            "Quotes request failed: HTTP 503",
-        );
-    });
+        it("fails when the route answers with an error status", async () => {
+            const { fetchFn } = recordingFetch(
+                Response.json({ message: "unavailable" }, { status: 503 }),
+            );
 
-    it("fails when the route answers with something other than quotes", async () => {
-        const { fetchFn } = recordingFetch(Response.json([{ symbol: "AAPL" }]));
+            await expect(createRouteQuoteSource(fetchFn).getQuotes(["AAPL"])).rejects.toThrow(
+                "Quotes request failed: HTTP 503",
+            );
+        });
 
-        await expect(createRouteQuoteSource(fetchFn).getQuotes(["AAPL"])).rejects.toThrow();
+        it("fails when the route answers with something other than quotes", async () => {
+            const { fetchFn } = recordingFetch(Response.json([{ symbol: "AAPL" }]));
+
+            await expect(createRouteQuoteSource(fetchFn).getQuotes(["AAPL"])).rejects.toThrow();
+        });
     });
 });

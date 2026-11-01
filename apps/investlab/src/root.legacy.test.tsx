@@ -7,7 +7,7 @@ function render(error: unknown): string {
     return renderToStaticMarkup(<ErrorBoundary {...({ error } as Route.ErrorBoundaryProps)} />);
 }
 
-describe("root ErrorBoundary", () => {
+describe("ErrorBoundary", () => {
     it("shows the status and message of a thrown route error response", () => {
         const html = render({
             status: 503,
