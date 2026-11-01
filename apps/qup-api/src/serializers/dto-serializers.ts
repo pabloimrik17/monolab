@@ -6,7 +6,7 @@ export function toSessionDto(session: Session): SessionDto {
         id: session.id,
         name: session.name,
         code: session.code.value,
-        status: session.status as "OPEN" | "CLOSED",
+        status: session.status,
         createdAt: session.createdAt.toISOString(),
         closedAt: session.closedAt?.toISOString() ?? null,
     };
@@ -35,7 +35,7 @@ export function toMenuItemDto(menuItem: MenuItem): MenuItemDto {
     return {
         id: menuItem.id,
         name: menuItem.name,
-        category: menuItem.category as MenuItemDto["category"],
+        category: menuItem.category,
         description: menuItem.description ?? null,
         available: menuItem.available,
         sortOrder: menuItem.sortOrder,
