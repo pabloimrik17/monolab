@@ -57,7 +57,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
     - `shared/storage/key-value.storage.ts`: the interface, plus the typed helpers on a base class.
     - `shared/storage/memory.storage.ts`
     - `client/storage/local.storage.ts`
-  Cover the `investlab-platform` "Key-value storage" scenarios with tests next to the implementations, the `localStorage` one in the browser Vitest project. Verify with `pnpm nx run @m0n0lab/investlab-platform:test`.
+  Cover the `investlab-platform` "Key-value storage" scenarios with tests next to the implementations, the `localStorage` one in the `unit-browser` Vitest project (Chromium; `test:unit` runs it via `--project unit*`). Verify with `pnpm nx run @m0n0lab/investlab-platform:test`.
 - [x] 4.3 Add `di/browser.module.ts`, binding `PLATFORM.KeyValueStorage` to the `localStorage` implementation, and export it and the storage interface from `./client`. Test the "Browser storage resolved without configuration" scenario. (Superseded: they move to `./browser` in 4.5, design §8.)
 - [x] 4.4 Add `paths` (`#shared/*`, `#server/*`, `#client/*`, `#di/*`), rewrite imports, and add platform to `migrated`. Verify **[attw]**: `pnpm nx run @m0n0lab/investlab-platform:lint:eslint`, `:typecheck`, `:test`, `:build` and `:build:check-exports` all pass.
 - [x] 4.5 Platform `.` and `./browser` entries (design §8, §10) **[attw]**:
@@ -105,7 +105,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
 
 ## 6. Quotes package
 
-- [x] 6.1 Split `domain/quote.ts` into `domain/model/quote.model.ts` and `domain/repository/quote.repository.ts`, and move `quote.builder.ts` to `src/testing/shared/builder/`. Verify with `pnpm nx run @m0n0lab/investlab-quotes:typecheck`.
+- [x] 6.1 Split `domain/quote.ts` into `domain/value-object/quote.value-object.ts` and `domain/repository/quote.repository.ts`, and move `quote.builder.ts` to `src/testing/shared/builder/`. Verify with `pnpm nx run @m0n0lab/investlab-quotes:typecheck`.
 - [x] 6.2 Application moves as in 5.2; verify `:test:integration`.
 - [x] 6.3 Data moves; `data/server/tokens.ts` stays. Verify `:test:integration`.
     - `data/contracts/` → `data/shared/dto/`
@@ -184,7 +184,7 @@ Paths before a move are the layout after `investlab-modular-packages`; paths aft
   Then verify:
     - `pnpm nx run @m0n0lab/investlab:lint:eslint`, `:typecheck`, `:test` and `:build` pass;
     - the client assets contain none of the strings from 1.3 (passes once 8.6 is done);
-    - by hand: with `wealth-tracker-tickers` set in the old format before loading the page, the same tickers show and quotes refresh.
+    - by hand: followed tickers save under `investlab-tickers`; the old `wealth-tracker-tickers` key is not migrated (owner decision, ticker-management delta), so tickers saved there no longer show.
 - [x] 8.6 Browser container on `./browser` entries (design §8), before 8.5's client assets check:
     - `di/container.client.ts` imports only `./browser` entries (switched in 4.5 and 6.6); confirm no `./client` import or re-export remains in it.
     - In the factory, allow a `./client` entry in the web only from `src/routes/` and `src/di/container.server.ts`, and a `./browser` entry only from `src/di/container.client.ts`. Type-only imports get no exception: types the view needs come from `.` or are re-exported by `src/di/`.
