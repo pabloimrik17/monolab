@@ -1,4 +1,4 @@
-import { expect, test, vi } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { render } from "vitest-browser-react";
 import { useDidMount, useWillUnmount } from "../index.ts";
 
@@ -14,26 +14,28 @@ function Lifecycle({ label, onMount, onUnmount }: LifecycleProps) {
     return <p>{label}</p>;
 }
 
-test("runs mount and unmount callbacks once each, never on re-render", async () => {
-    const onMount = vi.fn();
-    const onUnmount = vi.fn();
-    // Fresh callback identities on every render must not re-trigger either hook.
-    const view = (label: string) => (
-        <Lifecycle
-            label={label}
-            onMount={() => onMount()}
-            onUnmount={() => onUnmount()}
-        />
-    );
+describe("lifecycle", () => {
+    test("runs mount and unmount callbacks once each, never on re-render", async () => {
+        const onMount = vi.fn();
+        const onUnmount = vi.fn();
+        // Fresh callback identities on every render must not re-trigger either hook.
+        const view = (label: string) => (
+            <Lifecycle
+                label={label}
+                onMount={() => onMount()}
+                onUnmount={() => onUnmount()}
+            />
+        );
 
-    const screen = await render(view("first"));
-    await screen.rerender(view("second"));
+        const screen = await render(view("first"));
+        await screen.rerender(view("second"));
 
-    await expect.element(screen.getByText("second")).toBeVisible();
-    expect(onMount).toHaveBeenCalledOnce();
-    expect(onUnmount).not.toHaveBeenCalled();
+        await expect.element(screen.getByText("second")).toBeVisible();
+        expect(onMount).toHaveBeenCalledOnce();
+        expect(onUnmount).not.toHaveBeenCalled();
 
-    await screen.unmount();
+        await screen.unmount();
 
-    expect(onUnmount).toHaveBeenCalledOnce();
+        expect(onUnmount).toHaveBeenCalledOnce();
+    });
 });
