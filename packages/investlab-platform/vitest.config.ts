@@ -20,7 +20,7 @@ export default mergeConfig(
                 },
                 {
                     test: {
-                        name: "browser",
+                        name: "unit-browser",
                         include: ["src/**/local.storage.test.ts"],
                         browser: headlessChromium(),
                     },
