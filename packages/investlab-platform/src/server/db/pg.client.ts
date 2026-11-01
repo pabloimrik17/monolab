@@ -13,6 +13,7 @@ export function createDb(url: string): Db {
     const pool = new pg.Pool({ connectionString: url });
     const db = wrap(drizzle(pool), { toError: (cause) => new PersistenceError(cause) });
     closers.set(db, closer(pool));
+
     return db;
 }
 
@@ -30,6 +31,7 @@ function closer(pool: pg.Pool): () => Promise<void> {
     const open = new Set<pg.PoolClient>();
     pool.on("connect", (client) => open.add(client));
     pool.on("remove", (client) => open.delete(client));
+
     return async () => {
         const closed = new Promise<void>((resolve) => {
             const resolveWhenNoneOpen = () => {
@@ -40,6 +42,7 @@ function closer(pool: pg.Pool): () => Promise<void> {
             pool.on("remove", resolveWhenNoneOpen);
             resolveWhenNoneOpen();
         });
+
         await pool.end();
         await closed;
     };

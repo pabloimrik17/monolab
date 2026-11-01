@@ -17,10 +17,13 @@ export class TickerAddUseCase {
     execute(symbol: string): Result<Ticker, TickerAddError> {
         return Ticker.create(symbol).map((ticker) => {
             const followed = this.tickerRepo.findAll().find((t) => t.symbol === ticker.symbol);
+
             if (followed) {
                 return followed;
             }
+
             this.tickerRepo.add(ticker);
+
             return ticker;
         });
     }

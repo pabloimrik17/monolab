@@ -24,10 +24,12 @@ export class TickerStorageRepository implements TickerRepository {
         if (!stored.success) {
             return [];
         }
+
         const tickers = new Map<string, Ticker>();
         for (const { symbol, addedAt } of stored.data) {
             tickers.set(symbol, Ticker.reconstitute({ symbol, addedAt: new Date(addedAt) }));
         }
+
         return [...tickers.values()];
     }
 
@@ -38,6 +40,7 @@ export class TickerStorageRepository implements TickerRepository {
     remove(symbol: string): void {
         const tickers = this.findAll();
         const remaining = tickers.filter((t) => t.symbol !== symbol);
+
         if (remaining.length !== tickers.length) {
             this.save(remaining);
         }

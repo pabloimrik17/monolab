@@ -10,6 +10,7 @@ function parseWith<T>(schema: Schema<T>, input: unknown, root = ""): T {
     if (!parsed.success) {
         throw RequestValidationError.fromZod(parsed.error, root);
     }
+
     return parsed.data;
 }
 
@@ -22,6 +23,7 @@ export function validateJsonBody<T>(schema: Schema<T>) {
         } catch {
             throw new RequestValidationError([{ path: "", message: "Body must be valid JSON" }]);
         }
+
         c.set("body", parseWith(schema, body));
         await next();
     });

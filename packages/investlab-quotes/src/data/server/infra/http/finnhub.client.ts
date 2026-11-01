@@ -26,6 +26,7 @@ function assertSuccess(symbol: string, status: number): void {
     if (AUTH_FAILURES.has(status)) {
         throw new FinnhubAuthError(symbol, status);
     }
+
     if (status < 200 || status >= 300) {
         throw new Error(`Failed to fetch quote for ${symbol}: HTTP ${status}`);
     }
@@ -45,10 +46,12 @@ async function batchExecute<T, R>(
         batchResults.forEach((result, index) => {
             const item = batch[index];
             if (item === undefined) return;
+
             if (result.status === "fulfilled") {
                 results.set(item, result.value);
                 return;
             }
+
             const reason: unknown = result.reason;
             console.error(
                 `[FinnhubClient] ${String(item)} failed:`,
@@ -74,10 +77,13 @@ export class FinnhubClient {
     async getQuote(symbol: string): Promise<FinnhubQuoteResponse> {
         const url = `${FINNHUB_BASE_URL}/quote?symbol=${encodeURIComponent(symbol)}&token=${this.apiKey}`;
         const response = await this.http.request({ method: "GET", url });
+
         if (response.isErr()) {
             throw response.error;
         }
+
         assertSuccess(symbol, response.value.status);
+
         return response.value.body as FinnhubQuoteResponse;
     }
 

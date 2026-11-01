@@ -21,6 +21,7 @@ export abstract class BaseKeyValueStorage implements KeyValueStorage {
     getNumber(key: string): number | undefined {
         const text = this.get(key);
         if (text === undefined || text.trim() === "") return undefined;
+
         const value = Number(text);
         return Number.isFinite(value) ? value : undefined;
     }
@@ -33,6 +34,7 @@ export abstract class BaseKeyValueStorage implements KeyValueStorage {
     getObject<T>(key: string): T | undefined {
         const text = this.get(key);
         if (text === undefined) return undefined;
+
         try {
             return JSON.parse(text) as T;
         } catch {

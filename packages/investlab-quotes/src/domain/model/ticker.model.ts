@@ -35,6 +35,7 @@ export class Ticker {
         if (!Ticker.SYMBOL_FORMAT.test(normalized)) {
             return err(new ValidationError(`Invalid ticker symbol "${symbol}"`));
         }
+
         return ok(new Ticker({ symbol: normalized, addedAt: new Date() }));
     }
 

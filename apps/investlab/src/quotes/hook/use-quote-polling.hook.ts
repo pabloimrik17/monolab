@@ -83,6 +83,7 @@ export function createQuotePoller(client: QuoteSource, options: QuotePollerOptio
         stop(): void {
             polling = false;
             generation++;
+
             if (timerId !== null) {
                 clearTimeout(timerId);
                 timerId = null;
@@ -111,9 +112,11 @@ export function createRouteQuoteSource(fetchFn: typeof fetch = fetch): QuoteSour
     async function fetchChunk(symbols: string[]): Promise<Quote[]> {
         const query = new URLSearchParams({ symbols: symbols.join(",") });
         const response = await fetchFn(`${QUOTES_ROUTE}?${query}`);
+
         if (!response.ok) {
             throw new Error(`Quotes request failed: HTTP ${response.status}`);
         }
+
         const dtos = quoteListSchema.parse(await response.json());
         return dtos.map((dto) => ({ ...dto, updatedAt: new Date(dto.updatedAt) }));
     }
@@ -127,10 +130,12 @@ export function createRouteQuoteSource(fetchFn: typeof fetch = fetch): QuoteSour
                         .map((symbol) => symbol.toUpperCase()),
                 ),
             ];
+
             const chunks: string[][] = [];
             for (let start = 0; start < requestable.length; start += QUOTE_LIST_MAX_SYMBOLS) {
                 chunks.push(requestable.slice(start, start + QUOTE_LIST_MAX_SYMBOLS));
             }
+
             const quotes = (await Promise.all(chunks.map(fetchChunk))).flat();
             return new Map(quotes.map((quote) => [quote.symbol, quote]));
         },
@@ -167,6 +172,7 @@ export function useQuotePolling(tickers: readonly { symbol: string }[]) {
         if (!poller) return;
 
         const symbols = tickers.map((t) => t.symbol);
+
         if (symbols.length === 0) {
             poller.stop();
             setIsPolling(false);

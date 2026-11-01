@@ -11,6 +11,7 @@ function toQuote(symbol: string, { c, d, dp }: FinnhubQuoteResponse): Quote {
     if (c === 0 || d == null || dp == null) {
         throw new Error(`No data for symbol: ${symbol}`);
     }
+
     return { symbol, price: c, change: d, changePercent: dp, updatedAt: new Date() };
 }
 
@@ -26,6 +27,7 @@ export class QuoteFinnhubDatasource {
     async getQuotes(symbols: string[]): Promise<Map<string, Quote>> {
         const responses = await this.finnhub.getQuotes(symbols.map((s) => s.toUpperCase()));
         const quotes = new Map<string, Quote>();
+
         for (const [symbol, response] of responses) {
             try {
                 quotes.set(symbol, toQuote(symbol, response));
@@ -36,6 +38,7 @@ export class QuoteFinnhubDatasource {
                 );
             }
         }
+
         return quotes;
     }
 }

@@ -11,8 +11,10 @@ export function AddTicker({ onAdd }: AddTickerProps) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+
         const refusal = onAdd(value);
         setRefused(refusal !== undefined);
+
         if (!refusal) {
             setValue("");
         }
