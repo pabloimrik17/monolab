@@ -15,12 +15,12 @@ import type { QuoteListUseCase } from "./quote-list.use-case.ts";
 const APPLE = { price: 190.5, change: 1.5, changePercent: 0.79 };
 const MICROSOFT = { price: 410.25, change: -2.1, changePercent: -0.51 };
 
-let list: QuoteListUseCase;
-beforeEach(() => {
-    list = container.get(QUOTES.List);
-});
+describe("QuoteListUseCase", () => {
+    let list: QuoteListUseCase;
+    beforeEach(() => {
+        list = container.get(QUOTES.List);
+    });
 
-describe("listing quotes", () => {
     it("fetches market data for symbols not seen recently", async () => {
         givenQuotesFor({ AAPL: APPLE, MSFT: MICROSOFT });
 

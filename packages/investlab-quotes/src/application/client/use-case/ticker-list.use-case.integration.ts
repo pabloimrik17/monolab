@@ -4,12 +4,12 @@ import { givenStoredTickers } from "#testing/client/given.ts";
 import { container } from "#testing/client/vitest-integration-setup.ts";
 import type { TickerListUseCase } from "./ticker-list.use-case.ts";
 
-let list: TickerListUseCase;
-beforeEach(() => {
-    list = container.get(QUOTES.TickerList);
-});
+describe("TickerListUseCase", () => {
+    let list: TickerListUseCase;
+    beforeEach(() => {
+        list = container.get(QUOTES.TickerList);
+    });
 
-describe("listing followed tickers", () => {
     it("returns nothing when no ticker is followed", () => {
         expect(list.execute()).toEqual([]);
     });

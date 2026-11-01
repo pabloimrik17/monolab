@@ -18,12 +18,12 @@ const QQQ = {
     updatedAt: "2026-10-12T15:30:00.000Z",
 };
 
-let list: QuoteListUseCase;
-beforeEach(() => {
-    list = container.get(QUOTES.List);
-});
+describe("QuoteListUseCase", () => {
+    let list: QuoteListUseCase;
+    beforeEach(() => {
+        list = container.get(QUOTES.List);
+    });
 
-describe("listing quotes", () => {
     it("returns the quotes known for the asked symbols", async () => {
         givenQuotesFor({ SPY, QQQ });
 

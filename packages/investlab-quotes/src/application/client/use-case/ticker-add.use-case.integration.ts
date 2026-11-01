@@ -5,14 +5,14 @@ import { container } from "#testing/client/vitest-integration-setup.ts";
 import type { TickerAddUseCase } from "./ticker-add.use-case.ts";
 import type { TickerListUseCase } from "./ticker-list.use-case.ts";
 
-let add: TickerAddUseCase;
-let list: TickerListUseCase;
-beforeEach(() => {
-    add = container.get(QUOTES.TickerAdd);
-    list = container.get(QUOTES.TickerList);
-});
+describe("TickerAddUseCase", () => {
+    let add: TickerAddUseCase;
+    let list: TickerListUseCase;
+    beforeEach(() => {
+        add = container.get(QUOTES.TickerAdd);
+        list = container.get(QUOTES.TickerList);
+    });
 
-describe("following a ticker", () => {
     it("follows the symbol uppercased", () => {
         const ticker = add.execute("aapl")._unsafeUnwrap();
 

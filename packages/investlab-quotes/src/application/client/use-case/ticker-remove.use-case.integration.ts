@@ -6,16 +6,16 @@ import type { TickerAddUseCase } from "./ticker-add.use-case.ts";
 import type { TickerListUseCase } from "./ticker-list.use-case.ts";
 import type { TickerRemoveUseCase } from "./ticker-remove.use-case.ts";
 
-let add: TickerAddUseCase;
-let remove: TickerRemoveUseCase;
-let list: TickerListUseCase;
-beforeEach(() => {
-    add = container.get(QUOTES.TickerAdd);
-    remove = container.get(QUOTES.TickerRemove);
-    list = container.get(QUOTES.TickerList);
-});
+describe("TickerRemoveUseCase", () => {
+    let add: TickerAddUseCase;
+    let remove: TickerRemoveUseCase;
+    let list: TickerListUseCase;
+    beforeEach(() => {
+        add = container.get(QUOTES.TickerAdd);
+        remove = container.get(QUOTES.TickerRemove);
+        list = container.get(QUOTES.TickerList);
+    });
 
-describe("unfollowing a ticker", () => {
     it("removes the followed ticker and saves the rest", () => {
         add.execute("AAPL");
         add.execute("MSFT");
