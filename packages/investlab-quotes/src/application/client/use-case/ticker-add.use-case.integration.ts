@@ -42,7 +42,7 @@ describe("following a ticker", () => {
         expect(list.execute()).toEqual([]);
     });
 
-    it("adds to a list saved by the previous ticker store", () => {
+    it("adds to the saved list", () => {
         givenStoredTickers('[{"symbol":"MSFT","addedAt":"2026-09-30T08:15:00.000Z"}]');
 
         add.execute("AAPL");

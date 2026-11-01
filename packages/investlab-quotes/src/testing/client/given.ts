@@ -1,9 +1,8 @@
 import { http, HttpResponse } from "msw";
+import { TICKERS_STORAGE_KEY } from "#data/client/repository/ticker-storage.repository.ts";
 import { API_URL, investlabApi, storage } from "./vitest-integration-setup.ts";
 import type { QuoteDto } from "#data/shared/dto/quote.dto.ts";
 import type { ApiErrorDto } from "@m0n0lab/investlab-core";
-
-const TICKERS_KEY = "wealth-tracker-tickers";
 
 /** The API has these quotes; any other symbol has none. */
 export function givenQuotesFor(quotes: Readonly<Record<string, Omit<QuoteDto, "symbol">>>): void {
@@ -37,10 +36,10 @@ export function givenTokenRejected(): void {
 
 /** The browser holds this text under the key the followed tickers are saved to. */
 export function givenStoredTickers(raw: string): void {
-    storage.set(TICKERS_KEY, raw);
+    storage.set(TICKERS_STORAGE_KEY, raw);
 }
 
 /** What the browser holds under the followed tickers' key. */
 export function storedTickers(): unknown {
-    return storage.getObject<unknown>(TICKERS_KEY);
+    return storage.getObject<unknown>(TICKERS_STORAGE_KEY);
 }

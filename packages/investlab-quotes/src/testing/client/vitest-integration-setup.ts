@@ -1,6 +1,7 @@
 import { Container } from "inversify";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll } from "vitest";
+import { TICKERS_STORAGE_KEY } from "#data/client/repository/ticker-storage.repository.ts";
 import { quotesBrowserModule } from "#di/browser.module.ts";
 import { quotesClientModule } from "#di/client.module.ts";
 import { MemoryStorage, PLATFORM_SHARED } from "@m0n0lab/investlab-platform";
@@ -27,7 +28,7 @@ beforeAll(() => {
 });
 
 afterEach(() => {
-    storage.remove("wealth-tracker-tickers");
+    storage.remove(TICKERS_STORAGE_KEY);
     investlabApi.resetHandlers();
 });
 

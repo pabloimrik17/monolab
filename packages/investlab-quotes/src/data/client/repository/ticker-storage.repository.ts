@@ -4,8 +4,8 @@ import { Ticker } from "#domain/model/ticker.model.ts";
 import { PLATFORM_SHARED, type KeyValueStorage } from "@m0n0lab/investlab-platform";
 import type { TickerRepository } from "#domain/repository/ticker.repository.ts";
 
-/** Key and format of the lists saved by the web's first ticker store; changing either drops saved watchlists. */
-const STORAGE_KEY = "wealth-tracker-tickers";
+/** Key and format of the saved ticker lists; changing either drops saved watchlists. */
+export const TICKERS_STORAGE_KEY = "investlab-tickers";
 
 const storedTickersSchema = z.array(
     z.object({ symbol: z.string(), addedAt: z.string().datetime() }),
@@ -18,7 +18,9 @@ export class TickerStorageRepository implements TickerRepository {
     ) {}
 
     findAll(): Ticker[] {
-        const stored = storedTickersSchema.safeParse(this.storage.getObject<unknown>(STORAGE_KEY));
+        const stored = storedTickersSchema.safeParse(
+            this.storage.getObject<unknown>(TICKERS_STORAGE_KEY),
+        );
         if (!stored.success) {
             return [];
         }
@@ -43,7 +45,7 @@ export class TickerStorageRepository implements TickerRepository {
 
     private save(tickers: Ticker[]): void {
         this.storage.setObject(
-            STORAGE_KEY,
+            TICKERS_STORAGE_KEY,
             tickers.map((ticker) => ({
                 symbol: ticker.symbol,
                 addedAt: ticker.addedAt.toISOString(),
