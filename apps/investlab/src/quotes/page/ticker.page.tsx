@@ -10,7 +10,7 @@ export function TickerPage() {
 
     return (
         <div className="app">
-            <h1>Wealth Tracker</h1>
+            <h1>InvestLab</h1>
             <AddTicker onAdd={add} />
             <RefreshIndicator
                 lastUpdate={lastUpdate}
