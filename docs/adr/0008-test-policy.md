@@ -101,9 +101,9 @@ A test written under the strategy that predates this policy is renamed `*.legacy
 | Group                                         | Files                                                                                   | Replaced by                                  | Issue               |
 | --------------------------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------- | ------------------- |
 | qup-domain use cases with mocked repositories | `packages/qup-domain/src/use-cases/*.use-case.legacy.test.ts` (11)                      | integration tests per use case               | `agentic-task-5xv8` |
-| investlab web unit tests                      | `apps/investlab/src/**/*.legacy.test.{ts,tsx}` (9)                                      | integration-platform tests on a UI harness   | `agentic-task-3ao3` |
+| investlab web unit tests                      | `apps/investlab/src/**/*.legacy.test.{ts,tsx}` (7)                                      | integration-platform tests on a UI harness   | `agentic-task-3ao3` |
 | qup-api unit tests                            | `apps/qup-api/src/**/*.legacy.test.ts` (3)                                              | integration-platform tests on an API harness | `agentic-task-rhex` |
-| DTO, mapper and batch tests                   | investlab-portfolio (5), investlab-quotes (2) and investlab-core (1) `*.legacy.test.ts` | use-case integration tests                   | `agentic-task-82ja` |
+| DTO and mapper tests                          | investlab-portfolio (5), investlab-quotes (1) and investlab-core (1) `*.legacy.test.ts` | use-case integration tests                   | `agentic-task-82ja` |
 
 ## Considered options
 
