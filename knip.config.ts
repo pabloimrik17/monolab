@@ -6,10 +6,6 @@ export default {
     ignoreBinaries: ["diff"],
     // Only the cycles-only run (knip --cycles) reports circular imports; the default run leaves them out.
     rules: { cycles: "error" },
-    ignoreExportsUsedInFile: {
-        interface: true,
-        type: true,
-    },
     paths: {
         "*.svg?react": ["node_modules/vite-plugin-svgr/client.d.ts"],
     },
