@@ -4,7 +4,7 @@
  * range prefixes (^ ~ >= =) stripping, and max-wins aggregation.
  */
 
-const SEMVER_RE = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-.]+))?(?:\+[0-9A-Za-z-.]+)?$/;
+const SEMVER_RE = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9a-z-.]+))?(?:\+[0-9a-z-.]+)?$/i;
 
 export function stripRangePrefix(version) {
     if (typeof version !== "string") return version;

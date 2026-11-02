@@ -1,102 +1,100 @@
+import { Container } from "inversify";
 import { okAsync } from "neverthrow";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { domainModule } from "../domain.module.ts";
 import { Order } from "../entities/order.ts";
+import { TOKENS } from "../tokens.ts";
 import { OrderItem } from "../value-objects/order-item.ts";
 import { OrderStatus } from "../value-objects/order-status.ts";
-import { UpdateOrderStatusUseCase } from "./update-order-status.use-case.ts";
 import type { EventBus } from "../ports/event-bus.ts";
 import type { OrderRepository } from "../ports/order.repository.ts";
+import type { UpdateOrderStatusUseCase } from "./update-order-status.use-case.ts";
 
-const makeOrder = (status: OrderStatus = OrderStatus.PENDING) =>
-    Order.reconstitute({
-        id: "o1",
-        sessionId: "s1",
-        guestName: "Alice",
-        items: [
+describe("UpdateOrderStatusUseCase", () => {
+    let orders: Order[];
+    let updated: Order[];
+    let events: unknown[][];
+    let updateStatus: UpdateOrderStatusUseCase;
+
+    function givenPendingOrder(): Order {
+        const items = [
             OrderItem.create({
-                menuItemId: "mi1",
+                menuItemId: "mi-1",
                 menuItemName: "Espresso",
                 quantity: 1,
             })._unsafeUnwrap(),
-        ],
-        status,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        ];
+        const order = Order.create({ sessionId: "s-1", guestName: "Alice", items })._unsafeUnwrap();
+        orders.push(order);
+        return order;
+    }
+
+    beforeEach(() => {
+        orders = [];
+        updated = [];
+        events = [];
+        const container = new Container();
+        container.load(domainModule);
+        container.bind(TOKENS.OrderRepository).toConstantValue({
+            findById: (id: string) => okAsync(orders.find((order) => order.id === id) ?? null),
+            updateStatus: (order: Order) => {
+                updated.push(order);
+                return okAsync(undefined);
+            },
+        } satisfies Partial<OrderRepository>);
+        container.bind(TOKENS.EventBus).toConstantValue({
+            emit: (...event: unknown[]) => events.push(event),
+        } satisfies Partial<EventBus>);
+        updateStatus = container.get<UpdateOrderStatusUseCase>(TOKENS.UpdateOrderStatusUseCase);
     });
 
-describe("UpdateOrderStatusUseCase", () => {
-    it("marks order as preparing", async () => {
-        const order = makeOrder();
-        const mockOrderRepo: OrderRepository = {
-            save: vi.fn(),
-            findById: vi.fn(() => okAsync(order)),
-            findBySessionId: vi.fn(),
-            updateStatus: vi.fn(() => okAsync(undefined)),
-        };
-        const mockEventBus: EventBus = { emit: vi.fn(), on: vi.fn() };
+    describe("moving an order along", () => {
+        it("stores a pending order as preparing and announces its new status", async () => {
+            const order = givenPendingOrder();
 
-        const useCase = new UpdateOrderStatusUseCase(mockOrderRepo, mockEventBus);
-        const result = await useCase.execute("o1", "preparing");
+            const result = await updateStatus.execute(order.id, "preparing");
 
-        expect(result.isOk()).toBe(true);
-        expect(mockEventBus.emit).toHaveBeenCalledWith("order:status", {
-            orderId: "o1",
-            sessionId: "s1",
-            status: "PREPARING",
-            updatedAt: expect.any(Date),
+            expect(result.isOk()).toBe(true);
+            expect(updated).toEqual([order]);
+            expect(order.status).toBe(OrderStatus.PREPARING);
+            expect(events).toEqual([
+                [
+                    "order:status",
+                    {
+                        orderId: order.id,
+                        sessionId: "s-1",
+                        status: "PREPARING",
+                        updatedAt: order.updatedAt,
+                    },
+                ],
+            ]);
         });
-    });
 
-    it("marks order as done", async () => {
-        const order = makeOrder(OrderStatus.PREPARING);
-        const mockOrderRepo: OrderRepository = {
-            save: vi.fn(),
-            findById: vi.fn(() => okAsync(order)),
-            findBySessionId: vi.fn(),
-            updateStatus: vi.fn(() => okAsync(undefined)),
-        };
-        const mockEventBus: EventBus = { emit: vi.fn(), on: vi.fn() };
+        it("stores an order being prepared as done", async () => {
+            const order = givenPendingOrder();
+            order.markPreparing();
 
-        const useCase = new UpdateOrderStatusUseCase(mockOrderRepo, mockEventBus);
-        const result = await useCase.execute("o1", "done");
+            const result = await updateStatus.execute(order.id, "done");
 
-        expect(result.isOk()).toBe(true);
-    });
+            expect(result.isOk()).toBe(true);
+            expect(updated).toEqual([order]);
+            expect(order.status).toBe(OrderStatus.DONE);
+        });
 
-    it("returns OrderNotFoundError for unknown id", async () => {
-        const mockOrderRepo: OrderRepository = {
-            save: vi.fn(),
-            findById: vi.fn(() => okAsync(null)),
-            findBySessionId: vi.fn(),
-            updateStatus: vi.fn(),
-        };
-        const mockEventBus: EventBus = { emit: vi.fn(), on: vi.fn() };
+        it("refuses an unknown order", async () => {
+            const error = (await updateStatus.execute("unknown", "preparing"))._unsafeUnwrapErr();
 
-        const useCase = new UpdateOrderStatusUseCase(mockOrderRepo, mockEventBus);
-        const result = await useCase.execute("unknown", "preparing");
+            expect(error.code).toBe("ORDER_NOT_FOUND");
+        });
 
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error.code).toBe("ORDER_NOT_FOUND");
-        }
-    });
+        it("refuses to skip preparation, storing and announcing nothing", async () => {
+            const order = givenPendingOrder();
 
-    it("returns InvalidTransitionError for invalid transition", async () => {
-        const order = makeOrder(OrderStatus.DONE);
-        const mockOrderRepo: OrderRepository = {
-            save: vi.fn(),
-            findById: vi.fn(() => okAsync(order)),
-            findBySessionId: vi.fn(),
-            updateStatus: vi.fn(),
-        };
-        const mockEventBus: EventBus = { emit: vi.fn(), on: vi.fn() };
+            const error = (await updateStatus.execute(order.id, "done"))._unsafeUnwrapErr();
 
-        const useCase = new UpdateOrderStatusUseCase(mockOrderRepo, mockEventBus);
-        const result = await useCase.execute("o1", "preparing");
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error.code).toBe("INVALID_TRANSITION");
-        }
+            expect(error.code).toBe("INVALID_TRANSITION");
+            expect(updated).toEqual([]);
+            expect(events).toEqual([]);
+        });
     });
 });

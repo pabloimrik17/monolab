@@ -32,7 +32,7 @@ export function eventRoutes(container: Container) {
                         // Serialize Order entity to DTO for order:created
                         const serialized =
                             event === "order:created" && data["order"] instanceof Order
-                                ? { ...data, order: toOrderDto(data["order"] as Order) }
+                                ? { ...data, order: toOrderDto(data["order"]) }
                                 : data;
                         stream.writeSSE({ event, data: JSON.stringify(serialized) });
                     }

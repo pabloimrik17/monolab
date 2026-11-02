@@ -1,52 +1,46 @@
+import { Container } from "inversify";
 import { okAsync } from "neverthrow";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { domainModule } from "../domain.module.ts";
 import { MenuItem } from "../entities/menu-item.ts";
+import { TOKENS } from "../tokens.ts";
 import { Category } from "../value-objects/category.ts";
-import { GetMenuUseCase } from "./get-menu.use-case.ts";
 import type { MenuItemRepository } from "../ports/menu-item.repository.ts";
-
-const makeMenuItem = () => {
-    const result = MenuItem.create({ name: "Espresso", category: Category.COFFEE });
-    if (result.isErr()) {
-        throw new Error("unexpected");
-    }
-    return result.value;
-};
+import type { GetMenuUseCase } from "./get-menu.use-case.ts";
 
 describe("GetMenuUseCase", () => {
-    it("returns all menu items by default", async () => {
-        const item = makeMenuItem();
-        const mockMenuItemRepo: MenuItemRepository = {
-            save: vi.fn(),
-            findById: vi.fn(),
-            findAll: vi.fn(() => okAsync([item])),
-            findAllAvailable: vi.fn(),
-            update: vi.fn(),
-            delete: vi.fn(),
-        };
+    let espresso: MenuItem;
+    let soldOut: MenuItem;
+    let getMenu: GetMenuUseCase;
 
-        const useCase = new GetMenuUseCase(mockMenuItemRepo);
-        const result = await useCase.execute();
-
-        expect(result.isOk()).toBe(true);
-        expect(mockMenuItemRepo.findAll).toHaveBeenCalled();
+    beforeEach(() => {
+        espresso = MenuItem.create({ name: "Espresso", category: Category.COFFEE })._unsafeUnwrap();
+        soldOut = MenuItem.create({
+            name: "Matcha",
+            category: Category.TEA,
+            available: false,
+        })._unsafeUnwrap();
+        const menu = [espresso, soldOut];
+        const container = new Container();
+        container.load(domainModule);
+        container.bind(TOKENS.MenuItemRepository).toConstantValue({
+            findAll: () => okAsync(menu),
+            findAllAvailable: () => okAsync(menu.filter((item) => item.available)),
+        } satisfies Partial<MenuItemRepository>);
+        getMenu = container.get<GetMenuUseCase>(TOKENS.GetMenuUseCase);
     });
 
-    it("returns only available items when flag set", async () => {
-        const item = makeMenuItem();
-        const mockMenuItemRepo: MenuItemRepository = {
-            save: vi.fn(),
-            findById: vi.fn(),
-            findAll: vi.fn(),
-            findAllAvailable: vi.fn(() => okAsync([item])),
-            update: vi.fn(),
-            delete: vi.fn(),
-        };
+    describe("reading the menu", () => {
+        it("lists every item, sold out ones included", async () => {
+            const menu = (await getMenu.execute())._unsafeUnwrap();
 
-        const useCase = new GetMenuUseCase(mockMenuItemRepo);
-        const result = await useCase.execute({ availableOnly: true });
+            expect(menu).toEqual([espresso, soldOut]);
+        });
 
-        expect(result.isOk()).toBe(true);
-        expect(mockMenuItemRepo.findAllAvailable).toHaveBeenCalled();
+        it("lists only the available items when asked to", async () => {
+            const menu = (await getMenu.execute({ availableOnly: true }))._unsafeUnwrap();
+
+            expect(menu).toEqual([espresso]);
+        });
     });
 });

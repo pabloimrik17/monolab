@@ -1,6 +1,6 @@
 ## Context
 
-Foundation (Change 1) provides clean architecture + Familia/Planta CRUDs. Supplies (Change 2) adds Material, Maceta, Sustrato. This change introduces PlantaVenta — the core entity representing a specific plant instance for sale, linking everything together.
+Foundation (Change 1) provides the Clean Architecture layout (ADR 0009: one module package `@m0n0lab/green-beard-nursery`, plus core, platform and database packages, and the API and SvelteKit apps) and the Familia/Planta CRUDs. Supplies (Change 2) adds Material, Maceta, Sustrato. This change introduces PlantaVenta — the core entity representing a specific plant instance for sale, linking everything together.
 
 Key complexities: auto-numbering with gap reuse per planta_id, multi-photo upload to Cloudflare R2 (free tier), and FK relationships to Planta, Maceta, and Sustrato.
 
@@ -12,6 +12,28 @@ Key complexities: auto-numbering with gap reuse per planta_id, multi-photo uploa
 - Auto-numbering (smallest available integer per planta_id)
 - Photo upload/delete to Cloudflare R2 (S3-compatible)
 - Display name derivation: "{planta.nombre} #{identificador}"
+
+**Where code goes** (paths relative to `packages/green-beard-nursery/src/` unless noted):
+
+| Piece | Location |
+| --- | --- |
+| Model (photo methods, validation) | `domain/model/planta-venta.model.ts` |
+| Repository port | `domain/repository/planta-venta.repository.ts` |
+| List read query port and read model | `domain/query/planta-venta-list.query.ts`, `domain/read-model/planta-venta-list.read-model.ts` |
+| Errors | `domain/error/planta-venta.error.ts` (kernel errors stay in `@m0n0lab/green-beard-core`) |
+| Server use cases | `application/server/use-case/planta-venta-<verb>.use-case.ts` |
+| Client use cases | `application/client/use-case/planta-venta-<verb>.use-case.ts` |
+| Photo storage port (technical) | `application/server/port/photo-storage.port.ts` |
+| Postgres repository and list query | `data/server/repository/planta-venta-pg.repository.ts`, `data/server/query/planta-venta-list-pg.query.ts` |
+| Table | `data/server/infra/db/planta-venta.table.ts` |
+| Photo storage implementation | `data/server/infra/storage/photo-r2.storage.ts` (`PhotoR2Storage`) |
+| API repository, DTOs | `data/client/repository/planta-venta-api.repository.ts`, `data/shared/dto/planta-venta.dto.ts` |
+| S3-compatible client | `@m0n0lab/green-beard-platform`, `src/server/storage/s3.client.ts` |
+| Migration | `@m0n0lab/green-beard-database` (`db:generate`; its drizzle config finds the table by glob) |
+| Route and harness | `apps/green-beard-api/src/nursery/route/planta-venta.route.ts` and its harness beside it |
+| Pages, loaders, actions | `apps/green-beard/src/nursery/` (`page/`, `component/`, `loader/`, `action/`, `form/`) |
+
+Imports use `#<folder>/*` aliases, never `../`.
 
 **Non-Goals:**
 
@@ -37,7 +59,7 @@ SELECT COALESCE(
 ) AS next_id;
 ```
 
-This runs as part of `CreatePlantaVentaUseCase` within a transaction for atomicity.
+The query lives in `PlantaVentaPgRepository`, which owns the numbering: the repository finds the gap and inserts in one transaction. `PlantaVentaCreateUseCase` validates the Planta, Maceta and Sustrato ids through their own repositories and retries on a unique collision.
 Concurrency safety enforced by `UNIQUE(planta_id, identificador)` — on conflict, use case retries.
 
 **Why**: Pure SQL, no application-level locking. `generate_series` + LEFT JOIN efficiently finds gaps. Transaction ensures atomicity; unique constraint + retry ensures correctness under concurrency.
@@ -55,7 +77,7 @@ Browser ──form (multipart)──▶ SvelteKit ──forward──▶ Hono AP
 Storage path: plantas-venta/{planta_venta_id}/{uuid}.{ext}
 ```
 
-Using `@aws-sdk/client-s3` for R2 (S3-compatible). Photos uploaded through the API, not direct browser→R2 (simpler, no presigned URLs needed for v1).
+Storing files is a mechanism, so the module declares a technical port (`application/server/port/photo-storage.port.ts`). Its implementation in `data/server/infra/storage/photo-r2.storage.ts` (`PhotoR2Storage`) sits on a generic S3-compatible client in `@m0n0lab/green-beard-platform` (`server/storage/s3.client.ts`), configured from the platform's server Config. `@aws-sdk/client-s3` is a dependency of the platform, not of the module. Photos uploaded through the API, not direct browser→R2 (simpler, no presigned URLs needed for v1).
 
 **Why presigned URLs rejected for v1**: Adds complexity (generate URL endpoint, client-side upload logic, confirmation callback). Direct upload through API is simpler. Data volume is small (plant photos, not video). Can migrate to presigned URLs later if upload speed becomes an issue.
 
@@ -70,7 +92,7 @@ Using `@aws-sdk/client-s3` for R2 (S3-compatible). Photos uploaded through the A
 
 **Why JSONB over separate table**: Photos are always loaded with the plant (no independent queries). Array operations (add, remove, reorder) are simpler with JSONB. No JOIN needed.
 
-**Alternative**: `planta_venta_fotos` table with ordering column. Overkill — the expected photo count per plant is <10.
+**Alternative**: `planta_venta_fotos` table with ordering column. Overkill — the expected photo count per plant is <10. So there is a single table file, `planta-venta.table.ts`.
 
 ### 4. Photo lifecycle tied to PlantaVenta
 
@@ -82,7 +104,7 @@ Delete from R2 is best-effort — if R2 delete fails, the entity is still delete
 
 **Why best-effort**: R2 deletion failing shouldn't block entity deletion. Storage is cheap. A periodic cleanup job can handle orphans later.
 
-### 5. PlantaVenta entity — coste_planta as optional
+### 5. PlantaVenta model — coste_planta as optional
 
 `costePlanta` is nullable:
 - **Purchased plant**: set to the purchase cost (decimal)
@@ -90,7 +112,7 @@ Delete from R2 is best-effort — if R2 delete fails, the entity is still delete
 
 No price/pvp on PlantaVenta for now — that's future work.
 
-### 6. R2 configuration via environment variables
+### 6. R2 configuration via environment variables (platform server Config)
 
 ```
 R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
@@ -100,7 +122,17 @@ R2_BUCKET_NAME=green-beard
 R2_PUBLIC_URL=https://pub-<hash>.r2.dev  (or custom domain)
 ```
 
-The public URL is used to construct foto URLs in DTOs. Bucket must have public access enabled (or use R2.dev subdomain).
+The variables are read by the platform's server Config. The public URL is used to construct foto URLs in DTOs. Bucket must have public access enabled (or use R2.dev subdomain).
+
+### 7. Display name from a read query
+
+"{planta.nombre} #{identificador}" combines two aggregates. `PlantaVentaListQuery` (domain port) returns `PlantaVentaListReadModel` with the denormalized names and the display name, implemented with a SQL join in `planta-venta-list-pg.query.ts`. `PlantaVentaPgRepository` refers to Planta, Maceta and Sustrato by id only and never calls their repositories.
+
+### 8. Tests (ADR 0008)
+
+- Unit: only the model (`planta-venta.model.test.ts`: validation, photo methods).
+- Integration: each use case next to it (`planta-venta-create.use-case.integration.ts`), server ones against Postgres via Testcontainers with the photo storage faked at its HTTP boundary with MSW, client ones with the API faked with MSW. Numbering gap reuse and concurrency are covered here.
+- Integration-platform: the route through its harness in the API app. No use-case tests with mocked repositories.
 
 ## Risks / Trade-offs
 

@@ -1,3 +1,7 @@
+---
+status: amended by ADR-0009
+---
+
 # InvestLab packages are one per module, three layers inside, entries per side
 
 In October 2026 we decided to replace InvestLab's six layer packages (`investlab-domain`, `investlab-data-contracts`, `investlab-data-server`, `investlab-data-client`, `investlab-application-server`, `investlab-application-client`) with one package per business module plus three shared packages: core, platform and database. The `investlab-modular-packages` change carries out the migration. Each layer package had a single consumer, a feature touched up to six packages, and use-case tests had to rebuild the apps' composition in a harness because no package owned it. The pattern is meant to be reused by the other Clean Architecture projects in this monorepo; InvestLab is its first instance.

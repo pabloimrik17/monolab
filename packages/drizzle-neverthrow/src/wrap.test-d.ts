@@ -5,7 +5,7 @@ import type { ResultAsync } from "neverthrow";
 
 declare const db: NodePgDatabase;
 
-describe("wrap types", () => {
+describe("wrap", () => {
     it("types the result by the callback's resolved value and the factory's error", () => {
         class DomainError extends Error {}
         const client = wrap(db, { toError: () => new DomainError() });

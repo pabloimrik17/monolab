@@ -35,6 +35,11 @@ export default mergeConfig(
                     test: {
                         name: "integration",
                         include: ["src/**/*.integration.ts"],
+                        // Stryker workers would each boot a Postgres container → mutant timeouts
+                        exclude:
+                            process.env["STRYKER_MUTATOR_WORKER"] === undefined
+                                ? configDefaults.exclude
+                                : ["src/**/*.integration.ts"],
                         // Postgres container start-up (image pull) is slow on a cold machine
                         hookTimeout: 120_000,
                     },

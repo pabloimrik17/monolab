@@ -18,7 +18,7 @@ class PersistenceError extends Error {
     }
 }
 
-describe("wrap against Postgres", () => {
+describe("wrap", () => {
     let container: StartedPostgreSqlContainer;
     let pool: Pool;
     let db: NodePgDatabase;

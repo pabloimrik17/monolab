@@ -35,6 +35,8 @@
     "scripts": {
         "build": "tsdown",
         "build:check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
+        "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
+        "lint:eslint:fix": "eslint --cache --concurrency=auto --max-warnings 40 --fix .",
         "test": "vitest run",
         "test:changed": "vitest run --changed",
         "test:coverage": "vitest run --coverage",

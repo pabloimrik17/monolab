@@ -20,6 +20,8 @@ allowBuilds:
     protobufjs: false
     # node-gyp build of an optional crypto binding; not needed (pure-JS fallback)
     ssh2: false
+    # postinstall only checks the native binding; not needed (prebuilt @unrs/resolver-binding-* on every platform)
+    unrs-resolver: false
 
 blockExoticSubdeps: true
 
@@ -41,10 +43,10 @@ catalog:
     "@arethetypeswrong/cli": 0.18.5
     "@codecov/rollup-plugin": 2.0.1
     "@codecov/vite-plugin": 2.0.1
-    "@stryker-mutator/api": 9.6.1
-    "@stryker-mutator/core": 9.6.1
-    "@stryker-mutator/typescript-checker": 9.6.1
-    "@stryker-mutator/vitest-runner": 9.6.1
+    "@stryker-mutator/api": 10.1.1
+    "@stryker-mutator/core": 10.1.1
+    "@stryker-mutator/typescript-checker": 10.1.1
+    "@stryker-mutator/vitest-runner": 10.1.1
     "@testcontainers/postgresql": 12.2.0
     "@testcontainers/redis": 12.2.0
     "@types/node": 24.19.2
@@ -55,6 +57,7 @@ catalog:
     "@vitejs/plugin-react-swc": 4.3.1
     "@vitest/browser-playwright": 5.0.5
     "@vitest/coverage-v8": 5.0.5
+    "@vitest/eslint-plugin": 1.6.28
     "@vitest/ui": 5.0.5
     drizzle-kit: 0.31.10
     drizzle-orm: 0.45.2

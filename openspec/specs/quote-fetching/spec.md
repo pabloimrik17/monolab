@@ -7,7 +7,7 @@ Fetch current stock quotes from Finnhub API with batch support and rate limit ha
 ## Requirements
 
 ### Requirement: Fetch single quote
-The system SHALL fetch current quote data for a single ticker symbol from Finnhub API.
+The system SHALL fetch current quote data for a single ticker symbol from Finnhub API through a Finnhub datasource in the `data/server/` folder of `@m0n0lab/investlab-quotes`, built on the platform HTTP client. Only the quote repository SHALL use the datasource, and only `apps/investlab-api` SHALL run it.
 
 #### Scenario: Fetch valid ticker
 - **WHEN** getQuote("AAPL") is called
@@ -15,7 +15,7 @@ The system SHALL fetch current quote data for a single ticker symbol from Finnhu
 
 #### Scenario: Fetch invalid ticker
 - **WHEN** getQuote("INVALID123") is called
-- **THEN** throws error with message "No data for symbol: INVALID123"
+- **THEN** fails with error message "No data for symbol: INVALID123"
 
 ### Requirement: Fetch quotes in batch
 The system SHALL fetch quotes for multiple tickers efficiently using parallel requests with concurrency control.
@@ -33,15 +33,15 @@ The system SHALL fetch quotes for multiple tickers efficiently using parallel re
 - **THEN** returns Map with AAPL and MSFT quotes, INVALID excluded
 
 ### Requirement: Respect rate limits
-The system SHALL enforce concurrency limits to avoid exceeding Finnhub API rate limits (60 req/min).
+The system SHALL enforce concurrency limits to avoid exceeding Finnhub API rate limits (60 req/min). The Finnhub datasource SHALL fetch batches with a fixed concurrency of 10 and SHALL take no concurrency option.
 
 #### Scenario: Default concurrency
-- **WHEN** FinnhubClient is created without options
-- **THEN** uses default concurrency of 10
+- **WHEN** the Finnhub datasource fetches quotes for 20 symbols
+- **THEN** it sends at most 10 Finnhub requests at a time
 
 #### Scenario: Custom concurrency
-- **WHEN** FinnhubClient is created with { concurrency: 5 }
-- **THEN** uses concurrency of 5
+- **WHEN** the Finnhub datasource is created
+- **THEN** it accepts no concurrency option and always uses a concurrency of 10
 
 ### Requirement: Quote data structure
 The system SHALL return quote data with standard fields.
@@ -51,12 +51,16 @@ The system SHALL return quote data with standard fields.
 - **THEN** Quote contains: symbol (string), price (number), change (number), changePercent (number), updatedAt (Date)
 
 ### Requirement: API key configuration
-The system SHALL require API key at client creation.
+The system SHALL require API key at datasource creation. The key SHALL come from the server `Config` (`finnhub.apiKey`), filled from the `apps/investlab-api` environment, and SHALL never be part of the web app's environment, `Config` or browser bundle.
 
 #### Scenario: Create client with API key
-- **WHEN** createFinnhubClient("api-key-123") is called
-- **THEN** client is created and uses key for requests
+- **WHEN** the Finnhub datasource is created with "api-key-123"
+- **THEN** datasource is created and uses key for requests
 
 #### Scenario: Create client without API key
-- **WHEN** createFinnhubClient("") is called
+- **WHEN** the Finnhub datasource is created with ""
 - **THEN** throws error indicating API key required
+
+#### Scenario: Key absent from the browser
+- **WHEN** the web app is built for the browser
+- **THEN** the bundle contains no Finnhub API key and no `VITE_FINNHUB_API_KEY` variable

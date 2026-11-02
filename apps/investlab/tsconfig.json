@@ -24,7 +24,13 @@
         "resolveJsonModule": true,
         "types": ["node", "vite/client"],
         "experimentalDecorators": true,
-        "emitDecoratorMetadata": true
+        "emitDecoratorMetadata": true,
+        "paths": {
+            "#core/*": ["./src/core/*"],
+            "#di/*": ["./src/di/*"],
+            "#portfolio/*": ["./src/portfolio/*"],
+            "#quotes/*": ["./src/quotes/*"]
+        }
     },
     "references": [
       {

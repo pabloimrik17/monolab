@@ -38,9 +38,9 @@ export default mergeConfig(
                     test: {
                         name: "integration:server",
                         include: ["src/application/server/**/*.integration.ts"],
-                        globalSetup: ["src/application/server/vitest-integration-global-setup.ts"],
+                        globalSetup: ["src/testing/server/vitest-integration-global-setup.ts"],
                         // Each file takes its own Redis logical database and its own Finnhub fake
-                        setupFiles: ["src/application/server/vitest-integration-setup.ts"],
+                        setupFiles: ["src/testing/server/vitest-integration-setup.ts"],
                         // Container start-up (image pull) is slow on a cold machine
                         hookTimeout: 120_000,
                     },
@@ -49,7 +49,7 @@ export default mergeConfig(
                     test: {
                         name: "integration:client",
                         include: ["src/application/client/**/*.integration.ts"],
-                        setupFiles: ["src/application/client/vitest-integration-setup.ts"],
+                        setupFiles: ["src/testing/client/vitest-integration-setup.ts"],
                     },
                 },
             ],

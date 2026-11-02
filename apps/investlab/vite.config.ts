@@ -16,4 +16,5 @@ const codecovPlugin = codecovVitePlugin({
 
 export default defineConfig({
     plugins: [varlockVitePlugin(), reactRouter(), codecovPlugin],
+    resolve: { tsconfigPaths: true },
 });

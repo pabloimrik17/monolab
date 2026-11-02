@@ -11,7 +11,7 @@ if (!databaseUrl) {
 
 export default defineConfig({
     dialect: "postgresql",
-    schema: ["../investlab-portfolio/src/data/server/schema.ts"],
+    schema: ["../investlab-*/src/data/server/infra/db/*.table.ts"],
     out: "./drizzle",
     dbCredentials: {
         url: databaseUrl,

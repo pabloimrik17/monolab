@@ -1,0 +1,15 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./out-tsc/test",
+        "tsBuildInfoFile": "./out-tsc/tsconfig.test.tsbuildinfo"
+    },
+    "include": ["src/**/*"],
+    "exclude": [],
+    "references": [
+        { "path": "../investlab-platform" },
+        { "path": "../investlab-core" },
+        { "path": "../vitest-config" },
+        { "path": "../investlab-database" }
+    ]
+}

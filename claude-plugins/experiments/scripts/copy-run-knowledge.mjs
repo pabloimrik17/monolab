@@ -119,7 +119,8 @@ function crossProjectNames(runDir) {
     }
     const dossierPath = join(runDir, "dossier.md");
     if (!existsSync(dossierPath)) return [];
-    const covered = /^Projects covered:\s*(.+)$/m.exec(readFileSync(dossierPath, "utf8"));
+    // `\s*(\S.*|(?=\s).)$` captures as `\s*(.+)$` does, without its backtracking.
+    const covered = /^Projects covered:\s*(\S.*|(?=\s).)$/m.exec(readFileSync(dossierPath, "utf8"));
     if (!covered) return [];
     return [
         ...new Set(
