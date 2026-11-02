@@ -31,14 +31,19 @@ export default mergeConfig(
             },
             projects: [
                 { test: { name: "unit" } },
-                {
-                    test: {
-                        name: "integration",
-                        include: ["src/**/*.integration.ts"],
-                        // Postgres container start-up (image pull) is slow on a cold machine
-                        hookTimeout: 120_000,
-                    },
-                },
+                // Stryker workers would each boot a Postgres container → mutant timeouts
+                ...(process.env["STRYKER_MUTATOR_WORKER"] === undefined
+                    ? [
+                          {
+                              test: {
+                                  name: "integration",
+                                  include: ["src/**/*.integration.ts"],
+                                  // Postgres container start-up (image pull) is slow on a cold machine
+                                  hookTimeout: 120_000,
+                              },
+                          },
+                      ]
+                    : []),
                 {
                     test: {
                         name: "types",
