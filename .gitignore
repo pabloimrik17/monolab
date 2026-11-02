@@ -364,6 +364,8 @@ sketch
 # Stryker mutation testing reports
 **/reports/
 .stryker-tmp/
+# Worker setup files Stryker leaves in the package dir on an unclean exit
+stryker-setup-*.js
 
 .nx/polygraph
 .nx/self-healing
