@@ -1,224 +1,151 @@
+import { Container } from "inversify";
 import { okAsync } from "neverthrow";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { domainModule } from "../domain.module.ts";
 import { MenuItem } from "../entities/menu-item.ts";
 import { Session } from "../entities/session.ts";
+import { TOKENS } from "../tokens.ts";
 import { Category } from "../value-objects/category.ts";
-import { CreateOrderUseCase } from "./create-order.use-case.ts";
+import { OrderStatus } from "../value-objects/order-status.ts";
 import type { Order } from "../entities/order.ts";
 import type { EventBus } from "../ports/event-bus.ts";
 import type { MenuItemRepository } from "../ports/menu-item.repository.ts";
 import type { OrderRepository } from "../ports/order.repository.ts";
 import type { SessionRepository } from "../ports/session.repository.ts";
-
-const createMocks = () => {
-    const session = Session.create({ name: "Test" });
-    if (session.isErr()) {
-        throw new Error("unexpected");
-    }
-
-    const menuItem = MenuItem.create({ name: "Espresso", category: Category.COFFEE });
-    if (menuItem.isErr()) {
-        throw new Error("unexpected");
-    }
-
-    const mockSessionRepo: SessionRepository = {
-        save: vi.fn(),
-        findByCode: vi.fn(),
-        findById: vi.fn(() => okAsync(session.value)),
-        updateStatus: vi.fn(),
-    };
-
-    const mockOrderRepo: OrderRepository = {
-        save: vi.fn((order: Order) => okAsync(order)),
-        findById: vi.fn(),
-        findBySessionId: vi.fn(),
-        updateStatus: vi.fn(),
-    };
-
-    const mockMenuItemRepo: MenuItemRepository = {
-        save: vi.fn(),
-        findById: vi.fn(),
-        findAll: vi.fn(() => okAsync([menuItem.value])),
-        findAllAvailable: vi.fn(),
-        update: vi.fn(),
-        delete: vi.fn(),
-    };
-
-    const mockEventBus: EventBus = {
-        emit: vi.fn(),
-        on: vi.fn(),
-    };
-
-    return {
-        session: session.value,
-        menuItem: menuItem.value,
-        mockSessionRepo,
-        mockOrderRepo,
-        mockMenuItemRepo,
-        mockEventBus,
-    };
-};
+import type { CreateOrderUseCase } from "./create-order.use-case.ts";
 
 describe("CreateOrderUseCase", () => {
-    it("creates an order for open session with available items", async () => {
-        const {
-            session,
-            menuItem,
-            mockSessionRepo,
-            mockOrderRepo,
-            mockMenuItemRepo,
-            mockEventBus,
-        } = createMocks();
+    let session: Session;
+    let espresso: MenuItem;
+    let latte: MenuItem;
+    let saved: Order[];
+    let events: unknown[][];
+    let create: CreateOrderUseCase;
 
-        const useCase = new CreateOrderUseCase(
-            mockSessionRepo,
-            mockOrderRepo,
-            mockMenuItemRepo,
-            mockEventBus,
-        );
-        const result = await useCase.execute({
-            sessionId: session.id,
-            guestName: "Alice",
-            items: [{ menuItemId: menuItem.id, quantity: 2 }],
-        });
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-            expect(result.value.guestName).toBe("Alice");
-            expect(result.value.items).toHaveLength(1);
-            expect(mockEventBus.emit).toHaveBeenCalledWith(
-                "order:created",
-                expect.objectContaining({
-                    order: result.value,
-                    sessionId: result.value.sessionId,
-                }),
-            );
-        }
+    beforeEach(() => {
+        session = Session.create({ name: "Coffee Run" })._unsafeUnwrap();
+        espresso = MenuItem.create({ name: "Espresso", category: Category.COFFEE })._unsafeUnwrap();
+        latte = MenuItem.create({ name: "Latte", category: Category.COFFEE })._unsafeUnwrap();
+        saved = [];
+        events = [];
+        const container = new Container();
+        container.load(domainModule);
+        container.bind(TOKENS.SessionRepository).toConstantValue({
+            findById: (id: string) => okAsync(id === session.id ? session : null),
+        } satisfies Partial<SessionRepository>);
+        container.bind(TOKENS.MenuItemRepository).toConstantValue({
+            findAll: () => okAsync([espresso, latte]),
+        } satisfies Partial<MenuItemRepository>);
+        container.bind(TOKENS.OrderRepository).toConstantValue({
+            save: (order: Order) => {
+                saved.push(order);
+                return okAsync(order);
+            },
+        } satisfies Partial<OrderRepository>);
+        container.bind(TOKENS.EventBus).toConstantValue({
+            emit: (...event: unknown[]) => events.push(event),
+        } satisfies Partial<EventBus>);
+        create = container.get<CreateOrderUseCase>(TOKENS.CreateOrderUseCase);
     });
 
-    it("returns SessionNotFoundError for unknown session", async () => {
-        const { mockOrderRepo, mockMenuItemRepo, mockEventBus } = createMocks();
+    describe("placing an order", () => {
+        it("stores the guest's pending order with the chosen menu items and announces it", async () => {
+            const order = (
+                await create.execute({
+                    sessionId: session.id,
+                    guestName: "Alice",
+                    items: [{ menuItemId: latte.id, quantity: 2, customization: "oat milk" }],
+                    notes: "at the window",
+                })
+            )._unsafeUnwrap();
 
-        const mockSessionRepo: SessionRepository = {
-            save: vi.fn(),
-            findByCode: vi.fn(),
-            findById: vi.fn(() => okAsync(null)),
-            updateStatus: vi.fn(),
-        };
-
-        const useCase = new CreateOrderUseCase(
-            mockSessionRepo,
-            mockOrderRepo,
-            mockMenuItemRepo,
-            mockEventBus,
-        );
-        const result = await useCase.execute({
-            sessionId: "unknown",
-            guestName: "Alice",
-            items: [{ menuItemId: "item-1", quantity: 1 }],
+            expect(order).toMatchObject({
+                sessionId: session.id,
+                guestName: "Alice",
+                notes: "at the window",
+            });
+            expect(order.status).toBe(OrderStatus.PENDING);
+            expect(order.items).toEqual([
+                {
+                    menuItemId: latte.id,
+                    menuItemName: "Latte",
+                    quantity: 2,
+                    customization: "oat milk",
+                },
+            ]);
+            expect(saved).toEqual([order]);
+            expect(events).toEqual([["order:created", { order, sessionId: session.id }]]);
         });
 
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error.code).toBe("SESSION_NOT_FOUND");
-        }
-    });
+        it("refuses an unknown session", async () => {
+            const error = (
+                await create.execute({
+                    sessionId: "unknown",
+                    guestName: "Alice",
+                    items: [{ menuItemId: espresso.id, quantity: 1 }],
+                })
+            )._unsafeUnwrapErr();
 
-    it("returns SessionClosedError for closed session", async () => {
-        const { session, mockOrderRepo, mockMenuItemRepo, mockEventBus } = createMocks();
-        session.close();
-
-        const mockSessionRepo: SessionRepository = {
-            save: vi.fn(),
-            findByCode: vi.fn(),
-            findById: vi.fn(() => okAsync(session)),
-            updateStatus: vi.fn(),
-        };
-
-        const useCase = new CreateOrderUseCase(
-            mockSessionRepo,
-            mockOrderRepo,
-            mockMenuItemRepo,
-            mockEventBus,
-        );
-        const result = await useCase.execute({
-            sessionId: session.id,
-            guestName: "Alice",
-            items: [{ menuItemId: "item-1", quantity: 1 }],
+            expect(error.code).toBe("SESSION_NOT_FOUND");
         });
 
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error.code).toBe("SESSION_CLOSED");
-        }
-    });
+        it("refuses a closed session, storing nothing", async () => {
+            session.close();
 
-    it("returns MenuItemNotFoundError for unknown menu item", async () => {
-        const { session, mockSessionRepo, mockOrderRepo, mockEventBus } = createMocks();
+            const error = (
+                await create.execute({
+                    sessionId: session.id,
+                    guestName: "Alice",
+                    items: [{ menuItemId: espresso.id, quantity: 1 }],
+                })
+            )._unsafeUnwrapErr();
 
-        const mockMenuItemRepo: MenuItemRepository = {
-            save: vi.fn(),
-            findById: vi.fn(),
-            findAll: vi.fn(() => okAsync([])),
-            findAllAvailable: vi.fn(),
-            update: vi.fn(),
-            delete: vi.fn(),
-        };
-
-        const useCase = new CreateOrderUseCase(
-            mockSessionRepo,
-            mockOrderRepo,
-            mockMenuItemRepo,
-            mockEventBus,
-        );
-        const result = await useCase.execute({
-            sessionId: session.id,
-            guestName: "Alice",
-            items: [{ menuItemId: "nonexistent", quantity: 1 }],
+            expect(error.code).toBe("SESSION_CLOSED");
+            expect(saved).toEqual([]);
         });
 
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error.code).toBe("MENU_ITEM_NOT_FOUND");
-        }
-    });
+        it("refuses an item that is not on the menu", async () => {
+            const error = (
+                await create.execute({
+                    sessionId: session.id,
+                    guestName: "Alice",
+                    items: [{ menuItemId: "unknown", quantity: 1 }],
+                })
+            )._unsafeUnwrapErr();
 
-    it("returns MenuItemNotAvailableError for unavailable menu item", async () => {
-        const { session, mockSessionRepo, mockOrderRepo, mockEventBus } = createMocks();
-
-        const unavailableItem = MenuItem.create({
-            name: "Sold Out",
-            category: Category.COFFEE,
-            available: false,
-        });
-        if (unavailableItem.isErr()) {
-            throw new Error("unexpected");
-        }
-
-        const mockMenuItemRepo: MenuItemRepository = {
-            save: vi.fn(),
-            findById: vi.fn(),
-            findAll: vi.fn(() => okAsync([unavailableItem.value])),
-            findAllAvailable: vi.fn(),
-            update: vi.fn(),
-            delete: vi.fn(),
-        };
-
-        const useCase = new CreateOrderUseCase(
-            mockSessionRepo,
-            mockOrderRepo,
-            mockMenuItemRepo,
-            mockEventBus,
-        );
-        const result = await useCase.execute({
-            sessionId: session.id,
-            guestName: "Alice",
-            items: [{ menuItemId: unavailableItem.value.id, quantity: 1 }],
+            expect(error.code).toBe("MENU_ITEM_NOT_FOUND");
         });
 
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error.code).toBe("MENU_ITEM_NOT_AVAILABLE");
-        }
+        it("refuses a quantity of zero, storing nothing", async () => {
+            const error = (
+                await create.execute({
+                    sessionId: session.id,
+                    guestName: "Alice",
+                    items: [{ menuItemId: espresso.id, quantity: 0 }],
+                })
+            )._unsafeUnwrapErr();
+
+            expect(error.code).toBe("VALIDATION_ERROR");
+            expect(saved).toEqual([]);
+        });
+
+        it("refuses an item that is sold out, storing and announcing nothing", async () => {
+            latte.update({ available: false });
+
+            const error = (
+                await create.execute({
+                    sessionId: session.id,
+                    guestName: "Alice",
+                    items: [
+                        { menuItemId: espresso.id, quantity: 1 },
+                        { menuItemId: latte.id, quantity: 1 },
+                    ],
+                })
+            )._unsafeUnwrapErr();
+
+            expect(error.code).toBe("MENU_ITEM_NOT_AVAILABLE");
+            expect(saved).toEqual([]);
+            expect(events).toEqual([]);
+        });
     });
 });
