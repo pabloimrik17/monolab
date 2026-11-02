@@ -6,11 +6,6 @@ import type { HttpErrorStatusCode, HttpHeaders } from "./types.js";
  * These are contract definitions - constructor implementation and error throwing logic
  * will be added in implementation proposals (axios/ky adapters).
  *
- * NOTE: All error classes include `Object.setPrototypeOf(this, ClassName.prototype)`
- * in their constructors. This is necessary for proper `instanceof` checks when
- * TypeScript transpiles to ES5. Without this fix, `instanceof` may fail for custom
- * error classes that extend Error.
- *
  * @module
  */
 
@@ -70,9 +65,6 @@ export class HttpError extends Error {
         this.message = message;
         this.request = request;
         this.timestamp = new Date().toISOString();
-
-        // Fix prototype chain for proper instanceof checks
-        Object.setPrototypeOf(this, HttpError.prototype);
     }
 }
 
@@ -118,9 +110,6 @@ export class HttpNetworkError extends HttpError {
     constructor(message: string, code: string, request: Readonly<HttpRequestConfig>) {
         super(message, request);
         this.code = code;
-
-        // Fix prototype chain for proper instanceof checks
-        Object.setPrototypeOf(this, HttpNetworkError.prototype);
     }
 }
 
@@ -197,9 +186,6 @@ export class HttpResponseError<T = unknown> extends HttpError {
         this.statusText = statusText;
         this.data = data;
         this.headers = headers;
-
-        // Fix prototype chain for proper instanceof checks
-        Object.setPrototypeOf(this, HttpResponseError.prototype);
     }
 }
 
@@ -231,9 +217,6 @@ export class HttpBadRequestError<T = unknown> extends HttpResponseError<T> {
     ) {
         super(message, 400, statusText, data, headers, request);
         this.name = "HttpBadRequestError";
-
-        // Fix prototype chain for proper instanceof checks
-        Object.setPrototypeOf(this, HttpBadRequestError.prototype);
     }
 }
 
@@ -265,9 +248,6 @@ export class HttpUnauthorizedError<T = unknown> extends HttpResponseError<T> {
     ) {
         super(message, 401, statusText, data, headers, request);
         this.name = "HttpUnauthorizedError";
-
-        // Fix prototype chain for proper instanceof checks
-        Object.setPrototypeOf(this, HttpUnauthorizedError.prototype);
     }
 }
 
@@ -299,9 +279,6 @@ export class HttpForbiddenError<T = unknown> extends HttpResponseError<T> {
     ) {
         super(message, 403, statusText, data, headers, request);
         this.name = "HttpForbiddenError";
-
-        // Fix prototype chain for proper instanceof checks
-        Object.setPrototypeOf(this, HttpForbiddenError.prototype);
     }
 }
 
@@ -333,9 +310,6 @@ export class HttpNotFoundError<T = unknown> extends HttpResponseError<T> {
     ) {
         super(message, 404, statusText, data, headers, request);
         this.name = "HttpNotFoundError";
-
-        // Fix prototype chain for proper instanceof checks
-        Object.setPrototypeOf(this, HttpNotFoundError.prototype);
     }
 }
 
@@ -367,9 +341,6 @@ export class HttpConflictError<T = unknown> extends HttpResponseError<T> {
     ) {
         super(message, 409, statusText, data, headers, request);
         this.name = "HttpConflictError";
-
-        // Fix prototype chain for proper instanceof checks
-        Object.setPrototypeOf(this, HttpConflictError.prototype);
     }
 }
 
@@ -401,9 +372,6 @@ export class HttpUnprocessableEntityError<T = unknown> extends HttpResponseError
     ) {
         super(message, 422, statusText, data, headers, request);
         this.name = "HttpUnprocessableEntityError";
-
-        // Fix prototype chain for proper instanceof checks
-        Object.setPrototypeOf(this, HttpUnprocessableEntityError.prototype);
     }
 }
 
@@ -436,9 +404,6 @@ export class HttpTooManyRequestsError<T = unknown> extends HttpResponseError<T> 
     ) {
         super(message, 429, statusText, data, headers, request);
         this.name = "HttpTooManyRequestsError";
-
-        // Fix prototype chain for proper instanceof checks
-        Object.setPrototypeOf(this, HttpTooManyRequestsError.prototype);
     }
 }
 
@@ -470,9 +435,6 @@ export class HttpInternalServerError<T = unknown> extends HttpResponseError<T> {
     ) {
         super(message, 500, statusText, data, headers, request);
         this.name = "HttpInternalServerError";
-
-        // Fix prototype chain for proper instanceof checks
-        Object.setPrototypeOf(this, HttpInternalServerError.prototype);
     }
 }
 
@@ -505,9 +467,6 @@ export class HttpServiceUnavailableError<T = unknown> extends HttpResponseError<
     ) {
         super(message, 503, statusText, data, headers, request);
         this.name = "HttpServiceUnavailableError";
-
-        // Fix prototype chain for proper instanceof checks
-        Object.setPrototypeOf(this, HttpServiceUnavailableError.prototype);
     }
 }
 
@@ -538,9 +497,6 @@ export class HttpTimeoutError extends HttpError {
      */
     constructor(message: string, request: Readonly<HttpRequestConfig>) {
         super(message, request);
-
-        // Fix prototype chain for proper instanceof checks
-        Object.setPrototypeOf(this, HttpTimeoutError.prototype);
     }
 }
 
@@ -582,8 +538,5 @@ export class HttpAbortError extends HttpError {
     constructor(message: string, request: Readonly<HttpRequestConfig>, reason?: string) {
         super(message, request);
         this.reason = reason;
-
-        // Fix prototype chain for proper instanceof checks
-        Object.setPrototypeOf(this, HttpAbortError.prototype);
     }
 }
