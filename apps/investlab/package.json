@@ -26,7 +26,7 @@
         "inversify": "catalog:",
         "react": "catalog:",
         "react-dom": "catalog:",
-        "react-router": "8.2.0",
+        "react-router": "8.3.0",
         "varlock": "catalog:",
         "zod": "3.25.76"
     },
