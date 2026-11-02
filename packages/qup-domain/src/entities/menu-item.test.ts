@@ -47,6 +47,15 @@ describe("MenuItem", () => {
             }
         });
 
+        it("returns ValidationError for whitespace-only name", () => {
+            const error = MenuItem.create({
+                name: "   ",
+                category: Category.COFFEE,
+            })._unsafeUnwrapErr();
+
+            expect(error.code).toBe("VALIDATION_ERROR");
+        });
+
         it("trims the name", () => {
             const result = MenuItem.create({
                 name: "  Espresso  ",
@@ -60,7 +69,7 @@ describe("MenuItem", () => {
     });
 
     describe("update", () => {
-        it("updates name and category", () => {
+        it("updates name, category and availability", () => {
             const result = MenuItem.create({
                 name: "Espresso",
                 category: Category.COFFEE,
@@ -70,11 +79,36 @@ describe("MenuItem", () => {
                 const updateResult = result.value.update({
                     name: "Green Tea",
                     category: Category.TEA,
+                    available: false,
                 });
                 expect(updateResult.isOk()).toBe(true);
                 expect(result.value.name).toBe("Green Tea");
                 expect(result.value.category).toBe(Category.TEA);
+                expect(result.value.available).toBe(false);
             }
+        });
+
+        it("trims the new name", () => {
+            const item = MenuItem.create({
+                name: "Espresso",
+                category: Category.COFFEE,
+            })._unsafeUnwrap();
+
+            item.update({ name: "  Ristretto  " });
+
+            expect(item.name).toBe("Ristretto");
+        });
+
+        it("replaces the description", () => {
+            const item = MenuItem.create({
+                name: "Latte",
+                category: Category.COFFEE,
+                description: "Milk coffee",
+            })._unsafeUnwrap();
+
+            item.update({ description: "Oat milk coffee" });
+
+            expect(item.description).toBe("Oat milk coffee");
         });
 
         it("returns ValidationError for empty name update", () => {
@@ -84,7 +118,7 @@ describe("MenuItem", () => {
             });
             expect(result.isOk()).toBe(true);
             if (result.isOk()) {
-                const updateResult = result.value.update({ name: "" });
+                const updateResult = result.value.update({ name: "   " });
                 expect(updateResult.isErr()).toBe(true);
                 if (updateResult.isErr()) {
                     expect(updateResult.error.code).toBe("VALIDATION_ERROR");
@@ -96,12 +130,14 @@ describe("MenuItem", () => {
             const result = MenuItem.create({
                 name: "Espresso",
                 category: Category.COFFEE,
+                description: "Short and strong",
                 sortOrder: 1,
             });
             expect(result.isOk()).toBe(true);
             if (result.isOk()) {
                 result.value.update({ sortOrder: 10 });
                 expect(result.value.name).toBe("Espresso");
+                expect(result.value.description).toBe("Short and strong");
                 expect(result.value.sortOrder).toBe(10);
             }
         });
