@@ -3,7 +3,7 @@
         "eslint": {
             "type": "stdio",
             "command": "npx",
-            "args": ["-y", "@eslint/mcp@0.3.10"]
+            "args": ["-y", "@eslint/mcp@0.3.16"]
         },
         "context7": {
             "type": "stdio",
