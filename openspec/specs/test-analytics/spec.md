@@ -2,7 +2,9 @@
 
 ## Purpose
 TBD - created by archiving change add-codecov. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: CI workflow MUST upload test results to Codecov Test Analytics
 
 The GitHub Actions CI workflow MUST upload test results in JUnit XML format to Codecov Test Analytics to track test failures, flaky tests, and performance metrics.
@@ -41,8 +43,9 @@ Vitest MUST be configured to generate test results in JUnit XML format, which is
 #### Scenario: Vitest generates JUnit XML reports
 
 **Given** Vitest is configured with the JUnit reporter
-**When** tests run via `pnpm exec nx affected -t test:unit` or `pnpm exec nx run-many -t test:unit`
+**When** tests run via `pnpm exec nx affected -t test:coverage` or `pnpm exec nx run-many -t test:coverage`
 **Then** Vitest generates JUnit XML files in each package's test output directory
+**And** the XML files include the results of every kind of test the package runs
 **And** the XML files include test names, classnames, and timing data
 **And** the XML files match Codecov's expected JUnit schema
 
@@ -61,8 +64,6 @@ Vitest MUST be configured to generate test results in JUnit XML format, which is
 **Then** each package generates its own JUnit XML file in its test output directory
 **And** the CI workflow uploads all JUnit files matching the pattern
 **And** Codecov aggregates test results across all packages
-
----
 
 ### Requirement: Test Analytics MUST track per-package test results using flags
 
@@ -254,4 +255,3 @@ The packages uploading test results MUST be identical to the packages uploading 
 **When** the test results upload script runs
 **Then** ts-configs also skips test results upload
 **And** consistency is maintained across all Codecov data types
-
