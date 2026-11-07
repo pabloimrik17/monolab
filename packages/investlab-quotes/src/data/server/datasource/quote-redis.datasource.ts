@@ -42,7 +42,7 @@ function parseQuote(raw: string | null): Quote | null {
 
 const toPersistenceError = (cause: unknown) => new PersistenceError(cause);
 
-/** Quotes cached by normalized symbol. Redis failures are errors; the repository decides how to degrade. */
+/** Redis failures are errors here; the repository decides how to degrade. */
 @injectable()
 export class QuoteRedisDatasource {
     constructor(@inject(PLATFORM.Redis) private readonly redis: Redis) {}

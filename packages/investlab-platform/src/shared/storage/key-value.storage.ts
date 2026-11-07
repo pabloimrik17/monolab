@@ -37,7 +37,7 @@ export abstract class BaseKeyValueStorage implements KeyValueStorage {
         this.set(key, String(value));
     }
 
-    /** The stored JSON checked against `schema`; missing, unparsable or differently shaped data reads as no value. */
+    /** Missing, unparsable or schema-mismatched data reads as `undefined`. */
     getObject<T>(key: string, schema: z.ZodType<T, z.ZodTypeDef, unknown>): T | undefined {
         const text = this.get(key);
         if (text === undefined) return undefined;

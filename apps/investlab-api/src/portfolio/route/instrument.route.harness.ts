@@ -51,7 +51,7 @@ export class InstrumentRouteHarness extends ApiHarness {
         return this.reply(this.json(`/instruments/${id}`, "PUT", body), instrumentDtoSchema);
     }
 
-    /** PUT a JSON string labelled `text/plain`, which Hono's JSON validator does not parse. */
+    /** Sent as `text/plain`, which Hono's JSON validator does not parse. */
     updateInstrumentAsText(id: string, body: unknown) {
         const response = this.request(`/instruments/${id}`, {
             method: "PUT",

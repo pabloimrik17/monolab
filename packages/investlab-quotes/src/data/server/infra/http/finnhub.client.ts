@@ -9,9 +9,9 @@ const AUTH_FAILURES = new Set([401, 403]);
 
 // Only the fields the quotes module reads; Finnhub also sends high, low, open, previous close and time.
 const finnhubQuoteResponseSchema = z.object({
-    c: z.number(), // current price
-    d: z.number().nullable(), // change (null for unknown symbols)
-    dp: z.number().nullable(), // percent change (null for unknown symbols)
+    c: z.number(),
+    d: z.number().nullable(),
+    dp: z.number().nullable(),
 });
 
 export type FinnhubQuoteResponse = z.infer<typeof finnhubQuoteResponseSchema>;
@@ -25,7 +25,6 @@ export class FinnhubAuthError extends Error {
     }
 }
 
-/** Finnhub answered with an error status other than an auth failure, or with a body of another shape. */
 class FinnhubResponseError extends Error {
     readonly code = "FINNHUB_BAD_RESPONSE";
     constructor(message: string, options?: ErrorOptions) {
@@ -39,7 +38,6 @@ export type FinnhubUpstreamError = FinnhubResponseError | NetworkError;
 
 export type FinnhubQuoteError = FinnhubAuthError | FinnhubUpstreamError;
 
-/** What a batch of quote requests got: each symbol's response, or its upstream failure. */
 export interface FinnhubQuotes {
     readonly responses: ReadonlyMap<string, FinnhubQuoteResponse>;
     readonly failures: ReadonlyMap<string, FinnhubUpstreamError>;

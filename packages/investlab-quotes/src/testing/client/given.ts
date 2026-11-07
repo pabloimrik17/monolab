@@ -35,7 +35,6 @@ export function givenTokenRejected(): void {
     investlabApi.use(http.all(`${API_URL}/*`, () => HttpResponse.json(body, { status: 401 })));
 }
 
-/** The API answers that market data is unavailable. */
 export function givenMarketDataUnavailable(): void {
     const body: ApiErrorDto = {
         code: "MARKET_DATA_UNAVAILABLE",

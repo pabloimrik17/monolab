@@ -1,8 +1,5 @@
 import type { QuoteGetUseCase } from "#application/server/use-case/quote-get.use-case.ts";
-import type {
-    QuoteListError,
-    QuoteListUseCase,
-} from "#application/server/use-case/quote-list.use-case.ts";
+import type { QuoteListUseCase } from "#application/server/use-case/quote-list.use-case.ts";
 import type { QuoteRepository } from "#domain/repository/quote.repository.ts";
 import type { ServiceIdentifier } from "inversify";
 
@@ -14,7 +11,7 @@ export const QUOTES = {
 
 /** Bound by `di/server.module.ts`; never exported from the package. */
 export const QUOTES_PORTS = {
-    QuoteRepository: Symbol.for("investlab.quotes.server.QuoteRepository") as ServiceIdentifier<
-        QuoteRepository<QuoteListError>
-    >,
+    QuoteRepository: Symbol.for(
+        "investlab.quotes.server.QuoteRepository",
+    ) as ServiceIdentifier<QuoteRepository>,
 } as const;

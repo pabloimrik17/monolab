@@ -5,7 +5,6 @@ import type { QuotesErrorCode } from "@m0n0lab/investlab-quotes";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
-/** Every code a use case can fail with: the kernel's plus each module's. */
 type ApiDomainErrorCode = KernelErrorCode | PortfolioErrorCode | QuotesErrorCode;
 
 export type ApiDomainError = DomainError<ApiDomainErrorCode>;

@@ -33,7 +33,6 @@ export function givenQuotesFor(quotes: Readonly<Record<string, MarketQuote>>): v
     );
 }
 
-/** Market data answers `symbol` with a quote in a format it no longer uses; other symbols keep their answers. */
 export function givenUnreadableMarketDataFor(symbol: string): void {
     finnhub.use(
         http.get(FINNHUB_QUOTE_URL, ({ request }) => {
@@ -45,7 +44,6 @@ export function givenUnreadableMarketDataFor(symbol: string): void {
     );
 }
 
-/** Market data rejects the configured key, as after it is revoked. Counts the requests it receives. */
 export function givenMarketDataRejectsTheKey(): { readonly requests: number } {
     const received = { requests: 0 };
     finnhub.use(
@@ -62,7 +60,6 @@ export function givenMarketDataUnavailable(): void {
     finnhub.use(http.get(FINNHUB_QUOTE_URL, () => HttpResponse.error()));
 }
 
-/** Market data answers every request with a server failure. */
 export function givenMarketDataFailing(): void {
     finnhub.use(
         http.get(FINNHUB_QUOTE_URL, () =>
@@ -71,7 +68,6 @@ export function givenMarketDataFailing(): void {
     );
 }
 
-/** Market data refuses further requests for now: the plan's request limit is reached. */
 export function givenMarketDataRateLimitReached(): void {
     finnhub.use(
         http.get(FINNHUB_QUOTE_URL, () =>
@@ -83,7 +79,6 @@ export function givenMarketDataRateLimitReached(): void {
     );
 }
 
-/** The quote cache holds an entry for `symbol` in a format it no longer reads, as one left by an older release. */
 export async function givenAnUnreadableCachedQuoteFor(symbol: string): Promise<void> {
     await container
         .get(PLATFORM.Redis)

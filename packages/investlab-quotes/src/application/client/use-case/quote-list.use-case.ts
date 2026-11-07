@@ -5,7 +5,6 @@ import type { QuoteRepository } from "#domain/repository/quote.repository.ts";
 import type { Quote } from "#domain/value-object/quote.value-object.ts";
 import type { ResultAsync } from "neverthrow";
 
-/** The failures every remote port can return, plus the market data being unavailable. */
 export type QuoteListError = QuotesRemoteError;
 
 @injectable()

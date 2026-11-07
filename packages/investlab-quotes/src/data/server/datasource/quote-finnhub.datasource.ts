@@ -9,7 +9,6 @@ import type {
 } from "#data/server/infra/http/finnhub.client.ts";
 import type { Quote } from "#domain/value-object/quote.value-object.ts";
 
-/** Finnhub answered but knows nothing of the symbol: not an upstream failure. */
 class NoQuoteDataError extends Error {
     readonly code = "NO_QUOTE_DATA";
     constructor(symbol: string) {
@@ -18,7 +17,6 @@ class NoQuoteDataError extends Error {
     }
 }
 
-/** The quotes Finnhub had, and the symbols it failed to answer with why. */
 export interface FinnhubQuoteFetch {
     readonly quotes: ReadonlyMap<string, Quote>;
     readonly failures: ReadonlyMap<string, FinnhubUpstreamError>;
@@ -40,7 +38,6 @@ function toQuote(
 export class QuoteFinnhubDatasource {
     constructor(@inject(QUOTES_DATA.FinnhubClient) private readonly finnhub: FinnhubClient) {}
 
-    /** Symbols Finnhub has no data for are left out; every symbol left out is logged. */
     getQuotes(symbols: string[]): ResultAsync<FinnhubQuoteFetch, FinnhubAuthError> {
         return this.finnhub
             .getQuotes(symbols.map((s) => s.toUpperCase()))
