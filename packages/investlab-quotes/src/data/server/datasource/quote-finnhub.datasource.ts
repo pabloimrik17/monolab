@@ -4,14 +4,13 @@ import { QUOTES_DATA } from "#data/server/tokens.ts";
 import type {
     FinnhubAuthError,
     FinnhubClient,
-    FinnhubQuoteError,
     FinnhubQuoteResponse,
     FinnhubUpstreamError,
 } from "#data/server/infra/http/finnhub.client.ts";
 import type { Quote } from "#domain/value-object/quote.value-object.ts";
 
 /** Finnhub answered but knows nothing of the symbol: not an upstream failure. */
-export class NoQuoteDataError extends Error {
+class NoQuoteDataError extends Error {
     readonly code = "NO_QUOTE_DATA";
     constructor(symbol: string) {
         super(`No data for symbol: ${symbol}`);
@@ -40,13 +39,6 @@ function toQuote(
 @injectable()
 export class QuoteFinnhubDatasource {
     constructor(@inject(QUOTES_DATA.FinnhubClient) private readonly finnhub: FinnhubClient) {}
-
-    getQuote(symbol: string): ResultAsync<Quote, FinnhubQuoteError | NoQuoteDataError> {
-        const normalized = symbol.toUpperCase();
-        return this.finnhub
-            .getQuote(normalized)
-            .andThen((response) => toQuote(normalized, response));
-    }
 
     /** Symbols Finnhub has no data for are left out; every symbol left out is logged. */
     getQuotes(symbols: string[]): ResultAsync<FinnhubQuoteFetch, FinnhubAuthError> {

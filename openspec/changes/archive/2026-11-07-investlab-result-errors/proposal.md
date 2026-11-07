@@ -23,7 +23,7 @@ None.
 
 ### Modified Capabilities
 
-- `quote-fetching`: rejected key fails the batch and stops it; Finnhub bodies validated by a private schema; per-symbol failures leave the symbol out.
+- `quote-fetching`: single quote has the quote list's semantics (no data gives no quote, not an error) and is tested through `QuoteGetUseCase`; rejected key fails the batch and stops it; Finnhub bodies validated by a private schema; per-symbol failures leave the symbol out.
 - `investlab-quote-cache`: cache entries validated on read; quote list fails with `MARKET_DATA_UNAVAILABLE` or `PERSISTENCE_ERROR` instead of answering empty.
 - `investlab-http-api`: `MARKET_DATA_UNAVAILABLE` → 503 and rejected key → 500; a body without a JSON content type answers 422; the web quotes route answers 503 when market data is unavailable.
 - `quote-polling`: an answer that isn't JSON or isn't a list of quotes is a fetch error.
@@ -33,5 +33,5 @@ None.
 ## Impact
 
 - Code: `packages/investlab-quotes` (new `domain/error/` with `MarketDataUnavailableError` and `QuotesRemoteError`, Finnhub client, datasources, cached and API repositories, testing helpers), `packages/investlab-platform` (key-value storage), `packages/investlab-core` (`apiErrorCodeSchema`), `apps/investlab-api` (error mapper, request validation middleware, routes), `apps/investlab` (remote error mapper, quote polling hook).
-- Exports: `@m0n0lab/investlab-quotes` root entry adds `MarketDataUnavailableError`, `QuotesErrorCode` and `QuotesRemoteError`. `KeyValueStorage.getObject` gains a required `schema` parameter.
+- Exports: `@m0n0lab/investlab-quotes` root entry adds `MarketDataUnavailableError`, `QuotesErrorCode` and `QuotesRemoteError`; both the `/server` and `/client` entries add `QuoteGetUseCase` and `QuoteGetError`, and `QUOTES.Get`. `QuoteRepository.getQuote` now resolves to `Quote | undefined`. `KeyValueStorage.getObject` gains a required `schema` parameter.
 - Dependencies: `apps/investlab-api` adds `@hono/zod-validator`; `apps/investlab` adds `neverthrow`.

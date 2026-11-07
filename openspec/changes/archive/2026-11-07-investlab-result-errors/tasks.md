@@ -13,6 +13,8 @@
 - [x] 2.3 Rewrite `QuoteCachedRepository` and type the server `QuoteListUseCase` with `PersistenceError | MarketDataUnavailableError`; verify the market data unavailable, rate-limited, rejected key (no key in error or logs), unreadable data and cache-hit-during-outage cases in `quote-list.use-case.integration.ts` with `nx run @m0n0lab/investlab-quotes:test:integration`
 - [x] 2.4 Add the `givenMarketDataFailing`, `givenMarketDataRateLimitReached`, `givenUnreadableMarketDataFor` and `givenAnUnreadableCachedQuoteFor` scenario helpers, and raise the quotes branch coverage floor to 75; verify with `nx run @m0n0lab/investlab-quotes:test:coverage`
 
+- [x] 2.5 Make `getQuote` share the list's path and semantics (`Quote | undefined`, no data is no quote), drop the single-symbol datasource and Redis reads, and add `QuoteGetUseCase` (`QUOTES.Get`) on the server and client sides with their integration tests; verify with `nx run @m0n0lab/investlab-quotes:test:integration`
+
 ## 3. Quotes client path
 
 - [x] 3.1 Map `MARKET_DATA_UNAVAILABLE` to `MarketDataUnavailableError` in `QuoteApiRepository` through the API client's error map, and type the client use case with `QuotesRemoteError`; verify the "fails as market data unavailable" case with `nx run @m0n0lab/investlab-quotes:test:integration`

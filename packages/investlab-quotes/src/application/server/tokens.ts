@@ -1,3 +1,4 @@
+import type { QuoteGetUseCase } from "#application/server/use-case/quote-get.use-case.ts";
 import type {
     QuoteListError,
     QuoteListUseCase,
@@ -7,6 +8,7 @@ import type { ServiceIdentifier } from "inversify";
 
 /** Server use cases of the quotes module. */
 export const QUOTES = {
+    Get: Symbol.for("investlab.quotes.server.Get") as ServiceIdentifier<QuoteGetUseCase>,
     List: Symbol.for("investlab.quotes.server.List") as ServiceIdentifier<QuoteListUseCase>,
 } as const;
 

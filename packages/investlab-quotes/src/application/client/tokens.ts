@@ -1,3 +1,4 @@
+import type { QuoteGetUseCase } from "#application/client/use-case/quote-get.use-case.ts";
 import type { QuoteListUseCase } from "#application/client/use-case/quote-list.use-case.ts";
 import type { TickerAddUseCase } from "#application/client/use-case/ticker-add.use-case.ts";
 import type { TickerListUseCase } from "#application/client/use-case/ticker-list.use-case.ts";
@@ -9,6 +10,7 @@ import type { ServiceIdentifier } from "inversify";
 
 /** Client use cases of the quotes module. */
 export const QUOTES = {
+    Get: Symbol.for("investlab.quotes.client.Get") as ServiceIdentifier<QuoteGetUseCase>,
     List: Symbol.for("investlab.quotes.client.List") as ServiceIdentifier<QuoteListUseCase>,
     TickerList: Symbol.for(
         "investlab.quotes.client.TickerList",

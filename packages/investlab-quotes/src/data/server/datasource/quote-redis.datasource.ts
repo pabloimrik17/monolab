@@ -47,12 +47,6 @@ const toPersistenceError = (cause: unknown) => new PersistenceError(cause);
 export class QuoteRedisDatasource {
     constructor(@inject(PLATFORM.Redis) private readonly redis: Redis) {}
 
-    get(symbol: string): ResultAsync<Quote | null, PersistenceError> {
-        return ResultAsync.fromPromise(this.redis.get(cacheKey(symbol)), toPersistenceError).map(
-            parseQuote,
-        );
-    }
-
     getMany(symbols: string[]): ResultAsync<Map<string, Quote>, PersistenceError> {
         if (symbols.length === 0) {
             return okAsync(new Map());

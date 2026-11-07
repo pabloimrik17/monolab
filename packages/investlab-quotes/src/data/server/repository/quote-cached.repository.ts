@@ -1,14 +1,10 @@
 import { inject, injectable } from "inversify";
-import { err, errAsync, ok, okAsync, type ResultAsync } from "neverthrow";
+import { err, ok, type ResultAsync } from "neverthrow";
 import { QUOTES_DATA } from "#data/server/tokens.ts";
 import { MarketDataUnavailableError } from "#domain/error/market-data-unavailable.error.ts";
 import { PersistenceError } from "@m0n0lab/investlab-core";
-import type {
-    NoQuoteDataError,
-    QuoteFinnhubDatasource,
-} from "#data/server/datasource/quote-finnhub.datasource.ts";
+import type { QuoteFinnhubDatasource } from "#data/server/datasource/quote-finnhub.datasource.ts";
 import type { QuoteRedisDatasource } from "#data/server/datasource/quote-redis.datasource.ts";
-import type { FinnhubQuoteError } from "#data/server/infra/http/finnhub.client.ts";
 import type { QuoteRepository } from "#domain/repository/quote.repository.ts";
 import type { Quote } from "#domain/value-object/quote.value-object.ts";
 
@@ -16,13 +12,6 @@ type QuoteRepositoryError = PersistenceError | MarketDataUnavailableError;
 
 function normalizeSymbol(symbol: string): string {
     return symbol.trim().toUpperCase();
-}
-
-// A rejected key or an unknown symbol is not market data being unavailable: retrying will not help.
-function toRepositoryError(error: FinnhubQuoteError | NoQuoteDataError): QuoteRepositoryError {
-    return error.code === "FINNHUB_AUTH_FAILED" || error.code === "NO_QUOTE_DATA"
-        ? new PersistenceError(error)
-        : new MarketDataUnavailableError(error);
 }
 
 /**
@@ -37,29 +26,8 @@ export class QuoteCachedRepository implements QuoteRepository<QuoteRepositoryErr
         private readonly finnhub: QuoteFinnhubDatasource,
     ) {}
 
-    getQuote(symbol: string): ResultAsync<Quote, QuoteRepositoryError> {
-        const normalized = normalizeSymbol(symbol);
-        if (!normalized) {
-            return errAsync(new PersistenceError(new Error("Invalid empty symbol")));
-        }
-
-        return this.cache
-            .get(normalized)
-            .orElse((error) => {
-                console.warn(
-                    `[QuoteRepository] cache read failed for ${normalized}, treating as miss:`,
-                    error,
-                );
-                return ok(null);
-            })
-            .andThen((cached) =>
-                cached === null
-                    ? this.finnhub
-                          .getQuote(normalized)
-                          .andTee((quote) => this.writeThrough(normalized, quote))
-                          .mapErr(toRepositoryError)
-                    : okAsync(cached),
-            );
+    getQuote(symbol: string): ResultAsync<Quote | undefined, QuoteRepositoryError> {
+        return this.getQuotes([symbol]).map((quotes) => quotes.get(normalizeSymbol(symbol)));
     }
 
     /**

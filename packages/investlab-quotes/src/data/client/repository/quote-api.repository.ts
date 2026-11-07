@@ -1,9 +1,8 @@
 import { inject, injectable } from "inversify";
-import { errAsync, okAsync, type ResultAsync } from "neverthrow";
+import { okAsync, type ResultAsync } from "neverthrow";
 import { z } from "zod";
 import { quoteDtoSchema } from "#data/shared/dto/quote.dto.ts";
 import { MarketDataUnavailableError } from "#domain/error/market-data-unavailable.error.ts";
-import { PersistenceError } from "@m0n0lab/investlab-core";
 import { PLATFORM, type InvestlabApiClient } from "@m0n0lab/investlab-platform/client";
 import type { QuotesRemoteError } from "#domain/error/quotes-remote.error.ts";
 import type { QuoteRepository } from "#domain/repository/quote.repository.ts";
@@ -18,13 +17,8 @@ const QUOTES_TIMEOUT_MS = 60_000;
 export class QuoteApiRepository implements QuoteRepository<QuotesRemoteError> {
     constructor(@inject(PLATFORM.InvestlabApiClient) private readonly api: InvestlabApiClient) {}
 
-    getQuote(symbol: string): ResultAsync<Quote, QuotesRemoteError> {
-        return this.getQuotes([symbol]).andThen((quotes) => {
-            const quote = quotes.get(symbol);
-            return quote
-                ? okAsync(quote)
-                : errAsync(new PersistenceError(`No quote returned for ${symbol}`));
-        });
+    getQuote(symbol: string): ResultAsync<Quote | undefined, QuotesRemoteError> {
+        return this.getQuotes([symbol]).map((quotes) => quotes.get(symbol));
     }
 
     getQuotes(symbols: string[]): ResultAsync<Map<string, Quote>, QuotesRemoteError> {
