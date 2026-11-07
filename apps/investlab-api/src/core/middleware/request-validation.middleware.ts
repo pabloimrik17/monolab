@@ -6,7 +6,8 @@ import { errorJson } from "#core/mapper/error-http.mapper.ts";
 import type { Context, Env } from "hono";
 import type { ZodTypeAny } from "zod";
 
-const JSON_CONTENT_TYPE = /^application\/(?:[\w.-]+\+)?json\s*(?:;|$)/i;
+// Same matches as Hono's `jsonRegex`: its validator parses only these and validates `{}` for others.
+const JSON_CONTENT_TYPE = /^application\/(?:[a-z.-]+\+)?json(?:;\s*[a-z0-9-]+=[^;]+)*$/i;
 
 const rejectInvalid: Hook<unknown, Env, string> = (result, c: Context) =>
     result.success ? undefined : errorJson(c, RequestValidationError.fromZod(result.error));

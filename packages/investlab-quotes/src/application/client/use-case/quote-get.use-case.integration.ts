@@ -34,6 +34,22 @@ describe("QuoteGetUseCase", () => {
         expect(quote).toBeUndefined();
     });
 
+    it("finds the quote whatever the case or padding of the symbol", async () => {
+        givenQuotesFor({ SPY });
+
+        const quote = (await get.execute(" spy "))._unsafeUnwrap();
+
+        expect(quote).toEqual({ symbol: "SPY", ...SPY, updatedAt: new Date(SPY.updatedAt) });
+    });
+
+    it("returns no quote, not an error, for a blank symbol", async () => {
+        givenQuotesFor({ SPY });
+
+        const quote = (await get.execute("  "))._unsafeUnwrap();
+
+        expect(quote).toBeUndefined();
+    });
+
     it("fails as market data unavailable when the service says it has none to give", async () => {
         givenMarketDataUnavailable();
 

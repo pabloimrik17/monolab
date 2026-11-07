@@ -18,7 +18,9 @@ export class QuoteApiRepository implements QuoteRepository<QuotesRemoteError> {
     constructor(@inject(PLATFORM.InvestlabApiClient) private readonly api: InvestlabApiClient) {}
 
     getQuote(symbol: string): ResultAsync<Quote | undefined, QuotesRemoteError> {
-        return this.getQuotes([symbol]).map((quotes) => quotes.get(symbol));
+        const normalized = symbol.trim().toUpperCase();
+        if (!normalized) return okAsync(undefined);
+        return this.getQuotes([normalized]).map((quotes) => quotes.get(normalized));
     }
 
     getQuotes(symbols: string[]): ResultAsync<Map<string, Quote>, QuotesRemoteError> {

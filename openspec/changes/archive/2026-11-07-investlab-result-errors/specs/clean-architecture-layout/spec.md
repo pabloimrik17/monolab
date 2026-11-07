@@ -17,7 +17,7 @@ InvestLab code outside tests SHALL return every failure it expects as a neverthr
 #### Scenario: Allowed throws only
 
 - **WHEN** the InvestLab packages and apps, tests excluded, are searched for `throw` statements
-- **THEN** each one is the Finnhub client's API key guard, an environment read failing at boot, or a loader throwing a `Response`
+- **THEN** each one is the Finnhub client's API key guard, an environment read failing at boot, the React Router server entry, or a loader throwing a `Response`
 
 #### Scenario: Cleanup that handles no failure
 

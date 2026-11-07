@@ -32,7 +32,7 @@ describe("MemoryStorage", () => {
 
     it("returns no value when the stored JSON does not match the schema", () => {
         const storage = new MemoryStorage();
-        storage.setObject("object", { symbol: "AAPL" });
+        storage.setObject("object", { symbol: "AAPL", extra: true });
 
         expect(storage.getObject("object", z.array(z.string()))).toBeUndefined();
         expect(storage.getObject("object", z.object({ symbol: z.string() }))).toEqual({

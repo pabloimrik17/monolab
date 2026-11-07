@@ -134,12 +134,19 @@ describe("instrumentRoutes", () => {
     });
 
     describe("PUT /instruments/:id", () => {
-        it("answers 422 without updating when the body is sent as text/plain", async () => {
+        // Every Content-Type Hono's validator does not parse as JSON, so it would validate `{}`.
+        it.each([
+            "text/plain",
+            "application/json;",
+            "application/json ; charset=utf-8",
+            "application/json;charset",
+            "application/vnd.v2+json",
+        ])("answers 422 without updating when the body is sent as %s", async (contentType) => {
             await using api = await InstrumentRouteHarness.launch();
             const instrument = makeInstrument();
             const update = api.givenUpdateSucceeds(instrument);
 
-            const { status, body } = await api.updateInstrumentAsText(instrument.id, {
+            const { status, body } = await api.updateInstrumentAs(contentType, instrument.id, {
                 name: "Renamed",
             });
 

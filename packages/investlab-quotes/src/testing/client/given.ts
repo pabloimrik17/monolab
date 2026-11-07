@@ -1,17 +1,34 @@
 import { http, HttpResponse } from "msw";
 import { z } from "zod";
 import { TICKERS_STORAGE_KEY } from "#data/client/repository/ticker-storage.repository.ts";
+import { quoteListQueryDtoSchema, type QuoteDto } from "#data/shared/dto/quote.dto.ts";
 import { API_URL, investlabApi, storage } from "./vitest-integration-setup.ts";
-import type { QuoteDto } from "#data/shared/dto/quote.dto.ts";
 import type { ApiErrorDto } from "@m0n0lab/investlab-core";
 
-/** The API has these quotes; any other symbol has none. */
+/**
+ * The API has these quotes; any other symbol has none. Like the API, it normalizes the queried
+ * symbols and refuses a query that has none.
+ */
 export function givenQuotesFor(quotes: Readonly<Record<string, Omit<QuoteDto, "symbol">>>): void {
     investlabApi.use(
         http.get(`${API_URL}/quotes`, ({ request }) => {
-            const symbols = new URL(request.url).searchParams.get("symbols")?.split(",") ?? [];
+            const query = quoteListQueryDtoSchema.safeParse({
+                symbols: new URL(request.url).searchParams.get("symbols"),
+            });
+            if (!query.success) {
+                const body: ApiErrorDto = {
+                    code: "VALIDATION_ERROR",
+                    message: "Request validation failed",
+                    statusCode: 422,
+                    issues: query.error.issues.map((issue) => ({
+                        path: issue.path.map(String).join("."),
+                        message: issue.message,
+                    })),
+                };
+                return HttpResponse.json(body, { status: 422 });
+            }
             return HttpResponse.json(
-                symbols.flatMap((symbol): QuoteDto[] => {
+                query.data.symbols.flatMap((symbol): QuoteDto[] => {
                     const quote = quotes[symbol];
                     return quote ? [{ symbol, ...quote }] : [];
                 }),

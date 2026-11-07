@@ -11,7 +11,7 @@ The platform SHALL offer a key-value storage: a side-free interface with text ge
 
 #### Scenario: Object round trip
 
-- **WHEN** an object is stored with the typed helper and read back with it
+- **WHEN** an object is stored with the typed helper and read back with it and a schema of its shape
 - **THEN** an equal object is returned
 
 #### Scenario: Missing key
