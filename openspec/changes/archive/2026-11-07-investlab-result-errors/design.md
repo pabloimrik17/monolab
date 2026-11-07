@@ -31,7 +31,7 @@ Alternative considered: keep `throw` inside adapters and convert at the reposito
 
 ### Allowed throws
 
-Throws remain only for invariants and framework protocol. These are the `FinnhubClient` constructor guard on an empty key (wiring error), the environment readers (`readEnv`, the `PORT` parser, `drizzle.config.ts`) failing fast at boot, the React Router server entry's stream boilerplate, and loaders that `throw new Response(...)`, as React Router expects. Everything else returns a `Result`.
+Throws remain only for invariants and framework protocol. These are the `FinnhubClient` constructor guard on an empty key (wiring error), the environment readers (`readEnv`, the `PORT` parser, `drizzle.config.ts`) failing fast at boot, the React Router server entry's stream boilerplate, and loaders that `throw new Response(...)`, as React Router expects. Two cleanup sites stay as they are, because they handle no failure: the `try`/`finally` that closes the pool in `migrate.ts`, and the Redis deactivation hook that falls back from `quit` to `disconnect`. Everything else returns a `Result`.
 
 ### Error → status choices
 

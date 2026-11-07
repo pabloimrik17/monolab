@@ -579,6 +579,11 @@ InvestLab code outside tests SHALL return every failure it expects as a neverthr
 - **WHEN** the InvestLab packages and apps, tests excluded, are searched for `throw` statements
 - **THEN** each one is the Finnhub client's API key guard, an environment read failing at boot, or a loader throwing a `Response`
 
+#### Scenario: Cleanup that handles no failure
+
+- **WHEN** code releases a resource after use or while the container shuts down
+- **THEN** a `try`/`finally` that closes it (the migration pool) or a shutdown fallback (Redis `quit` falling back to `disconnect`) is allowed
+
 ### Requirement: External and persisted shapes validated by their adapter
 
 The shape of data InvestLab reads from an external system or from storage it writes, such as Finnhub responses, Redis cache entries and browser storage values, SHALL be declared by a schema private to the adapter that reads it. Every read SHALL check the data against that schema instead of casting it, and data that fails it SHALL become an error value or a miss of that adapter.
