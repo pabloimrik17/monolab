@@ -24,6 +24,17 @@ const api: Server = createServer((request, response) => {
         response.end(JSON.stringify({ code: "INTERNAL_ERROR", message: "boom", statusCode: 500 }));
         return;
     }
+    if (symbols.includes("NODATA")) {
+        response.statusCode = 503;
+        response.end(
+            JSON.stringify({
+                code: "MARKET_DATA_UNAVAILABLE",
+                message: "Internal server error",
+                statusCode: 503,
+            }),
+        );
+        return;
+    }
     response.end(JSON.stringify(symbols.split(",").includes("AAPL") ? [AAPL] : []));
 });
 
@@ -82,6 +93,17 @@ describe("loader", () => {
         expect(response.status).toBe(503);
         expect(await response.json()).toEqual({
             message: "InvestLab service is unavailable. Please try again later.",
+        });
+    });
+
+    it("answers 503 with a quotes message when market data is unavailable", async () => {
+        const { loader } = await import("./api.quotes");
+
+        const response = await loader(get("?symbols=NODATA"));
+
+        expect(response.status).toBe(503);
+        expect(await response.json()).toEqual({
+            message: "Quotes are unavailable right now. Please try again later.",
         });
     });
 });

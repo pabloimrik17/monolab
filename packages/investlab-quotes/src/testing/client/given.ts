@@ -1,4 +1,5 @@
 import { http, HttpResponse } from "msw";
+import { z } from "zod";
 import { TICKERS_STORAGE_KEY } from "#data/client/repository/ticker-storage.repository.ts";
 import { API_URL, investlabApi, storage } from "./vitest-integration-setup.ts";
 import type { QuoteDto } from "#data/shared/dto/quote.dto.ts";
@@ -34,6 +35,16 @@ export function givenTokenRejected(): void {
     investlabApi.use(http.all(`${API_URL}/*`, () => HttpResponse.json(body, { status: 401 })));
 }
 
+/** The API answers that market data is unavailable. */
+export function givenMarketDataUnavailable(): void {
+    const body: ApiErrorDto = {
+        code: "MARKET_DATA_UNAVAILABLE",
+        message: "Internal server error",
+        statusCode: 503,
+    };
+    investlabApi.use(http.get(`${API_URL}/quotes`, () => HttpResponse.json(body, { status: 503 })));
+}
+
 /** The browser holds this text under the key the followed tickers are saved to. */
 export function givenStoredTickers(raw: string): void {
     storage.set(TICKERS_STORAGE_KEY, raw);
@@ -41,5 +52,5 @@ export function givenStoredTickers(raw: string): void {
 
 /** What the browser holds under the followed tickers' key. */
 export function storedTickers(): unknown {
-    return storage.getObject<unknown>(TICKERS_STORAGE_KEY);
+    return storage.getObject(TICKERS_STORAGE_KEY, z.unknown());
 }

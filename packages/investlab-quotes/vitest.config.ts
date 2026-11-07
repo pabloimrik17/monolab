@@ -21,13 +21,13 @@ export default mergeConfig(
                     "**/*.builder.ts",
                     "**/vitest-integration-*.ts",
                 ],
-                // Below the 80 target of ADR 0008 (docs/adr/0008-test-policy.md): these floors are the CI
-                // measurement of 2026-10-18 rounded down to a multiple of 5 (lines 85.25, branches 73.58, functions 85.24,
-                // statements 85.11). Never lower them. Whoever adds tests here re-measures with `test:coverage` and
+                // Below the 80 target of ADR 0008 (docs/adr/0008-test-policy.md): these floors are the
+                // measurement of 2026-11-07 rounded down to a multiple of 5 (lines 91.2, branches 78.94, functions 88.65,
+                // statements 90.77). Never lower them. Whoever adds tests here re-measures with `test:coverage` and
                 // raises every metric that passed its next multiple of 5, until each one reaches 80.
                 thresholds: coverageThresholds({
                     lines: 80,
-                    branches: 70,
+                    branches: 75,
                     functions: 80,
                     statements: 80,
                 }),

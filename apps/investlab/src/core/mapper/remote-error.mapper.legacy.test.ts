@@ -12,6 +12,7 @@ import {
     PortfolioItemConflictError,
     PortfolioItemNotFoundError,
 } from "@m0n0lab/investlab-portfolio";
+import { MarketDataUnavailableError } from "@m0n0lab/investlab-quotes";
 import { remoteErrorMessage, remoteErrorStatus } from "./remote-error.mapper";
 
 describe("remote-error.mapper", () => {
@@ -34,6 +35,12 @@ describe("remote-error.mapper", () => {
             );
         });
 
+        it("tells the user quotes are unavailable when market data is", () => {
+            expect(remoteErrorMessage(new MarketDataUnavailableError("finnhub down"))).toBe(
+                "Quotes are unavailable right now. Please try again later.",
+            );
+        });
+
         it.each([
             new ValidationError("Target weight must be between 0 and 100"),
             new InstrumentNotFoundError("instrument-1"),
@@ -52,6 +59,7 @@ describe("remote-error.mapper", () => {
         });
 
         it.each([
+            [new MarketDataUnavailableError("finnhub down"), 503],
             [new PersistenceError("db down"), 500],
             [new UnauthorizedError({ code: "UNAUTHORIZED" }), 500],
             [new ValidationError("bad"), 422],

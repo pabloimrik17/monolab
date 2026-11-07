@@ -40,7 +40,7 @@ export function instrumentRoutes(container: Container) {
 
     // POST /instruments
     app.post("/", validateJsonBody(createInstrumentDtoSchema), async (c) => {
-        const body = c.get("body");
+        const body = c.req.valid("json");
         const uc = container.get(PORTFOLIO.InstrumentCreate);
 
         const result = await uc.execute({
@@ -55,8 +55,8 @@ export function instrumentRoutes(container: Container) {
 
     // PUT /instruments/:id
     app.put("/:id", validateId, validateJsonBody(updateInstrumentDtoSchema), async (c) => {
-        const id = c.get("id");
-        const body = c.get("body");
+        const { id } = c.req.valid("param");
+        const body = c.req.valid("json");
         const uc = container.get(PORTFOLIO.InstrumentUpdate);
 
         return replyJson(c, await uc.execute(id, toInstrumentChanges(body)), toInstrumentDto);
@@ -64,7 +64,7 @@ export function instrumentRoutes(container: Container) {
 
     // DELETE /instruments/:id
     app.delete("/:id", validateId, async (c) => {
-        const id = c.get("id");
+        const { id } = c.req.valid("param");
         const uc = container.get(PORTFOLIO.InstrumentDelete);
 
         return replyEmpty(c, await uc.execute(id));

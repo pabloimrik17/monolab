@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { QUOTES } from "#application/client/tokens.ts";
-import { givenApiUnavailable, givenQuotesFor, givenTokenRejected } from "#testing/client/given.ts";
+import { MarketDataUnavailableError } from "#domain/error/market-data-unavailable.error.ts";
+import {
+    givenApiUnavailable,
+    givenMarketDataUnavailable,
+    givenQuotesFor,
+    givenTokenRejected,
+} from "#testing/client/given.ts";
 import { container } from "#testing/client/vitest-integration-setup.ts";
 import { NetworkError, UnauthorizedError } from "@m0n0lab/investlab-core";
 import type { QuoteListUseCase } from "./quote-list.use-case.ts";
@@ -47,6 +53,15 @@ describe("QuoteListUseCase", () => {
         const error = (await list.execute(["SPY"]))._unsafeUnwrapErr();
 
         expect(error).toBeInstanceOf(NetworkError);
+    });
+
+    it("fails as market data unavailable when the service says it has none to give", async () => {
+        givenMarketDataUnavailable();
+
+        const error = (await list.execute(["SPY"]))._unsafeUnwrapErr();
+
+        expect(error).toBeInstanceOf(MarketDataUnavailableError);
+        expect(error.code).toBe("MARKET_DATA_UNAVAILABLE");
     });
 
     it("fails as unauthorized when the service rejects the web's credentials", async () => {

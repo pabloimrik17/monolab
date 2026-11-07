@@ -9,6 +9,7 @@ export const apiErrorCodeSchema = z.enum([
     "INSTRUMENT_ALREADY_EXISTS",
     "PORTFOLIO_ITEM_NOT_FOUND",
     "PORTFOLIO_ITEM_CONFLICT",
+    "MARKET_DATA_UNAVAILABLE",
     "UNAUTHORIZED",
     "INTERNAL_ERROR",
 ]);

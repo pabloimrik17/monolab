@@ -2,8 +2,10 @@ import { inject, injectable } from "inversify";
 import { errAsync, okAsync, type ResultAsync } from "neverthrow";
 import { z } from "zod";
 import { quoteDtoSchema } from "#data/shared/dto/quote.dto.ts";
-import { PersistenceError, type RemotePortError } from "@m0n0lab/investlab-core";
+import { MarketDataUnavailableError } from "#domain/error/market-data-unavailable.error.ts";
+import { PersistenceError } from "@m0n0lab/investlab-core";
 import { PLATFORM, type InvestlabApiClient } from "@m0n0lab/investlab-platform/client";
+import type { QuotesRemoteError } from "#domain/error/quotes-remote.error.ts";
 import type { QuoteRepository } from "#domain/repository/quote.repository.ts";
 import type { Quote } from "#domain/value-object/quote.value-object.ts";
 
@@ -13,10 +15,10 @@ const quoteListSchema = z.array(quoteDtoSchema);
 const QUOTES_TIMEOUT_MS = 60_000;
 
 @injectable()
-export class QuoteApiRepository implements QuoteRepository<RemotePortError> {
+export class QuoteApiRepository implements QuoteRepository<QuotesRemoteError> {
     constructor(@inject(PLATFORM.InvestlabApiClient) private readonly api: InvestlabApiClient) {}
 
-    getQuote(symbol: string): ResultAsync<Quote, RemotePortError> {
+    getQuote(symbol: string): ResultAsync<Quote, QuotesRemoteError> {
         return this.getQuotes([symbol]).andThen((quotes) => {
             const quote = quotes.get(symbol);
             return quote
@@ -25,7 +27,7 @@ export class QuoteApiRepository implements QuoteRepository<RemotePortError> {
         });
     }
 
-    getQuotes(symbols: string[]): ResultAsync<Map<string, Quote>, RemotePortError> {
+    getQuotes(symbols: string[]): ResultAsync<Map<string, Quote>, QuotesRemoteError> {
         if (symbols.length === 0) {
             return okAsync(new Map());
         }
@@ -35,7 +37,12 @@ export class QuoteApiRepository implements QuoteRepository<RemotePortError> {
                 "GET",
                 `/quotes?symbols=${encodeURIComponent(symbols.join(","))}`,
                 quoteListSchema,
-                { timeoutMs: QUOTES_TIMEOUT_MS },
+                {
+                    timeoutMs: QUOTES_TIMEOUT_MS,
+                    errors: {
+                        MARKET_DATA_UNAVAILABLE: (dto) => new MarketDataUnavailableError(dto),
+                    },
+                },
             )
             .map(
                 (dtos) =>

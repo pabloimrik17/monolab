@@ -1,18 +1,18 @@
 import { inject, injectable } from "inversify";
 import { QUOTES_PORTS } from "#application/client/tokens.ts";
+import type { QuotesRemoteError } from "#domain/error/quotes-remote.error.ts";
 import type { QuoteRepository } from "#domain/repository/quote.repository.ts";
 import type { Quote } from "#domain/value-object/quote.value-object.ts";
-import type { RemotePortError } from "@m0n0lab/investlab-core";
 import type { ResultAsync } from "neverthrow";
 
-/** Quotes have no module errors: only the failures every remote port can return. */
-export type QuoteListError = RemotePortError;
+/** The failures every remote port can return, plus the market data being unavailable. */
+export type QuoteListError = QuotesRemoteError;
 
 @injectable()
 export class QuoteListUseCase {
     constructor(
         @inject(QUOTES_PORTS.QuoteRepository)
-        private readonly quoteRepo: QuoteRepository<RemotePortError>,
+        private readonly quoteRepo: QuoteRepository<QuoteListError>,
     ) {}
 
     execute(symbols: string[]): ResultAsync<Quote[], QuoteListError> {

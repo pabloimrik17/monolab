@@ -67,6 +67,15 @@ export class PortfolioItemRouteHarness extends ApiHarness {
         return this.reply(response, portfolioItemDtoSchema);
     }
 
+    /** POST a JSON string labelled `text/plain`, which Hono's JSON validator does not parse. */
+    createItemAsText(body: unknown) {
+        const response = this.request("/portfolio-items", {
+            method: "POST",
+            body: JSON.stringify(body),
+        });
+        return this.reply(response, portfolioItemDtoSchema);
+    }
+
     updateItem(id: string, body: unknown) {
         return this.reply(this.json(`/portfolio-items/${id}`, "PUT", body), portfolioItemDtoSchema);
     }

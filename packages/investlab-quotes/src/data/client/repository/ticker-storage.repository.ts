@@ -18,15 +18,13 @@ export class TickerStorageRepository implements TickerRepository {
     ) {}
 
     findAll(): Ticker[] {
-        const stored = storedTickersSchema.safeParse(
-            this.storage.getObject<unknown>(TICKERS_STORAGE_KEY),
-        );
-        if (!stored.success) {
+        const stored = this.storage.getObject(TICKERS_STORAGE_KEY, storedTickersSchema);
+        if (stored === undefined) {
             return [];
         }
 
         const tickers = new Map<string, Ticker>();
-        for (const { symbol, addedAt } of stored.data) {
+        for (const { symbol, addedAt } of stored) {
             tickers.set(symbol, Ticker.reconstitute({ symbol, addedAt: new Date(addedAt) }));
         }
 

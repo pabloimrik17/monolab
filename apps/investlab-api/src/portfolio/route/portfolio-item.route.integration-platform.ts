@@ -144,6 +144,26 @@ describe("portfolioItemRoutes", () => {
                 issues: [{ path: "", message: expect.any(String) }],
             });
         });
+
+        it("answers 422 when the body is sent as text/plain", async () => {
+            await using api = await PortfolioItemRouteHarness.launch();
+            const create = api.givenCreateSucceeds(makePortfolioItem());
+
+            const { status, body } = await api.createItemAsText({
+                instrumentId: MISSING_ID,
+                broker: "MyInvestor",
+                targetWeight: 25,
+            });
+
+            expect(status).toBe(422);
+            expect(body).toMatchObject({
+                code: "VALIDATION_ERROR",
+                issues: [
+                    { path: "", message: "Body must be JSON (Content-Type: application/json)" },
+                ],
+            });
+            expect(create.calls).toStrictEqual([]);
+        });
     });
 
     describe("PUT /portfolio-items/:id", () => {

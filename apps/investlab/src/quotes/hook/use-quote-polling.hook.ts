@@ -1,5 +1,7 @@
+import { ResultAsync, errAsync, okAsync } from "neverthrow";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
+import { QuotesRequestError } from "#quotes/error/quotes-request.error";
 import {
     QUOTE_LIST_MAX_SYMBOLS,
     quoteDtoSchema,
@@ -14,7 +16,7 @@ const DEFAULT_INTERVAL = 30_000;
 export interface QuotePollerOptions {
     interval?: number;
     onUpdate: (quotes: Map<string, Quote>) => void;
-    onError?: (error: Error) => void;
+    onError?: (error: QuotesRequestError) => void;
 }
 
 export interface QuotePoller {
@@ -26,7 +28,7 @@ export interface QuotePoller {
 }
 
 export interface QuoteSource {
-    getQuotes(symbols: string[]): Promise<Map<string, Quote>>;
+    getQuotes(symbols: string[]): ResultAsync<Map<string, Quote>, QuotesRequestError>;
 }
 
 export function createQuotePoller(client: QuoteSource, options: QuotePollerOptions): QuotePoller {
@@ -42,29 +44,24 @@ export function createQuotePoller(client: QuoteSource, options: QuotePollerOptio
         return Math.min(Math.max(ms, MIN_INTERVAL), MAX_INTERVAL);
     }
 
-    // fallow-ignore-next-line complexity -- pre-existing, file moved verbatim; pinned fallow lacks move attribution
     async function poll(pollGeneration: number): Promise<void> {
-        if (tickers.length === 0) {
-            if (polling && pollGeneration === generation) {
-                timerId = setTimeout(() => void poll(pollGeneration), interval);
-            }
-            return;
-        }
+        const isCurrent = () => polling && pollGeneration === generation;
 
-        try {
-            const quotes = await client.getQuotes(tickers);
-            if (polling && pollGeneration === generation) {
-                onUpdate(quotes);
-            }
-        } catch (error) {
-            if (polling && pollGeneration === generation) {
-                onError?.(error instanceof Error ? error : new Error(String(error)));
-            }
-        }
+        const result = tickers.length > 0 ? await client.getQuotes(tickers) : null;
 
-        if (polling && pollGeneration === generation) {
+        // Scheduled before the callbacks so one that throws cannot end polling.
+        if (isCurrent()) {
             timerId = setTimeout(() => void poll(pollGeneration), interval);
         }
+
+        result?.match(
+            (quotes) => {
+                if (isCurrent()) onUpdate(quotes);
+            },
+            (error) => {
+                if (isCurrent()) onError?.(error);
+            },
+        );
     }
 
     return {
@@ -109,20 +106,42 @@ const quoteListSchema = z.array(quoteDtoSchema);
 
 /** Quotes from the web app's own resource route; the browser never talks to Finnhub or the API. */
 export function createRouteQuoteSource(fetchFn: typeof fetch = fetch): QuoteSource {
-    async function fetchChunk(symbols: string[]): Promise<Quote[]> {
+    const request = ResultAsync.fromThrowable(
+        fetchFn,
+        (cause) => new QuotesRequestError("Quotes request failed: route unreachable", cause),
+    );
+
+    function fetchChunk(symbols: string[]): ResultAsync<Quote[], QuotesRequestError> {
         const query = new URLSearchParams({ symbols: symbols.join(",") });
-        const response = await fetchFn(`${QUOTES_ROUTE}?${query}`);
 
-        if (!response.ok) {
-            throw new Error(`Quotes request failed: HTTP ${response.status}`);
-        }
-
-        const dtos = quoteListSchema.parse(await response.json());
-        return dtos.map((dto) => ({ ...dto, updatedAt: new Date(dto.updatedAt) }));
+        return request(`${QUOTES_ROUTE}?${query}`)
+            .andThen((response) => {
+                if (!response.ok) {
+                    return errAsync(
+                        new QuotesRequestError(`Quotes request failed: HTTP ${response.status}`),
+                    );
+                }
+                return ResultAsync.fromPromise(
+                    response.json() as Promise<unknown>,
+                    (cause) => new QuotesRequestError("Quotes response is not JSON", cause),
+                );
+            })
+            .andThen((body) => {
+                const parsed = quoteListSchema.safeParse(body);
+                return parsed.success
+                    ? okAsync(parsed.data)
+                    : errAsync(
+                          new QuotesRequestError(
+                              "Quotes response has an unexpected shape",
+                              parsed.error,
+                          ),
+                      );
+            })
+            .map((dtos) => dtos.map((dto) => ({ ...dto, updatedAt: new Date(dto.updatedAt) })));
     }
 
     return {
-        async getQuotes(symbols: string[]): Promise<Map<string, Quote>> {
+        getQuotes(symbols: string[]): ResultAsync<Map<string, Quote>, QuotesRequestError> {
             const requestable = [
                 ...new Set(
                     symbols
@@ -136,8 +155,9 @@ export function createRouteQuoteSource(fetchFn: typeof fetch = fetch): QuoteSour
                 chunks.push(requestable.slice(start, start + QUOTE_LIST_MAX_SYMBOLS));
             }
 
-            const quotes = (await Promise.all(chunks.map(fetchChunk))).flat();
-            return new Map(quotes.map((quote) => [quote.symbol, quote]));
+            return ResultAsync.combine(chunks.map(fetchChunk)).map(
+                (answers) => new Map(answers.flat().map((quote) => [quote.symbol, quote])),
+            );
         },
     };
 }
