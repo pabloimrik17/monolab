@@ -1,5 +1,5 @@
 ---
-status: amended by ADR-0009
+status: amended by ADR-0009, ADR-0010
 ---
 
 # InvestLab packages are one per module, three layers inside, entries per side
