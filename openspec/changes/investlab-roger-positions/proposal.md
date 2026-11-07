@@ -1,31 +1,36 @@
 ## Why
 
-InvestLab needs the Roger trading module's core capability: managing stock positions through a defined lifecycle. Positions follow Roger's methodology with 6 states (EN_ESPERA, OPERATIVA, ROGER, COMPRAR, INVERTIDO, VENDER), each requiring specific data and enforcing strict transition rules. Without this, there's no foundation for the metrics, indicators, or decision-support features.
+The user follows Roger, a trader, and tracks each of his stock calls by hand: from the radar, through buy and sell orders, to the sale. InvestLab has no place for that lifecycle, and the later Roger changes (metrics, sectors, dashboard) and the global portfolio need it as their source. This change adds it on top of the shared instrument catalog (`investlab-instrument-catalog`), so the global portfolio can see Roger's holdings by the same instruments.
 
 ## What Changes
 
-- Entry entity in `investlab-domain`: id, instrumentId, state (RogerState enum), desiredPrice, quantity?, commission?, createdAt, updatedAt
-- State machine as pure domain logic: StateTransition value object validates from->to, returns required fields per target state
-- Transition handler: validates allowed transition, checks required data present, pre-fills defaults from current state values
-- New `/roger` route: table of entries grouped by instrument, sortable, filterable by state
-- Transition UI: modal/form pre-filled with current values, requesting only missing required fields
-- Entry CRUD: create (select/create instrument, initial state + desired price), update fields (when state allows), delete
-- Cleanup: button to delete tickers where ALL entries in EN_ESPERA > 1 week (based on updated_at)
+- New module package `@m0n0lab/investlab-roger`, a leaf that depends only on the catalog ([ADR 0010](../../../docs/adr/0010-investlab-module-dependencies.md)): edge roger → catalog, and no module imports roger.
+- **Entry**: one trade of a stock that follows Roger, linked to a catalog instrument. An instrument may have several entries.
+- **Seven Roger states**: `WATCHING`, `SHORTLISTED` and `TRADER_BOUGHT` (the radar), `BUY_ORDER`, `INVESTED`, `SELL_ORDER` and `SOLD`, with a fixed transition table, a market buy (radar → `INVESTED`), a manual sale (`INVESTED` → `SOLD`), and `SOLD` as a final state kept as history.
+- **Fields per state**: entry price on the radar; quantity from `BUY_ORDER`; buy commission and buy date from `INVESTED`; exit price from `SELL_ORDER`; sell commission and sell date at `SOLD`. Each entry records since when it is in its state.
+- **Re-entry**: from a sold entry, a new entry in `BUY_ORDER` with its price and quantity pre-filled.
+- **Create** an entry in any state, for an existing instrument or for a new stock created on the fly in the catalog. **Edit** the fields of the current state. **Delete** in any state.
+- **API**: `/roger/entries` endpoints for list (active or history), create, edit, delete, transition and re-entry.
+- **Web**: a `/roger` tab with the active entries grouped by instrument, sortable and filterable by state, state badges, only the valid transitions as actions, transition and re-entry forms that ask exactly the target state's fields, and a history view of sold entries.
 
 ## Capabilities
 
 ### New Capabilities
 
-- `roger-entry-management`: Entry CRUD with instrument association. Create entry (select or auto-create instrument), list entries grouped by instrument, update fields per state rules, delete entries. Multiple entries per instrument supported
-- `roger-state-machine`: State transitions with validation and data rules. 6-state enum, transition matrix enforcement, data requirements per target state (desired_price always, quantity for COMPRAR+, commission for INVERTIDO+), pre-filling from current values on transition
+- `roger-state-machine`: the Roger states, the transition table, the fields each state carries, how a transition fills and clears them, value rules, time in state, and re-entry.
+- `roger-entry-management`: creating (with an existing or a new instrument), editing, deleting and listing entries, the history of sold entries, and the `/roger` page and its forms.
 
 ### Modified Capabilities
 
-None
+- `investlab-module-packages`: the roger module package, the edge roger → catalog, roger as a leaf, and the apps' containers loading roger.
+- `investlab-http-api`: the Roger entry endpoints, their error codes, the complete route list and the API container.
 
 ## Impact
 
-- **New route**: `/roger` in `apps/investlab`
-- **New domain entities**: Entry entity, RogerState enum, StateTransition VO in `packages/investlab-domain`
-- **New data layer**: Entry Drizzle schema, migration, EntryRepository in `packages/investlab-data`
-- **Prereq**: `investlab-foundation` (Instrument entity, DB, repos)
+- **New package**: `packages/investlab-roger` (entries `.`, `./server`, `./client`, `./testing`), coverage at 80 and Stryker.
+- **Database**: a new `roger_entries` table with a foreign key to `instruments`, through a new migration in `@m0n0lab/investlab-database`.
+- **API**: routes in `apps/investlab-api/src/roger/route/`; the container loads the roger server module.
+- **Web**: `apps/investlab/src/roger/`, `src/routes/roger.tsx` and a "Roger" link in the top navigation.
+- **Lint**: `eslint.config.ts` adds `roger` to the modules and `roger: ["catalog"]` to the declared edges.
+- **Prerequisites**: `investlab-instrument-catalog` (base of this stack) and `agentic-task-3ao3` (UI harness, needed by the web part).
+- **Follow-ups outside this change**: the stale-ticker cleanup and the Roger summary go to `investlab-roger-dashboard`; the stock-picking summary goes to `investlab-overview`; the state badges and transition buttons leave `investlab-roger-metrics-ui`, which this change now owns.
