@@ -1,7 +1,10 @@
 import type { PortfolioRemoteError } from "@m0n0lab/investlab-portfolio";
+import type { QuotesRemoteError } from "@m0n0lab/investlab-quotes";
+
+type RemoteError = PortfolioRemoteError | QuotesRemoteError;
 
 /** What the user reads when a client use case fails; server-side details never reach the page. */
-export function remoteErrorMessage(error: PortfolioRemoteError): string {
+export function remoteErrorMessage(error: RemoteError): string {
     switch (error.code) {
         case "NETWORK_ERROR":
             return "InvestLab service is unavailable. Please try again later.";
@@ -9,6 +12,8 @@ export function remoteErrorMessage(error: PortfolioRemoteError): string {
             return "API token is not accepted by investlab-api; check INVESTLAB_API_TOKEN";
         case "PERSISTENCE_ERROR":
             return "InvestLab could not complete the request. Please try again later.";
+        case "MARKET_DATA_UNAVAILABLE":
+            return "Quotes are unavailable right now. Please try again later.";
         case "VALIDATION_ERROR":
         case "INSTRUMENT_NOT_FOUND":
         case "INSTRUMENT_IN_USE":
@@ -20,9 +25,10 @@ export function remoteErrorMessage(error: PortfolioRemoteError): string {
 }
 
 /** HTTP status for a loader or resource route that fails with `error`. */
-export function remoteErrorStatus(error: PortfolioRemoteError): number {
+export function remoteErrorStatus(error: RemoteError): number {
     switch (error.code) {
         case "NETWORK_ERROR":
+        case "MARKET_DATA_UNAVAILABLE":
             return 503;
         case "UNAUTHORIZED":
         case "PERSISTENCE_ERROR":

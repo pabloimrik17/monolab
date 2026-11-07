@@ -1,5 +1,6 @@
 import { http, HttpResponse } from "msw";
-import { FINNHUB_API_KEY, finnhub } from "./vitest-integration-setup.ts";
+import { PLATFORM } from "@m0n0lab/investlab-platform/server";
+import { container, FINNHUB_API_KEY, finnhub } from "./vitest-integration-setup.ts";
 
 const FINNHUB_QUOTE_URL = "https://finnhub.io/api/v1/quote";
 /** What Finnhub answers for a symbol it has no data for. */
@@ -32,12 +33,54 @@ export function givenQuotesFor(quotes: Readonly<Record<string, MarketQuote>>): v
     );
 }
 
-/** Market data rejects the configured key, as after it is revoked. */
-export function givenMarketDataRejectsTheKey(): void {
-    finnhub.use(http.get(FINNHUB_QUOTE_URL, INVALID_KEY));
+export function givenUnreadableMarketDataFor(symbol: string): void {
+    finnhub.use(
+        http.get(FINNHUB_QUOTE_URL, ({ request }) => {
+            if (new URL(request.url).searchParams.get("symbol") !== symbol) {
+                return undefined;
+            }
+            return HttpResponse.json({ c: "190.5", d: "1.5", dp: "0.79" });
+        }),
+    );
+}
+
+export function givenMarketDataRejectsTheKey(): { readonly requests: number } {
+    const received = { requests: 0 };
+    finnhub.use(
+        http.get(FINNHUB_QUOTE_URL, () => {
+            received.requests += 1;
+            return INVALID_KEY();
+        }),
+    );
+    return received;
 }
 
 /** Market data cannot be reached. */
 export function givenMarketDataUnavailable(): void {
     finnhub.use(http.get(FINNHUB_QUOTE_URL, () => HttpResponse.error()));
+}
+
+export function givenMarketDataFailing(): void {
+    finnhub.use(
+        http.get(FINNHUB_QUOTE_URL, () =>
+            HttpResponse.json({ error: "Internal server error" }, { status: 500 }),
+        ),
+    );
+}
+
+export function givenMarketDataRateLimitReached(): void {
+    finnhub.use(
+        http.get(FINNHUB_QUOTE_URL, () =>
+            HttpResponse.json(
+                { error: "API limit reached. Please try again later." },
+                { status: 429 },
+            ),
+        ),
+    );
+}
+
+export async function givenAnUnreadableCachedQuoteFor(symbol: string): Promise<void> {
+    await container
+        .get(PLATFORM.Redis)
+        .set(`investlab:quote:${symbol}`, JSON.stringify({ symbol, price: "190.5" }));
 }

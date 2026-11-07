@@ -1,3 +1,6 @@
+export { MarketDataUnavailableError } from "#domain/error/market-data-unavailable.error.ts";
+export type { QuotesErrorCode, QuotesRemoteError } from "#domain/error/quotes-remote.error.ts";
+export type { QuotesServerError } from "#domain/error/quotes-server.error.ts";
 export type { Quote } from "#domain/value-object/quote.value-object.ts";
 export type { Ticker } from "#domain/model/ticker.model.ts";
 export type { QuoteRepository } from "#domain/repository/quote.repository.ts";

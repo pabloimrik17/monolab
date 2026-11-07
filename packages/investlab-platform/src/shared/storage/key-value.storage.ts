@@ -1,4 +1,6 @@
 import { injectable } from "inversify";
+import { Result } from "neverthrow";
+import type { z } from "zod";
 
 /** Text storage by key; the typed reads return no value when the key is missing or unreadable. */
 export interface KeyValueStorage {
@@ -7,9 +9,14 @@ export interface KeyValueStorage {
     remove(key: string): void;
     getNumber(key: string): number | undefined;
     setNumber(key: string, value: number): void;
-    getObject<T>(key: string): T | undefined;
+    getObject<T>(key: string, schema: z.ZodType<T, z.ZodTypeDef, unknown>): T | undefined;
     setObject(key: string, value: unknown): void;
 }
+
+const parseJson = Result.fromThrowable(
+    (text: string): unknown => JSON.parse(text),
+    (cause) => cause,
+);
 
 /** The typed helpers, written once on top of the text methods an implementation provides. */
 @injectable()
@@ -30,16 +37,17 @@ export abstract class BaseKeyValueStorage implements KeyValueStorage {
         this.set(key, String(value));
     }
 
-    /** The stored JSON is trusted to have the shape `T`; callers validate when it matters. */
-    getObject<T>(key: string): T | undefined {
+    /** Missing, unparsable or schema-mismatched data reads as `undefined`. */
+    getObject<T>(key: string, schema: z.ZodType<T, z.ZodTypeDef, unknown>): T | undefined {
         const text = this.get(key);
         if (text === undefined) return undefined;
 
-        try {
-            return JSON.parse(text) as T;
-        } catch {
-            return undefined;
-        }
+        return parseJson(text)
+            .map((json) => schema.safeParse(json))
+            .match(
+                (parsed) => (parsed.success ? parsed.data : undefined),
+                () => undefined,
+            );
     }
 
     setObject(key: string, value: unknown): void {

@@ -51,6 +51,15 @@ export class InstrumentRouteHarness extends ApiHarness {
         return this.reply(this.json(`/instruments/${id}`, "PUT", body), instrumentDtoSchema);
     }
 
+    updateInstrumentAs(contentType: string, id: string, body: unknown) {
+        const response = this.request(`/instruments/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": contentType },
+            body: JSON.stringify(body),
+        });
+        return this.reply(response, instrumentDtoSchema);
+    }
+
     deleteInstrument(id: string) {
         return this.reply(this.request(`/instruments/${id}`, { method: "DELETE" }), z.undefined());
     }

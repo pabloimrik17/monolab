@@ -1,11 +1,11 @@
 import { RequestValidationError } from "#core/error/request-validation.error.ts";
 import { DomainError, type ApiErrorDto, type KernelErrorCode } from "@m0n0lab/investlab-core";
 import type { PortfolioErrorCode } from "@m0n0lab/investlab-portfolio";
+import type { QuotesErrorCode } from "@m0n0lab/investlab-quotes";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
-/** Every code a use case can fail with: the kernel's plus each module's. Quotes declare none. */
-type ApiDomainErrorCode = KernelErrorCode | PortfolioErrorCode;
+type ApiDomainErrorCode = KernelErrorCode | PortfolioErrorCode | QuotesErrorCode;
 
 export type ApiDomainError = DomainError<ApiDomainErrorCode>;
 
@@ -18,6 +18,7 @@ const STATUS_BY_CODE = {
     INSTRUMENT_ALREADY_EXISTS: 409,
     VALIDATION_ERROR: 422,
     PERSISTENCE_ERROR: 500,
+    MARKET_DATA_UNAVAILABLE: 503,
 } as const satisfies Record<ApiDomainErrorCode, number>;
 
 function errorToHttp(error: ApiDomainError): number {

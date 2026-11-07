@@ -48,7 +48,7 @@ export function portfolioItemRoutes(container: Container) {
     });
 
     app.post("/", validateJsonBody(createPortfolioItemDtoSchema), async (c) => {
-        const body = c.get("body");
+        const body = c.req.valid("json");
         const uc = container.get(PORTFOLIO.ItemCreate);
 
         const result = await uc.execute({
@@ -63,8 +63,8 @@ export function portfolioItemRoutes(container: Container) {
     });
 
     app.put("/:id", validateId, validateJsonBody(updatePortfolioItemDtoSchema), async (c) => {
-        const id = c.get("id");
-        const body = c.get("body");
+        const { id } = c.req.valid("param");
+        const body = c.req.valid("json");
         const uc = container.get(PORTFOLIO.ItemUpdate);
 
         const result = await uc.execute(
@@ -82,7 +82,7 @@ export function portfolioItemRoutes(container: Container) {
     });
 
     app.delete("/:id", validateId, async (c) => {
-        const id = c.get("id");
+        const { id } = c.req.valid("param");
         const uc = container.get(PORTFOLIO.ItemDelete);
 
         return replyEmpty(c, await uc.execute(id));

@@ -1,5 +1,6 @@
 import { ContainerModule } from "inversify";
 import { QUOTES, QUOTES_PORTS } from "#application/server/tokens.ts";
+import { QuoteGetUseCase } from "#application/server/use-case/quote-get.use-case.ts";
 import { QuoteListUseCase } from "#application/server/use-case/quote-list.use-case.ts";
 import { QuoteFinnhubDatasource } from "#data/server/datasource/quote-finnhub.datasource.ts";
 import { QuoteRedisDatasource } from "#data/server/datasource/quote-redis.datasource.ts";
@@ -22,5 +23,6 @@ export const quotesServerModule = new ContainerModule(({ bind }) => {
     bind(QUOTES_DATA.QuoteFinnhubDatasource).to(QuoteFinnhubDatasource);
     bind(QUOTES_DATA.QuoteRedisDatasource).to(QuoteRedisDatasource);
     bind(QUOTES_PORTS.QuoteRepository).to(QuoteCachedRepository);
+    bind(QUOTES.Get).to(QuoteGetUseCase);
     bind(QUOTES.List).to(QuoteListUseCase);
 });

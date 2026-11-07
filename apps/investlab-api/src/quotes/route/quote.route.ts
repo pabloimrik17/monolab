@@ -18,7 +18,7 @@ function toQuoteDto(quote: Quote): QuoteDto {
 
 export function quoteRoutes(container: Container) {
     return new Hono().get("/", validateQuery(quoteListQueryDtoSchema), async (c) => {
-        const { symbols } = c.get("query");
+        const { symbols } = c.req.valid("query");
         const uc = container.get(QUOTES.List);
 
         return replyJson(c, await uc.execute(symbols), (quotes) => quotes.map(toQuoteDto));

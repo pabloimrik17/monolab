@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { QUOTE_LIST_MAX_SYMBOLS } from "@m0n0lab/investlab-quotes";
+import { MarketDataUnavailableError, QUOTE_LIST_MAX_SYMBOLS } from "@m0n0lab/investlab-quotes";
 import { makeQuote } from "@m0n0lab/investlab-quotes/testing";
 import { QuoteRouteHarness } from "./quote.route.harness.ts";
 
@@ -23,6 +23,23 @@ describe("quoteRoutes", () => {
             expect(status).toBe(200);
             expect(body).toEqual([{ ...aapl, updatedAt: "2026-10-12T14:30:00.000Z" }]);
             expect(list.calls).toEqual([[["AAPL", "MSFT"]]]);
+        });
+
+        it("answers 503 MARKET_DATA_UNAVAILABLE with a generic message and logs the cause", async () => {
+            await using api = await QuoteRouteHarness.launch();
+            const errorLog = api.silenceErrorLog();
+            const error = new MarketDataUnavailableError(new Error("finnhub down"));
+            api.givenListFails(error);
+
+            const { status, body } = await api.listQuotes(["AAPL"]);
+
+            expect(status).toBe(503);
+            expect(body).toEqual({
+                code: "MARKET_DATA_UNAVAILABLE",
+                message: "Internal server error",
+                statusCode: 503,
+            });
+            expect(errorLog.calls).toEqual([["MARKET_DATA_UNAVAILABLE:", error]]);
         });
 
         it("answers 422 VALIDATION_ERROR without a symbols parameter", async () => {

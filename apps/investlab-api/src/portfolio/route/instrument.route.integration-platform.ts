@@ -134,6 +134,32 @@ describe("instrumentRoutes", () => {
     });
 
     describe("PUT /instruments/:id", () => {
+        // Every Content-Type Hono's validator does not parse as JSON, so it would validate `{}`.
+        it.each([
+            "text/plain",
+            "application/json;",
+            "application/json ; charset=utf-8",
+            "application/json;charset",
+            "application/vnd.v2+json",
+        ])("answers 422 without updating when the body is sent as %s", async (contentType) => {
+            await using api = await InstrumentRouteHarness.launch();
+            const instrument = makeInstrument();
+            const update = api.givenUpdateSucceeds(instrument);
+
+            const { status, body } = await api.updateInstrumentAs(contentType, instrument.id, {
+                name: "Renamed",
+            });
+
+            expect(status).toBe(422);
+            expect(body).toMatchObject({
+                code: "VALIDATION_ERROR",
+                issues: [
+                    { path: "", message: "Body must be JSON (Content-Type: application/json)" },
+                ],
+            });
+            expect(update.calls).toStrictEqual([]);
+        });
+
         it("passes the changed fields, keeps the others and answers 200 with the DTO", async () => {
             await using api = await InstrumentRouteHarness.launch();
             const instrument = makeInstrument({ symbol: "VTI" });

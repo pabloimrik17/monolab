@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { z } from "zod";
 import { LocalStorage } from "./local.storage.ts";
+
+const ANY = z.unknown();
 
 describe("LocalStorage", () => {
     afterEach(() => {
@@ -14,7 +17,7 @@ describe("LocalStorage", () => {
 
         expect(localStorage.getItem("text")).toBe("hello");
         expect(storage.getNumber("number")).toBe(4.5);
-        expect(storage.getObject("object")).toEqual({ symbol: "AAPL" });
+        expect(storage.getObject("object", ANY)).toEqual({ symbol: "AAPL" });
 
         storage.remove("text");
         expect(storage.get("text")).toBeUndefined();
@@ -26,6 +29,16 @@ describe("LocalStorage", () => {
 
         expect(storage.getNumber("missing")).toBeUndefined();
         expect(storage.getNumber("text")).toBeUndefined();
-        expect(storage.getObject("text")).toBeUndefined();
+        expect(storage.getObject("text", ANY)).toBeUndefined();
+    });
+
+    it("returns no value when the stored JSON does not match the schema", () => {
+        const storage = new LocalStorage();
+        storage.setObject("object", { symbol: "AAPL", extra: true });
+
+        expect(storage.getObject("object", z.array(z.string()))).toBeUndefined();
+        expect(storage.getObject("object", z.object({ symbol: z.string() }))).toEqual({
+            symbol: "AAPL",
+        });
     });
 });

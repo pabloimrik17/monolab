@@ -1,46 +1,49 @@
-import { createMiddleware } from "hono/factory";
+import { zValidator, type Hook } from "@hono/zod-validator";
+import { ResultAsync } from "neverthrow";
 import { z } from "zod";
 import { RequestValidationError } from "#core/error/request-validation.error.ts";
-import type { ZodType, ZodTypeDef } from "zod";
+import { errorJson } from "#core/mapper/error-http.mapper.ts";
+import type { Context, Env } from "hono";
+import type { ZodTypeAny } from "zod";
 
-type Schema<T> = ZodType<T, ZodTypeDef, unknown>;
+// Same matches as Hono's `jsonRegex`: its validator parses only these and validates `{}` for others.
+const JSON_CONTENT_TYPE = /^application\/(?:[a-z.-]+\+)?json(?:;\s*[a-z0-9-]+=[^;]+)*$/i;
 
-function parseWith<T>(schema: Schema<T>, input: unknown, root = ""): T {
-    const parsed = schema.safeParse(input);
-    if (!parsed.success) {
-        throw RequestValidationError.fromZod(parsed.error, root);
-    }
+const rejectInvalid: Hook<unknown, Env, string> = (result, c: Context) =>
+    result.success ? undefined : errorJson(c, RequestValidationError.fromZod(result.error));
 
-    return parsed.data;
-}
+const rejectBody = (c: Context, message: string): Response =>
+    errorJson(c, new RequestValidationError([{ path: "", message }]));
 
-/** The JSON body parsed with `schema`, read in the handler as `c.get("body")`. */
-export function validateJsonBody<T>(schema: Schema<T>) {
-    return createMiddleware<{ Variables: { body: T } }>(async (c, next) => {
-        let body: unknown;
-        try {
-            body = await c.req.json();
-        } catch {
-            throw new RequestValidationError([{ path: "", message: "Body must be valid JSON" }]);
+/**
+ * The JSON body parsed with `schema`, read in the handler as `c.req.valid("json")`.
+ *
+ * Hono's validator skips parsing when the Content-Type is not JSON and validates `{}`, which
+ * would let a mislabelled body through as an empty update; the body is rejected here instead.
+ */
+export const validateJsonBody = <T extends ZodTypeAny>(schema: T) => {
+    const validator = zValidator("json", schema, rejectInvalid);
+
+    const guarded: typeof validator = async (c, next) => {
+        if (!JSON_CONTENT_TYPE.test(c.req.header("Content-Type") ?? "")) {
+            return rejectBody(c, "Body must be JSON (Content-Type: application/json)");
         }
 
-        c.set("body", parseWith(schema, body));
-        await next();
-    });
-}
+        // Hono caches the parsed body, so the validator below does not read it twice.
+        const parsed = await ResultAsync.fromPromise(c.req.json(), () => null);
+        if (parsed.isErr()) {
+            return rejectBody(c, "Body must be valid JSON");
+        }
 
-/** The query string parsed with `schema`, read in the handler as `c.get("query")`. */
-export function validateQuery<T>(schema: Schema<T>) {
-    return createMiddleware<{ Variables: { query: T } }>(async (c, next) => {
-        c.set("query", parseWith(schema, c.req.query()));
-        await next();
-    });
-}
+        return validator(c, next);
+    };
 
-const idSchema = z.string().uuid();
+    return guarded;
+};
 
-/** The `:id` route parameter, which must be a UUID, read in the handler as `c.get("id")`. */
-export const validateId = createMiddleware<{ Variables: { id: string } }>(async (c, next) => {
-    c.set("id", parseWith(idSchema, c.req.param("id"), "id"));
-    await next();
-});
+/** The query string parsed with `schema`, read in the handler as `c.req.valid("query")`. */
+export const validateQuery = <T extends ZodTypeAny>(schema: T) =>
+    zValidator("query", schema, rejectInvalid);
+
+/** The `:id` route parameter, which must be a UUID, read in the handler as `c.req.valid("param")`. */
+export const validateId = zValidator("param", z.object({ id: z.string().uuid() }), rejectInvalid);

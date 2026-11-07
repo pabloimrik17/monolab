@@ -1,4 +1,6 @@
+import { err, errAsync, ok, okAsync, ResultAsync, type Result } from "neverthrow";
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { QuotesRequestError } from "#quotes/error/quotes-request.error";
 import { QUOTE_LIST_MAX_SYMBOLS, type Quote } from "@m0n0lab/investlab-quotes";
 import {
     createQuotePoller,
@@ -8,7 +10,7 @@ import {
 
 function createMockClient(): QuoteSource & { getQuotes: Mock } {
     return {
-        getQuotes: vi.fn().mockResolvedValue(new Map()),
+        getQuotes: vi.fn().mockReturnValue(okAsync(new Map())),
     };
 }
 
@@ -50,7 +52,7 @@ describe("use-quote-polling.hook", () => {
                 ["AAPL", createMockQuote("AAPL")],
                 ["MSFT", createMockQuote("MSFT")],
             ]);
-            client.getQuotes.mockResolvedValue(quotes);
+            client.getQuotes.mockReturnValue(okAsync(quotes));
 
             const onUpdate = vi.fn();
             const poller = createQuotePoller(client, { onUpdate });
@@ -142,12 +144,14 @@ describe("use-quote-polling.hook", () => {
         it("invalidates in-flight poll when stop then start is called", async () => {
             const client = createMockClient();
             let resolveFirst: (value: Map<string, Quote>) => void;
-            const firstCallPromise = new Promise<Map<string, Quote>>((r) => {
-                resolveFirst = r;
-            });
+            const firstCall: ResultAsync<Map<string, Quote>, QuotesRequestError> = new ResultAsync(
+                new Promise((r) => {
+                    resolveFirst = (quotes) => r(ok(quotes));
+                }),
+            );
 
             const msftQuotes = new Map([["MSFT", createMockQuote("MSFT")]]);
-            client.getQuotes.mockReturnValueOnce(firstCallPromise).mockResolvedValue(msftQuotes);
+            client.getQuotes.mockReturnValueOnce(firstCall).mockReturnValue(okAsync(msftQuotes));
 
             const onUpdate = vi.fn();
             const poller = createQuotePoller(client, {
@@ -289,8 +293,8 @@ describe("use-quote-polling.hook", () => {
 
         it("calls onError on fetch failure", async () => {
             const client = createMockClient();
-            const error = new Error("Network error");
-            client.getQuotes.mockRejectedValue(error);
+            const error = new QuotesRequestError("Network error");
+            client.getQuotes.mockReturnValue(errAsync(error));
 
             const onUpdate = vi.fn();
             const onError = vi.fn();
@@ -306,8 +310,8 @@ describe("use-quote-polling.hook", () => {
         it("continues polling after error", async () => {
             const client = createMockClient();
             client.getQuotes
-                .mockRejectedValueOnce(new Error("Network error"))
-                .mockResolvedValue(new Map([["AAPL", createMockQuote("AAPL")]]));
+                .mockReturnValueOnce(errAsync(new QuotesRequestError("Network error")))
+                .mockReturnValue(okAsync(new Map([["AAPL", createMockQuote("AAPL")]])));
 
             const onUpdate = vi.fn();
             const onError = vi.fn();
@@ -327,21 +331,49 @@ describe("use-quote-polling.hook", () => {
             expect(onUpdate).toHaveBeenCalled();
         });
 
-        it("handles non-Error thrown values", async () => {
+        it("continues polling after a callback throws", async () => {
             const client = createMockClient();
-            client.getQuotes.mockRejectedValue("string error");
-
-            const onError = vi.fn();
-            const poller = createQuotePoller(client, {
-                onUpdate: vi.fn(),
-                onError,
-            });
+            client.getQuotes.mockReturnValue(okAsync(new Map([["AAPL", createMockQuote("AAPL")]])));
+            const onUpdate = vi
+                .fn()
+                .mockImplementationOnce(() => {
+                    throw new Error("render failed");
+                })
+                .mockImplementation(() => {});
+            const poller = createQuotePoller(client, { onUpdate, interval: 15000 });
+            const unhandled = vi.fn();
+            process.on("unhandledRejection", unhandled);
 
             poller.start(["AAPL"]);
             await vi.advanceTimersByTimeAsync(0);
+            await vi.advanceTimersByTimeAsync(15000);
+            process.off("unhandledRejection", unhandled);
 
-            expect(onError).toHaveBeenCalledWith(expect.any(Error));
+            expect(onUpdate).toHaveBeenCalledTimes(2);
             poller.stop();
+        });
+
+        it("does not report an error after stop", async () => {
+            const client = createMockClient();
+            let reject: () => void;
+            client.getQuotes.mockReturnValueOnce(
+                new ResultAsync(
+                    new Promise<Result<never, QuotesRequestError>>((r) => {
+                        reject = () => r(err(new QuotesRequestError("late")));
+                    }),
+                ),
+            );
+            const onError = vi.fn();
+            const onUpdate = vi.fn();
+            const poller = createQuotePoller(client, { onUpdate, onError });
+
+            poller.start(["AAPL"]);
+            poller.stop();
+            reject!();
+            await vi.advanceTimersByTimeAsync(0);
+
+            expect(onError).not.toHaveBeenCalled();
+            expect(onUpdate).not.toHaveBeenCalled();
         });
 
         it("returns false initially", () => {
@@ -453,7 +485,9 @@ describe("use-quote-polling.hook", () => {
             const fetchFn = async (): Promise<Response> => Response.json(answers.shift());
             const symbols = Array.from({ length: QUOTE_LIST_MAX_SYMBOLS + 1 }, (_, i) => `S${i}`);
 
-            const quotes = await createRouteQuoteSource(fetchFn).getQuotes(symbols);
+            const quotes = (
+                await createRouteQuoteSource(fetchFn).getQuotes(symbols)
+            )._unsafeUnwrap();
 
             expect([...quotes.keys()]).toEqual(["AAPL", "MSFT"]);
         });
@@ -474,7 +508,9 @@ describe("use-quote-polling.hook", () => {
         it("does not call the route when no symbol is valid", async () => {
             const { requests, fetchFn } = recordingFetch(Response.json([]));
 
-            const quotes = await createRouteQuoteSource(fetchFn).getQuotes(["NOT A TICKER"]);
+            const quotes = (
+                await createRouteQuoteSource(fetchFn).getQuotes(["NOT A TICKER"])
+            )._unsafeUnwrap();
 
             expect(requests).toEqual([]);
             expect(quotes.size).toBe(0);
@@ -483,7 +519,9 @@ describe("use-quote-polling.hook", () => {
         it("returns the quotes the route answered, keyed by symbol", async () => {
             const { fetchFn } = recordingFetch(Response.json([AAPL]));
 
-            const quotes = await createRouteQuoteSource(fetchFn).getQuotes(["AAPL", "MSFT"]);
+            const quotes = (
+                await createRouteQuoteSource(fetchFn).getQuotes(["AAPL", "MSFT"])
+            )._unsafeUnwrap();
 
             expect([...quotes.keys()]).toEqual(["AAPL"]);
             expect(quotes.get("AAPL")).toEqual({ ...AAPL, updatedAt: new Date(AAPL.updatedAt) });
@@ -494,15 +532,37 @@ describe("use-quote-polling.hook", () => {
                 Response.json({ message: "unavailable" }, { status: 503 }),
             );
 
-            await expect(createRouteQuoteSource(fetchFn).getQuotes(["AAPL"])).rejects.toThrow(
-                "Quotes request failed: HTTP 503",
+            const result = await createRouteQuoteSource(fetchFn).getQuotes(["AAPL"]);
+
+            expect(result._unsafeUnwrapErr()).toEqual(
+                new QuotesRequestError("Quotes request failed: HTTP 503"),
             );
         });
 
         it("fails when the route answers with something other than quotes", async () => {
             const { fetchFn } = recordingFetch(Response.json([{ symbol: "AAPL" }]));
 
-            await expect(createRouteQuoteSource(fetchFn).getQuotes(["AAPL"])).rejects.toThrow();
+            const result = await createRouteQuoteSource(fetchFn).getQuotes(["AAPL"]);
+
+            expect(result._unsafeUnwrapErr()).toBeInstanceOf(QuotesRequestError);
+        });
+
+        it("fails when the answer is not JSON", async () => {
+            const { fetchFn } = recordingFetch(new Response("<html>", { status: 200 }));
+
+            const result = await createRouteQuoteSource(fetchFn).getQuotes(["AAPL"]);
+
+            expect(result._unsafeUnwrapErr().message).toBe("Quotes response is not JSON");
+        });
+
+        it("fails when the route cannot be reached", async () => {
+            const fetchFn = async (): Promise<Response> => {
+                throw new TypeError("fetch failed");
+            };
+
+            const result = await createRouteQuoteSource(fetchFn).getQuotes(["AAPL"]);
+
+            expect(result._unsafeUnwrapErr().cause).toBeInstanceOf(TypeError);
         });
     });
 });
