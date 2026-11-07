@@ -1,6 +1,6 @@
 # InvestLab
 
-InvestLab is a personal investment tool with Portfolio, describing what the user holds and its target allocation, and Roger, a stock-trading methodology with a position lifecycle. Both share an Instrument catalog.
+InvestLab is a personal investment tool with Portfolio, describing what the user holds and its target allocation, and Roger, which follows a trader's stock calls through an entry lifecycle. Both share an Instrument catalog.
 
 ## Language
 
@@ -33,7 +33,7 @@ A user's holding of one Instrument at one Broker, with its target weight, curren
 _Avoid_: holding, position on the Portfolio side.
 
 **Broker**:
-The custodian where a PortfolioItem is held, such as IBKR or MyInvestor, expressed as free text. Roger is a methodology, never a broker.
+The custodian where a PortfolioItem is held, such as IBKR or MyInvestor, expressed as free text. Roger is a trader, never a broker.
 _Avoid_: platform.
 
 **Target weight**:
@@ -43,6 +43,10 @@ _Avoid_: current weight.
 **Current value**:
 The market value of a PortfolioItem, entered by hand for now.
 _Avoid_: purchase cost.
+
+**Stock picking**:
+The part of the user's investments held in individual stocks, whether bought following a trader such as Roger or on the user's own.
+_Avoid_: Roger when meaning all individual stocks.
 
 ### Pricing
 
@@ -54,4 +58,51 @@ _Avoid_: tradable when meaning automatic price availability.
 The symbol under which a quotable instrument trades, such as NVDA. The current home page “ticker list” is a legacy browser watch list, scheduled to be retired or moved when the overview page lands, not a separate concept.
 _Avoid_: ticker for the instrument itself.
 
-Not yet modelled: Entry, Roger state, Allocation and Contribution.
+### Roger
+
+**Roger**:
+The trader whose stock calls the user follows. A person, never a broker.
+
+**Entry**:
+One trade of a stock that follows Roger, from the moment it is on the radar until it is sold. A stock may have several entries at different prices.
+_Avoid_: position, holding.
+
+**Daily report**:
+Roger's report listing the stocks to follow closely each day, because they are near their entry price.
+_Avoid_: operativa.
+
+**Radar**:
+The states in which an Entry is followed with nothing bought or ordered: Watching, Shortlisted and Trader bought.
+_Avoid_: watch list.
+
+**Watching**:
+An Entry on the radar whose entry price is still far from the market price.
+
+**Shortlisted**:
+An Entry on the radar whose entry price is near the market price, as Roger's daily report flags.
+_Avoid_: operativa.
+
+**Trader bought**:
+An Entry Roger has bought and the user has not, yet or at all.
+
+**Buy order**:
+An Entry with a buy order placed and not yet filled.
+
+**Invested**:
+An Entry whose shares the user holds.
+
+**Sell order**:
+An Entry with a sell order placed and not yet filled.
+
+**Sold**:
+An Entry whose shares have been sold. It stays as the record of the closed trade.
+_Avoid_: closed position.
+
+**Entry price**:
+The price at which an Entry buys: the target until it is invested, the price actually paid afterwards.
+_Avoid_: desired price.
+
+**Exit price**:
+The price at which an Entry sells: the order's price while the sell order is open, the price actually received once sold.
+
+Not yet modelled: Allocation and Contribution.
