@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { InstrumentNotFoundError } from "@m0n0lab/investlab-catalog";
+import { makeInstrument } from "@m0n0lab/investlab-catalog/testing";
 import {
-    InstrumentNotFoundError,
     PortfolioItemConflictError,
     PortfolioItemNotFoundError,
 } from "@m0n0lab/investlab-portfolio";
-import { makeInstrument, makePortfolioItem } from "@m0n0lab/investlab-portfolio/testing";
+import { makePortfolioItem } from "@m0n0lab/investlab-portfolio/testing";
 import { PortfolioItemRouteHarness } from "./portfolio-item.route.harness.ts";
 
 const MISSING_ID = "6b3389b3-bff8-416e-93ad-e6d411808d95";

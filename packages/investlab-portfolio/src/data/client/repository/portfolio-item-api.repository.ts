@@ -6,12 +6,12 @@ import {
 } from "#data/client/mapper/portfolio-item-dto.mapper.ts";
 import { portfolioItemListDtoSchema } from "#data/shared/dto/portfolio-item-list.dto.ts";
 import { portfolioItemDtoSchema } from "#data/shared/dto/portfolio-item.dto.ts";
-import { InstrumentNotFoundError } from "#domain/error/instrument.error.ts";
 import {
     PortfolioItemConflictError,
     PortfolioItemNotFoundError,
 } from "#domain/error/portfolio-item.error.ts";
 import { type PortfolioRemoteError } from "#domain/error/portfolio-remote.error.ts";
+import { InstrumentNotFoundError } from "@m0n0lab/investlab-catalog";
 import { PLATFORM, type InvestlabApiClient } from "@m0n0lab/investlab-platform/client";
 import type { PortfolioItem } from "#domain/model/portfolio-item.model.ts";
 import type { PortfolioItemRepository } from "#domain/repository/portfolio-item.repository.ts";
@@ -67,11 +67,5 @@ export class PortfolioItemApiRepository implements PortfolioItemRepository<Portf
         return this.api.empty("DELETE", `/portfolio-items/${id}`, {
             errors: { PORTFOLIO_ITEM_NOT_FOUND: () => new PortfolioItemNotFoundError(id) },
         });
-    }
-
-    existsForInstrument(instrumentId: string): ResultAsync<boolean, PortfolioRemoteError> {
-        return this.findAll().map((items) =>
-            items.some((item) => item.instrumentId === instrumentId),
-        );
     }
 }

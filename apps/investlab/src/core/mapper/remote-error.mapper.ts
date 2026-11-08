@@ -1,7 +1,8 @@
+import type { CatalogRemoteError } from "@m0n0lab/investlab-catalog";
 import type { PortfolioRemoteError } from "@m0n0lab/investlab-portfolio";
 import type { QuotesRemoteError } from "@m0n0lab/investlab-quotes";
 
-type RemoteError = PortfolioRemoteError | QuotesRemoteError;
+type RemoteError = CatalogRemoteError | PortfolioRemoteError | QuotesRemoteError;
 
 /** What the user reads when a client use case fails; server-side details never reach the page. */
 export function remoteErrorMessage(error: RemoteError): string {

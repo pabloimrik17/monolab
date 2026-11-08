@@ -1,9 +1,8 @@
 import { asc, eq } from "drizzle-orm";
 import { inject, injectable } from "inversify";
-import { instruments } from "#data/server/infra/db/instrument.table.ts";
 import { portfolioItems } from "#data/server/infra/db/portfolio-item.table.ts";
-import { instrumentToDomain } from "#data/server/mapper/instrument-pg.mapper.ts";
 import { portfolioItemToDomain } from "#data/server/mapper/portfolio-item-pg.mapper.ts";
+import { instruments, instrumentToDomain } from "@m0n0lab/investlab-catalog/server";
 import { PLATFORM, type Db } from "@m0n0lab/investlab-platform/server";
 import type { PortfolioItemQuery } from "#domain/query/portfolio-item.query.ts";
 import type { PortfolioItemWithInstrument } from "#domain/read-model/portfolio-item-with-instrument.read-model.ts";

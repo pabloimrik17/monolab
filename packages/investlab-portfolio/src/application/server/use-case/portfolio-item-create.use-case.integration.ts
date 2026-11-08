@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { PORTFOLIO } from "#application/server/tokens.ts";
-import { InstrumentNotFoundError } from "#domain/error/instrument.error.ts";
 import { givenInstrument, portfolio, UNKNOWN_ID } from "#testing/server/given.ts";
 import { container, containerWithDatabaseDown } from "#testing/server/vitest-integration-setup.ts";
+import { InstrumentNotFoundError } from "@m0n0lab/investlab-catalog";
 import { PersistenceError, ValidationError } from "@m0n0lab/investlab-core";
 import type { PortfolioItemCreateUseCase } from "./portfolio-item-create.use-case.ts";
 

@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { PORTFOLIO } from "#application/client/tokens.ts";
-import { InstrumentNotFoundError } from "#domain/error/instrument.error.ts";
 import {
     givenApiUnavailable,
     givenCatalog,
@@ -9,6 +8,7 @@ import {
     VWCE,
 } from "#testing/client/given.ts";
 import { container } from "#testing/client/vitest-integration-setup.ts";
+import { InstrumentNotFoundError } from "@m0n0lab/investlab-catalog";
 import { NetworkError, UnauthorizedError, ValidationError } from "@m0n0lab/investlab-core";
 import type { PortfolioItemCreateUseCase } from "./portfolio-item-create.use-case.ts";
 

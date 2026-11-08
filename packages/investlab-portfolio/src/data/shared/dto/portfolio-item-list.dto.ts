@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { instrumentDtoSchema } from "./instrument.dto.ts";
+import { instrumentDtoSchema } from "@m0n0lab/investlab-catalog";
 import { portfolioItemDtoSchema } from "./portfolio-item.dto.ts";
 
 export const portfolioItemWithInstrumentDtoSchema = z.object({
