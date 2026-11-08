@@ -37,7 +37,7 @@ Successfully fetched subdirectory files SHALL be cached under `_source/` using a
 
 #### Scenario: Monorepo root fetch
 
-- **WHEN** resolving a monorepo package like `@angular/core` that has no `repository.directory` or whose subdirectory has no CHANGELOG
+- **WHEN** resolving a monorepo package that has no `repository.directory`, or whose subdirectory has no CHANGELOG (e.g., `@angular/core`)
 - **THEN** the skill SHALL fetch CHANGELOG.md from the repo root
 
 #### Scenario: Monorepo subdirectory fetch
