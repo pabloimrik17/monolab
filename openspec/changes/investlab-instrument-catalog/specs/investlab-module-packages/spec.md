@@ -55,7 +55,7 @@ InvestLab business code SHALL live in one package per module: `@m0n0lab/investla
 
 ### Requirement: Entries per side
 
-A module package SHALL export `.` (domain and DTOs), `./server` (server container module, tokens, use-case and error types), `./client` (the container module of a consumer that holds the API credential, its tokens, use-case and error types), `./testing` (builders) and, when it has code for a device runtime, one entry per such runtime, such as `./browser` (browser container module, its tokens and use-case types). A module that other modules depend on MAY also export from `./server` the table definitions they reference for foreign keys and read-query joins, with the mappers that rebuild its domain models from those joined rows, and from `./client` the mappers that rebuild its domain models from its DTOs. Repositories, datasources and their tokens SHALL NOT be exported.
+A module package SHALL export `.` (domain and DTOs), `./server` (server container module, tokens, use-case and error types), `./client` (the container module of a consumer that holds the API credential, its tokens, use-case and error types), `./testing` (builders) and, when it has code for a device runtime, one entry per such runtime, such as `./browser` (browser container module, its tokens and use-case types). A module that other modules depend on MAY also export from `./server` the table definitions they reference for foreign keys and read-query joins, with the mappers that rebuild its domain models from those joined rows, and from `./client` the mappers that rebuild its domain models from its DTOs. A repository interface belongs to the domain that `.` exports. Repository and datasource implementations and their tokens SHALL NOT be exported.
 
 #### Scenario: Repository is not reachable from outside
 
@@ -65,7 +65,7 @@ A module package SHALL export `.` (domain and DTOs), `./server` (server containe
 #### Scenario: Table exported for dependants
 
 - **WHEN** the `./server` and `./client` entries of `@m0n0lab/investlab-catalog` are read
-- **THEN** `./server` exports the instruments table definition and the mapper from its row to `Instrument`, `./client` exports the mapper from `InstrumentDto` to `Instrument`, and neither exports an instrument repository or its token
+- **THEN** `./server` exports the instruments table definition and the mapper from its row to `Instrument`, `./client` exports the mapper from `InstrumentDto` to `Instrument`, and neither exports an instrument repository implementation or its token
 
 #### Scenario: Browser entry holds no credentialed code
 
