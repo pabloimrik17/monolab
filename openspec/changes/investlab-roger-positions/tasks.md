@@ -4,16 +4,16 @@ Prerequisite: `investlab-instrument-catalog` is the layer below this one. Groups
 
 ## 1. Package scaffold
 
-- [ ] 1.1 Create `packages/investlab-roger` like `packages/investlab-catalog`: entries `.`, `./server`, `./client`, `./testing`; dependency on `@m0n0lab/investlab-catalog`; Vitest projects (unit, `integration:server`, `integration:client`) with coverage thresholds 80; Stryker 90/80/80 with `timeoutMS` 60 s and no `*.table.ts` exclusion (design §8). Verify `pnpm nx show project @m0n0lab/investlab-roger` lists build, lint, test and mutation targets.
-- [ ] 1.2 Add `roger` to `investlabLayout.modules` and `roger: ["catalog"]` to `dependsOn` in `eslint.config.ts`. Verify lint passes, and that a scratch import of `@m0n0lab/investlab-roger` from portfolio fails ("Trader module is a leaf").
+- [x] 1.1 Create `packages/investlab-roger` like `packages/investlab-catalog`: entries `.`, `./server`, `./client`, `./testing`; dependency on `@m0n0lab/investlab-catalog`; Vitest projects (unit, `integration:server`, `integration:client`) with coverage thresholds 80; Stryker 90/80/80 with `timeoutMS` 60 s and no `*.table.ts` exclusion (design §8). Verify `pnpm nx show project @m0n0lab/investlab-roger` lists build, lint, test and mutation targets.
+- [x] 1.2 Add `roger` to `investlabLayout.modules` and `roger: ["catalog"]` to `dependsOn` in `eslint.config.ts`. Verify lint passes, and that a scratch import of `@m0n0lab/investlab-roger` from portfolio fails ("Trader module is a leaf").
 
 ## 2. Domain
 
-- [ ] 2.1 `domain/value-object/roger-state.value-object.ts`: the seven states, `RADAR_STATES`, `transitionsFrom(state)` and `fieldsOf(state)` (design §2). Verify `roger-state.value-object.test.ts` covers the full 7×7 table in one parametrized table and the fields of each state.
-- [ ] 2.2 `domain/error/entry.error.ts`: `EntryNotFoundError`, `EntryConflictError`, `InvalidTransitionError`, `MissingRequiredFieldError` (naming the field), `FieldNotInStateError`; and `domain/error/roger-remote.error.ts` with `RogerErrorCode` and `RogerRemoteError`, including the catalog's `InstrumentNotFoundError` and `InstrumentAlreadyExistsError` (design §1). Verify each extends `DomainError` with its code (covered by 2.3).
-- [ ] 2.3 `domain/model/entry.model.ts`: `create`, `edit`, `transition`, `reEnter`, `reconstitute`, with the fill-and-clear rule, value rules and time in state (design §3; spec `roger-state-machine`). Verify `entry.model.test.ts` covers every requirement of `roger-state-machine`.
-- [ ] 2.4 `domain/repository/entry.repository.ts` (`save`, `findById`, `update`, `delete`) and `domain/query/entry-list.query.ts` with its read model (entry + symbol, name, sector; view `active` or `history`). Verify `pnpm nx run @m0n0lab/investlab-roger:build` passes.
-- [ ] 2.5 `testing/shared/builder/entry.builder.ts`, exported from `src/testing.ts`. Verify the unit tests use it.
+- [x] 2.1 `domain/value-object/roger-state.value-object.ts`: the seven states, `RADAR_STATES`, `transitionsFrom(state)` and `fieldsOf(state)` (design §2). Verify `roger-state.value-object.test.ts` covers the full 7×7 table in one parametrized table and the fields of each state.
+- [x] 2.2 `domain/error/entry.error.ts`: `EntryNotFoundError`, `EntryConflictError`, `InvalidTransitionError`, `MissingRequiredFieldError` (naming the field), `FieldNotInStateError`; and `domain/error/roger-remote.error.ts` with `RogerErrorCode` and `RogerRemoteError`, including the catalog's `InstrumentNotFoundError` and `InstrumentAlreadyExistsError` (design §1). Verify each extends `DomainError` with its code (covered by 2.3).
+- [x] 2.3 `domain/model/entry.model.ts`: `create`, `edit`, `transition`, `reEnter`, `reconstitute`, with the fill-and-clear rule, value rules and time in state (design §3; spec `roger-state-machine`). Verify `entry.model.test.ts` covers every requirement of `roger-state-machine`.
+- [x] 2.4 `domain/repository/entry.repository.ts` (`save`, `findById`, `update`, `delete`) and `domain/query/entry-list.query.ts` with its read model (entry + symbol, name, sector; view `active` or `history`). Verify `pnpm nx run @m0n0lab/investlab-roger:build` passes.
+- [x] 2.5 `testing/shared/builder/entry.builder.ts`, exported from `src/testing.ts`. Verify the unit tests use it.
 
 ## 3. Data
 

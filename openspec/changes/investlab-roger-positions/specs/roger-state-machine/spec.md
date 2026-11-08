@@ -172,7 +172,12 @@ A transition SHALL take, for each field of the target state, the value supplied 
 
 ### Requirement: Field values
 
-Entry and exit prices SHALL be greater than 0 with at most 4 decimals. Quantity SHALL be a whole number greater than 0. Commissions SHALL be 0 or more with at most 2 decimals. Dates SHALL be calendar dates, and the sell date SHALL NOT be before the buy date. A value that breaks a rule SHALL fail with `code` `VALIDATION_ERROR`.
+Entry and exit prices SHALL be greater than 0 with at most 4 decimals, and at most 9999999999.9999. Quantity SHALL be a whole number greater than 0 and at most 2147483647. Commissions SHALL be 0 or more with at most 2 decimals, and at most 99999999.99. Dates SHALL be calendar dates, and the sell date SHALL NOT be before the buy date. A value that breaks a rule SHALL fail with `code` `VALIDATION_ERROR`.
+
+#### Scenario: Value over its limit
+
+- **WHEN** an entry is given entry price 10000000000
+- **THEN** it fails with `code` `VALIDATION_ERROR`
 
 #### Scenario: Fractional quantity
 

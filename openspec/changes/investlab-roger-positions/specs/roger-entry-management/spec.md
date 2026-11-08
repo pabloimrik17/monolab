@@ -8,12 +8,17 @@ Defines how the user manages Roger entries: creating them for a catalog instrume
 
 ### Requirement: Create an entry
 
-The system SHALL create an entry for an existing catalog instrument in any Roger state, given every field that state carries. The entry SHALL record the time of creation as its time in state. An unknown instrument SHALL fail with `code` `INSTRUMENT_NOT_FOUND` and create nothing.
+The system SHALL create an entry for an existing catalog instrument in any Roger state, given every field that state carries. A supplied field the state does not carry SHALL be ignored. The entry SHALL record the time of creation as its time in state. An unknown instrument SHALL fail with `code` `INSTRUMENT_NOT_FOUND` and create nothing.
 
 #### Scenario: Watching entry
 
 - **WHEN** an entry is created for `AAPL` in `WATCHING` with entry price 150
 - **THEN** it is persisted with state `WATCHING`, entry price 150 and no other trade fields
+
+#### Scenario: Field the state does not carry
+
+- **WHEN** an entry is created in `WATCHING` with entry price 150 and quantity 10
+- **THEN** it is persisted with state `WATCHING`, entry price 150 and no quantity
 
 #### Scenario: Loading an existing trade
 
