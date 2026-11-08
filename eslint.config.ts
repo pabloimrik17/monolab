@@ -41,10 +41,12 @@ const importBans = (
 
 const investlabLayout: CleanArchitectureOptions = {
     product: "investlab",
-    modules: ["portfolio", "quotes"],
+    modules: ["catalog", "portfolio", "quotes"],
+    dependsOn: { portfolio: ["catalog"] },
     projects: [
         "packages/investlab-core",
         "packages/investlab-platform",
+        "packages/investlab-catalog",
         "packages/investlab-portfolio",
         "packages/investlab-quotes",
         "apps/investlab-api",
@@ -58,11 +60,30 @@ type CleanArchitectureOptions = {
     product: string;
     /** Module packages (`packages/<product>-<module>`); they also name the app module folders. */
     modules: readonly string[];
+    /** Declared edges (ADR 0010): the modules each module may import. Without it, modules never import each other. */
+    dependsOn?: Readonly<Record<string, readonly string[]>>;
     /** Roots of the product's projects on the layout (the database package is not one; it gets only its import ban). */
     projects: readonly string[];
 };
 
+// A cycle would let two modules import each other (ADR 0010); throwing at load fails every lint run.
+const assertAcyclic = (dependsOn: Readonly<Record<string, readonly string[]>>) => {
+    const visit = (module: string, path: readonly string[]): void => {
+        if (path.includes(module)) {
+            const cycle = [...path.slice(path.indexOf(module)), module].join(" → ");
+            throw new Error(`cleanArchitectureLint: dependsOn has a cycle: ${cycle}`);
+        }
+        for (const dependency of dependsOn[module] ?? []) {
+            visit(dependency, [...path, module]);
+        }
+    };
+    for (const module of Object.keys(dependsOn)) {
+        visit(module, []);
+    }
+};
+
 const cleanArchitectureLint = (options: CleanArchitectureOptions) => {
+    assertAcyclic(options.dependsOn ?? {});
     const layoutProjects = options.projects.map((root) => layoutProject(root, options));
     const outsideLayout = outsideLayoutBans(layoutProjects, options);
     if (layoutProjects.length === 0) {
@@ -212,6 +233,11 @@ const moduleElements: LayoutElement[] = [
         { category: `${side}/testing`, path: `testing/${side}/{given,vitest-*}` },
         { category: `${side}/entry`, path: sideEntries[side] },
     ]),
+    // tables also stay `server/data/infra`; `./server` exports them for dependants' foreign keys (ADR 0010)
+    { category: "server/data/table", path: "data/server/infra/db/*.table" },
+    // and these mappers, so dependants rebuild a joined row or a listed DTO without a copy (ADR 0010)
+    { category: "server/data/table-mapper", path: "data/server/mapper/*-pg.mapper" },
+    { category: "client/data/dto-mapper", path: "data/client/mapper/*-dto.mapper" },
     ...deviceCompositions,
     ...sideDataKinds.flatMap((kind) => [
         ...deviceMedia.map((medium) => ({
@@ -347,6 +373,8 @@ const modulePolicies = [
             `${side}/{di,testing}`,
         ]),
     ]),
+    allow("server/entry", ["server/data/table", "server/data/table-mapper"]),
+    allow("client/entry", ["client/data/dto-mapper"]),
     ...sideRules,
     // a test imports the repository it tests
     disallow(
@@ -446,6 +474,17 @@ const productBans = (product: string) => {
     return {
         packages: (names: readonly string[], message: string) =>
             ban(`${ours}(${names.join("|")})(/|$)`, message),
+        // bans every entry of `names` except `.` and `entries`
+        otherEntries: (names: readonly string[], entries: readonly string[]) => {
+            const allowed = entries.length > 0 ? `(/(${entries.join("|")}))?` : "";
+            const listed = new Intl.ListFormat("en", { type: "disjunction" }).format(
+                [".", ...entries.map((entry) => `./${entry}`)].map((entry) => `\`${entry}\``),
+            );
+            return ban(
+                `${ours}(${names.join("|")})(?=/|$)(?!${allowed}$)`,
+                `a declared module is imported here only through its ${listed} entry`,
+            );
+        },
         otherSide: (side: (typeof sides)[number]) =>
             ban(
                 `${ours}[a-z-]+/(${opposite[side].join("|")})(/|$)`,
@@ -530,13 +569,45 @@ const platformBans: LayoutBans = ({ root }, { product, modules }) => {
     ];
 };
 
-const moduleBans: LayoutBans = ({ root }, { product, modules }) => {
+const moduleBans: LayoutBans = ({ root }, { product, modules, dependsOn = {} }) => {
     const src = `${root}/src`;
     const bans = productBans(product);
-    const independent = bans.packages(
-        modules.filter((other) => root !== `packages/${product}-${other}`),
-        "business modules never import each other",
+    const self = root.slice(`packages/${product}-`.length);
+    const dependencies = dependsOn[self] ?? [];
+    const undeclared = bans.packages(
+        modules.filter((other) => other !== self && !dependencies.includes(other)),
+        "a business module imports another only along an edge declared in dependsOn",
     );
+    const testsAndHarnesses = [
+        `${src}/**/*${oneOf(testSuffixes)}${extension}`,
+        `${src}/testing/**`,
+    ];
+    // `entries`: the dependencies' entries this folder may import besides `.`. Tests and harnesses also get `./testing`;
+    // the twin group takes it back from the other files.
+    const group = (
+        files: string[],
+        entries: readonly string[],
+        list: Ban[],
+        ignores: string[] = [],
+    ) =>
+        dependencies.length === 0
+            ? [layoutGroup(files, [undeclared, ...list], ignores)]
+            : [
+                  layoutGroup(
+                      files,
+                      [
+                          undeclared,
+                          bans.otherEntries(dependencies, [...entries, "testing"]),
+                          ...list,
+                      ],
+                      ignores,
+                  ),
+                  layoutGroup(
+                      files,
+                      [undeclared, bans.otherEntries(dependencies, entries), ...list],
+                      [...ignores, ...testsAndHarnesses],
+                  ),
+              ];
     const sideNeutral = [
         `${src}/domain/**`,
         `${src}/data/shared/**`,
@@ -545,7 +616,7 @@ const moduleBans: LayoutBans = ({ root }, { product, modules }) => {
         `${src}/testing.ts`,
     ];
     return [
-        layoutGroup(sideNeutral, [independent, bans.infra, bans.platformOrDb, bans.anySide]),
+        ...group(sideNeutral, [], [bans.infra, bans.platformOrDb, bans.anySide]),
         ...sides.flatMap((side) => {
             const clientDb = side === "client" ? [bans.database] : [];
             // server code already bans `./browser` as the other side
@@ -556,59 +627,49 @@ const moduleBans: LayoutBans = ({ root }, { product, modules }) => {
                 "use-case tests use the module container, raw pg/ioredis and a constant Config",
             );
             return [
-                layoutGroup(
+                ...group(
                     [`${src}/application/${side}/**`],
-                    [
-                        independent,
-                        bans.infra,
-                        bans.platformOrDb,
-                        bans.otherSide(side),
-                        ...notComposition,
-                    ],
+                    [side],
+                    [bans.infra, bans.platformOrDb, bans.otherSide(side), ...notComposition],
                     [useCaseTests],
                 ),
-                layoutGroup(
+                ...group(
                     [useCaseTests],
-                    [
-                        independent,
-                        testLibraries,
-                        bans.otherSide(side),
-                        ...clientDb,
-                        ...notComposition,
-                    ],
+                    [side],
+                    [testLibraries, bans.otherSide(side), ...clientDb, ...notComposition],
                 ),
-                layoutGroup(
+                ...group(
                     [`${src}/testing/${side}/**`],
-                    [independent, testLibraries, bans.otherSide(side), ...clientDb],
+                    [side],
+                    [testLibraries, bans.otherSide(side), ...clientDb],
                 ),
-                layoutGroup(
+                ...group(
                     [`${src}/data/${side}/**`],
-                    [independent, bans.otherSide(side), ...clientDb, ...notComposition],
+                    [side],
+                    [bans.otherSide(side), ...clientDb, ...notComposition],
                 ),
-                layoutGroup(
+                ...group(
                     [`${src}/${diModules[side]}.*`],
-                    [independent, bans.otherSide(side), ...clientDb],
+                    [side],
+                    [bans.otherSide(side), ...clientDb],
                 ),
-                layoutGroup(
+                ...group(
                     [`${src}/${sideEntries[side]}.ts`],
-                    [independent, bans.platformOrDb, bans.otherSide(side), ...notComposition],
+                    [side],
+                    [bans.platformOrDb, bans.otherSide(side), ...notComposition],
                 ),
             ];
         }),
         // Device code, after the client groups so these lists win.
-        layoutGroup(
+        ...group(
             deviceMedia.map((medium) => `${src}/data/client/*/*-${medium}.*`),
-            [
-                independent,
-                bans.otherSide("client"),
-                bans.database,
-                bans.browserEntry,
-                bans.devicePlatform,
-            ],
+            ["client"],
+            [bans.otherSide("client"), bans.database, bans.browserEntry, bans.devicePlatform],
         ),
-        layoutGroup(
+        ...group(
             [`${src}/di/browser.module.*`],
-            [independent, bans.otherSide("client"), bans.database, bans.devicePlatform],
+            ["client"],
+            [bans.otherSide("client"), bans.database, bans.devicePlatform],
         ),
     ];
 };
