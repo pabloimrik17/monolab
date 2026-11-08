@@ -5,7 +5,7 @@
         "tsBuildInfoFile": "./out-tsc/tsconfig.test.tsbuildinfo"
     },
     "include": ["src/**/*"],
-    "exclude": [],
+    "exclude": ["**/.stryker-tmp/**"],
     "references": [
         { "path": "../investlab-platform" },
         { "path": "../investlab-core" },
