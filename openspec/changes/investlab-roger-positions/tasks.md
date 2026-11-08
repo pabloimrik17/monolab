@@ -1,6 +1,6 @@
 # Tasks
 
-Prerequisite: `investlab-instrument-catalog` is the layer below this one. Groups 1–4 form the first layer of this change; groups 5–6 the second, which starts once `agentic-task-3ao3` (UI harness) has merged into develop.
+Prerequisites, from the bottom of the stack: `investlab-instrument-catalog`, then `agentic-task-3ao3` (UI harness), the layer directly below this one. Groups 1–4 form the first layer of this change; groups 5–6 the second, which starts once the `agentic-task-3ao3` layer is done.
 
 ## 1. Package scaffold
 

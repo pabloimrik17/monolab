@@ -116,16 +116,16 @@ The loader calls the roger client `EntryList` use case (with the requested view)
 
 ### 9. Delivery
 
-The work lands as two layers of the stack on top of the catalog change:
+The stack is, from the bottom: the catalog change, `agentic-task-3ao3` (the UI harness), then this change, as two layers:
 
 1. Package, migration and API (tasks 1–4).
-2. Web (tasks 5–6). It starts only once `agentic-task-3ao3` has merged into develop.
+2. Web (tasks 5–6). It starts once the `agentic-task-3ao3` layer is done; it does not need to be merged into develop.
 
 ## Risks / Trade-offs
 
 - [Orphan instrument if the entry save fails after creating it] → Reference data the user can reuse; no cleanup needed.
 - [Nullable columns let the database hold a field a state does not use] → Only the model writes entries, and its tests cover every transition. A per-state check constraint would duplicate the table in SQL.
-- [Web part blocked on the UI harness] → The first layer (package and API) is useful and reviewable alone; the web layer waits without blocking it.
+- [Web part needs the UI harness] → The harness is its own layer below this change (`agentic-task-3ao3`), so the web layer builds on it directly. Because it sits below, the first layer (package and API) merges after it.
 - [Downstream changes (`roger-metrics-ui`, `roger-sectors`, `roger-dashboard`) still describe the April model] → Their rewrite is tracked in Linear; they must use these state and field names.
 
 ## Migration Plan
