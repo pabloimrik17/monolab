@@ -30,4 +30,4 @@ jobs:
                   node-version-file: .nvmrc
 
             - name: Validate Renovate config
-              run: pnpm dlx --package renovate@44.175.1 renovate-config-validator --strict renovate.json
+              run: pnpm dlx --package renovate@44.181.6 renovate-config-validator --strict renovate.json

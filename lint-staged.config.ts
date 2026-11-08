@@ -58,7 +58,7 @@ export default defineConfig({
             ...whenStaged(FALLOW_FILES, "fallow audit", filenames),
             ...forStaged(
                 RENOVATE_FILES,
-                "pnpm dlx --package renovate@44.175.1 renovate-config-validator --strict",
+                "pnpm dlx --package renovate@44.181.6 renovate-config-validator --strict",
                 filenames,
             ),
         ],
