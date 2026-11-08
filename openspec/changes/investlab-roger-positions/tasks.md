@@ -4,20 +4,20 @@ Prerequisite: `investlab-instrument-catalog` is the layer below this one. Groups
 
 ## 1. Package scaffold
 
-- [ ] 1.1 Create `packages/investlab-roger` like `packages/investlab-catalog`: entries `.`, `./server`, `./client`, `./testing`; dependency on `@m0n0lab/investlab-catalog`; Vitest projects (unit, `integration:server`, `integration:client`) with coverage thresholds 80; Stryker 90/80/80. Verify `pnpm nx show project @m0n0lab/investlab-roger` lists build, lint, test and mutation targets.
+- [ ] 1.1 Create `packages/investlab-roger` like `packages/investlab-catalog`: entries `.`, `./server`, `./client`, `./testing`; dependency on `@m0n0lab/investlab-catalog`; Vitest projects (unit, `integration:server`, `integration:client`) with coverage thresholds 80; Stryker 90/80/80 with `timeoutMS` 60 s and no `*.table.ts` exclusion (design §8). Verify `pnpm nx show project @m0n0lab/investlab-roger` lists build, lint, test and mutation targets.
 - [ ] 1.2 Add `roger` to `investlabLayout.modules` and `roger: ["catalog"]` to `dependsOn` in `eslint.config.ts`. Verify lint passes, and that a scratch import of `@m0n0lab/investlab-roger` from portfolio fails ("Trader module is a leaf").
 
 ## 2. Domain
 
 - [ ] 2.1 `domain/value-object/roger-state.value-object.ts`: the seven states, `RADAR_STATES`, `transitionsFrom(state)` and `fieldsOf(state)` (design §2). Verify `roger-state.value-object.test.ts` covers the full 7×7 table in one parametrized table and the fields of each state.
-- [ ] 2.2 `domain/error/entry.error.ts`: `EntryNotFoundError`, `EntryConflictError`, `InvalidTransitionError`, `MissingRequiredFieldError` (naming the field), `FieldNotInStateError`; and `RogerRemoteError`. Verify each extends `DomainError` with its code (covered by 2.3).
+- [ ] 2.2 `domain/error/entry.error.ts`: `EntryNotFoundError`, `EntryConflictError`, `InvalidTransitionError`, `MissingRequiredFieldError` (naming the field), `FieldNotInStateError`; and `domain/error/roger-remote.error.ts` with `RogerErrorCode` and `RogerRemoteError`, including the catalog's `InstrumentNotFoundError` and `InstrumentAlreadyExistsError` (design §1). Verify each extends `DomainError` with its code (covered by 2.3).
 - [ ] 2.3 `domain/model/entry.model.ts`: `create`, `edit`, `transition`, `reEnter`, `reconstitute`, with the fill-and-clear rule, value rules and time in state (design §3; spec `roger-state-machine`). Verify `entry.model.test.ts` covers every requirement of `roger-state-machine`.
 - [ ] 2.4 `domain/repository/entry.repository.ts` (`save`, `findById`, `update`, `delete`) and `domain/query/entry-list.query.ts` with its read model (entry + symbol, name, sector; view `active` or `history`). Verify `pnpm nx run @m0n0lab/investlab-roger:build` passes.
 - [ ] 2.5 `testing/shared/builder/entry.builder.ts`, exported from `src/testing.ts`. Verify the unit tests use it.
 
 ## 3. Data
 
-- [ ] 3.1 `data/server/infra/db/entry.table.ts` (`roger_entries`, design §5) referencing the catalog's `instruments` table; generate the migration with `pnpm nx run @m0n0lab/investlab-api:db:generate`. Verify the migration creates the table, FK, state check and index, and that a second `db:generate` reports no change.
+- [ ] 3.1 `data/server/infra/db/entry.table.ts` (`roger_entries`, design §5) referencing the catalog's `instruments` table; generate the migration with `pnpm nx run @m0n0lab/investlab-api:db:generate`. Verify drizzle-kit loads the table file (design §5), the migration creates the table, FK, state check and index, and a second `db:generate` reports no change.
 - [ ] 3.2 Postgres repository and list query, mapping the FK violation on insert to `InstrumentNotFoundError` and the stale `updatedAt` to `EntryConflictError`. Covered by the server integration tests in 4.1.
 - [ ] 3.3 DTOs in `data/shared/dto/` (entry, list, create with `instrumentId` or `newInstrument`, edit, transition, re-entry) and the client API repository and query. Covered by the client integration tests in 4.2.
 
@@ -25,7 +25,7 @@ Prerequisite: `investlab-instrument-catalog` is the layer below this one. Groups
 
 - [ ] 4.1 Server use cases: `EntryCreate` (with `newInstrument` through the catalog's `InstrumentCreate`, design §4), `EntryEdit`, `EntryTransition`, `EntryReEnter`, `EntryDelete`, `EntryList`; `di/server.module.ts` and `ROGER` tokens. Verify one `*.use-case.integration.ts` per use case passes against Postgres, including new stock, duplicate symbol, invalid entry with new stock (no instrument created), unknown instrument, conflict, and catalog delete refused while an entry references the instrument.
 - [ ] 4.2 Client use cases mirroring 4.1 over the API repository; `di/client.module.ts`. Verify one client integration test per use case passes with MSW, including errors rebuilt from `code`.
-- [ ] 4.3 API: `src/roger/route/entry.route.ts` with the six routes, mounted in `src/app.ts`; container loads the roger server module; `error-http.mapper.ts` maps the new codes (design §6). Verify `entry.route.integration-platform.ts` on `entry.route.harness.ts` covers every scenario of the `investlab-http-api` delta and the complete route list.
+- [ ] 4.3 API: `src/roger/route/entry.route.ts` with the six routes, mounted in `src/app.ts`; container loads the roger server module after the catalog's; `error-http.mapper.ts` maps the new codes (design §6). Verify `entry.route.integration-platform.ts` on `entry.route.harness.ts` covers every scenario of the `investlab-http-api` delta and the complete route list.
 - [ ] 4.4 Verify `pnpm nx run @m0n0lab/investlab-roger:test:coverage` passes at 80, `test:mutation` passes, `build:check-exports` passes (new exports: attw validation), and `pnpm nx run @m0n0lab/investlab-api:test` passes.
 
 ## 5. Web

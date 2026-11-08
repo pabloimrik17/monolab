@@ -24,6 +24,7 @@ The user follows Roger, a trader, and tracks each of his stock calls by hand: fr
 
 - `investlab-module-packages`: the roger module package, the edge roger → catalog, roger as a leaf, and the apps' containers loading roger.
 - `investlab-http-api`: the Roger entry endpoints, their error codes, the complete route list and the API container.
+- `investlab-persistence`: a foreign key violation on a Roger entry insert becomes `InstrumentNotFoundError`.
 
 ## Impact
 

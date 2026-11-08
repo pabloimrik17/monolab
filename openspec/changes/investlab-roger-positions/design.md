@@ -23,7 +23,9 @@ This change lands after `investlab-instrument-catalog`: `Instrument` lives in `@
 
 ### 1. Package and dependencies
 
-`@m0n0lab/investlab-roger` has the standard layout and entries `.`, `./server`, `./client`, `./testing`. `eslint.config.ts` adds `roger` to `investlabLayout.modules` and `roger: ["catalog"]` to `dependsOn`. Nothing lists roger as a dependency. Roger imports from the catalog only: `Instrument` and its value objects (`.`), the `instruments` table and the server `CATALOG.InstrumentCreate` token and use-case type (`./server`), and the instrument builder (`./testing`, tests only).
+`@m0n0lab/investlab-roger` has the standard layout and entries `.`, `./server`, `./client`, `./testing`. `eslint.config.ts` adds `roger` to `investlabLayout.modules` and `roger: ["catalog"]` to `dependsOn`. Nothing lists roger as a dependency. Roger imports from the catalog only: `Instrument`, its value objects and the errors `InstrumentNotFoundError` and `InstrumentAlreadyExistsError` (`.`), the `instruments` table and the server `CATALOG.InstrumentCreate` token and use-case type (`./server`), and the instrument builder (`./testing`, tests only). `rogerServerModule` requires `catalogServerModule`, so the API container loads the catalog server module before roger's, as it does before portfolio's.
+
+`domain/error/roger-remote.error.ts` holds `RogerErrorCode` and `RogerRemoteError = RemotePortError<InstrumentNotFoundError | InstrumentAlreadyExistsError | EntryNotFoundError | EntryConflictError | InvalidTransitionError | MissingRequiredFieldError | FieldNotInStateError>`, the errors the client ports return, as `catalog-remote.error.ts` and `portfolio-remote.error.ts` do for their modules. The two catalog errors come from create: an unknown `instrumentId` or a `newInstrument` whose symbol exists.
 
 ### 2. One aggregate: Entry
 
@@ -60,7 +62,9 @@ Alternative rejected: the web calls the catalog create endpoint, then the entry 
 - `buy_date` and `sell_date` date
 - `state_since`, `created_at` and `updated_at` timestamptz
 
-There is an index on `instrument_id`. Columns a state does not use are null; the model, not the database, ties fields to states. The list read query joins `instruments` (catalog's exported table) and returns entries with `symbol`, `name` and `sector`: active entries are every state but `SOLD`, ordered by symbol then `createdAt`; history is `SOLD`, ordered by `sell_date` descending.
+There is an index on `instrument_id`. Columns a state does not use are null; the model, not the database, ties fields to states.
+
+The database package's glob already picks up `entry.table.ts`. drizzle-kit 0.31 loads table files through a CJS loader. The `instruments` import from the catalog's `./server` already loads, through that entry's `default` condition, and `db:generate` builds the catalog first (catalog design §3). If the state check imports the state list from the domain instead of spelling the seven values, drizzle-kit must still load the table file. The list read query joins `instruments` (catalog's exported table) and returns entries with `symbol`, `name` and `sector`: active entries are every state but `SOLD`, ordered by symbol then `createdAt`; history is `SOLD`, ordered by `sell_date` descending.
 
 ### 6. API
 
@@ -104,7 +108,7 @@ The loader calls the roger client `EntryList` use case (with the requested view)
 - **API integration-platform** (`entry.route.integration-platform.ts` with `entry.route.harness.ts`): status and body per route, and the new error codes.
 - **Web integration-platform** (`roger.page.integration-platform.tsx`) on the UI harness of `agentic-task-3ao3`: grouping, filter, available actions, form fields and defaults, history view.
 - **Builders**: `entry.builder.ts`, exported from `./testing`.
-- **Gates**: the package starts at coverage 80 and Stryker 90/80/80. The web and API keep their floors.
+- **Gates**: the package starts at coverage 80 and Stryker 90/80/80, the ADR 0008 target. Stryker `timeoutMS` is 60 s, as in the catalog and portfolio: under the default, slow integration tests count as kills. Unlike the catalog, the run does not exclude `*.table.ts`: portfolio's table mutants are killed, and `agentic-task-rnoc` has not yet explained the catalog's timeouts. The web and API keep their floors.
 
 ### 9. Delivery
 
