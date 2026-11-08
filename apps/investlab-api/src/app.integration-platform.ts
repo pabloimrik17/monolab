@@ -28,6 +28,36 @@ describe("createApp", () => {
             expect(await res.json()).toEqual({ status: "ok" });
         });
 
+        it("exposes exactly the documented routes", async () => {
+            await using api = await ApiHarness.launch();
+
+            // Hono lists one entry per handler, so a route with validators repeats.
+            const routes = [...new Set(api.routes())]
+                .filter((route) => !route.startsWith("ALL "))
+                .sort();
+
+            expect(routes).toEqual(
+                [
+                    "GET /health",
+                    "GET /portfolio-items",
+                    "POST /portfolio-items",
+                    "PUT /portfolio-items/:id",
+                    "DELETE /portfolio-items/:id",
+                    "GET /instruments",
+                    "POST /instruments",
+                    "PUT /instruments/:id",
+                    "DELETE /instruments/:id",
+                    "GET /quotes",
+                    "GET /roger/entries",
+                    "POST /roger/entries",
+                    "PUT /roger/entries/:id",
+                    "DELETE /roger/entries/:id",
+                    "POST /roger/entries/:id/transitions",
+                    "POST /roger/entries/:id/re-entries",
+                ].sort(),
+            );
+        });
+
         it("answers unknown routes 404 once authenticated", async () => {
             await using api = await ApiHarness.launch();
 
