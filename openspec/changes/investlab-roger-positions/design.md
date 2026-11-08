@@ -33,6 +33,8 @@ This change lands after `investlab-instrument-catalog`: `Instrument` lives in `@
 
 The web imports `transitionsFrom` and `fieldsOf` from `.` to decide which buttons and form fields to show, so the rules exist once. The API re-checks everything through the same model.
 
+The client does not use `EntryRepository`. The API has one route per action, and a create with `newInstrument` has no instrument id yet, so neither `update(entry)` nor `save(entry)` can say what to call. `domain/repository/entry-remote.repository.ts` is a client-only port with one method per route: `create`, `edit`, `transition`, `reEnter` and `delete`. Its methods take the entry reference (`id`, `state`, `updatedAt`), which also gives the client what it needs to rebuild errors from `code`. Client use cases call this port and do not run the model; the API is the authority.
+
 Alternatives rejected: a state-pattern class per state (seven classes for one table lookup), and the instrument as the aggregate root with entries as children (no invariant spans entries; every transition would load and lock all entries of an instrument).
 
 ### 3. How a transition fills and clears fields
@@ -86,6 +88,8 @@ New codes and their statuses:
 - `INVALID_TRANSITION`: 409, for a transition not in the table, the same state, or a re-entry from anything but `SOLD`
 - `MISSING_REQUIRED_FIELD`: 422
 - `FIELD_NOT_IN_STATE`: 422, for an edit that touches a field the current state does not use
+
+`MISSING_REQUIRED_FIELD` and `FIELD_NOT_IN_STATE` name the field in the envelope's `issues[0].path`, so the client can rebuild the error and the web can show it inline.
 
 Request validation (types, ranges, decimals, dates) stays `VALIDATION_ERROR`.
 

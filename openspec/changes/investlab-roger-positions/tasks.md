@@ -25,7 +25,7 @@ Prerequisite: `investlab-instrument-catalog` is the layer below this one. Groups
 
 - [x] 4.1 Server use cases: `EntryCreate` (with `newInstrument` through the catalog's `InstrumentCreate`, design §4), `EntryEdit`, `EntryTransition`, `EntryReEnter`, `EntryDelete`, `EntryList`; `di/server.module.ts` and `ROGER` tokens. Verify one `*.use-case.integration.ts` per use case passes against Postgres, including new stock, duplicate symbol, invalid entry with new stock (no instrument created), unknown instrument, conflict, and catalog delete refused while an entry references the instrument.
 - [x] 4.2 Client use cases mirroring 4.1 over the API repository; `di/client.module.ts`. Verify one client integration test per use case passes with MSW, including errors rebuilt from `code`.
-- [ ] 4.3 API: `src/roger/route/entry.route.ts` with the six routes, mounted in `src/app.ts`; container loads the roger server module after the catalog's; `error-http.mapper.ts` maps the new codes (design §6). Verify `entry.route.integration-platform.ts` on `entry.route.harness.ts` covers every scenario of the `investlab-http-api` delta and the complete route list.
+- [x] 4.3 API: `src/roger/route/entry.route.ts` with the six routes, mounted in `src/app.ts`; container loads the roger server module after the catalog's; `error-http.mapper.ts` maps the new codes (design §6). Verify `entry.route.integration-platform.ts` on `entry.route.harness.ts` covers every scenario of the `investlab-http-api` delta and the complete route list.
 - [ ] 4.4 Verify `pnpm nx run @m0n0lab/investlab-roger:test:coverage` passes at 80, `test:mutation` passes, `build:check-exports` passes (new exports: attw validation), and `pnpm nx run @m0n0lab/investlab-api:test` passes.
 
 ## 5. Web

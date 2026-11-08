@@ -1,12 +1,24 @@
 import { RequestValidationError } from "#core/error/request-validation.error.ts";
-import { DomainError, type ApiErrorDto, type KernelErrorCode } from "@m0n0lab/investlab-core";
+import {
+    DomainError,
+    type ApiErrorDto,
+    type ApiErrorIssueDto,
+    type KernelErrorCode,
+} from "@m0n0lab/investlab-core";
+import { FieldNotInStateError, MissingRequiredFieldError } from "@m0n0lab/investlab-roger";
 import type { CatalogErrorCode } from "@m0n0lab/investlab-catalog";
 import type { PortfolioErrorCode } from "@m0n0lab/investlab-portfolio";
 import type { QuotesErrorCode } from "@m0n0lab/investlab-quotes";
+import type { RogerErrorCode } from "@m0n0lab/investlab-roger";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
-type ApiDomainErrorCode = KernelErrorCode | CatalogErrorCode | PortfolioErrorCode | QuotesErrorCode;
+type ApiDomainErrorCode =
+    | KernelErrorCode
+    | CatalogErrorCode
+    | PortfolioErrorCode
+    | QuotesErrorCode
+    | RogerErrorCode;
 
 export type ApiDomainError = DomainError<ApiDomainErrorCode>;
 
@@ -17,6 +29,11 @@ const STATUS_BY_CODE = {
     PORTFOLIO_ITEM_CONFLICT: 409,
     INSTRUMENT_IN_USE: 409,
     INSTRUMENT_ALREADY_EXISTS: 409,
+    ENTRY_NOT_FOUND: 404,
+    ENTRY_CONFLICT: 409,
+    INVALID_TRANSITION: 409,
+    MISSING_REQUIRED_FIELD: 422,
+    FIELD_NOT_IN_STATE: 422,
     VALIDATION_ERROR: 422,
     PERSISTENCE_ERROR: 500,
     MARKET_DATA_UNAVAILABLE: 503,
@@ -26,13 +43,25 @@ function errorToHttp(error: ApiDomainError): number {
     return STATUS_BY_CODE[error.code];
 }
 
+/** The field a roger error names, so the client can rebuild it from `issues[0].path`. */
+function fieldIssues(error: ApiDomainError): ApiErrorIssueDto[] | undefined {
+    if (error instanceof RequestValidationError) {
+        return [...error.issues];
+    }
+    if (error instanceof MissingRequiredFieldError || error instanceof FieldNotInStateError) {
+        return [{ path: error.field, message: error.message }];
+    }
+    return undefined;
+}
+
 function toApiError(error: ApiDomainError): ApiErrorDto {
     const statusCode = errorToHttp(error);
+    const issues = fieldIssues(error);
     return {
         code: error.code,
         message: statusCode >= 500 ? "Internal server error" : error.message,
         statusCode,
-        ...(error instanceof RequestValidationError && { issues: [...error.issues] }),
+        ...(issues && { issues }),
     };
 }
 

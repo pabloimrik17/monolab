@@ -560,6 +560,9 @@ importers:
       '@m0n0lab/investlab-quotes':
         specifier: workspace:*
         version: link:../../packages/investlab-quotes
+      '@m0n0lab/investlab-roger':
+        specifier: workspace:*
+        version: link:../../packages/investlab-roger
       '@varlock/1password-plugin':
         specifier: 'catalog:'
         version: 2.0.4(varlock@1.21.0)

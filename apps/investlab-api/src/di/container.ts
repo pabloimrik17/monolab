@@ -7,6 +7,7 @@ import {
 } from "@m0n0lab/investlab-platform/server";
 import { portfolioServerModule } from "@m0n0lab/investlab-portfolio/server";
 import { quotesServerModule } from "@m0n0lab/investlab-quotes/server";
+import { rogerServerModule } from "@m0n0lab/investlab-roger/server";
 
 /** Composition root: `Config` from `process.env`; clients connect on first use, not here. */
 export function createContainer(): Container {
@@ -17,6 +18,7 @@ export function createContainer(): Container {
         catalogServerModule,
         portfolioServerModule,
         quotesServerModule,
+        rogerServerModule,
     );
     return container;
 }
