@@ -9,6 +9,14 @@ if (!databaseUrl) {
     );
 }
 
+// drizzle-kit 0.31 catches a failed command (e.g. a table file that won't load), logs the
+// error and exits 0; fail the run instead.
+const logError = console.error.bind(console);
+console.error = (...args: unknown[]) => {
+    if (args[0] instanceof Error) process.exitCode = 1;
+    logError(...args);
+};
+
 export default defineConfig({
     dialect: "postgresql",
     schema: ["../investlab-*/src/data/server/infra/db/*.table.ts"],
