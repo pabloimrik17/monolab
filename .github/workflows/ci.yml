@@ -94,7 +94,7 @@ jobs:
               run: pnpm exec nx run-many -t lint:legacy-tests
 
             - name: 🔍 Validate OpenSpec change proposals
-              run: pnpm dlx @fission-ai/openspec@1.2.0 validate --changes --no-interactive
+              run: pnpm dlx @fission-ai/openspec@1.15.0 validate --changes --no-interactive
 
             - name: 🔍 Execute lint checks for affected files (Affected)
               run: pnpm exec nx affected -t lint:eslint lint:stylelint lint:markdownlint lint:oxfmt && pnpm run lint:knip
