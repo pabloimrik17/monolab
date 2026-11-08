@@ -7,7 +7,7 @@ import { PortfolioItemUpdateUseCase } from "#application/server/use-case/portfol
 import { PortfolioItemPgQuery } from "#data/server/query/portfolio-item-pg.query.ts";
 import { PortfolioItemPgRepository } from "#data/server/repository/portfolio-item-pg.repository.ts";
 
-/** Portfolio for the API, on Postgres. Requires `platformServerModule`. */
+/** Portfolio for the API, on Postgres. Requires `platformServerModule` and `catalogServerModule`. */
 export const portfolioServerModule = new ContainerModule(({ bind }) => {
     bind(PORTFOLIO_PORTS.PortfolioItemRepository).to(PortfolioItemPgRepository);
     bind(PORTFOLIO_PORTS.PortfolioItemQuery).to(PortfolioItemPgQuery);
