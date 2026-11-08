@@ -35,6 +35,11 @@ Successfully fetched subdirectory files SHALL be cached under `_source/` using a
 - **WHEN** `CHANGELOG.md` does not contain entries for the requested version range
 - **THEN** the skill SHALL try `changelogs/CHANGELOG-{major}.{minor}.md` for the relevant minor version
 
+#### Scenario: Monorepo root fetch
+
+- **WHEN** resolving a monorepo package like `@angular/core` that has no `repository.directory` or whose subdirectory has no CHANGELOG
+- **THEN** the skill SHALL fetch CHANGELOG.md from the repo root
+
 #### Scenario: Monorepo subdirectory fetch
 
 - **WHEN** resolving `@tanstack/query-core` whose `repository.directory` is `packages/query-core`
