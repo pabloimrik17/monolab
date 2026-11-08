@@ -279,6 +279,16 @@ describe("instrumentRoutes", () => {
             expect(remove.calls).toEqual([[instrument.id]]);
         });
 
+        it("answers 404 INSTRUMENT_NOT_FOUND for an unknown instrument", async () => {
+            await using api = await InstrumentRouteHarness.launch();
+            api.givenDeleteFails(new InstrumentNotFoundError(MISSING_ID));
+
+            const { status, body } = await api.deleteInstrument(MISSING_ID);
+
+            expect(status).toBe(404);
+            expect(body).toMatchObject({ code: "INSTRUMENT_NOT_FOUND" });
+        });
+
         it("answers 409 INSTRUMENT_IN_USE while a portfolio item references it", async () => {
             await using api = await InstrumentRouteHarness.launch();
             api.givenDeleteFails(new InstrumentInUseError(MISSING_ID));
