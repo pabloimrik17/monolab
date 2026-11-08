@@ -48,7 +48,7 @@ Behaviour difference: an item create with both an invalid body and an unknown in
 
 ### 3. The catalog's `./server` entry exports its table
 
-Dependants need the `instruments` table object for their foreign key (`references(() => instruments.id)`) and for read-query joins. The catalog's `./server` entry exports the table definition and nothing else of its data layer; repositories and tokens stay private. Writes to instruments go only through catalog use cases. The database package's glob over `data/server/infra/db/*.table.ts` already includes the catalog's file, so no migration is generated.
+Dependants need the `instruments` table object for their foreign key (`references(() => instruments.id)`) and for read-query joins. The catalog's `./server` entry exports the table definition and the mapper from its row to `Instrument`, and `./client` the mapper from `InstrumentDto` to `Instrument`, so portfolio's read query and list response rebuild instruments without a copy (owner decision 2026-11-07); nothing else of its data layer is exported, and repositories and tokens stay private. Writes to instruments go only through catalog use cases. The database package's glob over `data/server/infra/db/*.table.ts` already includes the catalog's file, so no migration is generated.
 
 ### 4. Declared edges in the lint
 
@@ -61,7 +61,7 @@ Dependants need the `instruments` table object for their foreign key (`reference
 
 ### 6. Tests and gates
 
-The moved tests run unchanged, in the catalog package. Portfolio integration tests that need an instrument create it with the catalog's builder and its server use case, or use the seed. The catalog starts at coverage 80 and Stryker thresholds 90/80/80. Portfolio keeps its floors; if the move drops a measured value below a floor, the move is wrong (the remaining code is item code with its own tests), not the floor.
+The moved tests run unchanged, in the catalog package. Portfolio integration tests that need an instrument create it with the catalog's builder and its server use case, or use the seed. The catalog starts at coverage 80 and Stryker thresholds 90/80/80. Portfolio gains Stryker at 90/80/80 too (owner decision 2026-11-07). Both packages set Stryker `timeoutMS` to 60 s: under the default, slow integration tests count as kills and inflate the score (owner decision 2026-11-07). The in-use refusal is tested once, in portfolio's server item delete test, against a real holding; the catalog keeps no test-only referencing table (owner decision 2026-11-07). Portfolio keeps its floors; if the move drops a measured value below a floor, the move is wrong (the remaining code is item code with its own tests), not the floor.
 
 ## Risks / Trade-offs
 
