@@ -660,16 +660,21 @@ const moduleBans: LayoutBans = ({ root }, { product, modules, dependsOn = {} }) 
                 ),
             ];
         }),
-        // Device code, after the client groups so these lists win.
+        // Device code, after the client groups so these lists win; a dependency's `./client` carries the API client.
         ...group(
             deviceMedia.map((medium) => `${src}/data/client/*/*-${medium}.*`),
-            ["client"],
+            [],
             [bans.otherSide("client"), bans.database, bans.browserEntry, bans.devicePlatform],
         ),
         ...group(
             [`${src}/di/browser.module.*`],
-            ["client"],
+            [],
             [bans.otherSide("client"), bans.database, bans.devicePlatform],
+        ),
+        ...group(
+            [`${src}/browser.ts`],
+            [],
+            [bans.platformOrDb, bans.otherSide("client"), bans.browserEntry],
         ),
     ];
 };
