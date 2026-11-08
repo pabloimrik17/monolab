@@ -2,7 +2,7 @@
 
 ## 1. Catalog package scaffold
 
-- [x] 1.1 Create `packages/investlab-catalog` mirroring `packages/investlab-portfolio`: `package.json` (entries `.`, `./server`, `./client`, `./testing`; same scripts and deps), `project.json`, tsconfigs, `tsdown.config.ts`, `vitest.config.ts` (unit, `integration:server`, `integration:client` projects; coverage thresholds 80) and Stryker config (90/80/80). Verify `pnpm nx show project @m0n0lab/investlab-catalog` lists the build, lint, test and mutation targets.
+- [x] 1.1 Create `packages/investlab-catalog` mirroring `packages/investlab-portfolio`: `package.json` (entries `.`, `./server`, `./client`, `./testing`; same scripts and deps), `project.json`, tsconfigs, `tsdown.config.ts`, `vitest.config.ts` (unit, `integration:server`, `integration:client` projects; coverage thresholds 80) and Stryker config (90/75/75). Verify `pnpm nx show project @m0n0lab/investlab-catalog` lists the build, lint, test and mutation targets.
 - [x] 1.2 Add `catalog` to `investlabLayout.modules` and the `dependsOn` map `{ portfolio: ["catalog"] }` in `eslint.config.ts`; make `moduleBans` allow declared edges through the side-matching entries and reject a cyclic map at load (design §4). Verify `pnpm nx run-many -t lint:eslint -p '@m0n0lab/investlab*'` passes and a scratch import from quotes to portfolio fails.
 
 ## 2. Move the catalog

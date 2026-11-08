@@ -5,7 +5,7 @@ Roger (`investlab-roger-positions`) needs the instrument catalog, and the global
 ## What Changes
 
 - New module package `@m0n0lab/investlab-catalog`: the `Instrument` model, its value objects (instrument type, asset class, sector), errors, repository port, the four instrument use cases per side, DTOs, the `instruments` table, mappers, builders and the integration tests, moved from `@m0n0lab/investlab-portfolio` unchanged in behaviour.
-- `@m0n0lab/investlab-portfolio` keeps portfolio items only and imports the catalog for `InstrumentNotFoundError`, the instrument read model and the `instruments` table (foreign key and read-query join).
+- `@m0n0lab/investlab-portfolio` keeps portfolio items only and imports the catalog for `InstrumentNotFoundError`, the instrument read model, the list use case that returns the catalog beside the items, and the `instruments` table (foreign key and read-query join).
 - **BREAKING** (internal): the module rule "a business module never imports another" becomes "modules import each other only along declared edges, through public entries, without cycles; trader modules are leaves". Today's edges: portfolio → catalog. The boundary lint changes accordingly.
 - The instrument "in use" refusal covers any reference, not just portfolio items; its message no longer names the portfolio.
 - The API moves the instrument routes from `src/portfolio/` to `src/catalog/` and loads the catalog server module. Routes and wire contract are unchanged.

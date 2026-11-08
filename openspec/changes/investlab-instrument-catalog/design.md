@@ -2,7 +2,7 @@
 
 ## Context
 
-`@m0n0lab/investlab-portfolio` holds two aggregates: `PortfolioItem` and `Instrument`. Two portfolio use cases read the instrument repository directly: item create checks that the instrument exists, and instrument delete asks the item repository `existsForInstrument` before deleting, with the foreign key as a race backstop. The item list read query joins `portfolio_items` with `instruments` in one SQL query (ADR 0004). The lint factory in `eslint.config.ts` (`moduleBans`) bans every import between the product's modules. [ADR 0010](../../../docs/adr/0010-investlab-module-dependencies.md) replaces that ban with declared edges.
+`@m0n0lab/investlab-portfolio` holds two aggregates: `PortfolioItem` and `Instrument`. Three portfolio use cases cross the two aggregates: item create checks that the instrument exists, item list returns the whole catalog beside the items through the instrument repository, and instrument delete asks the item repository `existsForInstrument` before deleting, with the foreign key as a race backstop. The item list read query joins `portfolio_items` with `instruments` in one SQL query (ADR 0004). The lint factory in `eslint.config.ts` (`moduleBans`) bans every import between the product's modules. [ADR 0010](../../../docs/adr/0010-investlab-module-dependencies.md) replaces that ban with declared edges.
 
 ## Goals / Non-Goals
 
@@ -33,7 +33,7 @@
 
 The catalog gets its own `di/`, tokens (`CATALOG.InstrumentCreate|Update|Delete|List` per side, `CATALOG_PORTS.InstrumentRepository` private), entries (`.`, `./server`, `./client`, `./testing`), `testing/{server,client}` setups and Vitest config. Moves use `git mv` so history follows. `docs/legacy-tests.txt` follows the two legacy files.
 
-Portfolio keeps `PortfolioItem`, its read model (which now imports `Instrument` from the catalog's `.` entry), its query, DTOs and use cases. `PortfolioRemoteError` becomes `RemotePortError<InstrumentNotFoundError | PortfolioItemNotFoundError | PortfolioItemConflictError>`; the catalog defines `CatalogRemoteError = RemotePortError<InstrumentNotFoundError | InstrumentInUseError | InstrumentAlreadyExistsError>`.
+Portfolio keeps `PortfolioItem`, its read model (which now imports `Instrument` from the catalog's `.` entry), its query, DTOs and use cases. Its item list use case returns the catalog through the catalog's `CATALOG.InstrumentList` use case instead of the repository, so `portfolioServerModule` requires `catalogServerModule`. `PortfolioRemoteError` becomes `RemotePortError<InstrumentNotFoundError | PortfolioItemNotFoundError | PortfolioItemConflictError>`; the catalog defines `CatalogRemoteError = RemotePortError<InstrumentNotFoundError | InstrumentInUseError | InstrumentAlreadyExistsError>`.
 
 ### 2. Referential integrity through foreign keys
 
@@ -61,12 +61,12 @@ Dependants need the `instruments` table object for their foreign key (`reference
 
 ### 6. Tests and gates
 
-The moved tests run unchanged, in the catalog package. Portfolio integration tests that need an instrument create it with the catalog's builder and its server use case, or use the seed. The catalog starts at coverage 80 and Stryker thresholds 90/80/80. Portfolio gains Stryker at 90/80/80 too (owner decision 2026-11-07). Both packages set Stryker `timeoutMS` to 60 s: under the default, slow integration tests count as kills and inflate the score (owner decision 2026-11-07). The in-use refusal is tested once, in portfolio's server item delete test, against a real holding; the catalog keeps no test-only referencing table (owner decision 2026-11-07). Portfolio keeps its floors; if the move drops a measured value below a floor, the move is wrong (the remaining code is item code with its own tests), not the floor.
+The moved tests run unchanged, in the catalog package. Portfolio integration tests that need an instrument create it with the catalog's builder and its server use case, or use the seed. The catalog starts at coverage 80. The catalog and portfolio run Stryker at 90/75/75: their CI scores are about 78, so ADR 0008's floor rule applies, and a Beads task raises them to 80 with behaviour tests (owner decision 2026-11-08). Both packages set Stryker `timeoutMS` to 60 s: under the default, slow integration tests count as kills and inflate the score (owner decision 2026-11-07). The catalog's Stryker run also excludes `*.table.ts`: a table definition holds no logic, and its mutants timed out locally but survived in CI (owner decision 2026-11-08). The in-use refusal is tested once, in portfolio's server item delete test, against a real holding; the catalog keeps no test-only referencing table (owner decision 2026-11-07). Portfolio keeps its floors; if the move drops a measured value below a floor, the move is wrong (the remaining code is item code with its own tests), not the floor.
 
 ## Risks / Trade-offs
 
 - [Mapping the FK violation on create loses the "which instrument" detail if a body could ever reference two instruments] → An item references exactly one; the error carries the id from the body.
-- [Exporting a table invites dependants to write to it] → The lint allows the import only in `data/server/`, and review checks that dependants only reference or join it. A write would bypass catalog validation; no use case needs one.
+- [Exporting a table invites dependants to write to it] → The lint allows the `./server` entry only from server code, and `application/` also bans `drizzle-orm` and the database client, so only `data/server/` can query the table; review checks that dependants only reference or join it. A write would bypass catalog validation; no use case needs one.
 - [Moving files breaks open PRs that touch instrument code] → None open today. Land this change before Roger.
 - [Lint factory change affects every product] → `dependsOn` is optional; qup and green-beard calls are unchanged, and the lint suite runs on all of them in CI.
 
