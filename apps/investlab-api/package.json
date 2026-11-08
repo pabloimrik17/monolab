@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "build": "tsdown",
-        "db:generate": "pnpm --filter @m0n0lab/investlab-database db:generate",
+        "db:generate": "nx run @m0n0lab/investlab-database:db:generate",
         "db:migrate": "pnpm --filter @m0n0lab/investlab-database db:migrate",
         "dev": "tsx watch src/index.ts",
         "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",

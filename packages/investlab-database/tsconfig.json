@@ -7,15 +7,7 @@
         "rootDir": "./src",
         "declaration": true,
         "composite": true,
-        "types": ["node"],
-        // drizzle-kit loads *.table.ts through a CJS loader, which can't resolve the modules'
-        // esm-only entries. It honours these paths: alias each entry a table file imports to
-        // the table's source, as the schema glob in drizzle.config.ts already reads.
-        "paths": {
-            "@m0n0lab/investlab-catalog/server": [
-                "../investlab-catalog/src/data/server/infra/db/instrument.table.ts"
-            ]
-        }
+        "types": ["node"]
     },
     "include": ["src/**/*"],
     "exclude": ["**/*.test.ts", "**/*.spec.ts"],
