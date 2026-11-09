@@ -38,7 +38,7 @@ export interface ListedGroup {
     readonly entries: ListedEntry[];
 }
 
-export type FormFieldLabel =
+type FormFieldLabel =
     | "Symbol"
     | "Name"
     | "Sector"
