@@ -30,13 +30,13 @@ Prerequisites, from the bottom of the stack: `investlab-instrument-catalog`, the
 
 ## 5. Web
 
-- [ ] 5.1 Server container loads the roger client module; `src/routes/roger.tsx` with loader (roger `EntryList` by view + catalog `InstrumentList`) and action intents `create`, `update`, `delete`, `transition`, `re-enter`; "Roger" link in `root.tsx`. Verify `pnpm nx run @m0n0lab/investlab:build` passes.
-- [ ] 5.2 `src/roger/` page, view model, components (grouped table, row, state badge, entry form, transition form) and form schemas (design §7), using `transitionsFrom` and `fieldsOf` from the roger `.` entry. Verify `roger.page.integration-platform.tsx` on the 3ao3 UI harness covers every scenario of the Roger page and Entry forms requirements.
-- [ ] 5.3 Verify `pnpm nx run @m0n0lab/investlab:test:coverage` stays at or above its floors.
+- [x] 5.1 Server container loads the roger client module; `src/routes/roger.tsx` with loader (roger `EntryList` by view + catalog `InstrumentList`) and action intents `create`, `update`, `delete`, `transition`, `re-enter`; "Roger" link in `root.tsx`. Verify `pnpm nx run @m0n0lab/investlab:build` passes.
+- [x] 5.2 `src/roger/` page, view model, components (grouped table, row, state badge, entry form, transition form) and form schemas (design §7), using `transitionsFrom` and `fieldsOf` from the roger `.` entry. Verify `roger.page.integration-platform.tsx` on the 3ao3 UI harness covers every scenario of the Roger page and Entry forms requirements.
+- [x] 5.3 Verify `pnpm nx run @m0n0lab/investlab:test:coverage` stays at or above its floors.
 
 ## 6. Integration checks
 
-- [ ] 6.1 Run the web against the API and a local Postgres; walk `WATCHING` → `SHORTLISTED` → `BUY_ORDER` → `INVESTED` → `SELL_ORDER` → `SOLD` → re-entry, a market buy, a manual sale and a cancelled buy order; create an entry with a new stock. Verify each step in the browser and record screenshots.
+- [x] 6.1 Run the web against the API and a local Postgres; walk `WATCHING` → `SHORTLISTED` → `BUY_ORDER` → `INVESTED` → `SELL_ORDER` → `SOLD` → re-entry, a market buy, a manual sale and a cancelled buy order; create an entry with a new stock. Verify each step in the browser and record screenshots.
 - [ ] 6.2 `pnpm nx show projects -p '@m0n0lab/investlab*'` lists the nine projects of the module-packages delta; `fallow audit --base <PR base>` and the pre-push gate pass on the final HEAD.
 
 ## Workflow follow-up
