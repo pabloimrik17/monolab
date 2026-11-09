@@ -426,7 +426,7 @@ const appPolicies = [
     allow({ allOf: ["test", "routes"] }, ["routes"]),
     allow("entry", ["**"]),
     // a harness boots the app entry it drives
-    allow("{harness,core/harness}", ["entry", "module/**", "core/**", "di"]),
+    allow("{harness,core/harness}", ["entry", "routes", "module/**", "core/**", "di"]),
     disallow("core/**", ["module/**"], "core/ never imports a module"),
     disallow("framework/client", ["framework/server"], ".client files never import .server files"),
     disallow("framework/server", ["framework/client"], ".server files never import .client files"),
@@ -701,7 +701,12 @@ const withTestingBan = (
 const uiAppBans: LayoutBans = ({ root }, { product }) => {
     const src = `${root}/src`;
     const bans = productBans(product);
-    const clientEntryFiles = [`${src}/routes/**`, `${src}/di/container.server.*`];
+    const clientEntryFiles = [
+        `${src}/routes/**`,
+        `${src}/di/container.server.*`,
+        `${src}/**/*.harness${extension}`,
+        `${src}/core/harness/**`,
+    ];
     const browserEntryFiles = [`${src}/di/container.client.*`];
     const twin = (files: string[], list: Ban[], ignores: string[] = []) =>
         withTestingBan(src, files, list, bans.testingEntry, ignores);
