@@ -48,14 +48,14 @@ export default mergeConfig(
                     "**/*.d.ts",
                 ],
                 // Below ADR 0008's 80 target: a one-off exception to its never-lower rule, recorded in the
-                // clean-architecture-layout design §12. agentic-task-1caz raises them. Whoever adds
+                // clean-architecture-layout design §12. agentic-task-1caz continues the climb. Whoever adds
                 // tests here re-measures with `test:coverage` and raises every metric that passed its next
                 // multiple of 5, until each one reaches 80.
                 thresholds: coverageThresholds({
-                    lines: 45,
-                    branches: 40,
-                    functions: 40,
-                    statements: 45,
+                    lines: 65,
+                    branches: 75,
+                    functions: 70,
+                    statements: 70,
                 }),
             },
         },
