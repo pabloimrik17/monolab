@@ -2,28 +2,28 @@
     "mcpServers": {
         "eslint": {
             "type": "stdio",
-            "command": "npx",
-            "args": ["-y", "@eslint/mcp@0.3.16"]
+            "command": "pnpx",
+            "args": ["@eslint/mcp@0.3.16"]
         },
         "context7": {
             "type": "stdio",
-            "command": "npx",
-            "args": ["-y", "@upstash/context7-mcp@4.1.1"]
+            "command": "pnpx",
+            "args": ["@upstash/context7-mcp@4.1.1"]
         },
         "knip": {
             "type": "stdio",
-            "command": "npx",
-            "args": ["-y", "@knip/mcp@0.0.34"]
+            "command": "pnpx",
+            "args": ["@knip/mcp@0.0.34"]
         },
         "playwright": {
             "type": "stdio",
-            "command": "npx",
-            "args": ["-y", "@playwright/mcp@0.0.79"]
+            "command": "pnpx",
+            "args": ["@playwright/mcp@0.0.79"]
         },
         "chrome-devtools": {
             "type": "stdio",
-            "command": "npx",
-            "args": ["-y", "chrome-devtools-mcp@1.10.1"]
+            "command": "pnpx",
+            "args": ["chrome-devtools-mcp@1.10.1"]
         },
         "gh_grep": {
             "type": "http",
