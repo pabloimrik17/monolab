@@ -47,7 +47,6 @@ const PRICE_MAX = 9_999_999_999.9999;
 const COMMISSION_MAX = 99_999_999.99;
 const QUANTITY_MAX = 2_147_483_647;
 const CALENDAR_DATE_LENGTH = "YYYY-MM-DD".length;
-// SOLD carries every field.
 const EVERY_FIELD = fieldsOf(RogerState.Sold);
 
 function hasAtMostDecimals(value: number, decimals: number): boolean {

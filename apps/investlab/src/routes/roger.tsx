@@ -69,7 +69,6 @@ export async function loader({ request }: Route.LoaderArgs): Promise<RogerPageDa
 
 const succeeded = (): RogerActionResult => ({ ok: true });
 
-// A refusal that names a field comes back keyed by it, so the form can show it inline.
 function failed(error: RogerRemoteError): RogerActionResult {
     const message = remoteErrorMessage(error);
     switch (error.code) {

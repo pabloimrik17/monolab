@@ -25,7 +25,6 @@ export type {
 } from "#domain/repository/entry-remote.repository.ts";
 export type { EntryValues, EntryDraft } from "#domain/model/entry.model.ts";
 
-// Contracts
 export {
     createEntryDtoSchema,
     editEntryDtoSchema,

@@ -3,7 +3,7 @@ import { StaticRouter } from "react-router";
 import { describe, expect, it, vi } from "vitest";
 import { Layout } from "./root";
 
-// They need the framework's runtime context, which only a real server render provides.
+// Meta, Links, Scripts and ScrollRestoration need the framework's runtime context, which only a real server render provides.
 vi.mock("react-router", async (importOriginal) => ({
     ...(await importOriginal<typeof import("react-router")>()),
     Meta: () => null,
