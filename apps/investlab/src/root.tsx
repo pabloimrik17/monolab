@@ -27,6 +27,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <nav className="top-nav">
                     <Link to="/">Tickers</Link>
                     <Link to="/portfolio">Portfolio</Link>
+                    <Link to="/roger">Roger</Link>
                 </nav>
                 {children}
                 <ScrollRestoration />

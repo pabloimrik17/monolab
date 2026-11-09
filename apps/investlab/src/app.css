@@ -341,4 +341,58 @@ body {
     padding: 0.5rem 1rem;
     font-size: 1rem;
 }
+
+.roger-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.roger-toolbar nav {
+    display: flex;
+    gap: 1rem;
+}
+
+.roger-toolbar [aria-current="page"] {
+    font-weight: 600;
+}
+
+.roger-toolbar label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* The portfolio table right-aligns its columns 6 and 7; here those are not its numeric ones. */
+.roger-table td:nth-child(n),
+.roger-table th:nth-child(n) {
+    text-align: left;
+}
+
+.roger-group-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+}
+
+.roger-group-heading h2,
+.roger-form-title,
+.roger-form-note {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.roger-form-title,
+.roger-form-note {
+    grid-column: 1 / -1;
+}
+
+.roger-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
 /* stylelint-enable no-descending-specificity */
