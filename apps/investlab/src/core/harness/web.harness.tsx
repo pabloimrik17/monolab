@@ -237,9 +237,13 @@ export class WebHarness implements AsyncDisposable {
         }
     }
 
-    protected async acceptingConfirm(action: () => Promise<unknown>): Promise<void> {
+    /** Answers any `confirm()` the action raises with `answer`: true accepts it, false cancels it. */
+    protected async answeringConfirm(
+        answer: boolean,
+        action: () => Promise<unknown>,
+    ): Promise<void> {
         const original = window.confirm;
-        window.confirm = () => true;
+        window.confirm = () => answer;
         try {
             await action();
         } finally {
