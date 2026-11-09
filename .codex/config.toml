@@ -1,6 +1,6 @@
 [mcp_servers.nx-mcp]
-command = "pnpm"
-args = ["exec", "nx", "mcp", "--minimal"]
+command = "pnpx"
+args = ["nx-mcp@0.25.3", "--minimal"]
 
 [features]
 multi_agent = true
