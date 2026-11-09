@@ -37,7 +37,7 @@ Prerequisites, from the bottom of the stack: `investlab-instrument-catalog`, the
 ## 6. Integration checks
 
 - [x] 6.1 Run the web against the API and a local Postgres; walk `WATCHING` → `SHORTLISTED` → `BUY_ORDER` → `INVESTED` → `SELL_ORDER` → `SOLD` → re-entry, a market buy, a manual sale and a cancelled buy order; create an entry with a new stock. Verify each step in the browser and record screenshots.
-- [ ] 6.2 `pnpm nx show projects -p '@m0n0lab/investlab*'` lists the nine projects of the module-packages delta; `fallow audit --base <PR base>` and the pre-push gate pass on the final HEAD.
+- [x] 6.2 `pnpm nx show projects -p '@m0n0lab/investlab*'` lists the nine projects of the module-packages delta; `fallow audit --base <PR base>` and the pre-push gate pass on the final HEAD.
 
 ## Workflow follow-up
 
