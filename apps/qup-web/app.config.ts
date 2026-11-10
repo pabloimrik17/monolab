@@ -1,5 +1,6 @@
 import { codecovVitePlugin } from "@codecov/vite-plugin";
 import { defineConfig } from "@solidjs/start/config";
+import { msw } from "msw/vite";
 
 const codecovToken = process.env["CODECOV_TOKEN"]?.trim();
 
@@ -27,6 +28,8 @@ export default defineConfig({
                           ...(codecovToken != null && { uploadToken: codecovToken }),
                           gitService: "github",
                       }),
+                      // worker-only mode also emits the worker into builds, so it only runs on the dev server.
+                      { ...msw({ mode: "worker-only" }), apply: "serve" },
                   ]
                 : [],
     }),

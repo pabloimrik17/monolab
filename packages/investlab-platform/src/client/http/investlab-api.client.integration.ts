@@ -1,7 +1,8 @@
 // fallow-ignore-file code-duplication -- moved verbatim (clean-architecture-layout)
 import { Container } from "inversify";
-import { delay, http, HttpResponse } from "msw";
+import { http, HttpResponse } from "msw/http";
 import { setupServer } from "msw/node";
+import { delay } from "msw/utils/delay";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { z } from "zod";
 import { PLATFORM } from "#client/tokens.ts";
@@ -47,7 +48,7 @@ function apiError(statusCode: number, code: ApiErrorDto["code"], message = "fail
 }
 
 describe("InvestlabApiClient", () => {
-    beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+    beforeAll(() => server.listen({ onUnhandledFrame: "error" }));
     afterEach(() => server.resetHandlers());
     afterAll(() => server.close());
 

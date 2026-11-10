@@ -59,7 +59,7 @@ Each side's setup SHALL build the container (on the server side per test: built 
 
 ### Requirement: Only what leaves the system is faked
 
-Tests SHALL run the real use cases, repositories and platform code. Only external systems SHALL be faked: Postgres and Redis with Testcontainers, Finnhub and the InvestLab API with MSW using `onUnhandledRequest: "error"`. Faked responses SHALL carry values that make the use case output predictable.
+Tests SHALL run the real use cases, repositories and platform code. Only external systems SHALL be faked: Postgres and Redis with Testcontainers, Finnhub and the InvestLab API with MSW using `onUnhandledFrame: "error"`. Faked responses SHALL carry values that make the use case output predictable.
 
 #### Scenario: Unexpected outbound request
 

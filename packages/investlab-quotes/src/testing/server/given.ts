@@ -1,4 +1,4 @@
-import { http, HttpResponse } from "msw";
+import { http, HttpResponse } from "msw/http";
 import { PLATFORM } from "@m0n0lab/investlab-platform/server";
 import { container, FINNHUB_API_KEY, finnhub } from "./vitest-integration-setup.ts";
 

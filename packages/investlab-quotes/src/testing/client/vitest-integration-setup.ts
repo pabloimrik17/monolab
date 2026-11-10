@@ -24,7 +24,7 @@ container.bind(PLATFORM_SHARED.KeyValueStorage).toConstantValue(storage);
 container.load(platformClientModule, quotesClientModule, quotesBrowserModule);
 
 beforeAll(() => {
-    investlabApi.listen({ onUnhandledRequest: "error" });
+    investlabApi.listen({ onUnhandledFrame: "error" });
 });
 
 afterEach(() => {
