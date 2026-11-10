@@ -430,6 +430,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 5.1.0(@vitest/browser@5.1.0)(vitest@5.1.0)
+      msw:
+        specifier: 'catalog:'
+        version: 3.0.4(@types/node@24.19.2)(graphql@16.14.2)(supports-color@7.2.0)(typescript@6.0.3)(vite@8.1.6(@types/node@24.19.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.46.0)(tsx@4.23.1)(yaml@2.9.0))
       svelte:
         specifier: 5.56.6
         version: 5.56.6(@typescript-eslint/types@8.64.0)
@@ -512,6 +515,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 5.1.0(@vitest/browser@5.1.0)(vitest@5.1.0)
+      msw:
+        specifier: 'catalog:'
+        version: 3.0.4(@types/node@24.19.2)(graphql@16.14.2)(supports-color@10.2.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.19.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.46.0)(tsx@4.23.1)(yaml@2.9.0))
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -674,6 +680,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 5.1.0(@vitest/browser@5.1.0)(vitest@5.1.0)
+      msw:
+        specifier: 'catalog:'
+        version: 3.0.4(@types/node@24.19.2)(graphql@16.14.2)(supports-color@10.2.2)(typescript@6.0.3)(vite@6.4.2(@types/node@24.19.2)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.0)(tsx@4.23.1)(yaml@2.9.1))
       postcss:
         specifier: 8.5.23
         version: 8.5.23
@@ -12792,7 +12801,6 @@ snapshots:
       rettime: 0.11.12
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
@@ -17742,7 +17750,6 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
       - supports-color
-    optional: true
 
   msw@3.0.4(@types/node@24.19.2)(graphql@16.14.2)(supports-color@10.2.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.19.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.46.0)(tsx@4.23.1)(yaml@2.9.0)):
     dependencies:
@@ -17765,7 +17772,6 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
       - supports-color
-    optional: true
 
   msw@3.0.4(@types/node@24.19.2)(graphql@16.14.2)(supports-color@10.2.2)(typescript@6.0.3)(vite@8.1.6(@types/node@24.19.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.46.0)(tsx@4.23.1)(yaml@2.9.1)):
     dependencies:
@@ -17810,7 +17816,6 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
       - supports-color
-    optional: true
 
   msw@3.0.4(@types/node@24.19.2)(graphql@16.14.2)(supports-color@7.2.0)(typescript@6.0.3)(vite@8.1.6(@types/node@24.19.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.46.0)(tsx@4.23.1)(yaml@2.9.1)):
     dependencies:

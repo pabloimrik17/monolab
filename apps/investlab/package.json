@@ -39,6 +39,7 @@
         "@types/react-dom": "19.2.3",
         "@varlock/vite-integration": "catalog:",
         "@vitest/coverage-v8": "catalog:",
+        "msw": "catalog:",
         "typescript": "catalog:",
         "vite": "catalog:",
         "vitest": "catalog:"
