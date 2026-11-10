@@ -102,6 +102,17 @@ describe("RogerPage", () => {
         expect(page.formIsOpen()).toBe(false);
     });
 
+    it("closes the Move to menu when the page scrolls", async () => {
+        const watching = entryOf(aapl, RogerState.Watching, 150);
+        await using page = await RogerPageHarness.launch({ entries: [shown(aapl, watching)] });
+        await page.openMoveMenu(watching);
+        expect(page.moveMenuIsOpen()).toBe(true);
+
+        await page.scrollPage();
+
+        expect(page.moveMenuIsOpen()).toBe(false);
+    });
+
     it("keeps only one Move to menu open at a time", async () => {
         const upper = entryOf(aapl, RogerState.Watching, 150);
         const lower = entryOf(aapl, RogerState.Invested, 130);

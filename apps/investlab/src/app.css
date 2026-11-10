@@ -407,6 +407,18 @@ body {
     white-space: nowrap;
 }
 
+.roger-table tbody tr:nth-child(even) {
+    background: none;
+}
+
+.roger-table tbody tr:has(.roger-group-heading) {
+    background: #f5f5f5;
+}
+
+.roger-table tbody tr:not(:has(.roger-group-heading)):hover {
+    background: #fafcff;
+}
+
 /* The portfolio table right-aligns its columns 6 and 7; here those are not its numeric ones. */
 .roger-table td:nth-child(6),
 .roger-table td:nth-child(7),
@@ -513,6 +525,20 @@ body {
 
 .roger-menu button {
     width: 100%;
+    padding: 0.35rem 0.75rem;
+    background: none;
+    border: none;
+    border-radius: 2px;
     text-align: left;
+}
+
+.roger-menu button:hover:not(:disabled),
+.roger-menu button:focus-visible {
+    background: #f0f0f0;
+}
+
+.roger-menu button:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: -2px;
 }
 /* stylelint-enable no-descending-specificity */

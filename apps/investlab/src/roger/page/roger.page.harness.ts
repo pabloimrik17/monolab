@@ -181,6 +181,12 @@ export class RogerPageHarness extends WebHarness {
         await this.interact(() => userEvent.keyboard("{Escape}"));
     }
 
+    async scrollPage(): Promise<void> {
+        await this.interact(async () => {
+            window.dispatchEvent(new Event("scroll"));
+        });
+    }
+
     /** The items of the open menu, as a user reads them. */
     async visibleMenuItems(): Promise<string[]> {
         return this.visible(this.view.getByRole("button")).filter(isMenuItem).map(text);
