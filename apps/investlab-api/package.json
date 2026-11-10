@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "build": "tsdown",
-        "db:generate": "pnpm --filter @m0n0lab/investlab-database db:generate",
+        "db:generate": "nx run @m0n0lab/investlab-database:db:generate",
         "db:migrate": "pnpm --filter @m0n0lab/investlab-database db:migrate",
         "dev": "tsx watch src/index.ts",
         "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
@@ -23,6 +23,7 @@
     "dependencies": {
         "@hono/node-server": "2.0.10",
         "@hono/zod-validator": "0.9.1",
+        "@m0n0lab/investlab-catalog": "workspace:*",
         "@m0n0lab/investlab-core": "workspace:*",
         "@m0n0lab/investlab-platform": "workspace:*",
         "@m0n0lab/investlab-portfolio": "workspace:*",

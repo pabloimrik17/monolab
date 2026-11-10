@@ -1,11 +1,12 @@
 import { RequestValidationError } from "#core/error/request-validation.error.ts";
 import { DomainError, type ApiErrorDto, type KernelErrorCode } from "@m0n0lab/investlab-core";
+import type { CatalogErrorCode } from "@m0n0lab/investlab-catalog";
 import type { PortfolioErrorCode } from "@m0n0lab/investlab-portfolio";
 import type { QuotesErrorCode } from "@m0n0lab/investlab-quotes";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
-type ApiDomainErrorCode = KernelErrorCode | PortfolioErrorCode | QuotesErrorCode;
+type ApiDomainErrorCode = KernelErrorCode | CatalogErrorCode | PortfolioErrorCode | QuotesErrorCode;
 
 export type ApiDomainError = DomainError<ApiDomainErrorCode>;
 

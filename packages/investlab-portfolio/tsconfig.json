@@ -22,6 +22,9 @@
     "exclude": ["**/*.test.ts", "**/*.spec.ts"],
     "references": [
       {
+        "path": "../investlab-catalog"
+      },
+      {
         "path": "../investlab-platform"
       },
       {

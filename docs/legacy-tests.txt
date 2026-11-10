@@ -8,10 +8,10 @@ apps/investlab/src/routes/portfolio.legacy.test.ts
 apps/qup-api/src/errors/error-mapping.legacy.test.ts
 apps/qup-api/src/middleware/admin-only.legacy.test.ts
 apps/qup-api/src/services/event-bus.legacy.test.ts
+packages/investlab-catalog/src/data/server/mapper/instrument-pg.mapper.legacy.test.ts
+packages/investlab-catalog/src/data/shared/dto/instrument.dto.legacy.test.ts
 packages/investlab-core/src/data/shared/dto/api-error.dto.legacy.test.ts
-packages/investlab-portfolio/src/data/server/mapper/instrument-pg.mapper.legacy.test.ts
 packages/investlab-portfolio/src/data/server/mapper/portfolio-item-pg.mapper.legacy.test.ts
-packages/investlab-portfolio/src/data/shared/dto/instrument.dto.legacy.test.ts
 packages/investlab-portfolio/src/data/shared/dto/portfolio-item-list.dto.legacy.test.ts
 packages/investlab-portfolio/src/data/shared/dto/portfolio-item.dto.legacy.test.ts
 packages/investlab-quotes/src/data/shared/dto/quote.dto.legacy.test.ts

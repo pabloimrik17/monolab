@@ -1,0 +1,9 @@
+{
+    "name": "@m0n0lab/investlab-database",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "targets": {
+        "db:generate": {
+            "dependsOn": [{ "projects": ["@m0n0lab/investlab-catalog"], "target": "build" }]
+        }
+    }
+}

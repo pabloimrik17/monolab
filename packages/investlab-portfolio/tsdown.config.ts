@@ -13,6 +13,7 @@ export default defineConfig({
     outDir: "dist",
     deps: {
         neverBundle: [
+            /^@m0n0lab\/investlab-catalog($|\/)/,
             /^@m0n0lab\/investlab-core($|\/)/,
             /^@m0n0lab\/investlab-platform($|\/)/,
             /^inversify($|\/)/,

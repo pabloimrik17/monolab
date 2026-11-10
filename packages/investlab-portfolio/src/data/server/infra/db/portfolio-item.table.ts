@@ -9,7 +9,7 @@ import {
     uuid,
     varchar,
 } from "drizzle-orm/pg-core";
-import { instruments } from "./instrument.table.ts";
+import { instruments } from "@m0n0lab/investlab-catalog/server";
 
 export const portfolioItems = pgTable(
     "portfolio_items",

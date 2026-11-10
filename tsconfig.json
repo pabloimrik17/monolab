@@ -59,6 +59,9 @@
       },
       {
         "path": "./packages/investlab-portfolio"
+      },
+      {
+        "path": "./packages/investlab-catalog"
       }
     ]
 }

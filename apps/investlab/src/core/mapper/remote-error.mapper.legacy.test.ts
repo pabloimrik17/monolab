@@ -1,14 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
+    InstrumentAlreadyExistsError,
+    InstrumentInUseError,
+    InstrumentNotFoundError,
+} from "@m0n0lab/investlab-catalog";
+import {
     NetworkError,
     PersistenceError,
     UnauthorizedError,
     ValidationError,
 } from "@m0n0lab/investlab-core";
 import {
-    InstrumentAlreadyExistsError,
-    InstrumentInUseError,
-    InstrumentNotFoundError,
     PortfolioItemConflictError,
     PortfolioItemNotFoundError,
 } from "@m0n0lab/investlab-portfolio";

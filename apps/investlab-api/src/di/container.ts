@@ -1,4 +1,5 @@
 import { Container } from "inversify";
+import { catalogServerModule } from "@m0n0lab/investlab-catalog/server";
 import {
     PLATFORM,
     platformServerModule,
@@ -11,6 +12,11 @@ import { quotesServerModule } from "@m0n0lab/investlab-quotes/server";
 export function createContainer(): Container {
     const container = new Container();
     container.bind(PLATFORM.Config).to(ProcessEnvConfig).inSingletonScope();
-    container.load(platformServerModule, portfolioServerModule, quotesServerModule);
+    container.load(
+        platformServerModule,
+        catalogServerModule,
+        portfolioServerModule,
+        quotesServerModule,
+    );
     return container;
 }

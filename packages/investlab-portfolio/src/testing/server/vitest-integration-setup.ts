@@ -3,6 +3,7 @@ import { Container } from "inversify";
 import pg from "pg";
 import { afterEach, beforeEach, inject } from "vitest";
 import { portfolioServerModule } from "#di/server.module.ts";
+import { catalogServerModule } from "@m0n0lab/investlab-catalog/server";
 import {
     PLATFORM,
     platformServerModule,
@@ -15,7 +16,7 @@ const CLONE_LOCK = 4_242;
 /** Postgres URL nothing listens on. */
 const UNREACHABLE_DATABASE_URL = "postgres://investlab:investlab@127.0.0.1:1/investlab";
 
-/** The API's composition of the portfolio module, on this test's own clone of the migrated template. */
+/** The API's composition of the portfolio module and the catalog it depends on, on this test's own clone of the migrated template. */
 export let container: Container;
 
 /** The same composition with a database that cannot be reached. */
@@ -45,7 +46,7 @@ async function onServer(run: (client: pg.Client) => Promise<unknown>): Promise<v
 
 function composition(databaseUrl: string): Container {
     const composed = new Container();
-    composed.load(platformServerModule, portfolioServerModule);
+    composed.load(platformServerModule, catalogServerModule, portfolioServerModule);
     composed.bind(PLATFORM.Config).toConstantValue(testConfig(databaseUrl));
     return composed;
 }

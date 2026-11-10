@@ -40,6 +40,9 @@
         "path": "../../packages/investlab-core"
       },
       {
+        "path": "../../packages/investlab-catalog"
+      },
+      {
         "path": "../../packages/investlab-quotes"
       },
       {

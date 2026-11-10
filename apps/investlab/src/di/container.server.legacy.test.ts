@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { CATALOG, InstrumentListUseCase } from "@m0n0lab/investlab-catalog/client";
 import { PLATFORM } from "@m0n0lab/investlab-platform/client";
 import {
     PORTFOLIO,
@@ -26,6 +27,7 @@ describe("createContainer", () => {
     it("resolves the client use cases wired to the API", () => {
         const container = createContainer();
 
+        expect(container.get(CATALOG.InstrumentList)).toBeInstanceOf(InstrumentListUseCase);
         expect(container.get(PORTFOLIO.ItemList)).toBeInstanceOf(PortfolioItemListUseCase);
         expect(container.get(PORTFOLIO.ItemCreate)).toBeInstanceOf(PortfolioItemCreateUseCase);
         expect(container.get(PORTFOLIO.ItemUpdate)).toBeInstanceOf(PortfolioItemUpdateUseCase);

@@ -7,8 +7,14 @@ import {
     portfolioItemToRow,
 } from "#data/server/mapper/portfolio-item-pg.mapper.ts";
 import { PortfolioItemConflictError } from "#domain/error/portfolio-item.error.ts";
+import { InstrumentNotFoundError } from "@m0n0lab/investlab-catalog";
 import { type PersistenceError } from "@m0n0lab/investlab-core";
-import { PLATFORM, type Db } from "@m0n0lab/investlab-platform/server";
+import {
+    FOREIGN_KEY_VIOLATION,
+    PLATFORM,
+    violates,
+    type Db,
+} from "@m0n0lab/investlab-platform/server";
 import type { PortfolioItem } from "#domain/model/portfolio-item.model.ts";
 import type { PortfolioItemRepository } from "#domain/repository/portfolio-item.repository.ts";
 
@@ -16,10 +22,17 @@ import type { PortfolioItemRepository } from "#domain/repository/portfolio-item.
 export class PortfolioItemPgRepository implements PortfolioItemRepository {
     constructor(@inject(PLATFORM.Db) private readonly db: Db) {}
 
-    save(item: PortfolioItem): ResultAsync<PortfolioItem, PersistenceError> {
+    save(
+        item: PortfolioItem,
+    ): ResultAsync<PortfolioItem, PersistenceError | InstrumentNotFoundError> {
         return this.db
             .insert((tx) => tx.insert(portfolioItems).values(portfolioItemToRow(item)).returning())
-            .map((rows) => portfolioItemToDomain(rows[0]!));
+            .map((rows) => portfolioItemToDomain(rows[0]!))
+            .mapErr((error) =>
+                violates(error, FOREIGN_KEY_VIOLATION)
+                    ? new InstrumentNotFoundError(item.instrumentId)
+                    : error,
+            );
     }
 
     findById(id: string): ResultAsync<PortfolioItem | null, PersistenceError> {
@@ -64,17 +77,5 @@ export class PortfolioItemPgRepository implements PortfolioItemRepository {
         return this.db
             .delete((tx) => tx.delete(portfolioItems).where(eq(portfolioItems.id, id)))
             .map(() => undefined);
-    }
-
-    existsForInstrument(instrumentId: string): ResultAsync<boolean, PersistenceError> {
-        return this.db
-            .select((tx) =>
-                tx
-                    .select({ id: portfolioItems.id })
-                    .from(portfolioItems)
-                    .where(eq(portfolioItems.instrumentId, instrumentId))
-                    .limit(1),
-            )
-            .map((rows) => rows.length > 0);
     }
 }

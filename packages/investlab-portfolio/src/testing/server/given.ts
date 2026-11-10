@@ -1,33 +1,19 @@
 import pg from "pg";
 import { PORTFOLIO } from "#application/server/tokens.ts";
-import { AssetClass } from "#domain/value-object/asset-class.value-object.ts";
-import { InstrumentType } from "#domain/value-object/instrument-type.value-object.ts";
+import { AssetClass, InstrumentType } from "@m0n0lab/investlab-catalog";
+import { CATALOG } from "@m0n0lab/investlab-catalog/server";
 import { PLATFORM } from "@m0n0lab/investlab-platform/server";
 import { container } from "./vitest-integration-setup.ts";
-import type { Instrument } from "#domain/model/instrument.model.ts";
 import type { PortfolioItem } from "#domain/model/portfolio-item.model.ts";
 import type { PortfolioItemWithInstrument } from "#domain/read-model/portfolio-item-with-instrument.read-model.ts";
+import type { Instrument } from "@m0n0lab/investlab-catalog";
 
 /** A well-formed id nothing in the portfolio or the catalog has. */
 export const UNKNOWN_ID = "00000000-0000-4000-8000-000000000000";
 
-/** Symbols the seeded catalog starts with. */
-export const SEEDED_SYMBOLS = [
-    "AAPL",
-    "MSFT",
-    "NVDA",
-    "AMZN",
-    "GOOGL",
-    "META",
-    "TSLA",
-    "SPY",
-    "QQQ",
-    "VTI",
-] as const;
-
 /** What the catalog holds now. */
 export async function catalog(): Promise<Instrument[]> {
-    return (await container.get(PORTFOLIO.InstrumentList).execute())._unsafeUnwrap();
+    return (await container.get(CATALOG.InstrumentList).execute())._unsafeUnwrap();
 }
 
 /** The catalog has an instrument with this symbol: the seeded one, or an equity ETF added for the test. */
@@ -36,7 +22,7 @@ export async function givenInstrument(symbol: string): Promise<Instrument> {
     if (known) {
         return known;
     }
-    const created = await container.get(PORTFOLIO.InstrumentCreate).execute({
+    const created = await container.get(CATALOG.InstrumentCreate).execute({
         symbol,
         name: `${symbol} Fund`,
         type: InstrumentType.ETF,
