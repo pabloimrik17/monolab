@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { http, HttpResponse, type HttpResponseResolver } from "msw";
+import { http, HttpResponse, type HttpResponseResolver } from "msw/http";
 import { ZodError } from "zod";
 import { entryToDomain } from "#data/client/mapper/entry-dto.mapper.ts";
 import {
