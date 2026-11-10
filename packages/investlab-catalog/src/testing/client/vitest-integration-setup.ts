@@ -18,7 +18,7 @@ container
 container.load(platformClientModule, catalogClientModule);
 
 beforeAll(() => {
-    investlabApi.listen({ onUnhandledRequest: "error" });
+    investlabApi.listen({ onUnhandledFrame: "error" });
 });
 
 afterEach(() => {
