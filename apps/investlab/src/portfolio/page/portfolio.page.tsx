@@ -5,13 +5,14 @@ import type {
     InstrumentOption,
     PortfolioItemView,
 } from "#portfolio/view-model/portfolio.view-model";
+import type { FC } from "react";
 
 export interface PortfolioPageProps {
     items: PortfolioItemView[];
     instruments: InstrumentOption[];
 }
 
-export function PortfolioPage({ items, instruments }: PortfolioPageProps) {
+export const PortfolioPage: FC<PortfolioPageProps> = ({ items, instruments }) => {
     const vm = usePortfolioViewModel(items, instruments);
 
     return (
@@ -43,4 +44,4 @@ export function PortfolioPage({ items, instruments }: PortfolioPageProps) {
             />
         </div>
     );
-}
+};

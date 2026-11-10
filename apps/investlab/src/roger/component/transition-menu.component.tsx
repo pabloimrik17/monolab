@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type FC } from "react";
 import type { EntryTransitionAction } from "#roger/view-model/roger.view-model";
 import type { RogerState } from "@m0n0lab/investlab-roger";
 
@@ -9,10 +9,7 @@ interface TransitionMenuProps {
 
 const GAP_PX = 4;
 
-export function TransitionMenu({
-    transitions,
-    onChoose,
-}: TransitionMenuProps): React.JSX.Element | null {
+export const TransitionMenu: FC<TransitionMenuProps> = ({ transitions, onChoose }) => {
     const id = useId();
     const trigger = useRef<HTMLButtonElement>(null);
     const panel = useRef<HTMLDivElement>(null);
@@ -90,4 +87,4 @@ export function TransitionMenu({
             </div>
         </>
     );
-}
+};

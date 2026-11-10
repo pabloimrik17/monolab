@@ -11,12 +11,13 @@ import {
 import { RogerPage } from "#roger/page/roger.page";
 import { CATALOG } from "@m0n0lab/investlab-catalog/client";
 import { ROGER } from "@m0n0lab/investlab-roger/client";
-import type { RogerFieldErrors, RogerPageData } from "#roger/view-model/roger.view-model";
+import type { RogerFieldErrors, RogerPageProps } from "#roger/view-model/roger.view-model";
 import type { Route } from "./+types/roger";
 import type { RogerRemoteError } from "@m0n0lab/investlab-roger";
+import type { FC } from "react";
 import type { z } from "zod";
 
-export async function loader({ request }: Route.LoaderArgs): Promise<RogerPageData> {
+export async function loader({ request }: Route.LoaderArgs): Promise<RogerPageProps> {
     const view = new URL(request.url).searchParams.get("view") === "history" ? "history" : "active";
     const container = getContainer();
     const [entries, instruments] = await Promise.all([
@@ -147,7 +148,7 @@ export async function action({ request }: Route.ActionArgs): Promise<RogerAction
     return handler ? handler(formData) : { error: `Unknown intent: ${intent}` };
 }
 
-export default function RogerRoute({ loaderData }: Route.ComponentProps): React.JSX.Element {
+const RogerRoute: FC<Route.ComponentProps> = ({ loaderData }) => {
     return (
         <RogerPage
             view={loaderData.view}
@@ -155,4 +156,6 @@ export default function RogerRoute({ loaderData }: Route.ComponentProps): React.
             instruments={loaderData.instruments}
         />
     );
-}
+};
+
+export default RogerRoute;

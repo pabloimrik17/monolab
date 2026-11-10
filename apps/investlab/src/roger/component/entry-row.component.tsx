@@ -4,6 +4,7 @@ import { TransitionMenu } from "#roger/component/transition-menu.component";
 import type { RogerActionResult } from "#roger/form/entry.form";
 import type { EntryRowView, EntryView } from "#roger/view-model/roger.view-model";
 import type { RogerState } from "@m0n0lab/investlab-roger";
+import type { FC } from "react";
 
 export interface EntryRowActions {
     onEdit: (entry: EntryView) => void;
@@ -16,13 +17,13 @@ interface EntryRowProps extends EntryRowActions {
     showSymbol: boolean;
 }
 
-export function EntryRow({
+export const EntryRow: FC<EntryRowProps> = ({
     row,
     showSymbol,
     onEdit,
     onTransition,
     onReEnter,
-}: EntryRowProps): React.JSX.Element {
+}) => {
     const fetcher = useFetcher<RogerActionResult>();
     const isDeleting = fetcher.state !== "idle";
     const deleteError = fetcher.data && "error" in fetcher.data ? fetcher.data.error : null;
@@ -94,4 +95,4 @@ export function EntryRow({
             </td>
         </tr>
     );
-}
+};

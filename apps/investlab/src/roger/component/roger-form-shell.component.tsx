@@ -1,4 +1,4 @@
-import { useEffect, useId, type ReactNode } from "react";
+import { useEffect, useId, type ReactNode, type FC } from "react";
 import { useFetcher } from "react-router";
 import {
     generalError,
@@ -9,9 +9,13 @@ import {
 import type { RogerActionResult } from "#roger/form/entry.form";
 import type { EntryField } from "@m0n0lab/investlab-roger";
 
-export function FieldError({ message }: { message: string | undefined }) {
-    return message ? <span className="form-error">{message}</span> : null;
+interface FieldErrorProps {
+    message: string | undefined;
 }
+
+export const FieldError: FC<FieldErrorProps> = ({ message }) => {
+    return message ? <span className="form-error">{message}</span> : null;
+};
 
 interface EntryFieldInputsProps {
     inputs: EntryFieldInput[];
@@ -21,7 +25,12 @@ interface EntryFieldInputsProps {
 }
 
 /** No `required` or `min`: the server's refusal is what shows inline, so the browser must let it through. */
-export function EntryFieldInputs({ inputs, values, errors, onChange }: EntryFieldInputsProps) {
+export const EntryFieldInputs: FC<EntryFieldInputsProps> = ({
+    inputs,
+    values,
+    errors,
+    onChange,
+}) => {
     return inputs.map(({ field, label, type }) => (
         <label key={field}>
             {label}
@@ -36,7 +45,7 @@ export function EntryFieldInputs({ inputs, values, errors, onChange }: EntryFiel
             <FieldError message={errors[field]} />
         </label>
     ));
-}
+};
 
 interface RogerFormShellProps {
     title: string;
@@ -45,7 +54,12 @@ interface RogerFormShellProps {
     children: (errors: RogerFieldErrors) => ReactNode;
 }
 
-export function RogerFormShell({ title, submitLabel, onDone, children }: RogerFormShellProps) {
+export const RogerFormShell: FC<RogerFormShellProps> = ({
+    title,
+    submitLabel,
+    onDone,
+    children,
+}) => {
     const fetcher = useFetcher<RogerActionResult>();
     const titleId = useId();
     const result = fetcher.data;
@@ -91,4 +105,4 @@ export function RogerFormShell({ title, submitLabel, onDone, children }: RogerFo
             </div>
         </fetcher.Form>
     );
-}
+};

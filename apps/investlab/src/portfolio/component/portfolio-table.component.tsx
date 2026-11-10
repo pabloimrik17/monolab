@@ -1,12 +1,13 @@
 import { PortfolioItemRow } from "./portfolio-item-row.component";
 import type { PortfolioItemView } from "#portfolio/view-model/portfolio.view-model";
+import type { FC } from "react";
 
 export interface PortfolioTableProps {
     items: PortfolioItemView[];
     onEdit: (item: PortfolioItemView) => void;
 }
 
-export function PortfolioTable({ items, onEdit }: PortfolioTableProps) {
+export const PortfolioTable: FC<PortfolioTableProps> = ({ items, onEdit }) => {
     if (items.length === 0) {
         return (
             <div className="empty-state">
@@ -42,4 +43,4 @@ export function PortfolioTable({ items, onEdit }: PortfolioTableProps) {
             </tbody>
         </table>
     );
-}
+};

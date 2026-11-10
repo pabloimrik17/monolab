@@ -1,6 +1,7 @@
 import { useFetcher } from "react-router";
 import type { PortfolioActionResult } from "#portfolio/form/portfolio-item.form";
 import type { PortfolioItemView } from "#portfolio/view-model/portfolio.view-model";
+import type { FC } from "react";
 
 const currency = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -13,7 +14,7 @@ export interface PortfolioItemRowProps {
     onEdit: (item: PortfolioItemView) => void;
 }
 
-export function PortfolioItemRow({ item, onEdit }: PortfolioItemRowProps) {
+export const PortfolioItemRow: FC<PortfolioItemRowProps> = ({ item, onEdit }) => {
     const fetcher = useFetcher<PortfolioActionResult>();
     const isDeleting = fetcher.state !== "idle";
     const deleteError = fetcher.data && "error" in fetcher.data ? fetcher.data.error : null;
@@ -71,4 +72,4 @@ export function PortfolioItemRow({ item, onEdit }: PortfolioItemRowProps) {
             </td>
         </tr>
     );
-}
+};

@@ -10,6 +10,7 @@ import { PortfolioPage, type PortfolioPageProps } from "#portfolio/page/portfoli
 import { PORTFOLIO } from "@m0n0lab/investlab-portfolio/client";
 import type { Route } from "./+types/portfolio";
 import type { PortfolioRemoteError } from "@m0n0lab/investlab-portfolio";
+import type { FC } from "react";
 import type { z } from "zod";
 
 export async function loader(_: Route.LoaderArgs): Promise<PortfolioPageProps> {
@@ -103,11 +104,13 @@ export async function action({ request }: Route.ActionArgs): Promise<PortfolioAc
     return handler ? handler(formData) : { error: `Unknown intent: ${intent}` };
 }
 
-export default function PortfolioRoute({ loaderData }: Route.ComponentProps): React.JSX.Element {
+const PortfolioRoute: FC<Route.ComponentProps> = ({ loaderData }) => {
     return (
         <PortfolioPage
             items={loaderData.items}
             instruments={loaderData.instruments}
         />
     );
-}
+};
+
+export default PortfolioRoute;

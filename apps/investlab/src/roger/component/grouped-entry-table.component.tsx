@@ -4,6 +4,7 @@ import type {
     EntrySectionView,
     SortColumn,
 } from "#roger/view-model/roger.view-model";
+import type { FC } from "react";
 
 interface GroupedEntryTableProps extends EntryRowActions {
     sections: EntrySectionView[];
@@ -15,13 +16,12 @@ interface GroupedEntryTableProps extends EntryRowActions {
 
 const SORT_ARROWS = { ascending: "↑", descending: "↓" } as const;
 
-function ColumnHeader({
-    column,
-    onSort,
-}: {
+interface ColumnHeaderProps {
     column: EntryColumnView;
     onSort: (column: SortColumn) => void;
-}) {
+}
+
+const ColumnHeader: FC<ColumnHeaderProps> = ({ column, onSort }) => {
     return (
         <th
             scope="col"
@@ -43,16 +43,16 @@ function ColumnHeader({
             )}
         </th>
     );
-}
+};
 
-export function GroupedEntryTable({
+export const GroupedEntryTable: FC<GroupedEntryTableProps> = ({
     sections,
     columns,
     showSymbol,
     emptyMessage,
     onSort,
     ...rowActions
-}: GroupedEntryTableProps): React.JSX.Element {
+}) => {
     if (sections.length === 0) {
         return (
             <div className="empty-state">
@@ -113,4 +113,4 @@ export function GroupedEntryTable({
             </table>
         </div>
     );
-}
+};

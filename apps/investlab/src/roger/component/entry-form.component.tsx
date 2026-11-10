@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useId, useState, type FC } from "react";
 import {
     EntryFieldInputs,
     FieldError,
@@ -23,7 +23,7 @@ interface NewStockFieldsProps {
     errors: RogerFieldErrors;
 }
 
-function NewStockFields({ symbol, errors }: NewStockFieldsProps) {
+const NewStockFields: FC<NewStockFieldsProps> = ({ symbol, errors }) => {
     return (
         <>
             <p className="roger-form-note">
@@ -58,7 +58,7 @@ function NewStockFields({ symbol, errors }: NewStockFieldsProps) {
             </label>
         </>
     );
-}
+};
 
 interface InstrumentPickerProps {
     typed: string;
@@ -68,7 +68,13 @@ interface InstrumentPickerProps {
     onType: (typed: string) => void;
 }
 
-function InstrumentPicker({ typed, choice, instruments, errors, onType }: InstrumentPickerProps) {
+const InstrumentPicker: FC<InstrumentPickerProps> = ({
+    typed,
+    choice,
+    instruments,
+    errors,
+    onType,
+}) => {
     const listId = useId();
     const error = errors.instrumentId ?? errors.symbol;
 
@@ -115,14 +121,14 @@ function InstrumentPicker({ typed, choice, instruments, errors, onType }: Instru
             ) : null}
         </>
     );
-}
+};
 
 interface EntryFormProps {
     instruments: InstrumentOption[];
     onDone: () => void;
 }
 
-export function EntryForm({ instruments, onDone }: EntryFormProps): React.JSX.Element {
+export const EntryForm: FC<EntryFormProps> = ({ instruments, onDone }) => {
     const [typed, setTyped] = useState("");
     const [state, setState] = useState(DEFAULT_INITIAL_STATE);
     const [values, setValues] = useState(newEntryInitialValues);
@@ -177,4 +183,4 @@ export function EntryForm({ instruments, onDone }: EntryFormProps): React.JSX.El
             )}
         </RogerFormShell>
     );
-}
+};

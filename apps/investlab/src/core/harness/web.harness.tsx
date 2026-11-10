@@ -1,4 +1,4 @@
-import { act, type ComponentType, type ReactNode } from "react";
+import { act, type ComponentType, type FC } from "react";
 import {
     createMemoryRouter,
     RouterProvider,
@@ -109,11 +109,15 @@ interface RouteProps {
 export interface RouteModule {
     loader?: LoaderFunction;
     action?: ActionFunction;
-    default: (props: never) => ReactNode;
+    default: FC<never>;
+}
+
+interface RouteElementProps {
+    component: ComponentType<RouteProps>;
 }
 
 /** Gives a route component the props the framework's generated `Route.ComponentProps` carries, from public hooks. */
-function RouteElement({ component }: { component: ComponentType<RouteProps> }) {
+const RouteElement: FC<RouteElementProps> = ({ component }) => {
     const Component = component;
     return (
         <Component
@@ -123,17 +127,17 @@ function RouteElement({ component }: { component: ComponentType<RouteProps> }) {
             matches={useMatches()}
         />
     );
-}
+};
 
 /** The root's `ErrorBoundary` takes the thrown value as a prop; the framework supplies it from `useRouteError`. */
-function RootErrorBoundary() {
+const RootErrorBoundary: FC = () => {
     return (
         <ErrorBoundary
             error={useRouteError()}
             params={useParams()}
         />
     );
-}
+};
 
 export interface OpenOptions<H> {
     readonly url: string;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FC } from "react";
 import { EntryFieldInputs, RogerFormShell } from "#roger/component/roger-form-shell.component";
 import type { ExistingEntryFormView } from "#roger/view-model/roger.view-model";
 
@@ -7,7 +7,7 @@ interface TransitionFormProps {
     onDone: () => void;
 }
 
-export function TransitionForm({ form, onDone }: TransitionFormProps): React.JSX.Element {
+export const TransitionForm: FC<TransitionFormProps> = ({ form, onDone }) => {
     const [values, setValues] = useState(form.initialValues);
 
     return (
@@ -38,4 +38,4 @@ export function TransitionForm({ form, onDone }: TransitionFormProps): React.JSX
             )}
         </RogerFormShell>
     );
-}
+};

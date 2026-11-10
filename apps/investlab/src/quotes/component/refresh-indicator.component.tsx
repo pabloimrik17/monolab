@@ -1,9 +1,10 @@
+import type { FC } from "react";
 interface RefreshIndicatorProps {
     lastUpdate: Date | null;
     isPolling: boolean;
 }
 
-export function RefreshIndicator({ lastUpdate, isPolling }: RefreshIndicatorProps) {
+export const RefreshIndicator: FC<RefreshIndicatorProps> = ({ lastUpdate, isPolling }) => {
     return (
         <div className="refresh-indicator">
             {lastUpdate ? (
@@ -14,4 +15,4 @@ export function RefreshIndicator({ lastUpdate, isPolling }: RefreshIndicatorProp
             {isPolling && <span className="polling-dot">●</span>}
         </div>
     );
-}
+};

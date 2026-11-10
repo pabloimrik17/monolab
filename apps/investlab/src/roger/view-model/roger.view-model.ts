@@ -37,7 +37,7 @@ export interface InstrumentOption {
     assetClass: string;
 }
 
-export interface RogerPageData {
+export interface RogerPageProps {
     view: EntryListView;
     entries: EntryView[];
     instruments: InstrumentOption[];
@@ -380,7 +380,7 @@ export interface RogerViewModel {
     closeForm: () => void;
 }
 
-export function useRogerViewModel({ view, entries, instruments }: RogerPageData): RogerViewModel {
+export function useRogerViewModel({ view, entries, instruments }: RogerPageProps): RogerViewModel {
     const [form, setForm] = useState<RogerFormTarget | undefined>(undefined);
     const [stateFilter, setStateFilter] = useState<RogerState | undefined>(undefined);
     const [sort, setSort] = useState<EntrySort | undefined>(undefined);

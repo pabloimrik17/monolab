@@ -8,9 +8,14 @@ import {
     ScrollRestoration,
 } from "react-router";
 import type { Route } from "./+types/root";
+import type { FC } from "react";
 import "./app.css";
 
-export function Layout({ children }: { children: React.ReactNode }) {
+interface LayoutProps {
+    children: React.ReactNode;
+}
+
+export const Layout: FC<LayoutProps> = ({ children }) => {
     return (
         <html lang="en">
             <head>
@@ -35,13 +40,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </body>
         </html>
     );
-}
+};
 
-export default function Root() {
+const Root: FC = () => {
     return <Outlet />;
-}
+};
 
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+export default Root;
+
+export const ErrorBoundary: FC<Route.ErrorBoundaryProps> = ({ error }) => {
     if (isRouteErrorResponse(error)) {
         const message =
             typeof error.data === "string" && error.data !== "" ? error.data : error.statusText;
@@ -59,4 +66,4 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
             {import.meta.env.DEV && error instanceof Error && <p>{error.message}</p>}
         </main>
     );
-}
+};

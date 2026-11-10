@@ -6,11 +6,16 @@ import {
     existingEntryForm,
     STATE_FILTER_OPTIONS,
     useRogerViewModel,
-    type RogerPageData,
+    type RogerPageProps,
     type RogerViewModel,
 } from "#roger/view-model/roger.view-model";
+import type { FC } from "react";
 
-function OpenForm({ vm }: { vm: RogerViewModel }) {
+interface OpenFormProps {
+    vm: RogerViewModel;
+}
+
+const OpenForm: FC<OpenFormProps> = ({ vm }) => {
     if (!vm.form) return null;
     return vm.form.kind === "create" ? (
         <EntryForm
@@ -25,9 +30,13 @@ function OpenForm({ vm }: { vm: RogerViewModel }) {
             onDone={vm.closeForm}
         />
     );
+};
+
+interface ViewSwitchProps {
+    view: RogerPageProps["view"];
 }
 
-function ViewSwitch({ view }: { view: RogerPageData["view"] }) {
+const ViewSwitch: FC<ViewSwitchProps> = ({ view }) => {
     return (
         <nav aria-label="Roger view">
             <Link
@@ -44,9 +53,13 @@ function ViewSwitch({ view }: { view: RogerPageData["view"] }) {
             </Link>
         </nav>
     );
+};
+
+interface StateFilterProps {
+    vm: RogerViewModel;
 }
 
-function StateFilter({ vm }: { vm: RogerViewModel }) {
+const StateFilter: FC<StateFilterProps> = ({ vm }) => {
     return (
         <label>
             Filter by state
@@ -66,9 +79,9 @@ function StateFilter({ vm }: { vm: RogerViewModel }) {
             </select>
         </label>
     );
-}
+};
 
-function RogerContent(data: RogerPageData) {
+const RogerContent: FC<RogerPageProps> = (data) => {
     const vm = useRogerViewModel(data);
 
     return (
@@ -104,14 +117,14 @@ function RogerContent(data: RogerPageData) {
             />
         </div>
     );
-}
+};
 
 // Keyed by view so filter, sort and any open form do not carry over between the two lists.
-export function RogerPage(data: RogerPageData): React.JSX.Element {
+export const RogerPage: FC<RogerPageProps> = (data) => {
     return (
         <RogerContent
             key={data.view}
             {...data}
         />
     );
-}
+};
