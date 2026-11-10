@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FC } from "react";
 import { type Observable, Subject } from "rxjs";
 import { describe, expect, test, vi } from "vitest";
 import { render } from "vitest-browser-react";
@@ -21,15 +21,15 @@ class TickerViewModel extends BaseViewModel {
     }
 }
 
-function Ticker({
-    createViewModel,
-}: {
+interface TickerProps {
     createViewModel: (onTick: TickListener) => TickerViewModel;
-}) {
+}
+
+const Ticker: FC<TickerProps> = ({ createViewModel }) => {
     const [tick, setTick] = useState(0);
     useViewModel(() => createViewModel(setTick));
     return <output>{tick}</output>;
-}
+};
 
 describe("useViewModel", () => {
     test("creates the view model once and releases its subscriptions on unmount", async () => {

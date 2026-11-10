@@ -1,5 +1,5 @@
 import { Container, injectable } from "inversify";
-import { useState } from "react";
+import { useState, type FC } from "react";
 import { BehaviorSubject } from "rxjs";
 import { describe, expect, test } from "vitest";
 import { render } from "vitest-browser-react";
@@ -27,8 +27,12 @@ class TestViewModel extends BaseViewModel {
     }
 }
 
+interface TestComponentProps {
+    viewModel: TestViewModel;
+}
+
 // Component using the ViewModel
-function TestComponent({ viewModel }: { viewModel: TestViewModel }) {
+const TestComponent: FC<TestComponentProps> = ({ viewModel }) => {
     const [count, setCount] = useState(0);
 
     useDidMount(() => {
@@ -47,7 +51,7 @@ function TestComponent({ viewModel }: { viewModel: TestViewModel }) {
             <button onClick={() => viewModel.increment()}>Increment</button>
         </div>
     );
-}
+};
 
 describe("BaseViewModel", () => {
     test("BaseViewModel lifecycle works in real browser", async () => {
