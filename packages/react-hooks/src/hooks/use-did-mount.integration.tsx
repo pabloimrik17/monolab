@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FC } from "react";
 import { beforeAll, describe, expect, test, vi } from "vitest";
 import { render } from "vitest-browser-react";
 import { useDidMount } from "./use-did-mount.hook.ts";
@@ -10,8 +10,12 @@ describe("useDidMount", () => {
         expect(typeof document).toBe("object");
     });
 
+    interface TestComponentProps {
+        onMount: () => void;
+    }
+
     // Component using useDidMount hook
-    function TestComponent({ onMount }: { onMount: () => void }) {
+    const TestComponent: FC<TestComponentProps> = ({ onMount }) => {
         const [mounted, setMounted] = useState(false);
 
         useDidMount(() => {
@@ -20,7 +24,7 @@ describe("useDidMount", () => {
         });
 
         return <div data-testid="status">{mounted ? "mounted" : "not-mounted"}</div>;
-    }
+    };
 
     test("useDidMount executes callback once after mount in real browser", async () => {
         let callCount = 0;
