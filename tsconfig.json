@@ -62,6 +62,9 @@
       },
       {
         "path": "./packages/investlab-catalog"
+      },
+      {
+        "path": "./packages/investlab-roger"
       }
     ]
 }

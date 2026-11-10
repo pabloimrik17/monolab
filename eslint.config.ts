@@ -41,14 +41,15 @@ const importBans = (
 
 const investlabLayout: CleanArchitectureOptions = {
     product: "investlab",
-    modules: ["catalog", "portfolio", "quotes"],
-    dependsOn: { portfolio: ["catalog"] },
+    modules: ["catalog", "portfolio", "quotes", "roger"],
+    dependsOn: { portfolio: ["catalog"], roger: ["catalog"] },
     projects: [
         "packages/investlab-core",
         "packages/investlab-platform",
         "packages/investlab-catalog",
         "packages/investlab-portfolio",
         "packages/investlab-quotes",
+        "packages/investlab-roger",
         "apps/investlab-api",
         "apps/investlab",
     ],

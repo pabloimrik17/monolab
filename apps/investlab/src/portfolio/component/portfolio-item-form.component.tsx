@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FC } from "react";
 import { useFetcher } from "react-router";
 import type { PortfolioActionResult } from "#portfolio/form/portfolio-item.form";
 import type {
@@ -34,16 +34,24 @@ function valuesFrom(item: PortfolioItemView): FormValues {
     };
 }
 
-function FieldError({ message }: { message: string | undefined }) {
-    return message ? <span className="form-error">{message}</span> : null;
+interface FieldErrorProps {
+    message: string | undefined;
 }
+
+const FieldError: FC<FieldErrorProps> = ({ message }) => {
+    return message ? <span className="form-error">{message}</span> : null;
+};
 
 function submitLabel(isSubmitting: boolean, isEditing: boolean): string {
     if (isSubmitting) return "Saving…";
     return isEditing ? "Save changes" : "Add item";
 }
 
-function IntentFields({ editing }: { editing: PortfolioItemView | undefined }) {
+interface IntentFieldsProps {
+    editing: PortfolioItemView | undefined;
+}
+
+const IntentFields: FC<IntentFieldsProps> = ({ editing }) => {
     return (
         <>
             <input
@@ -67,9 +75,9 @@ function IntentFields({ editing }: { editing: PortfolioItemView | undefined }) {
             ) : null}
         </>
     );
-}
+};
 
-export function PortfolioItemForm({ instruments, editing, onDone }: PortfolioItemFormProps) {
+export const PortfolioItemForm: FC<PortfolioItemFormProps> = ({ instruments, editing, onDone }) => {
     const fetcher = useFetcher<PortfolioActionResult>();
     const [values, setValues] = useState<FormValues>(() =>
         editing ? valuesFrom(editing) : EMPTY_VALUES,
@@ -183,4 +191,4 @@ export function PortfolioItemForm({ instruments, editing, onDone }: PortfolioIte
             </div>
         </fetcher.Form>
     );
-}
+};

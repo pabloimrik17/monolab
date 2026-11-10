@@ -5,6 +5,7 @@ import { bearerAuth } from "#core/middleware/bearer-auth.middleware.ts";
 import { healthRoutes } from "#core/route/health.route.ts";
 import { portfolioItemRoutes } from "#portfolio/route/portfolio-item.route.ts";
 import { quoteRoutes } from "#quotes/route/quote.route.ts";
+import { entryRoutes } from "#roger/route/entry.route.ts";
 import type { Container } from "inversify";
 
 interface AppOptions {
@@ -21,6 +22,7 @@ export function createApp(container: Container, { token }: AppOptions) {
     app.route("/portfolio-items", portfolioItemRoutes(container));
     app.route("/instruments", instrumentRoutes(container));
     app.route("/quotes", quoteRoutes(container));
+    app.route("/roger/entries", entryRoutes(container));
 
     app.onError(handleError);
 

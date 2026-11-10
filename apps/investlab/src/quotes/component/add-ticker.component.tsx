@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, type FC } from "react";
 
 interface AddTickerProps {
     /** The refusal when the symbol was not followed; the input clears only on success. */
     onAdd: (symbol: string) => Error | undefined;
 }
 
-export function AddTicker({ onAdd }: AddTickerProps) {
+export const AddTicker: FC<AddTickerProps> = ({ onAdd }) => {
     const [value, setValue] = useState("");
     const [refused, setRefused] = useState(false);
 
@@ -53,4 +53,4 @@ export function AddTicker({ onAdd }: AddTickerProps) {
             )}
         </form>
     );
-}
+};

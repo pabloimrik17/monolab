@@ -1,5 +1,6 @@
 import { TickerRow } from "./ticker-row.component";
 import type { Quote, Ticker } from "@m0n0lab/investlab-quotes";
+import type { FC } from "react";
 
 interface TickerListProps {
     tickers: Ticker[];
@@ -7,7 +8,7 @@ interface TickerListProps {
     onRemove: (symbol: string) => void;
 }
 
-export function TickerList({ tickers, quotes, onRemove }: TickerListProps) {
+export const TickerList: FC<TickerListProps> = ({ tickers, quotes, onRemove }) => {
     if (tickers.length === 0) {
         return <div className="empty-state">No tickers added. Use the form above to add one.</div>;
     }
@@ -26,4 +27,4 @@ export function TickerList({ tickers, quotes, onRemove }: TickerListProps) {
             ))}
         </div>
     );
-}
+};

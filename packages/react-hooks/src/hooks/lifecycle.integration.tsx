@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from "vitest";
 import { render } from "vitest-browser-react";
 import { useDidMount, useWillUnmount } from "../index.ts";
+import type { FC } from "react";
 
 interface LifecycleProps {
     label: string;
@@ -8,11 +9,11 @@ interface LifecycleProps {
     onUnmount: () => void;
 }
 
-function Lifecycle({ label, onMount, onUnmount }: LifecycleProps) {
+const Lifecycle: FC<LifecycleProps> = ({ label, onMount, onUnmount }) => {
     useDidMount(onMount);
     useWillUnmount(onUnmount);
     return <p>{label}</p>;
-}
+};
 
 describe("lifecycle", () => {
     test("runs mount and unmount callbacks once each, never on re-render", async () => {

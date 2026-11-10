@@ -10,6 +10,7 @@
         { "path": "../../packages/investlab-catalog" },
         { "path": "../../packages/investlab-quotes" },
         { "path": "../../packages/investlab-portfolio" },
+        { "path": "../../packages/investlab-roger" },
         { "path": "../../packages/investlab-platform" },
         { "path": "../../packages/investlab-core" },
         { "path": "../../packages/vitest-config" }

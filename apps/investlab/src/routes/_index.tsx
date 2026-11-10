@@ -1,6 +1,9 @@
 import { TickerPage } from "#quotes/page/ticker.page";
 import type { Route } from "./+types/_index";
+import type { FC } from "react";
 
-export default function IndexRoute(_: Route.ComponentProps): React.JSX.Element {
+const IndexRoute: FC<Route.ComponentProps> = () => {
     return <TickerPage />;
-}
+};
+
+export default IndexRoute;

@@ -3,8 +3,9 @@ import { RefreshIndicator } from "#quotes/component/refresh-indicator.component"
 import { TickerList } from "#quotes/component/ticker-list.component";
 import { useFollowedTickers } from "#quotes/hook/use-followed-tickers.hook";
 import { useQuotePolling } from "#quotes/hook/use-quote-polling.hook";
+import type { FC } from "react";
 
-export function TickerPage() {
+export const TickerPage: FC = () => {
     const { tickers, add, remove } = useFollowedTickers();
     const { quotes, lastUpdate, isPolling } = useQuotePolling(tickers);
 
@@ -23,4 +24,4 @@ export function TickerPage() {
             />
         </div>
     );
-}
+};

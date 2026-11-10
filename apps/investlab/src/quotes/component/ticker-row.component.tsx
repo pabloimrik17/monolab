@@ -1,4 +1,5 @@
 import type { Quote, Ticker } from "@m0n0lab/investlab-quotes";
+import type { FC } from "react";
 
 interface TickerRowProps {
     ticker: Ticker;
@@ -6,7 +7,7 @@ interface TickerRowProps {
     onRemove: (symbol: string) => void;
 }
 
-export function TickerRow({ ticker, quote, onRemove }: TickerRowProps) {
+export const TickerRow: FC<TickerRowProps> = ({ ticker, quote, onRemove }) => {
     return (
         <div className="ticker-row">
             <span className="ticker-symbol">{ticker.symbol}</span>
@@ -31,4 +32,4 @@ export function TickerRow({ ticker, quote, onRemove }: TickerRowProps) {
             </button>
         </div>
     );
-}
+};

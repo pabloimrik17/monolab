@@ -1,8 +1,9 @@
 import type { CatalogRemoteError } from "@m0n0lab/investlab-catalog";
 import type { PortfolioRemoteError } from "@m0n0lab/investlab-portfolio";
 import type { QuotesRemoteError } from "@m0n0lab/investlab-quotes";
+import type { RogerRemoteError } from "@m0n0lab/investlab-roger";
 
-type RemoteError = CatalogRemoteError | PortfolioRemoteError | QuotesRemoteError;
+type RemoteError = CatalogRemoteError | PortfolioRemoteError | QuotesRemoteError | RogerRemoteError;
 
 /** What the user reads when a client use case fails; server-side details never reach the page. */
 export function remoteErrorMessage(error: RemoteError): string {
@@ -21,6 +22,11 @@ export function remoteErrorMessage(error: RemoteError): string {
         case "INSTRUMENT_ALREADY_EXISTS":
         case "PORTFOLIO_ITEM_NOT_FOUND":
         case "PORTFOLIO_ITEM_CONFLICT":
+        case "ENTRY_NOT_FOUND":
+        case "ENTRY_CONFLICT":
+        case "INVALID_TRANSITION":
+        case "MISSING_REQUIRED_FIELD":
+        case "FIELD_NOT_IN_STATE":
             return error.message;
     }
 }
@@ -35,11 +41,16 @@ export function remoteErrorStatus(error: RemoteError): number {
         case "PERSISTENCE_ERROR":
             return 500;
         case "VALIDATION_ERROR":
+        case "MISSING_REQUIRED_FIELD":
+        case "FIELD_NOT_IN_STATE":
             return 422;
         case "INSTRUMENT_NOT_FOUND":
         case "PORTFOLIO_ITEM_NOT_FOUND":
+        case "ENTRY_NOT_FOUND":
             return 404;
         case "PORTFOLIO_ITEM_CONFLICT":
+        case "ENTRY_CONFLICT":
+        case "INVALID_TRANSITION":
         case "INSTRUMENT_IN_USE":
         case "INSTRUMENT_ALREADY_EXISTS":
             return 409;

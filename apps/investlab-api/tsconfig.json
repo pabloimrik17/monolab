@@ -16,7 +16,8 @@
             "#core/*": ["./src/core/*"],
             "#di/*": ["./src/di/*"],
             "#portfolio/*": ["./src/portfolio/*"],
-            "#quotes/*": ["./src/quotes/*"]
+            "#quotes/*": ["./src/quotes/*"],
+            "#roger/*": ["./src/roger/*"]
         }
     },
     "include": ["src/**/*"],
@@ -30,6 +31,9 @@
       },
       {
         "path": "../../packages/investlab-portfolio"
+      },
+      {
+        "path": "../../packages/investlab-roger"
       },
       {
         "path": "../../packages/investlab-platform"

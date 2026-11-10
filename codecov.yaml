@@ -96,6 +96,13 @@ coverage:
                 flags:
                     - investlab-catalog
 
+            investlab-roger:
+                target: auto
+                threshold: 2%
+                informational: false
+                flags:
+                    - investlab-roger
+
             investlab-portfolio:
                 target: auto
                 threshold: 2%
@@ -237,6 +244,13 @@ coverage:
                 flags:
                     - investlab-catalog
 
+            investlab-roger:
+                target: 80%
+                threshold: 0%
+                informational: false
+                flags:
+                    - investlab-roger
+
             investlab-portfolio:
                 target: 80%
                 threshold: 0%
@@ -375,6 +389,11 @@ flags:
     investlab-catalog:
         paths:
             - packages/investlab-catalog/
+        carryforward: true
+
+    investlab-roger:
+        paths:
+            - packages/investlab-roger/
         carryforward: true
 
     investlab-portfolio:

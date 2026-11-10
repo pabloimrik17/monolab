@@ -93,6 +93,7 @@ interface Started {
     readonly url: string;
     readonly token: string;
     readonly breaches: Error[];
+    readonly routes: () => string[];
 }
 
 /**
@@ -107,10 +108,12 @@ export class ApiHarness implements AsyncDisposable {
     private readonly server: ServerType;
     private readonly token: string;
     private readonly breaches: Error[];
+    private readonly listRoutes: () => string[];
     private errorLog: (ErrorLog & { readonly restore: () => void }) | undefined;
     private closed = false;
 
-    constructor({ container, server, url, token, breaches }: Started) {
+    constructor({ container, server, url, token, breaches, routes }: Started) {
+        this.listRoutes = routes;
         this.container = container;
         this.server = server;
         this.url = url;
@@ -138,7 +141,8 @@ export class ApiHarness implements AsyncDisposable {
 
         const app = createApp(container, { token: container.get(PLATFORM.Config).api.token });
         const { server, url } = await listen(app.fetch);
-        return new this({ container, server, url, token, breaches });
+        const routes = () => app.routes.map((r) => `${r.method} ${r.path}`);
+        return new this({ container, server, url, token, breaches, routes });
     }
 
     /** Idempotent; `await using` calls it at scope end. */
@@ -158,6 +162,10 @@ export class ApiHarness implements AsyncDisposable {
 
     [Symbol.asyncDispose](): Promise<void> {
         return this.close();
+    }
+
+    routes(): string[] {
+        return this.listRoutes();
     }
 
     health(): Promise<Response> {

@@ -341,4 +341,218 @@ body {
     padding: 0.5rem 1rem;
     font-size: 1rem;
 }
+
+.roger-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.roger-toolbar nav {
+    display: flex;
+    gap: 1rem;
+}
+
+.roger-toolbar nav a,
+.roger-toolbar nav a:visited {
+    padding-bottom: 0.25rem;
+    color: #666;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+}
+
+.roger-toolbar nav a[aria-current="page"] {
+    color: #1a1a1a;
+    font-weight: 600;
+    border-bottom-color: #2563eb;
+}
+
+.roger-toolbar label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.roger-toolbar select {
+    padding: 0.35rem 0.75rem;
+    border: 1px solid #d4d4d4;
+    border-radius: 4px;
+    font: inherit;
+}
+
+.roger-toolbar select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgb(59 130 246 / 20%);
+}
+
+.roger {
+    max-width: none;
+    padding-inline: clamp(1rem, 3vw, 3rem);
+    overflow: visible;
+}
+
+.roger-table-scroll {
+    overflow-x: auto;
+}
+
+.roger-table {
+    width: 100%;
+}
+
+.roger-table td {
+    white-space: nowrap;
+}
+
+.roger-table th {
+    color: #666;
+}
+
+.roger-table .form-error {
+    white-space: normal;
+}
+
+.roger-table td:last-child button + form {
+    margin-left: 0;
+}
+
+.roger-table tbody tr:nth-child(even) {
+    background: none;
+}
+
+.roger-table tbody tr:has(.roger-group-heading) {
+    background: #f5f5f5;
+}
+
+.roger-table tbody tr:not(:has(.roger-group-heading)):hover {
+    background: #fafcff;
+}
+
+/* The portfolio table right-aligns its columns 6 and 7; here those are not its numeric ones. */
+.roger-table td:nth-child(6),
+.roger-table td:nth-child(7),
+.roger-table th:nth-child(6),
+.roger-table th:nth-child(7) {
+    text-align: left;
+    font-variant-numeric: normal;
+}
+
+.roger-table td.roger-numeric,
+.roger-table th.roger-numeric {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.roger-table th button {
+    padding: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+}
+
+.roger-table th button:hover:not(:disabled) {
+    background: none;
+    color: #1a1a1a;
+}
+
+.roger-table th button:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+.roger-empty {
+    color: #bbb;
+}
+
+.roger-badge-radar {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.roger-badge-order {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.roger-badge-invested {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.roger-badge-sold,
+.roger-sector {
+    background: #e5e5e5;
+    color: #404040;
+}
+
+.roger-group-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+}
+
+.roger-group-heading span:not(.roger-sector) {
+    color: #666;
+}
+
+.roger-group-heading h2,
+.roger-form-title,
+.roger-form-note {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.roger-form-title,
+.roger-form-note {
+    grid-column: 1 / -1;
+}
+
+.roger-actions {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+}
+
+.roger-menu {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    padding: 0.25rem;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    max-height: calc(100dvh - 1rem);
+    overflow-y: auto;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+}
+
+.roger-menu:popover-open {
+    display: flex;
+    flex-direction: column;
+}
+
+.roger-menu button {
+    width: 100%;
+    padding: 0.35rem 0.75rem;
+    background: none;
+    border: none;
+    border-radius: 2px;
+    text-align: left;
+}
+
+.roger-menu button:hover:not(:disabled),
+.roger-menu button:focus-visible {
+    background: #f0f0f0;
+}
+
+.roger-menu button:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: -2px;
+}
 /* stylelint-enable no-descending-specificity */

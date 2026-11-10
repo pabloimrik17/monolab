@@ -30,6 +30,7 @@
             "#di/*": ["./src/di/*"],
             "#portfolio/*": ["./src/portfolio/*"],
             "#quotes/*": ["./src/quotes/*"],
+            "#roger/*": ["./src/roger/*"],
             "#root": ["./src/root.tsx"],
             "#routes/*": ["./src/routes/*"]
         }
@@ -49,6 +50,9 @@
       },
       {
         "path": "../../packages/investlab-portfolio"
+      },
+      {
+        "path": "../../packages/investlab-roger"
       },
       {
         "path": "../../packages/investlab-platform"
