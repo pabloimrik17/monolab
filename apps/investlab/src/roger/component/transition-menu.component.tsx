@@ -34,14 +34,22 @@ export function TransitionMenu({
         return null;
     }
 
-    // A fixed popover sits in the top layer, so it is placed from the trigger's rect before it shows.
+    // A fixed popover sits in the top layer, so it is placed from the trigger's rect before it shows, upward when the trigger is in the lower half.
     const place = (event: React.ToggleEvent<HTMLDivElement>) => {
         const rect = trigger.current?.getBoundingClientRect();
         if (event.newState !== "open" || !rect) {
             return;
         }
-        event.currentTarget.style.top = `${rect.bottom + GAP_PX}px`;
-        event.currentTarget.style.right = `${document.documentElement.clientWidth - rect.right}px`;
+        const { clientWidth, clientHeight } = document.documentElement;
+        const { style } = event.currentTarget;
+        style.right = `${Math.max(0, clientWidth - rect.right)}px`;
+        if (rect.bottom > clientHeight / 2) {
+            style.top = "";
+            style.bottom = `${clientHeight - rect.top + GAP_PX}px`;
+        } else {
+            style.bottom = "";
+            style.top = `${rect.bottom + GAP_PX}px`;
+        }
     };
 
     return (
@@ -60,6 +68,12 @@ export function TransitionMenu({
                 className="roger-menu"
                 onBeforeToggle={place}
                 onToggle={(event) => setOpen(event.newState === "open")}
+                onBlur={(event) => {
+                    const next = event.relatedTarget;
+                    if (next && !panel.current?.contains(next) && next !== trigger.current) {
+                        panel.current?.hidePopover();
+                    }
+                }}
             >
                 {transitions.map(({ to, label }) => (
                     <button

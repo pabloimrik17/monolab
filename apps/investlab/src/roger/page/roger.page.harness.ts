@@ -169,7 +169,7 @@ export class RogerPageHarness extends WebHarness {
     async openTransitionForm(entry: Entry, to: RogerState): Promise<void> {
         await this.openMoveMenu(entry);
         await this.interact(() =>
-            this.view.getByRole("button", { name: STATE_LABELS[to], exact: true }).click(),
+            this.rowOf(entry).getByRole("button", { name: STATE_LABELS[to], exact: true }).click(),
         );
     }
 
@@ -181,10 +181,21 @@ export class RogerPageHarness extends WebHarness {
         await this.interact(() => userEvent.keyboard("{Escape}"));
     }
 
-    async scrollPage(): Promise<void> {
+    /** Scroll does not bubble, so only a capturing listener hears it from the table's own scroller. */
+    async scrollTable(): Promise<void> {
         await this.interact(async () => {
-            window.dispatchEvent(new Event("scroll"));
+            document.querySelector(".roger-table-scroll")?.dispatchEvent(new Event("scroll"));
         });
+    }
+
+    async tab(times = 1): Promise<void> {
+        for (let i = 0; i < times; i++) {
+            await this.interact(() => userEvent.tab());
+        }
+    }
+
+    async pressEnter(): Promise<void> {
+        await this.interact(() => userEvent.keyboard("{Enter}"));
     }
 
     /** The items of the open menu, as a user reads them. */

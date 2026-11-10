@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Sector } from "@m0n0lab/investlab-catalog";
 import {
     fieldsOf,
-    RADAR_STATES,
     RogerState,
     transitionsFrom,
     type EntryField,
@@ -70,11 +69,15 @@ const isNumeric = (field: SortColumn): boolean => field !== "state" && NUMERIC_F
 
 export type StateFamily = "radar" | "order" | "invested" | "sold";
 
-export function stateFamily(state: RogerState): StateFamily {
-    if (RADAR_STATES.includes(state)) return "radar";
-    if (state === RogerState.BuyOrder || state === RogerState.SellOrder) return "order";
-    return state === RogerState.Invested ? "invested" : "sold";
-}
+export const STATE_FAMILIES: Record<RogerState, StateFamily> = {
+    [RogerState.Watching]: "radar",
+    [RogerState.Shortlisted]: "radar",
+    [RogerState.TraderBought]: "radar",
+    [RogerState.BuyOrder]: "order",
+    [RogerState.Invested]: "invested",
+    [RogerState.SellOrder]: "order",
+    [RogerState.Sold]: "sold",
+};
 
 const FIELD_LABELS: Record<EntryField, string> = {
     entryPrice: "Entry price",

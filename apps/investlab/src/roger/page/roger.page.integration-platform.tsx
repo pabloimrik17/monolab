@@ -108,8 +108,31 @@ describe("RogerPage", () => {
         await page.openMoveMenu(watching);
         expect(page.moveMenuIsOpen()).toBe(true);
 
-        await page.scrollPage();
+        await page.scrollTable();
 
+        expect(page.moveMenuIsOpen()).toBe(false);
+    });
+
+    it("closes the Move to menu when focus tabs past its last item", async () => {
+        const watching = entryOf(aapl, RogerState.Watching, 150);
+        await using page = await RogerPageHarness.launch({ entries: [shown(aapl, watching)] });
+        await page.openMoveMenu(watching);
+        const items = await page.visibleMenuItems();
+
+        await page.tab(items.length + 1);
+
+        expect(page.moveMenuIsOpen()).toBe(false);
+    });
+
+    it("chooses a Move to item from the keyboard", async () => {
+        const watching = entryOf(aapl, RogerState.Watching, 150);
+        await using page = await RogerPageHarness.launch({ entries: [shown(aapl, watching)] });
+        await page.openMoveMenu(watching);
+
+        await page.tab();
+        await page.pressEnter();
+
+        expect(page.formIsOpen()).toBe(true);
         expect(page.moveMenuIsOpen()).toBe(false);
     });
 
