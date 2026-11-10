@@ -1,6 +1,7 @@
 // fallow-ignore-file code-duplication -- moved verbatim (clean-architecture-layout)
-import { delay, http, HttpResponse } from "msw";
+import { http, HttpResponse } from "msw/http";
 import { setupServer } from "msw/node";
+import { delay } from "msw/utils/delay";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { HttpClient } from "./http.client.ts";
 
@@ -9,7 +10,7 @@ const URL = "http://service.test/things";
 const server = setupServer();
 
 describe("HttpClient", () => {
-    beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+    beforeAll(() => server.listen({ onUnhandledFrame: "error" }));
     afterEach(() => server.resetHandlers());
     afterAll(() => server.close());
 

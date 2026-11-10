@@ -54,7 +54,7 @@ function composition(url: string): Container {
 
 beforeAll(async () => {
     redisUrl = await fileRedisUrl();
-    finnhub.listen({ onUnhandledRequest: "error" });
+    finnhub.listen({ onUnhandledFrame: "error" });
 });
 
 // Every test starts with an empty quote cache.

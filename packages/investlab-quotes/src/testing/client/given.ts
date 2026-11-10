@@ -1,4 +1,4 @@
-import { http, HttpResponse } from "msw";
+import { http, HttpResponse } from "msw/http";
 import { z } from "zod";
 import { TICKERS_STORAGE_KEY } from "#data/client/repository/ticker-storage.repository.ts";
 import { quoteListQueryDtoSchema, type QuoteDto } from "#data/shared/dto/quote.dto.ts";
