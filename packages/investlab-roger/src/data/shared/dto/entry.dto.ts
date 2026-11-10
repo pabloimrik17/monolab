@@ -26,11 +26,8 @@ const commissionSchema = z
     .max(99_999_999.99)
     .refine(hasAtMostDecimals(2), "At most 2 decimals");
 const quantitySchema = z.number().int().gt(0).max(2_147_483_647);
-// Calendar validity (February 30) is the domain's rule.
 const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Expected YYYY-MM-DD");
 
-// A state's value fields stay optional on requests: which ones it needs is the domain's rule
-// (`MISSING_REQUIRED_FIELD`), not a validation error.
 const entryValuesShape = {
     entryPrice: priceSchema.optional(),
     quantity: quantitySchema.optional(),
@@ -46,7 +43,6 @@ export const entryDtoSchema = z.object({
     instrumentId: z.string().uuid(),
     state: rogerStateSchema,
     ...entryValuesShape,
-    // Every state carries the entry price.
     entryPrice: priceSchema,
     stateSince: z.string().datetime(),
     createdAt: z.string().datetime(),
@@ -89,7 +85,6 @@ export const createEntryDtoSchema = z
 
 export type CreateEntryDto = z.infer<typeof createEntryDtoSchema>;
 
-// Optimistic lock: the `updatedAt` the caller last read; a mismatch answers 409.
 const expectedUpdatedAtShape = { expectedUpdatedAt: z.string().datetime() };
 
 export const editEntryDtoSchema = z.object({

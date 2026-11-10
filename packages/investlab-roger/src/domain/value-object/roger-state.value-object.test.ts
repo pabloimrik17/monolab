@@ -13,7 +13,6 @@ const {
 
 const STATES = [WATCHING, SHORTLISTED, TRADER_BOUGHT, BUY_ORDER, INVESTED, SELL_ORDER, SOLD];
 
-// Rows: from; columns: to, in STATES order. 1 = allowed.
 // prettier-ignore
 const TRANSITION_TABLE: Record<RogerState, readonly (0 | 1)[]> = {
     //               WAT SHO TRA BUY INV SEL SOL

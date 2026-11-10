@@ -4,7 +4,6 @@ import type { InstrumentNotFoundError } from "@m0n0lab/investlab-catalog";
 import type { PersistenceError } from "@m0n0lab/investlab-core";
 import type { ResultAsync } from "neverthrow";
 
-// `E` defaults to the server-side failure; HTTP implementations widen it (NotFound, Network, ...).
 export interface EntryRepository<E extends Error = PersistenceError> {
     /** Fails with `InstrumentNotFoundError` when the entry names an instrument the catalog lacks. */
     save(entry: Entry): ResultAsync<Entry, E | InstrumentNotFoundError>;

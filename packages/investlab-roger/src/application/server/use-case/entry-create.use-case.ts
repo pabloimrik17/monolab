@@ -41,8 +41,6 @@ export class EntryCreateUseCase {
         private readonly instrumentCreate: InstrumentCreateUseCase,
     ) {}
 
-    // The draft is checked first, so an invalid entry adds no instrument. The repository maps the
-    // foreign key on `instrument_id` to `InstrumentNotFoundError`.
     execute(props: EntryCreateProps): ResultAsync<Entry, EntryCreateError> {
         return Entry.validateDraft(props)
             .asyncAndThen(() => this.instrumentIdOf(props))

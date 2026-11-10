@@ -17,7 +17,6 @@ export class EntryReEnterUseCase {
         private readonly entryRepo: EntryRemoteRepository,
     ) {}
 
-    // The API is the authority on the rules; its refusals come back as the domain errors.
     // fallow-ignore-next-line code-duplication -- client and server use cases stay separate by design (ADR 0001), even when identical
     execute(
         current: Pick<EntryRef, "id" | "state">,

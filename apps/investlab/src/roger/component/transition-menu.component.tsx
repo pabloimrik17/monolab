@@ -31,7 +31,7 @@ export const TransitionMenu: FC<TransitionMenuProps> = ({ transitions, onChoose 
         return null;
     }
 
-    // A fixed popover sits in the top layer, so it is placed from the trigger's rect before it shows, upward when the trigger is in the lower half.
+    // A fixed popover sits in the top layer, so it is placed from the trigger's rect, upward in the lower half.
     const place = (event: React.ToggleEvent<HTMLDivElement>) => {
         const rect = trigger.current?.getBoundingClientRect();
         if (event.newState !== "open" || !rect) {

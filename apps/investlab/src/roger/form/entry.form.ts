@@ -12,7 +12,6 @@ import {
 import type { RogerFieldErrors } from "#roger/view-model/roger.view-model";
 import type { Sector } from "@m0n0lab/investlab-catalog";
 
-// Bounds come from the DTO schemas; this layer only adapts FormData strings to them.
 function blankToUndefined(value: unknown): unknown {
     return typeof value === "string" && value.trim() === "" ? undefined : value;
 }
@@ -28,8 +27,6 @@ const numeric = <T extends z.ZodTypeAny>(schema: T) => z.preprocess(toNumber, sc
 const edit = editEntryDtoSchema.shape;
 const newInstrument = newInstrumentDtoSchema.shape;
 
-// Which fields a state needs is the domain's rule: a blank one reaches the API and comes back as
-// `MISSING_REQUIRED_FIELD`, which the page shows inline.
 const FIELD_SCHEMAS: Record<EntryField, z.ZodTypeAny> = {
     entryPrice: numeric(edit.entryPrice),
     quantity: numeric(edit.quantity),

@@ -91,7 +91,6 @@ const FIELD_LABELS: Record<EntryField, string> = {
 
 const STATE_ORDER = Object.values(RogerState);
 const ACTIVE_STATES = STATE_ORDER.filter((state) => state !== RogerState.Sold);
-// SOLD is the one state that carries every field.
 const ALL_FIELDS = fieldsOf(RogerState.Sold);
 
 export interface LabelledOption {
@@ -204,7 +203,6 @@ function groupedSections(
     );
 }
 
-// The API already orders the history by sell date, across instruments, so it stays one flat list.
 const historySections = (entries: EntryView[]): EntrySectionView[] =>
     entries.length > 0 ? [{ key: "history", rows: entries.map(rowOf) }] : [];
 

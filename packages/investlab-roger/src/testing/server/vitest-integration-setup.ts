@@ -27,7 +27,6 @@ let database: string;
 function testConfig(databaseUrl: string): ServerConfig {
     return {
         database: { url: databaseUrl },
-        // Roger never touches Redis or Finnhub; nothing listens here.
         redis: { url: "redis://127.0.0.1:1" },
         finnhub: { apiKey: "test-finnhub-key" },
         api: { port: 3002, token: "test-api-token" },
@@ -70,7 +69,6 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-    // Async deactivation (pool `end`) needs the async unbind.
     await Promise.all([container.unbindAllAsync(), containerWithDatabaseDown.unbindAllAsync()]);
     await onServer((client) => client.query(`DROP DATABASE IF EXISTS ${database} WITH (FORCE)`));
 });
