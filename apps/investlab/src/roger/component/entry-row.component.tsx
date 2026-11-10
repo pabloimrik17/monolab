@@ -38,8 +38,13 @@ export function EntryRow({
             <td>
                 <StateBadge state={entry.state} />
             </td>
-            {row.cells.map(({ field, text }) => (
-                <td key={field}>{text}</td>
+            {row.cells.map(({ field, text, numeric, empty }) => (
+                <td
+                    key={field}
+                    className={numeric ? "roger-numeric" : undefined}
+                >
+                    {empty ? <span className="roger-empty">{text}</span> : text}
+                </td>
             ))}
             <td>
                 <div className="roger-actions">

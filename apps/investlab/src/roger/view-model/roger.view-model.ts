@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Sector } from "@m0n0lab/investlab-catalog";
 import {
     fieldsOf,
+    RADAR_STATES,
     RogerState,
     transitionsFrom,
     type EntryField,
@@ -57,6 +58,24 @@ export const STATE_LABELS: Record<RogerState, string> = {
     [RogerState.Sold]: "Sold",
 };
 
+const NUMERIC_FIELDS: ReadonlySet<EntryField> = new Set([
+    "entryPrice",
+    "quantity",
+    "buyCommission",
+    "exitPrice",
+    "sellCommission",
+]);
+
+const isNumeric = (field: SortColumn): boolean => field !== "state" && NUMERIC_FIELDS.has(field);
+
+export type StateFamily = "radar" | "order" | "invested" | "sold";
+
+export function stateFamily(state: RogerState): StateFamily {
+    if (RADAR_STATES.includes(state)) return "radar";
+    if (state === RogerState.BuyOrder || state === RogerState.SellOrder) return "order";
+    return state === RogerState.Invested ? "invested" : "sold";
+}
+
 const FIELD_LABELS: Record<EntryField, string> = {
     entryPrice: "Entry price",
     quantity: "Quantity",
@@ -104,6 +123,7 @@ export interface EntryColumnView {
     label: string;
     sortable: boolean;
     sort: SortDirection | undefined;
+    numeric: boolean;
 }
 
 export interface EntryTransitionAction {
@@ -113,7 +133,7 @@ export interface EntryTransitionAction {
 
 export interface EntryRowView {
     entry: EntryView;
-    cells: { field: EntryField; text: string }[];
+    cells: { field: EntryField; text: string; numeric: boolean; empty: boolean }[];
     transitions: EntryTransitionAction[];
     canReEnter: boolean;
 }
@@ -127,7 +147,12 @@ export interface EntrySectionView {
 function rowOf(entry: EntryView): EntryRowView {
     return {
         entry,
-        cells: ALL_FIELDS.map((field) => ({ field, text: entry[field]?.toString() ?? "—" })),
+        cells: ALL_FIELDS.map((field) => ({
+            field,
+            text: entry[field]?.toString() ?? "—",
+            numeric: isNumeric(field),
+            empty: entry[field] === undefined,
+        })),
         transitions: transitionsFrom(entry.state).map((to) => ({
             to,
             label: STATE_LABELS[to],
@@ -191,6 +216,7 @@ function columnsOf(view: EntryListView, sort: EntrySort | undefined): EntryColum
         label,
         sortable: view === "active",
         sort: sort?.column === column ? sort.direction : undefined,
+        numeric: isNumeric(column),
     }));
 }
 

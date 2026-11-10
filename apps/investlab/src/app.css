@@ -356,8 +356,18 @@ body {
     gap: 1rem;
 }
 
-.roger-toolbar [aria-current="page"] {
+.roger-toolbar nav a,
+.roger-toolbar nav a:visited {
+    padding-bottom: 0.25rem;
+    color: #666;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+}
+
+.roger-toolbar nav a[aria-current="page"] {
+    color: #1a1a1a;
     font-weight: 600;
+    border-bottom-color: #2563eb;
 }
 
 .roger-toolbar label {
@@ -366,16 +376,105 @@ body {
     gap: 0.5rem;
 }
 
+.roger-toolbar select {
+    padding: 0.35rem 0.75rem;
+    border: 1px solid #d4d4d4;
+    border-radius: 4px;
+    font: inherit;
+}
+
+.roger-toolbar select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgb(59 130 246 / 20%);
+}
+
+.roger {
+    max-width: none;
+    padding-inline: clamp(1rem, 3vw, 3rem);
+    overflow: visible;
+}
+
+.roger-table-scroll {
+    overflow-x: auto;
+}
+
+.roger-table {
+    width: 100%;
+}
+
+.roger-table td {
+    white-space: nowrap;
+}
+
 /* The portfolio table right-aligns its columns 6 and 7; here those are not its numeric ones. */
-.roger-table td:nth-child(n),
-.roger-table th:nth-child(n) {
+.roger-table td:nth-child(6),
+.roger-table td:nth-child(7),
+.roger-table th:nth-child(6),
+.roger-table th:nth-child(7) {
     text-align: left;
+    font-variant-numeric: normal;
+}
+
+.roger-table td.roger-numeric,
+.roger-table th.roger-numeric {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.roger-table th button {
+    padding: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+}
+
+.roger-table th button:hover:not(:disabled) {
+    background: none;
+    color: #1a1a1a;
+}
+
+.roger-table th button:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+.roger-empty {
+    color: #bbb;
+}
+
+.roger-badge-radar {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.roger-badge-order {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.roger-badge-invested {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.roger-badge-sold,
+.roger-sector {
+    background: #e5e5e5;
+    color: #404040;
 }
 
 .roger-group-heading {
     display: flex;
     align-items: baseline;
     gap: 0.75rem;
+}
+
+.roger-group-heading span:not(.roger-sector) {
+    color: #666;
 }
 
 .roger-group-heading h2,
@@ -392,7 +491,7 @@ body {
 
 .roger-actions {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 0.25rem;
 }
 
