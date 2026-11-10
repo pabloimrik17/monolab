@@ -29,7 +29,9 @@
             "#core/*": ["./src/core/*"],
             "#di/*": ["./src/di/*"],
             "#portfolio/*": ["./src/portfolio/*"],
-            "#quotes/*": ["./src/quotes/*"]
+            "#quotes/*": ["./src/quotes/*"],
+            "#root": ["./src/root.tsx"],
+            "#routes/*": ["./src/routes/*"]
         }
     },
     "references": [

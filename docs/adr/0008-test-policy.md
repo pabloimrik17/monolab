@@ -70,7 +70,15 @@ An API's harness adds these rules:
 - **The 5xx log is silenced in the base harness.** The API logs the cause of every 5xx it hides. A test that provokes one calls `api.silenceErrorLog()`, which mutes `console.error` until `close()` and returns the logged calls so the test can assert the cause.
 - **Error hiding is tested once.** `app.onError` and `errorJson` hide causes for every route, so `app.integration-platform.ts` proves it through one route harness: a thrown error and an unmapped domain error answer a generic 500 `INTERNAL_ERROR`, and a persistence failure answers 500 `PERSISTENCE_ERROR` with its message hidden and its cause logged. A route suite tests the errors its routes map (404, 409, 422), plus the error branch of a route that answers without `replyJson` or `replyEmpty`.
 
-The living guide is `apps/investlab-api/src/core/harness/api.harness.ts` with `apps/investlab-api/src/portfolio/route/portfolio-item.route.integration-platform.ts`. There is no separate harness document and no harness lint rule (ESLint checks only the test structure); new suites copy the reference suite and review corrects them. The UI harness follows the same rules; its concrete design is settled with the first UI integration-platform test (`agentic-task-3ao3`).
+A UI's harness adds these rules:
+
+- **Everything runs in the browser.** The real route file (loader, action, page) is mounted in Chromium on a memory router under the app's real root; the web's server composition root runs there too.
+- **Opening a page.** The base harness takes a synchronous setup callback that runs before the first render. Each page harness chooses whether to take arguments and fill that callback or to expose it. The page comes back open and settled. Only what the page needs to open goes there; other givens are plain methods callable afterwards and return the recording fake.
+- **Same fakes and guards as an API.** Real `getContainer()`, `snapshot()`/`restore()` per test, `PLATFORM.Config` bound to constants, guards on `PLATFORM.HttpClient` and `PLATFORM.InvestlabApiClient`; a breach fails the test. Defaults cover only the use cases the page's loader needs, so an unarranged action reaches a guard.
+- **Reads are plain data.** Domain-named reads return data and count only what is visible; `expect` stays in the test. Every action waits for the router to rest and React to drain, so reads need no retry. A timer-driven page needs a retry on those reads.
+- **What it does not prove.** The server render, hydration, loader-to-page serialization and the route table; nothing automated covers them until staging and e2e exist.
+
+The living guide is `apps/investlab-api/src/core/harness/api.harness.ts` with `apps/investlab-api/src/portfolio/route/portfolio-item.route.integration-platform.ts`. There is no separate harness document and no harness lint rule (ESLint checks only the test structure); new suites copy the reference suite and review corrects them. The UI reference is `apps/investlab/src/core/harness/web.harness.tsx` with `apps/investlab/src/portfolio/page/portfolio.page.integration-platform.tsx`.
 
 ## Load tests are reserved
 
@@ -101,7 +109,7 @@ A test written under the strategy that predates this policy is renamed `*.legacy
 | Group                                         | Files                                                                                   | Replaced by                                  | Issue               |
 | --------------------------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------- | ------------------- |
 | qup-domain use cases with mocked repositories | `packages/qup-domain/src/use-cases/*.use-case.legacy.test.ts` (11)                      | integration tests per use case               | `agentic-task-5xv8` |
-| investlab web unit tests                      | `apps/investlab/src/**/*.legacy.test.{ts,tsx}` (7)                                      | integration-platform tests on a UI harness   | `agentic-task-3ao3` |
+| investlab web unit tests                      | `apps/investlab/src/**/*.legacy.test.{ts,tsx}` (7)                                      | integration-platform tests on a UI harness   | `agentic-task-1caz` |
 | qup-api unit tests                            | `apps/qup-api/src/**/*.legacy.test.ts` (3)                                              | integration-platform tests on an API harness | `agentic-task-rhex` |
 | DTO and mapper tests                          | investlab-portfolio (5), investlab-quotes (1) and investlab-core (1) `*.legacy.test.ts` | use-case integration tests                   | `agentic-task-82ja` |
 
@@ -119,6 +127,10 @@ A test written under the strategy that predates this policy is renamed `*.legacy
 - A lint rule forbidding framework imports in tests: rejected; the reference suite and review hold the pattern.
 - Coverage thresholds as CLI flags on every per-kind script, or only in CI: rejected; about 30 scripts to keep in step, or a local `test:coverage` that differs from CI.
 - Load tests in pull-request CI, or load as an e2e profile: rejected; runner noise fails pull requests at random, and the two kinds fake different things.
+- A real SSR server driven by Playwright for page tests: rejected; browser-side fakes would cross processes and browser coverage would be merged by hand.
+- `createRoutesStub`: rejected; it hides the router, so waiting for it to rest needs an `UNSAFE_` import.
+- Assertion methods in a page harness (`await page.showsEmptyPortfolio()`): rejected; a forgotten `await` passes silently, and a harness holds no assertions.
+- Locators handed to the test: rejected; each harness is shorter, but tests read as DOM checks instead of the domain.
 
 ## Consequences
 
@@ -127,4 +139,5 @@ A test written under the strategy that predates this policy is renamed `*.legacy
 - Coverage and mutation floors stop regressions from today's level and ratchet towards 80.
 - The mutation gate lengthens pull-request CI; incremental mode limits it to mutants in changed code.
 - E2E and load tests wait for staging.
+- The web's server render has no automated test until staging and e2e exist.
 - The harness pattern follows the fleet convention (beads `WebstormProjects-tdhc.13`) with two monolab variants posted back to it: APIs are driven over real HTTP, and the lifecycle uses `await using`.

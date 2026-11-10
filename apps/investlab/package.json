@@ -12,6 +12,14 @@
         "test": "vitest run",
         "test:changed": "vitest run --changed",
         "test:coverage": "vitest run --coverage",
+        "test:integration-platform": "vitest run --project integration-platform",
+        "test:integration-platform:changed": "vitest run --project integration-platform --changed",
+        "test:integration-platform:coverage": "vitest run --project integration-platform --coverage",
+        "test:integration-platform:watch": "vitest --project integration-platform",
+        "test:unit": "vitest run --project unit",
+        "test:unit:changed": "vitest run --project unit --changed",
+        "test:unit:coverage": "vitest run --project unit --coverage",
+        "test:unit:watch": "vitest --project unit",
         "test:watch": "vitest",
         "typecheck": "react-router typegen && tsc --noEmit && tsc --build tsconfig.node.json"
     },
@@ -39,11 +47,13 @@
         "@types/react": "catalog:",
         "@types/react-dom": "19.2.3",
         "@varlock/vite-integration": "catalog:",
+        "@vitest/browser-playwright": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "msw": "catalog:",
         "typescript": "catalog:",
         "vite": "catalog:",
-        "vitest": "catalog:"
+        "vitest": "catalog:",
+        "vitest-browser-react": "catalog:"
     },
     "engines": {
         "node": "24.21.0",
