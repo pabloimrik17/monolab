@@ -63,7 +63,7 @@ catalog:
     drizzle-orm: 0.45.2
     inversify: 8.2.3
     ioredis: 5.11.1
-    msw: 2.15.0
+    msw: 3.0.4
     neverthrow: 8.2.0
     pg: 8.22.0
     react: 19.2.7
