@@ -82,17 +82,41 @@ describe("RogerPage", () => {
         ]);
     });
 
-    it("offers an invested entry only the transitions to a sell order and to sold", async () => {
-        await using page = await RogerPageHarness.launch({
-            entries: [shown(aapl, entryOf(aapl, RogerState.Invested, 130))],
-        });
+    it("lists in the Move to menu only the transitions the entry's state allows", async () => {
+        const invested = entryOf(aapl, RogerState.Invested, 130);
+        await using page = await RogerPageHarness.launch({ entries: [shown(aapl, invested)] });
 
-        const [entry] = page.listedEntries();
-        expect(entry?.actions.filter((action) => action.startsWith("Move to"))).toEqual([
-            "Move to Sell order",
-            "Move to Sold",
-        ]);
-        expect(entry?.actions).not.toContain("Re-enter");
+        expect(page.listedEntries()[0]?.actions).toEqual(["Edit", "Move to", "Delete"]);
+        expect(await page.transitionsOf(invested)).toEqual(["Sell order", "Sold"]);
+    });
+
+    it("closes the Move to menu on Escape without opening a form", async () => {
+        const watching = entryOf(aapl, RogerState.Watching, 150);
+        await using page = await RogerPageHarness.launch({ entries: [shown(aapl, watching)] });
+        await page.openMoveMenu(watching);
+        expect(page.moveMenuIsOpen()).toBe(true);
+
+        await page.pressEscape();
+
+        expect(page.moveMenuIsOpen()).toBe(false);
+        expect(page.formIsOpen()).toBe(false);
+    });
+
+    it("keeps only one Move to menu open at a time", async () => {
+        const upper = entryOf(aapl, RogerState.Watching, 150);
+        const lower = entryOf(aapl, RogerState.Invested, 130);
+        await using page = await RogerPageHarness.launch({
+            entries: [shown(aapl, upper), shown(aapl, lower)],
+        });
+        await page.openMoveMenu(lower);
+        const lowerItems = await page.visibleMenuItems();
+
+        await page.openMoveMenu(upper);
+
+        const upperItems = await page.visibleMenuItems();
+        expect(lowerItems).toEqual(["Sell order", "Sold"]);
+        expect(upperItems).not.toEqual(lowerItems);
+        expect(upperItems).toEqual(["Shortlisted", "Trader bought", "Buy order", "Invested"]);
     });
 
     it("shows only the entries in the state filtered by and hides the instruments with none", async () => {
@@ -261,6 +285,7 @@ describe("RogerPage", () => {
 
         await page.openTransitionForm(entry, RogerState.BuyOrder);
 
+        expect(page.moveMenuIsOpen()).toBe(false);
         expect(page.formTitle()).toBe("Move AAPL to Buy order");
         expect(page.formContent()).toEqual([
             { label: "Entry price", value: "150", editable: true },

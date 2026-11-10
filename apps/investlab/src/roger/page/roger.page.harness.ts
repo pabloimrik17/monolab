@@ -1,4 +1,5 @@
 import { errAsync, okAsync } from "neverthrow";
+import { userEvent, type Locator } from "vitest/browser";
 import { WebHarness } from "#core/harness/web.harness";
 import * as rogerRoute from "#routes/roger";
 import { CATALOG } from "@m0n0lab/investlab-catalog/client";
@@ -11,7 +12,6 @@ import type {
     EntryWithInstrument,
     RogerRemoteError,
 } from "@m0n0lab/investlab-roger";
-import type { Locator } from "vitest/browser";
 
 export interface RogerLaunchOptions {
     readonly view?: EntryListView;
@@ -76,6 +76,17 @@ const STATE_LABELS: Record<RogerState, string> = {
     [RogerState.SellOrder]: "Sell order",
     [RogerState.Sold]: "Sold",
 };
+
+/** What a screen reader announces: the text without `aria-hidden` decoration. */
+function nameOf(element: Element): string {
+    const copy = element.cloneNode(true) as Element;
+    for (const hidden of copy.querySelectorAll("[aria-hidden=true]")) {
+        hidden.remove();
+    }
+    return text(copy);
+}
+
+const isMenuItem = (element: Element) => element.closest(".roger-menu") !== null;
 
 const text = (element: Element | undefined) => element?.textContent?.trim() ?? "";
 
@@ -156,7 +167,34 @@ export class RogerPageHarness extends WebHarness {
     }
 
     async openTransitionForm(entry: Entry, to: RogerState): Promise<void> {
-        await this.interact(() => this.actionOf(entry, `Move to ${STATE_LABELS[to]}`).click());
+        await this.openMoveMenu(entry);
+        await this.interact(() =>
+            this.view.getByRole("button", { name: STATE_LABELS[to], exact: true }).click(),
+        );
+    }
+
+    async openMoveMenu(entry: Entry): Promise<void> {
+        await this.interact(() => this.actionOf(entry, "Move to").click());
+    }
+
+    async pressEscape(): Promise<void> {
+        await this.interact(() => userEvent.keyboard("{Escape}"));
+    }
+
+    /** The items of the open menu, as a user reads them. */
+    async visibleMenuItems(): Promise<string[]> {
+        return this.visible(this.view.getByRole("button")).filter(isMenuItem).map(text);
+    }
+
+    async transitionsOf(entry: Entry): Promise<string[]> {
+        await this.openMoveMenu(entry);
+        const items = await this.visibleMenuItems();
+        await this.pressEscape();
+        return items;
+    }
+
+    moveMenuIsOpen(): boolean {
+        return this.visible(this.view.getByRole("button")).some(isMenuItem);
     }
 
     async openReEntryForm(entry: Entry): Promise<void> {
@@ -308,7 +346,9 @@ export class RogerPageHarness extends WebHarness {
             exitPrice: text(exitPrice),
             sellCommission: text(sellCommission),
             sellDate: text(sellDate),
-            actions: [...(actions?.querySelectorAll("button") ?? [])].map(text),
+            actions: [...(actions?.querySelectorAll("button") ?? [])]
+                .filter((button) => button.checkVisibility())
+                .map(nameOf),
         };
     }
 

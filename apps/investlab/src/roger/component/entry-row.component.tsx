@@ -1,5 +1,6 @@
 import { useFetcher } from "react-router";
 import { StateBadge } from "#roger/component/state-badge.component";
+import { TransitionMenu } from "#roger/component/transition-menu.component";
 import type { RogerActionResult } from "#roger/form/entry.form";
 import type { EntryRowView, EntryView } from "#roger/view-model/roger.view-model";
 import type { RogerState } from "@m0n0lab/investlab-roger";
@@ -48,15 +49,10 @@ export function EntryRow({
                     >
                         Edit
                     </button>
-                    {row.transitions.map(({ to, label }) => (
-                        <button
-                            key={to}
-                            type="button"
-                            onClick={() => onTransition(entry, to)}
-                        >
-                            {label}
-                        </button>
-                    ))}
+                    <TransitionMenu
+                        transitions={row.transitions}
+                        onChoose={(to) => onTransition(entry, to)}
+                    />
                     {row.canReEnter ? (
                         <button
                             type="button"

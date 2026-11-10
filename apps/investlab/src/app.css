@@ -395,4 +395,25 @@ body {
     flex-wrap: wrap;
     gap: 0.25rem;
 }
+
+.roger-menu {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    padding: 0.25rem;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+}
+
+.roger-menu:popover-open {
+    display: flex;
+    flex-direction: column;
+}
+
+.roger-menu button {
+    width: 100%;
+    text-align: left;
+}
 /* stylelint-enable no-descending-specificity */

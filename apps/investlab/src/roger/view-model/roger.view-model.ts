@@ -106,7 +106,7 @@ export interface EntryColumnView {
     sort: SortDirection | undefined;
 }
 
-interface EntryTransitionAction {
+export interface EntryTransitionAction {
     to: RogerState;
     label: string;
 }
@@ -130,7 +130,7 @@ function rowOf(entry: EntryView): EntryRowView {
         cells: ALL_FIELDS.map((field) => ({ field, text: entry[field]?.toString() ?? "—" })),
         transitions: transitionsFrom(entry.state).map((to) => ({
             to,
-            label: `Move to ${STATE_LABELS[to]}`,
+            label: STATE_LABELS[to],
         })),
         canReEnter: entry.state === RogerState.Sold,
     };
