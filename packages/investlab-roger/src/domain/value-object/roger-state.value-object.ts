@@ -8,7 +8,6 @@ export enum RogerState {
     Sold = "SOLD",
 }
 
-/** The trade fields an entry may carry; which ones depends on its state. */
 export type EntryField =
     | "entryPrice"
     | "quantity"
@@ -65,12 +64,10 @@ const FIELDS: Record<RogerState, readonly EntryField[]> = {
     [RogerState.Sold]: SOLD_FIELDS,
 };
 
-/** The states an entry in `state` may move to; never `state` itself. */
 export function transitionsFrom(state: RogerState): readonly RogerState[] {
     return TRANSITIONS[state];
 }
 
-/** The fields an entry in `state` carries, every one of them set. */
 export function fieldsOf(state: RogerState): readonly EntryField[] {
     return FIELDS[state];
 }

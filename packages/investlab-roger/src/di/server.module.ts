@@ -9,7 +9,7 @@ import { EntryTransitionUseCase } from "#application/server/use-case/entry-trans
 import { EntryPgQuery } from "#data/server/query/entry-pg.query.ts";
 import { EntryPgRepository } from "#data/server/repository/entry-pg.repository.ts";
 
-/** Roger for the API, on Postgres. Requires `platformServerModule` and `catalogServerModule`. */
+/** Requires `platformServerModule` and `catalogServerModule`. */
 export const rogerServerModule = new ContainerModule(({ bind }) => {
     bind(ROGER_PORTS.EntryRepository).to(EntryPgRepository);
     bind(ROGER_PORTS.EntryListQuery).to(EntryPgQuery);

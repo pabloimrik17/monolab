@@ -11,7 +11,6 @@ const DEFAULT_VALUES: Required<EntryValues> = {
     sellDate: "2026-11-01",
 };
 
-/** A valid entry in `state` (default `WATCHING`), with defaults for exactly that state's fields. */
 export function makeEntry(overrides: Partial<EntryDraft & { instrumentId: string }> = {}): Entry {
     const state = overrides.state ?? RogerState.Watching;
     const defaults = Object.fromEntries(

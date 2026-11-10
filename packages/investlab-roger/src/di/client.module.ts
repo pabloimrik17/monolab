@@ -10,7 +10,7 @@ import { EntryTransitionUseCase } from "#application/client/use-case/entry-trans
 import { EntryListApiQuery } from "#data/client/query/entry-list-api.query.ts";
 import { EntryApiRepository } from "#data/client/repository/entry-api.repository.ts";
 
-/** Roger for the web, through the InvestLab API. Requires `platformClientModule` and `catalogClientModule`. */
+/** Requires `platformClientModule` and `catalogClientModule`. */
 export const rogerClientModule = new ContainerModule(({ bind }) => {
     bind(ROGER_PORTS.EntryRemoteRepository).to(EntryApiRepository);
     bind(ROGER_PORTS.EntryListQuery).to(EntryListApiQuery);

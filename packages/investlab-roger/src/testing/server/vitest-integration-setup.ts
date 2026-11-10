@@ -13,13 +13,10 @@ import {
 /** Postgres refuses to clone a template another clone is reading, so clones take turns. */
 const CLONE_LOCK = 4_242;
 
-/** Postgres URL nothing listens on. */
 const UNREACHABLE_DATABASE_URL = "postgres://investlab:investlab@127.0.0.1:1/investlab";
 
-/** The API's composition of the roger module (with the catalog it depends on), on this test's own clone of the migrated template. */
 export let container: Container;
 
-/** The same composition with a database that cannot be reached. */
 export let containerWithDatabaseDown: Container;
 
 let database: string;

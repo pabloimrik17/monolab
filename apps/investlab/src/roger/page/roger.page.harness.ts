@@ -51,7 +51,7 @@ type FormFieldLabel =
     | "Sell commission"
     | "Sell date";
 
-/** What a user types or picks, keyed by the field's label; a select takes its option's value. */
+/** A select takes its option's value. */
 export type FormEntry = Partial<Record<FormFieldLabel, string>>;
 
 export interface FormControl {
@@ -61,9 +61,7 @@ export interface FormControl {
 }
 
 export interface FormErrors {
-    /** The general message under the fields, if any. */
     readonly message: string | undefined;
-    /** Per-field messages, keyed by the field's label. */
     readonly fields: Record<string, string>;
 }
 
@@ -77,7 +75,6 @@ const STATE_LABELS: Record<RogerState, string> = {
     [RogerState.Sold]: "Sold",
 };
 
-/** What a screen reader announces: the text without `aria-hidden` decoration. */
 function nameOf(element: Element): string {
     const copy = element.cloneNode(true) as Element;
     for (const hidden of copy.querySelectorAll("[aria-hidden=true]")) {
@@ -198,7 +195,6 @@ export class RogerPageHarness extends WebHarness {
         await this.interact(() => userEvent.keyboard("{Enter}"));
     }
 
-    /** The items of the open menu, as a user reads them. */
     async visibleMenuItems(): Promise<string[]> {
         return this.visible(this.view.getByRole("button")).filter(isMenuItem).map(text);
     }
@@ -247,7 +243,6 @@ export class RogerPageHarness extends WebHarness {
         await this.interact(() => this.answeringConfirm(confirmed, () => button.click()));
     }
 
-    /** The view the switch marks as current. */
     currentView(): string | undefined {
         const [current] = this.visible(
             this.view.getByRole("navigation", { name: "Roger view" }).getByRole("link"),
@@ -255,7 +250,6 @@ export class RogerPageHarness extends WebHarness {
         return current ? text(current) : undefined;
     }
 
-    /** Active view: one group per instrument, in the order shown. */
     listedGroups(): ListedGroup[] {
         return this.visible(this.view.getByRole("rowgroup"))
             .filter((group) => group.tagName === "TBODY")
@@ -267,7 +261,6 @@ export class RogerPageHarness extends WebHarness {
             }));
     }
 
-    /** Every entry shown, in the order shown; the history is flat, so this is its list. */
     listedEntries(): ListedEntry[] {
         return this.listedGroups().flatMap(({ entries }) => entries);
     }
@@ -316,7 +309,6 @@ export class RogerPageHarness extends WebHarness {
         );
     }
 
-    /** What the form says about the symbol typed: the catalog instrument's name, or the new-stock note. */
     symbolNote(): string | undefined {
         return text(this.form?.querySelector(".roger-form-note") ?? undefined) || undefined;
     }
@@ -333,7 +325,6 @@ export class RogerPageHarness extends WebHarness {
         return { message: form?.querySelector("p.form-error")?.textContent ?? undefined, fields };
     }
 
-    /** The message shown in the row after a failed deletion. */
     rowError(entry: Entry): string | undefined {
         const [row] = this.visible(this.rowOf(entry));
         return row?.querySelector(".form-error")?.textContent ?? undefined;
@@ -369,7 +360,6 @@ export class RogerPageHarness extends WebHarness {
         };
     }
 
-    /** A row's name is its cells in order: the history's symbol first, then the state label and the entry price. */
     private rowOf(entry: Entry): Locator {
         const name = new RegExp(`^(?:[A-Z]+ )?${STATE_LABELS[entry.state]} ${entry.entryPrice}\\b`);
         return this.view.getByRole("row", { name });

@@ -51,7 +51,6 @@ export const entryDtoSchema = z.object({
 
 export type EntryDto = z.infer<typeof entryDtoSchema>;
 
-/** Which entries the list returns; `active` unless asked otherwise, an unknown value fails validation. */
 export const entryListViewSchema = z.enum(["active", "history"]).default("active");
 
 export const entryWithInstrumentDtoSchema = z.object({

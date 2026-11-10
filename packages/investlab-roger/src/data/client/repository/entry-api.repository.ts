@@ -27,7 +27,6 @@ import type { ResultAsync } from "neverthrow";
 
 const ENTRY_FIELDS: readonly string[] = fieldsOf(RogerState.Sold);
 
-/** The API names the offending field in `issues[0].path`; anything else is not a roger answer. */
 function fieldOf(dto: ApiErrorDto): EntryField | undefined {
     const path = dto.issues?.[0]?.path;
     return path !== undefined && ENTRY_FIELDS.includes(path) ? (path as EntryField) : undefined;

@@ -11,7 +11,7 @@ import {
 } from "#domain/value-object/roger-state.value-object.ts";
 import { ValidationError } from "@m0n0lab/investlab-core";
 
-/** An entry's trade fields. Dates are calendar dates, `YYYY-MM-DD`; `undefined` means not given. */
+/** Dates are `YYYY-MM-DD`. */
 export interface EntryValues {
     entryPrice?: number | undefined;
     quantity?: number | undefined;
@@ -35,7 +35,6 @@ export interface EntryProps extends StateValues {
     updatedAt: Date;
 }
 
-/** A new entry before it has an instrument. */
 export interface EntryDraft extends EntryValues {
     state: RogerState;
 }
@@ -110,7 +109,7 @@ function validated(values: StateValues): Result<StateValues, ValidationError> {
     return broken ? err(new ValidationError(broken[1])) : ok(values);
 }
 
-/** The values of `state`: supplied first, then current. Anything else is left out, so it clears. */
+/** Fields outside `state` are dropped, so they clear. */
 function fill(
     state: RogerState,
     supplied: EntryValues,
@@ -193,7 +192,6 @@ export class Entry {
         return this._updatedAt;
     }
 
-    /** Lets a caller refuse an invalid entry before it creates the instrument the entry needs. */
     static validateDraft(
         draft: EntryDraft,
     ): Result<void, ValidationError | MissingRequiredFieldError> {
@@ -259,7 +257,6 @@ export class Entry {
             });
     }
 
-    /** A new `BUY_ORDER` entry for the same instrument; this entry stays as it is. */
     reEnter(
         values: Pick<EntryValues, "entryPrice" | "quantity"> = {},
     ): Result<Entry, ValidationError | InvalidTransitionError | MissingRequiredFieldError> {

@@ -10,10 +10,8 @@ declare module "vitest" {
     }
 }
 
-/** Database every test clones (`CREATE DATABASE ... TEMPLATE`), so tests never share rows. */
 const TEMPLATE_DATABASE = "investlab_template";
 
-/** Starts Postgres once per run and migrates the template database. Roger uses no Redis. */
 export default async function setup(project: TestProject): Promise<() => Promise<void>> {
     const postgres = await new PostgreSqlContainer("postgres:17-alpine").start();
     const serverUrl = postgres.getConnectionUri();

@@ -40,7 +40,6 @@ const FIELD_SCHEMAS: Record<EntryField, z.ZodTypeAny> = {
 type Raw = Record<string, FormDataEntryValue>;
 type FormSchema<T> = z.ZodType<T, z.ZodTypeDef, unknown>;
 
-/** Only the fields `state` carries are read; anything else in the submission is dropped. */
 function valuesShape(state: RogerState): z.ZodRawShape {
     return Object.fromEntries(fieldsOf(state).map((field) => [field, FIELD_SCHEMAS[field]]));
 }
@@ -49,7 +48,6 @@ const stateSchema = z.nativeEnum(RogerState);
 const id = z.string().min(1);
 const expectedUpdatedAt = text(edit.expectedUpdatedAt).transform((iso) => new Date(iso));
 
-/** Reads the state named by `key` first, because it decides which value fields the rest has. */
 function withState<T>(
     raw: Raw,
     key: string,

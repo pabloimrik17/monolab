@@ -24,7 +24,7 @@ interface EntryFieldInputsProps {
     onChange: (field: EntryField, value: string) => void;
 }
 
-/** No `required` or `min`: the server's refusal is what shows inline, so the browser must let it through. */
+/** No `required` or `min`: the server's refusal shows inline. */
 export const EntryFieldInputs: FC<EntryFieldInputsProps> = ({
     inputs,
     values,

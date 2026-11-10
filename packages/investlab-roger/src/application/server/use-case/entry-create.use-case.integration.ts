@@ -23,7 +23,7 @@ import { PersistenceError, ValidationError } from "@m0n0lab/investlab-core";
 import type { EntryField } from "#domain/value-object/roger-state.value-object.ts";
 import type { EntryCreateUseCase } from "./entry-create.use-case.ts";
 
-/** Every field at a value that fills its column: full scale, last decimal, zero commission. */
+/** Boundary values: full scale, last decimal, zero commission. */
 const EVERY_VALUE = {
     entryPrice: 1234.5678,
     quantity: 2_147_483_647,

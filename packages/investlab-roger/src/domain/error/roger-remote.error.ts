@@ -11,7 +11,6 @@ import type {
 } from "@m0n0lab/investlab-catalog";
 import type { RemotePortError } from "@m0n0lab/investlab-core";
 
-/** Codes of the roger module's own errors; the kernel codes live in core. */
 export type RogerErrorCode =
     | "INSTRUMENT_NOT_FOUND"
     | "INSTRUMENT_ALREADY_EXISTS"

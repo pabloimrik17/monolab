@@ -8,10 +8,8 @@ import { PLATFORM, platformClientModule } from "@m0n0lab/investlab-platform/clie
 
 export const API_URL = "http://investlab-api.test";
 
-/** The InvestLab API for this file; `given.ts` declares its answers, anything undeclared fails the test. */
 export const investlabApi = setupServer();
 
-/** The web's composition of the roger module (with the catalog it depends on), pointed at the fake API. */
 export const container = new Container();
 container
     .bind(PLATFORM.Config)

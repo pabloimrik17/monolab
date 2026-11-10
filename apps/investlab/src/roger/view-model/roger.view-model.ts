@@ -325,10 +325,9 @@ export function existingEntryForm(target: ExistingEntryTarget): ExistingEntryFor
 
 export const DEFAULT_INITIAL_STATE = RogerState.Watching;
 
-/** Every field, so a value typed under one initial state survives switching to another. */
+/** Every field, so a typed value survives switching the initial state. */
 export const newEntryInitialValues = (): EntryFieldValues => initialValues(RogerState.Sold);
 
-/** On a new entry the buy commission is typed in the same form, so the sell commission tracks it until they differ. */
 export function withNewEntryField(
     values: EntryFieldValues,
     field: EntryField,
@@ -350,7 +349,6 @@ export function chooseInstrument(typed: string, instruments: InstrumentOption[])
     return instrument ? { kind: "existing", instrument } : { kind: "new", symbol };
 }
 
-/** The API repeats a field's refusal as the general message; showing it once, by the field, is enough. */
 export function generalError(
     error: string,
     fieldErrors: RogerFieldErrors | undefined,

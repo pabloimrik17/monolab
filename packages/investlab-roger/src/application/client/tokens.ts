@@ -9,7 +9,6 @@ import type { EntryListQuery } from "#domain/query/entry-list.query.ts";
 import type { EntryRemoteRepository } from "#domain/repository/entry-remote.repository.ts";
 import type { ServiceIdentifier } from "inversify";
 
-/** Client use cases of the roger module. */
 export const ROGER = {
     EntryCreate: Symbol.for(
         "investlab.roger.client.EntryCreate",
@@ -31,7 +30,6 @@ export const ROGER = {
     ) as ServiceIdentifier<EntryListUseCase>,
 } as const;
 
-/** Bound by `di/client.module.ts`; never exported from the package. */
 export const ROGER_PORTS = {
     EntryRemoteRepository: Symbol.for(
         "investlab.roger.client.EntryRemoteRepository",

@@ -43,7 +43,6 @@ function errorToHttp(error: ApiDomainError): number {
     return STATUS_BY_CODE[error.code];
 }
 
-/** The field a roger error names, so the client can rebuild it from `issues[0].path`. */
 function fieldIssues(error: ApiDomainError): ApiErrorIssueDto[] | undefined {
     if (error instanceof RequestValidationError) {
         return [...error.issues];

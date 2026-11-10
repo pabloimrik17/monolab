@@ -39,7 +39,6 @@ export const JPM: FakeInstrument = {
     sector: "financial",
 };
 
-/** A well-formed id the service has no entry or instrument for. */
 export const UNKNOWN_ID = "00000000-0000-4000-8000-000000000000";
 
 function toDto(entry: Entry): EntryDto {
@@ -60,7 +59,6 @@ function toDto(entry: Entry): EntryDto {
     };
 }
 
-/** An entry of `instrument` as the service lists it, with the fields its state carries. */
 export function entryOf(
     instrument: FakeInstrument,
     draft: Partial<EntryDraft> = {},
@@ -72,7 +70,7 @@ export function entryOf(
     };
 }
 
-/** The entry as the web read it; `changes` makes the read differ from what the service holds now. */
+/** `changes` makes the read differ from what the service holds now. */
 export function readEntry(
     { entry }: EntryWithInstrumentDto,
     changes: Partial<EntryDto> = {},
@@ -100,7 +98,6 @@ function failure(code: ApiErrorDto["code"], message: string, field?: string): Re
     return HttpResponse.json(body, { status: statusCode });
 }
 
-/** A body the DTO schemas refuse answers `VALIDATION_ERROR`, as the API does. */
 function validating(resolver: HttpResponseResolver): HttpResponseResolver {
     return async (info) => {
         try {
@@ -114,16 +111,11 @@ function validating(resolver: HttpResponseResolver): HttpResponseResolver {
     };
 }
 
-/** Like the API: the error's code picks the status; the two field errors name their field. */
 function refuse(error: DomainError): Response {
     const field = (error as { field?: string }).field;
     return failure(error.code as ApiErrorDto["code"], error.message, field);
 }
 
-/**
- * The service holds exactly these entries and applies the roger rules through the domain model;
- * its instruments are those the entries belong to.
- */
 export function givenRogerWith(...rows: EntryWithInstrumentDto[]): void {
     const entries = new Map(rows.map(({ entry }) => [entry.id, entryToDomain(entry)]));
     const instruments = new Map(
@@ -227,7 +219,6 @@ export function givenRogerWith(...rows: EntryWithInstrumentDto[]): void {
     );
 }
 
-/** The API cannot be reached. */
 export function givenApiUnavailable(): void {
     investlabApi.use(http.all(`${API_URL}/*`, () => HttpResponse.error()));
 }

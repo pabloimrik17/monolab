@@ -164,7 +164,6 @@ export class ApiHarness implements AsyncDisposable {
         return this.close();
     }
 
-    /** Every `METHOD path` the app registers, middleware (`ALL`) included. */
     routes(): string[] {
         return this.listRoutes();
     }

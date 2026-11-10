@@ -21,7 +21,6 @@ import type { Container } from "inversify";
 
 const listQuerySchema = z.object({ view: entryListViewSchema });
 
-/** The trade fields of a body, leaving out `to`, `expectedUpdatedAt` and the instrument. */
 function valuesOf(body: {
     entryPrice?: number | undefined;
     quantity?: number | undefined;

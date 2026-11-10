@@ -4,7 +4,6 @@ import type { RogerState } from "#domain/value-object/roger-state.value-object.t
 import type { Sector } from "@m0n0lab/investlab-catalog";
 import type { ResultAsync } from "neverthrow";
 
-/** What the web last read of an entry; an `Entry` fits. */
 export interface EntryRef {
     id: string;
     state: RogerState;
@@ -17,11 +16,9 @@ export interface NewInstrument {
     sector?: Sector | undefined;
 }
 
-/** A draft for an existing instrument or for a new stock, never both. */
 export type EntryCreateInput = EntryDraft &
     ({ instrumentId: string } | { newInstrument: NewInstrument });
 
-/** The API has one route per action, so the client port has one method per route. */
 export interface EntryRemoteRepository {
     create(input: EntryCreateInput): ResultAsync<Entry, RogerRemoteError>;
     edit(current: EntryRef, values: EntryValues): ResultAsync<Entry, RogerRemoteError>;
