@@ -37,7 +37,7 @@ The system SHALL model PortfolioItem as an entity in the `domain/` folder of `@m
 
 ### Requirement: PortfolioItem repository interface
 
-The system SHALL define a `PortfolioItemRepository` port in the `domain/` folder of `@m0n0lab/investlab-portfolio` with methods returning `ResultAsync`: `save(item)`, `findById(id)`, `findAll()`, `update(item)`, `delete(id)`, `existsForInstrument(instrumentId)`. Further `findByX` methods SHALL be added only when a use case needs them; there SHALL be no generic `findBy(filters)`.
+The system SHALL define a `PortfolioItemRepository` port in the `domain/` folder of `@m0n0lab/investlab-portfolio` with methods returning `ResultAsync`: `save(item)`, `findById(id)`, `findAll()`, `update(item)` and `delete(id)`. `save` SHALL fail with `InstrumentNotFoundError` when the item's instrument does not exist. Further `findByX` methods SHALL be added only when a use case needs them; there SHALL be no generic `findBy(filters)`.
 
 #### Scenario: Find all portfolio items
 
@@ -51,12 +51,17 @@ The system SHALL define a `PortfolioItemRepository` port in the `domain/` folder
 
 #### Scenario: Instrument referenced by an item
 
-- **WHEN** `existsForInstrument(instrumentId)` is called and an item references that instrument
-- **THEN** it returns `Ok<true>`
+- **WHEN** an item references an instrument and that instrument is deleted
+- **THEN** the delete returns `Err<InstrumentInUseError>` and the item is unchanged
+
+#### Scenario: Save an item for an unknown instrument
+
+- **WHEN** `save(item)` is called with an `instrumentId` that is not in the catalog
+- **THEN** it returns `Err<InstrumentNotFoundError>` and nothing is persisted
 
 ### Requirement: PortfolioItemCreate use case
 
-The system SHALL provide a `PortfolioItemCreateUseCase` class (file `portfolio-item-create.use-case.ts`) decorated with `@injectable()`. It SHALL validate the referenced instrument exists via InstrumentRepository, create the PortfolioItem, persist via PortfolioItemRepository, and return the created item.
+The system SHALL provide a `PortfolioItemCreateUseCase` class (file `portfolio-item-create.use-case.ts`) decorated with `@injectable()`. It SHALL create the PortfolioItem, persist it via PortfolioItemRepository, which refuses an unknown instrument, and return the created item. It SHALL NOT read the catalog's repository.
 
 #### Scenario: Create item with valid instrument
 

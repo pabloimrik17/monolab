@@ -115,8 +115,8 @@ The package SHALL include proper versioning, authoring, and publishing configura
 #### Scenario: Publishing configuration
 
 - **WHEN** preparing for publication
-- **THEN** `engines` field SHALL require Node `^20.18.0 || >=22.0.0` and pnpm 10.27.0
-- **AND** `packageManager` SHALL specify pnpm 10.27.0
+- **THEN** `engines` field SHALL require Node `^20.18.0 || >=22.0.0` and pnpm 12.14.0
+- **AND** `packageManager` SHALL specify pnpm 12.14.0
 - **AND** `publishConfig` SHALL set `access: "public"`
 - **AND** `publishConfig` SHALL use npm registry URL
 

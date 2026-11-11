@@ -8,17 +8,47 @@ Defines how InvestLab code is packaged: one package per business module with its
 
 ### Requirement: One package per business module
 
-InvestLab business code SHALL live in one package per module: `@m0n0lab/investlab-portfolio` (portfolio items and the instrument catalog) and `@m0n0lab/investlab-quotes` (market data). A business module SHALL NOT import another business module.
+InvestLab business code SHALL live in one package per module: `@m0n0lab/investlab-catalog` (the instrument catalog), `@m0n0lab/investlab-portfolio` (portfolio items), `@m0n0lab/investlab-quotes` (market data) and `@m0n0lab/investlab-roger` (entries that follow the trader Roger). A module package SHALL import another only along an edge declared in the lint configuration and only through the other's public entries, and the declared edges SHALL have no cycle. The declared edges SHALL be exactly: portfolio → catalog and roger → catalog. No module SHALL import a module that follows a trader. A lint check SHALL fail CI on an undeclared import.
 
 #### Scenario: Modules are independent
 
 - **WHEN** the imports of `@m0n0lab/investlab-quotes` are listed
-- **THEN** none points to `@m0n0lab/investlab-portfolio`, and the reverse also holds
+- **THEN** none points to `@m0n0lab/investlab-portfolio`, `@m0n0lab/investlab-catalog` or `@m0n0lab/investlab-roger`, and none of those imports quotes
+
+#### Scenario: Undeclared import between modules
+
+- **WHEN** a file in `@m0n0lab/investlab-quotes` imports `@m0n0lab/investlab-portfolio`
+- **THEN** the boundary lint check fails
+
+#### Scenario: Declared edge
+
+- **WHEN** a file in `packages/investlab-portfolio/src/data/server/` imports the instruments table from `@m0n0lab/investlab-catalog/server`
+- **THEN** the boundary lint check passes
+
+#### Scenario: Roger reaches the catalog
+
+- **WHEN** a file in `packages/investlab-roger/src/application/server/` imports the instrument create use-case token from `@m0n0lab/investlab-catalog/server`
+- **THEN** the boundary lint check passes
+
+#### Scenario: Edge in the wrong direction
+
+- **WHEN** a file in `@m0n0lab/investlab-catalog` imports `@m0n0lab/investlab-portfolio`
+- **THEN** the boundary lint check fails
+
+#### Scenario: Trader module is a leaf
+
+- **WHEN** a file in `@m0n0lab/investlab-portfolio` or `@m0n0lab/investlab-catalog` imports `@m0n0lab/investlab-roger`
+- **THEN** the boundary lint check fails
+
+#### Scenario: Cycle in the declared edges
+
+- **WHEN** the declared edges are changed to contain a cycle
+- **THEN** the lint configuration fails to load and every lint run fails
 
 #### Scenario: Projects selected by name pattern
 
 - **WHEN** `nx show projects -p '@m0n0lab/investlab*'` runs
-- **THEN** it lists exactly `@m0n0lab/investlab`, `@m0n0lab/investlab-api`, `@m0n0lab/investlab-core`, `@m0n0lab/investlab-platform`, `@m0n0lab/investlab-database`, `@m0n0lab/investlab-portfolio` and `@m0n0lab/investlab-quotes`
+- **THEN** it lists exactly `@m0n0lab/investlab`, `@m0n0lab/investlab-api`, `@m0n0lab/investlab-core`, `@m0n0lab/investlab-platform`, `@m0n0lab/investlab-database`, `@m0n0lab/investlab-catalog`, `@m0n0lab/investlab-portfolio`, `@m0n0lab/investlab-quotes` and `@m0n0lab/investlab-roger`
 
 ### Requirement: Shared kernel package
 
@@ -26,8 +56,8 @@ InvestLab business code SHALL live in one package per module: `@m0n0lab/investla
 
 #### Scenario: Module names its remote error union
 
-- **WHEN** the portfolio module declares the errors its client ports return
-- **THEN** it defines `PortfolioRemoteError = RemotePortError<InstrumentNotFoundError | PortfolioItemNotFoundError | PortfolioItemConflictError | InstrumentInUseError | InstrumentAlreadyExistsError>` and core imports none of these errors
+- **WHEN** the catalog and portfolio modules declare the errors their client ports return
+- **THEN** the catalog defines `CatalogRemoteError = RemotePortError<InstrumentNotFoundError | InstrumentInUseError | InstrumentAlreadyExistsError>`, portfolio defines `PortfolioRemoteError = RemotePortError<InstrumentNotFoundError | PortfolioItemNotFoundError | PortfolioItemConflictError>`, and core imports none of these errors
 
 #### Scenario: Core depends on nothing of ours
 
@@ -36,7 +66,7 @@ InvestLab business code SHALL live in one package per module: `@m0n0lab/investla
 
 #### Scenario: Domain error extends the kernel
 
-- **WHEN** the portfolio module declares `InstrumentInUseError`
+- **WHEN** the catalog module declares `InstrumentInUseError`
 - **THEN** it extends `DomainError` imported from `@m0n0lab/investlab-core`
 
 ### Requirement: Layer folders inside a module package
@@ -50,12 +80,17 @@ A module package SHALL follow the package layout of `clean-architecture-layout`:
 
 ### Requirement: Entries per side
 
-A module package SHALL export `.` (domain and DTOs), `./server` (server container module, tokens, use-case and error types), `./client` (the container module of a consumer that holds the API credential, its tokens, use-case and error types), `./testing` (builders) and, when it has code for a device runtime, one entry per such runtime, such as `./browser` (browser container module, its tokens and use-case types). Repositories, datasources and their tokens SHALL NOT be exported.
+A module package SHALL export `.` (domain and DTOs), `./server` (server container module, tokens, use-case and error types), `./client` (the container module of a consumer that holds the API credential, its tokens, use-case and error types), `./testing` (builders) and, when it has code for a device runtime, one entry per such runtime, such as `./browser` (browser container module, its tokens and use-case types). A module that other modules depend on MAY also export from `./server` the table definitions they reference for foreign keys and read-query joins, with the mappers that rebuild its domain models from those joined rows, and from `./client` the mappers that rebuild its domain models from its DTOs. A repository interface belongs to the domain that `.` exports. Repository and datasource implementations and their tokens SHALL NOT be exported.
 
 #### Scenario: Repository is not reachable from outside
 
 - **WHEN** code outside `@m0n0lab/investlab-portfolio` tries to import the Postgres portfolio item repository or its token
 - **THEN** no entry exports it and the import fails to resolve
+
+#### Scenario: Table exported for dependants
+
+- **WHEN** the `./server` and `./client` entries of `@m0n0lab/investlab-catalog` are read
+- **THEN** `./server` exports the instruments table definition and the mapper from its row to `Instrument`, `./client` exports the mapper from `InstrumentDto` to `Instrument`, and neither exports an instrument repository implementation or its token
 
 #### Scenario: Browser entry holds no credentialed code
 
@@ -108,12 +143,12 @@ A module package SHALL export `.` (domain and DTOs), `./server` (server containe
 
 #### Scenario: API test imports builders
 
-- **WHEN** `apps/investlab-api/src/portfolio/route/instrument.route.integration-platform.ts` imports `@m0n0lab/investlab-portfolio/testing`
+- **WHEN** `apps/investlab-api/src/catalog/route/instrument.route.integration-platform.ts` imports `@m0n0lab/investlab-catalog/testing`
 - **THEN** the boundary lint check passes
 
 #### Scenario: Production code imports builders
 
-- **WHEN** a file in `apps/investlab-api/src/core/mapper/` imports `@m0n0lab/investlab-portfolio/testing`
+- **WHEN** a file in `apps/investlab-api/src/core/mapper/` imports `@m0n0lab/investlab-catalog/testing`
 - **THEN** the boundary lint check fails
 
 ### Requirement: Layer rule enforced by lint
@@ -194,7 +229,12 @@ Each app SHALL build one container per runtime by binding only its `Config` adap
 #### Scenario: API container
 
 - **WHEN** `apps/investlab-api` builds its container
-- **THEN** it binds the process-environment `Config` adapter and loads the platform, portfolio and quotes server modules, and binds nothing else
+- **THEN** it binds the process-environment `Config` adapter and loads the platform, catalog, portfolio, quotes and roger server modules, and binds nothing else
+
+#### Scenario: Web server container
+
+- **WHEN** `apps/investlab` builds its server container
+- **THEN** it loads the platform, catalog, portfolio, quotes and roger client modules
 
 #### Scenario: Web loader
 

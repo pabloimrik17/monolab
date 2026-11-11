@@ -157,7 +157,7 @@ Code that talks to one concrete medium SHALL live in `data/<side>/infra/<medium>
 #### Scenario: Database tables
 
 - **WHEN** the instrument table is located
-- **THEN** it is `packages/investlab-portfolio/src/data/server/infra/db/instrument.table.ts`
+- **THEN** it is `packages/investlab-catalog/src/data/server/infra/db/instrument.table.ts`
 
 ### Requirement: Datasource only for several sources
 
@@ -212,7 +212,7 @@ A file that exports one class SHALL name it like the file, in PascalCase, kind i
 
 #### Scenario: Harness class name
 
-- **WHEN** `apps/investlab-api/src/portfolio/route/instrument.route.harness.ts` is read
+- **WHEN** `apps/investlab-api/src/catalog/route/instrument.route.harness.ts` is read
 - **THEN** it exports a class named `InstrumentRouteHarness`
 
 #### Scenario: Base class next to its interface
@@ -357,7 +357,7 @@ An app harness SHALL sit next to the entry point it drives, named after it (`rou
 #### Scenario: API harness
 
 - **WHEN** the harness for the instruments routes is located
-- **THEN** it is `apps/investlab-api/src/portfolio/route/instrument.route.harness.ts` and extends `core/harness/api.harness.ts`
+- **THEN** it is `apps/investlab-api/src/catalog/route/instrument.route.harness.ts` and extends `core/harness/api.harness.ts`
 
 #### Scenario: Harness imports the app entry
 
@@ -468,7 +468,7 @@ An API app module SHALL use the kinds `route/`, `middleware/`, `mapper/` and `er
 #### Scenario: Route file name
 
 - **WHEN** the API's instrument routes are located
-- **THEN** they are `apps/investlab-api/src/portfolio/route/instrument.route.ts`
+- **THEN** they are `apps/investlab-api/src/catalog/route/instrument.route.ts`
 
 ### Requirement: App composition root per runtime
 
