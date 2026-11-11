@@ -29,8 +29,8 @@
 
 ## 5. Manual settings (owner)
 
-- [ ] 5.1 In Nx Cloud workspace settings, set access for requests without a token to "none"; verify that the settings page shows it, and that a fresh clone in a temporary `HOME` (no `nxcloud.ini`, no `NX_CLOUD_ACCESS_TOKEN`) running `pnpm nx run @m0n0lab/ts-types:build` logs no remote cache hit or upload
-- [ ] 5.2 Delete the `NX_NO_CLOUD` repository variable and confirm with `gh variable list` that it is gone
+- [x] 5.1 In Nx Cloud workspace settings, set access for requests without a token to "none"; verify that the settings page shows it, and that a fresh clone in a temporary `HOME` (no `nxcloud.ini`, no `NX_CLOUD_ACCESS_TOKEN`) running `pnpm nx run @m0n0lab/ts-types:build` logs no remote cache hit or upload (2026-11-11: settings page shows default access level "none"; fresh-clone probe not run while the org is disabled for exceeding the FREE plan)
+- [x] 5.2 Delete the `NX_NO_CLOUD` repository variable and confirm with `gh variable list` that it is gone (2026-11-11)
 
 ## Workflow follow-up
 

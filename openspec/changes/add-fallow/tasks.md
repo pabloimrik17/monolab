@@ -56,7 +56,7 @@
 
 ## 8. Optional / follow-ups
 
-- [ ] 8.1 (optional) Install fallow-skills Claude Code plugin: `/plugin marketplace add fallow-rs/fallow-skills` + `/plugin install fallow@fallow-skills`
+- [x] 8.1 (optional) Install fallow-skills Claude Code plugin: `/plugin marketplace add fallow-rs/fallow-skills` + `/plugin install fallow@fallow-skills` (installed: `fallow@fallow-skills` enabled in ~/.claude/settings.json)
 - [ ] 8.2 (optional) File upstream issues (list grew to 7 during implementation, see design as-built notes): SolidStart plugin not auto-activating; members missed via generic inference (neverthrow/`container.get<T>`); abstract-member auto-fix uncompilable; no staleness detection for config-level ignores; `ignoreDecorators` ignores class-level decorators; v3 interface-dispatch member-linking regression; v3 cross-package member-usage regression
 - [ ] 8.3 (stretch) Wire real coverage into fallow health (CI lcov/coverage-final.json) to replace estimated CRAP; revisit health gating
 - [ ] 8.4 (phase 2) Boundary zones for `*-domain`/`*-data`/apps layering

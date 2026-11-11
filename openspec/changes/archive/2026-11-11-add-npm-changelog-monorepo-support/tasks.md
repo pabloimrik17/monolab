@@ -26,8 +26,8 @@
 
 ## 4. Spec sync
 
-- [ ] 4.1 After implementation merges, run `openspec sync` (or `/opsx:sync add-npm-changelog-monorepo-support`) to apply the MODIFIED Strategy A and Strategy B requirements into `openspec/specs/npm-changelog-retrieval/spec.md`
-- [ ] 4.2 Validate via `openspec spec validate npm-changelog-retrieval`
+- [x] 4.1 After implementation merges, run `openspec sync` (or `/opsx:sync add-npm-changelog-monorepo-support`) to apply the MODIFIED Strategy A and Strategy B requirements into `openspec/specs/npm-changelog-retrieval/spec.md` (applied by the archive sync)
+- [x] 4.2 Validate via `openspec spec validate npm-changelog-retrieval` (run after the archive sync)
 
 ## 5. Plugin version bump
 
@@ -38,7 +38,7 @@
 
 ## 6. Manual verification — positive cases
 
-- [ ] 6.1 Clear local cache for the 4 target packages: `rm -rf ~/.claude/changelogs/@tanstack__query-core ~/.claude/changelogs/@tanstack__eslint-plugin-query ~/.claude/changelogs/@vitejs__plugin-react-swc ~/.claude/changelogs/eslint-plugin-tsdoc`
+- [x] 6.1 Clear local cache for the 4 target packages: `rm -rf ~/.claude/changelogs/@tanstack__query-core ~/.claude/changelogs/@tanstack__eslint-plugin-query ~/.claude/changelogs/@vitejs__plugin-react-swc ~/.claude/changelogs/eslint-plugin-tsdoc`
 - [x] 6.2 Run `/experiments:npm-changelog @tanstack/query-core 5.90.0..5.90.20`; verify `changelogSource: "raw_changelog"` with subdir path in `changelogFiles`, OR `github_releases` with `tagFormat: "{package}@{version}"` — either is acceptable per cascade order
 - [x] 6.3 Run `/experiments:npm-changelog @tanstack/eslint-plugin-query latest`; verify success
 - [x] 6.4 Run `/experiments:npm-changelog @vitejs/plugin-react-swc latest`; verify success
