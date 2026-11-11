@@ -4,7 +4,6 @@ import {
     MenuItemNotAvailableError,
     OrderNotCancellableError,
     OrderNotFoundError,
-    PersistenceError,
     SessionClosedError,
 } from "@m0n0lab/qup-domain";
 import { makeOrder, makeSession } from "../harness/builders.ts";
@@ -97,61 +96,6 @@ describe("orderRoutes", () => {
 
             expect(status).toBe(422);
             expect(body).toMatchObject({ code: "MENU_ITEM_NOT_AVAILABLE" });
-        });
-    });
-
-    describe("GET /orders", () => {
-        it("lists the session's orders", async () => {
-            await using api = await OrderRouteHarness.launch();
-            const session = makeSession();
-            const orders = [
-                makeOrder({ sessionId: session.id, guestName: "Ana" }),
-                makeOrder({ sessionId: session.id, guestName: "Luis" }),
-            ];
-            const list = api.givenSessionOrders(orders);
-
-            const { status, body } = await api.listOrders(`?sessionId=${session.id}`);
-
-            expect(status).toBe(200);
-            expect(body).toMatchObject([{ guestName: "Ana" }, { guestName: "Luis" }]);
-            expect(list.calls).toEqual([[session.id]]);
-        });
-
-        it("keeps only the guest's orders when guest is given", async () => {
-            await using api = await OrderRouteHarness.launch();
-            const session = makeSession();
-            api.givenSessionOrders([
-                makeOrder({ sessionId: session.id, guestName: "Ana" }),
-                makeOrder({ sessionId: session.id, guestName: "Luis" }),
-            ]);
-
-            const { body } = await api.listOrders(`?sessionId=${session.id}&guest=Luis`);
-
-            expect(body).toMatchObject([{ guestName: "Luis" }]);
-            expect(body).toHaveLength(1);
-        });
-
-        it("answers 422 without the sessionId query param", async () => {
-            await using api = await OrderRouteHarness.launch();
-
-            const { status, body } = await api.listOrders("");
-
-            expect(status).toBe(422);
-            expect(body).toEqual({
-                code: "VALIDATION_ERROR",
-                message: "sessionId query param required",
-                statusCode: 422,
-            });
-        });
-
-        it("answers a hidden 500 when the store fails", async () => {
-            await using api = await OrderRouteHarness.launch();
-            api.givenSessionOrdersFail(new PersistenceError(new Error("db down")));
-
-            const { status, body } = await api.listOrders("?sessionId=x");
-
-            expect(status).toBe(500);
-            expect(body).toMatchObject({ message: "Internal server error" });
         });
     });
 

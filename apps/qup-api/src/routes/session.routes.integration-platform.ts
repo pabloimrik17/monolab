@@ -3,11 +3,12 @@ import {
     InvalidCodeError,
     PersistenceError,
     SessionAlreadyClosedError,
+    SessionClosedError,
     SessionNotFoundError,
     SessionStatus,
     ValidationError,
 } from "@m0n0lab/qup-domain";
-import { makeOrder, makeSession } from "../harness/builders.ts";
+import { makeOrder, makeOrderItem, makeSession } from "../harness/builders.ts";
 import { SessionRouteHarness } from "./session.routes.harness.ts";
 
 const MISSING_ID = "6b3389b3-bff8-416e-93ad-e6d411808d95";
@@ -19,10 +20,13 @@ describe("sessionRoutes", () => {
 
             const responses = await Promise.all([
                 api.anonymous("/sessions", { method: "POST" }),
+                api.anonymous("/sessions?status=OPEN"),
+                api.anonymous(`/sessions/${MISSING_ID}`),
+                api.anonymous(`/sessions/${MISSING_ID}/orders`),
                 api.anonymous(`/sessions/${MISSING_ID}/close`, { method: "PATCH" }),
             ]);
 
-            expect(responses.map((r) => r.status)).toEqual([401, 401]);
+            expect(responses.map((r) => r.status)).toEqual([401, 401, 401, 401, 401]);
         });
     });
 
@@ -122,6 +126,109 @@ describe("sessionRoutes", () => {
 
             expect(status).toBe(422);
             expect(body).toMatchObject({ code: "INVALID_CODE" });
+        });
+    });
+
+    describe("GET /sessions/code/:code/orders", () => {
+        it("answers only the orders of the exact guest named, in the public projection", async () => {
+            await using api = await SessionRouteHarness.launch();
+            const session = makeSession();
+            const find = api.givenSessionByCode(session);
+            const order = makeOrder({
+                sessionId: session.id,
+                guestName: "Ana",
+                notes: "oat milk",
+                items: [makeOrderItem({ customization: "extra hot" })],
+            });
+            const list = api.givenSessionOrders([
+                order,
+                makeOrder({ sessionId: session.id, guestName: "Bruno" }),
+                makeOrder({ sessionId: session.id, guestName: "ana" }),
+            ]);
+
+            const { status, body } = await api.guestOrders("abc123", "?guest=Ana");
+
+            expect(status).toBe(200);
+            expect(body).toEqual([
+                {
+                    id: order.id,
+                    guestName: "Ana",
+                    status: "PENDING",
+                    items: [{ name: "Flat white", quantity: 2 }],
+                    hiddenItemCount: 0,
+                },
+            ]);
+            expect(find.calls).toEqual([["abc123"]]);
+            expect(list.calls).toEqual([[session.id]]);
+        });
+
+        it("lists the first three product lines by product name and counts the rest", async () => {
+            await using api = await SessionRouteHarness.launch();
+            const session = makeSession();
+            api.givenSessionByCode(session);
+            const items = ["Toast", "Croissant", "Orange juice", "Americano", "Flat white"].map(
+                (name, index) => makeOrderItem({ menuItemName: name, quantity: index + 1 }),
+            );
+            api.givenSessionOrders([makeOrder({ sessionId: session.id, items })]);
+
+            const { body } = await api.guestOrders("ABC123", "?guest=Ana");
+
+            expect(body).toMatchObject([
+                {
+                    items: [
+                        { name: "Americano", quantity: 4 },
+                        { name: "Croissant", quantity: 2 },
+                        { name: "Flat white", quantity: 5 },
+                    ],
+                    hiddenItemCount: 2,
+                },
+            ]);
+        });
+
+        it("answers 422 without the guest query param, before looking the session up", async () => {
+            await using api = await SessionRouteHarness.launch();
+            const find = api.givenSessionByCode(makeSession());
+
+            const { status, body } = await api.guestOrders("ABC123", "");
+
+            expect(status).toBe(422);
+            expect(body).toEqual({
+                code: "VALIDATION_ERROR",
+                message: "guest query param required",
+                statusCode: 422,
+            });
+            expect(find.calls).toEqual([]);
+        });
+
+        it.each([
+            { error: new InvalidCodeError("nope"), status: 422, code: "INVALID_CODE" },
+            { error: new SessionNotFoundError("ZZZ999"), status: 404, code: "SESSION_NOT_FOUND" },
+            { error: new SessionClosedError(MISSING_ID), status: 409, code: "SESSION_CLOSED" },
+        ])("answers $status $code for that session code without listing orders", async (row) => {
+            await using api = await SessionRouteHarness.launch();
+            api.givenSessionByCodeFails(row.error);
+            const list = api.givenSessionOrders([]);
+
+            const { status, body } = await api.guestOrders("ABC123", "?guest=Ana");
+
+            expect(status).toBe(row.status);
+            expect(body).toMatchObject({ code: row.code });
+            expect(list.calls).toEqual([]);
+        });
+
+        it("answers a hidden 500 when the store fails", async () => {
+            await using api = await SessionRouteHarness.launch();
+            api.givenSessionByCode(makeSession());
+            api.givenSessionOrdersFail(new PersistenceError(new Error("db down")));
+
+            const { status, body } = await api.guestOrders("ABC123", "?guest=Ana");
+
+            expect(status).toBe(500);
+            expect(body).toEqual({
+                code: "PERSISTENCE_ERROR",
+                message: "Internal server error",
+                statusCode: 500,
+            });
         });
     });
 
