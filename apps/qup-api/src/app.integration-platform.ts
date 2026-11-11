@@ -45,6 +45,7 @@ describe("createApp", () => {
                     "PATCH /menu/:id",
                     "DELETE /menu/:id",
                     "GET /events/sessions/:code",
+                    "GET /events/sessions/:code/board",
                 ].sort(),
             );
         });
