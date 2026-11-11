@@ -102,7 +102,7 @@ jobs:
 
             - name: 🔍 Fallow audit (changed-code quality gate)
               # actions-up-ignore-next-line
-              uses: fallow-rs/fallow@71369f80d099e25726ad04382f15aef14a251abc # v3.31.0
+              uses: fallow-rs/fallow@ab762fb12b040889025f7d52902d86c3a26911c0 # v3.42.0
               with:
                   command: audit
                   comment: true
