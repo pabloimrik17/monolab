@@ -135,12 +135,15 @@ export class EventStream implements AsyncDisposable {
         private readonly abort: () => void,
     ) {}
 
-    /** The next event other than a ping, its data parsed as JSON. */
+    /** The next event other than a ping, its data parsed as JSON; a signal with no data reads as `""`. */
     async next(): Promise<ServerEvent> {
         for (;;) {
             const frame = await this.frame();
             if (frame.event !== "ping") {
-                return { event: frame.event, data: JSON.parse(frame.data) };
+                return {
+                    event: frame.event,
+                    data: frame.data === "" ? "" : JSON.parse(frame.data),
+                };
             }
         }
     }

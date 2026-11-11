@@ -1,5 +1,5 @@
 import { describe, expect, it, onTestFinished, vi } from "vitest";
-import { InvalidCodeError, SessionNotFoundError } from "@m0n0lab/qup-domain";
+import { InvalidCodeError, SessionClosedError, SessionNotFoundError } from "@m0n0lab/qup-domain";
 import { makeOrder, makeSession } from "../harness/builders.ts";
 import { EventRouteHarness } from "./event.routes.harness.ts";
 
@@ -124,6 +124,87 @@ describe("eventRoutes", () => {
             const { status } = await api.watchSessionRefused("nope");
 
             expect(status).toBe(422);
+        });
+    });
+
+    describe("GET /events/sessions/:code/board", () => {
+        it("signals each order event as board:changed and the closing as session:closed, all without data", async () => {
+            await using api = await EventRouteHarness.launch();
+            const session = makeSession();
+            const find = api.givenSession(session);
+            const sessionId = session.id;
+            await using board = await api.watchBoard("abc123");
+
+            api.publish("order:created", { order: makeOrder({ sessionId }), sessionId });
+            api.publish("order:status", { orderId: "o1", sessionId, status: "DONE" });
+            api.publish("order:cancelled", { orderId: "o2", sessionId });
+            api.publish("session:closed", { sessionId });
+
+            expect([
+                await board.next(),
+                await board.next(),
+                await board.next(),
+                await board.next(),
+            ]).toEqual([
+                { event: "board:changed", data: "" },
+                { event: "board:changed", data: "" },
+                { event: "board:changed", data: "" },
+                { event: "session:closed", data: "" },
+            ]);
+            expect(find.calls).toEqual([["abc123"]]);
+        });
+
+        it("skips events of other sessions and events it does not signal", async () => {
+            await using api = await EventRouteHarness.launch();
+            const session = makeSession();
+            api.givenSession(session);
+            await using board = await api.watchBoard("ABC123");
+
+            api.publish("order:created", { orderId: "o1", sessionId: OTHER_SESSION_ID });
+            api.publish("session:created", { sessionId: session.id });
+            api.publish("session:closed", { sessionId: session.id });
+
+            expect(await board.next()).toEqual({ event: "session:closed", data: "" });
+        });
+
+        it("lets go of its subscriptions and its ping once the client disconnects", async () => {
+            vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+            onTestFinished(() => {
+                vi.useRealTimers();
+            });
+            await using api = await EventRouteHarness.launch();
+            api.givenSession(makeSession());
+            const board = await api.watchBoard("ABC123");
+            expect(api.subscriptions()).toBe(4);
+
+            board.close();
+            await expect.poll(() => api.subscriptions()).toBe(0);
+            // A second covers fetch's own sub-second housekeeping timer; a ping waits 30.
+            await vi.advanceTimersByTimeAsync(1_000);
+
+            expect(vi.getTimerCount()).toBe(0);
+        });
+
+        it("answers 409 SESSION_CLOSED for a closed session without opening a stream", async () => {
+            await using api = await EventRouteHarness.launch();
+            api.givenSessionFails(new SessionClosedError("ABC123"));
+
+            const { status, body } = await api.watchBoardRefused("ABC123");
+
+            expect(status).toBe(409);
+            expect(body).toMatchObject({ code: "SESSION_CLOSED" });
+            expect(api.subscriptions()).toBe(0);
+        });
+
+        it("answers 404 for an unknown code and 422 for a malformed one without opening a stream", async () => {
+            await using api = await EventRouteHarness.launch();
+            api.givenSessionFails(new SessionNotFoundError("ABC123"));
+            const unknown = await api.watchBoardRefused("ABC123");
+            api.givenSessionFails(new InvalidCodeError("nope"));
+            const malformed = await api.watchBoardRefused("nope");
+
+            expect([unknown.status, malformed.status]).toEqual([404, 422]);
+            expect(api.subscriptions()).toBe(0);
         });
     });
 });

@@ -27,4 +27,14 @@ export class EventRouteHarness extends ApiHarness {
     watchSessionRefused(code: string) {
         return this.reply<never>(this.request(`/events/sessions/${code}`));
     }
+
+    /** The board's payload-free signal stream, live once this resolves. */
+    watchBoard(code: string): Promise<EventStream> {
+        return this.stream(`/events/sessions/${code}/board`);
+    }
+
+    /** The board stream's answer when it refuses to stream. */
+    watchBoardRefused(code: string) {
+        return this.reply<never>(this.request(`/events/sessions/${code}/board`));
+    }
 }
