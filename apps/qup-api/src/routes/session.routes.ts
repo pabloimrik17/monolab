@@ -12,10 +12,7 @@ import {
 import { errorJson } from "../errors/error-mapping.ts";
 import { adminOnly } from "../middleware/admin-only.ts";
 import { toOrderDto, toSessionDto } from "../serializers/dto-serializers.ts";
-import {
-    toPublicOrderBoardDto,
-    toPublicOrderSummary,
-} from "../serializers/public-serializers.ts";
+import { toPublicOrderBoardDto, toPublicOrderSummary } from "../serializers/public-serializers.ts";
 import type { CreateSessionRequest } from "@m0n0lab/qup-shared";
 import type { Container } from "inversify";
 
