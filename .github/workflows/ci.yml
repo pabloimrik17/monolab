@@ -13,11 +13,6 @@ permissions:
     actions: read
     contents: read
 
-# Read-write Nx Cloud token only on pushes to protected branches; all else read-only.
-# `a && b || c` yields '' (no token) if the read-only secret is missing: never falls back to RW.
-env:
-    NX_CLOUD_ACCESS_TOKEN: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && secrets.NX_CLOUD_ACCESS_TOKEN || secrets.NX_CLOUD_ACCESS_TOKEN_READONLY }}
-
 jobs:
     lint:
         runs-on: ubuntu-latest
@@ -27,6 +22,10 @@ jobs:
             # fallow audit posts a sticky PR comment + native Check Run
             pull-requests: write
             checks: write
+        env:
+            # Read-write Nx Cloud token only on pushes to protected branches; all else read-only.
+            # `a && b || c` yields '' (no token) if the read-only secret is missing: never falls back to RW.
+            NX_CLOUD_ACCESS_TOKEN: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && secrets.NX_CLOUD_ACCESS_TOKEN || secrets.NX_CLOUD_ACCESS_TOKEN_READONLY }}
         steps:
             - name: Checkout code
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -125,6 +124,8 @@ jobs:
 
     tests:
         runs-on: ubuntu-latest
+        env:
+            NX_CLOUD_ACCESS_TOKEN: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && secrets.NX_CLOUD_ACCESS_TOKEN || secrets.NX_CLOUD_ACCESS_TOKEN_READONLY }}
         outputs:
             # JSON array of { name, path } objects — the upload-codecov matrix is built
             # from this. PR: only affected packages; push: all packages. Empty ([]) when
@@ -282,6 +283,8 @@ jobs:
 
     build:
         runs-on: ubuntu-latest
+        env:
+            NX_CLOUD_ACCESS_TOKEN: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && secrets.NX_CLOUD_ACCESS_TOKEN || secrets.NX_CLOUD_ACCESS_TOKEN_READONLY }}
         steps:
             - name: Checkout code
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
