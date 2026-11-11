@@ -50,7 +50,6 @@ jobs:
             contents: write
         env:
             NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-            NX_NO_CLOUD: ${{ vars.NX_NO_CLOUD }}
         steps:
             - name: Checkout release PR branch
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -96,7 +95,6 @@ jobs:
             id-token: write
         env:
             NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-            NX_NO_CLOUD: ${{ vars.NX_NO_CLOUD }}
         steps:
             - name: Checkout code
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -157,9 +155,10 @@ jobs:
                     echo "Processing package: $PACKAGE_NAME@$VERSION"
 
                     # Build the package using Nx (skip if no build target — e.g. config-only packages)
+                    # --skip-nx-cache: publish exactly what this commit's source builds, never a cached (possibly poisoned) artifact
                     if pnpm exec nx show project "$PACKAGE_NAME" --json 2>/dev/null | jq -e '.targets.build' >/dev/null; then
                       echo "Building $PACKAGE_NAME..."
-                      pnpm nx run $PKG_DIR:build
+                      pnpm nx run $PKG_DIR:build --skip-nx-cache
                     else
                       echo "No build target for $PACKAGE_NAME — skipping build"
                     fi
