@@ -105,6 +105,10 @@
             "dependsOn": ["^lint:stylelint"],
             "inputs": ["default", "{workspaceRoot}/.stylelintrc*", "{projectRoot}/.stylelintrc*"]
         },
+        "lint:stylelint:fix": {
+            "dependsOn": ["^lint:stylelint:fix"],
+            "inputs": ["default", "{workspaceRoot}/.stylelintrc*", "{projectRoot}/.stylelintrc*"]
+        },
         "test": {
             "cache": true,
             "dependsOn": ["^build", "^test"],
