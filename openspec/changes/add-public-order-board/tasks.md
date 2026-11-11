@@ -115,9 +115,13 @@ Handoff from block 4: board state notices render as direct `<p>` children of the
 - [x] 6.5 Add brief column transitions and new-order highlighting, suppressed under `prefers-reduced-motion`, with no sound; verify both motion settings
 - [x] 6.6 Raise the board's type scale and contrast over the guest screens while keeping the light palette; verify legibility from across a room on the target tablet
 
-**Integration blocker — `display` does not yet sit on `sse-sanitize`.** Blocks 5 and 6 ran in parallel, both off `board-live`, so `feature/qup-board-display` does not contain block 5. Merging the top of the stack as it stands would drop block 5 entirely: the sanitized stream and the repaired guest status screen. Check before any `gh stack merge`: `git merge-base --is-ancestor feature/qup-board-sse-sanitize feature/qup-board-display`.
+**Integration resolved — `display` now sits on `sse-sanitize`.** Blocks 5 and 6 ran in parallel off `board-live`, so block 6 initially lacked block 5's shared `components/public-order-card.tsx` (used by both the board and the guest status screen) and conflicted in `board.tsx`. Resolved by rebasing `display` onto `sse-sanitize`.
 
-Rebasing `display` onto `sse-sanitize` conflicts in `apps/qup-web/src/routes/session/[code]/board.tsx` (4 hunks), and the conflict is semantic, not mechanical. Block 5 extracted the board card into a shared `components/public-order-card.tsx` (with a `tone` prop for cancelled), now used by **both** the board and the guest status screen, and deleted the inline `BoardCard`/`ItemLine`. Block 6 kept that inline card and added to it the board type scale (6.6) and the new-order highlight (`board-card`, `board-card-new`, `isHighlighted`, 6.5). Block 6's styling has to move into the shared component — but behind a board-only variant, because 6.6 requires the board to read larger than the guest screens, so it cannot simply apply to the shared card. That is a design decision. The rebase was attempted and aborted; no branch was changed.
+Decision (Pablo): the shared `PublicOrderCard` gets a `scale` prop (`"screen"` default | `"board"`) with its own class map, beside `tone`, plus a boolean `highlighted` (new-order highlight, `board-card-new`). The board passes `scale="board"` in its columns and cancelled strip; the guest status screen is unchanged (SSR markup byte-identical before/after).
+
+`TONES` holds card background/border plus name colour. `SCALES` holds sizes/weights, the board's darker secondary text (items stone-800, "+N more" stone-600) and the `board-card` transition, because those change with scale, not tone.
+
+The new-order highlight is derived by diffing order ids between snapshot refetches, since the live stream is payload-free. Each new id gets one 2400 ms timeout, cleared on unmount, with no ticker.
 
 Block 6 also moved `OrderBoardViewModel` from a plain signal to `createStore` + `reconcile(orders, { key: "id" })`, so unchanged cards keep object identity across refetches and do not re-animate as new. Block 5 did not touch that file.
 
