@@ -1,31 +1,23 @@
 import { describe, expect, it, onTestFinished, vi } from "vitest";
 import { InvalidCodeError, SessionClosedError, SessionNotFoundError } from "@m0n0lab/qup-domain";
-import { makeOrder, makeSession } from "../harness/builders.ts";
+import { makeSession } from "../harness/builders.ts";
 import { EventRouteHarness } from "./event.routes.harness.ts";
 
 const OTHER_SESSION_ID = "0d4b8f0e-6a63-4b8c-9a3e-0a1b2c3d4e5f";
 
 describe("eventRoutes", () => {
     describe("GET /events/sessions/:code", () => {
-        it("streams the session's order:created events with the order as its DTO", async () => {
+        it("relays order:created as the bare session signal its use case publishes", async () => {
             await using api = await EventRouteHarness.launch();
             const session = makeSession();
             const find = api.givenSession(session);
-            const order = makeOrder({ sessionId: session.id });
             await using events = await api.watchSession("abc123");
 
-            api.publish("order:created", { order, sessionId: session.id });
+            api.publish("order:created", { sessionId: session.id });
 
             expect(await events.next()).toEqual({
                 event: "order:created",
-                data: {
-                    sessionId: session.id,
-                    order: expect.objectContaining({
-                        id: order.id,
-                        status: "PENDING",
-                        createdAt: "2026-11-06T09:05:00.000Z",
-                    }),
-                },
+                data: { sessionId: session.id },
             });
             expect(find.calls).toEqual([["abc123"]]);
         });
@@ -135,7 +127,7 @@ describe("eventRoutes", () => {
             const sessionId = session.id;
             await using board = await api.watchBoard("abc123");
 
-            api.publish("order:created", { order: makeOrder({ sessionId }), sessionId });
+            api.publish("order:created", { sessionId });
             api.publish("order:status", { orderId: "o1", sessionId, status: "DONE" });
             api.publish("order:cancelled", { orderId: "o2", sessionId });
             api.publish("session:closed", { sessionId });
@@ -160,7 +152,7 @@ describe("eventRoutes", () => {
             api.givenSession(session);
             await using board = await api.watchBoard("ABC123");
 
-            api.publish("order:created", { orderId: "o1", sessionId: OTHER_SESSION_ID });
+            api.publish("order:created", { sessionId: OTHER_SESSION_ID });
             api.publish("session:created", { sessionId: session.id });
             api.publish("session:closed", { sessionId: session.id });
 
