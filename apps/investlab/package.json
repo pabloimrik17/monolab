@@ -9,6 +9,7 @@
         "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 60 .",
         "lint:knip": "knip --max-issues 60 --exclude catalogReferences",
         "lint:stylelint": "stylelint 'src/**/*.css'",
+        "lint:stylelint:fix": "stylelint --fix 'src/**/*.css'",
         "start": "varlock run -- react-router-serve ./build/server/index.js",
         "test": "vitest run",
         "test:changed": "vitest run --changed",
