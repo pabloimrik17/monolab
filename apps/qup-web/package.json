@@ -6,6 +6,7 @@
     "scripts": {
         "build": "vinxi build",
         "dev": "vinxi dev --host",
+        "lint:stylelint": "stylelint 'src/**/*.css'",
         "start": "vinxi start",
         "test": "vitest run",
         "test:changed": "vitest run --changed",
