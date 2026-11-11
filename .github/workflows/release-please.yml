@@ -50,6 +50,7 @@ jobs:
             contents: write
         env:
             NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+            NX_NO_CLOUD: ${{ vars.NX_NO_CLOUD }}
         steps:
             - name: Checkout release PR branch
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -95,6 +96,7 @@ jobs:
             id-token: write
         env:
             NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+            NX_NO_CLOUD: ${{ vars.NX_NO_CLOUD }}
         steps:
             - name: Checkout code
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
