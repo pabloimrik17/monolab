@@ -640,9 +640,15 @@ importers:
       '@m0n0lab/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
+      '@testcontainers/postgresql':
+        specifier: 'catalog:'
+        version: 12.2.0(supports-color@7.2.0)
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.2
+      neverthrow:
+        specifier: 'catalog:'
+        version: 8.2.0
       tsdown:
         specifier: 'catalog:'
         version: 0.22.9(@arethetypeswrong/core@0.18.5)(oxc-resolver@11.21.3)(tsx@4.23.1)(typescript@6.0.3)
@@ -12922,6 +12928,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@kwsites/file-exists@1.1.1(supports-color@7.2.0)':
+    dependencies:
+      debug: 4.4.3(supports-color@7.2.0)
+    transitivePeerDependencies:
+      - supports-color
+
   '@loaderkit/resolve@1.0.4':
     dependencies:
       '@braidai/lang': 1.1.2
@@ -14391,6 +14403,15 @@ snapshots:
       - react-native-b4a
       - supports-color
 
+  '@testcontainers/postgresql@12.2.0(supports-color@7.2.0)':
+    dependencies:
+      testcontainers: 12.2.1(supports-color@7.2.0)
+    transitivePeerDependencies:
+      - bare-abort-controller
+      - bare-buffer
+      - react-native-b4a
+      - supports-color
+
   '@testcontainers/redis@12.2.0(supports-color@10.2.2)':
     dependencies:
       testcontainers: 12.2.1(supports-color@10.2.2)
@@ -14451,13 +14472,13 @@ snapshots:
 
   '@types/docker-modem@3.0.6':
     dependencies:
-      '@types/node': 26.0.1
+      '@types/node': 24.19.2
       '@types/ssh2': 1.15.6
 
   '@types/dockerode@4.0.2':
     dependencies:
       '@types/docker-modem': 3.0.6
-      '@types/node': 26.0.1
+      '@types/node': 24.19.2
       '@types/ssh2': 1.15.6
 
   '@types/esrecurse@4.3.1': {}
@@ -14524,11 +14545,11 @@ snapshots:
 
   '@types/ssh2-streams@0.1.13':
     dependencies:
-      '@types/node': 26.0.1
+      '@types/node': 24.19.2
 
   '@types/ssh2@0.5.52':
     dependencies:
-      '@types/node': 26.0.1
+      '@types/node': 24.19.2
       '@types/ssh2-streams': 0.1.13
 
   '@types/ssh2@1.15.6':
@@ -16077,11 +16098,20 @@ snapshots:
 
   docker-compose@1.5.0:
     dependencies:
-      yaml: 2.9.0
+      yaml: 2.9.1
 
   docker-modem@5.0.7(supports-color@10.2.2):
     dependencies:
       debug: 4.4.3(supports-color@10.2.2)
+      readable-stream: 3.6.2
+      split-ca: 1.0.1
+      ssh2: 1.17.0
+    transitivePeerDependencies:
+      - supports-color
+
+  docker-modem@5.0.7(supports-color@7.2.0):
+    dependencies:
+      debug: 4.4.3(supports-color@7.2.0)
       readable-stream: 3.6.2
       split-ca: 1.0.1
       ssh2: 1.17.0
@@ -16094,6 +16124,17 @@ snapshots:
       '@grpc/grpc-js': 1.14.6
       '@grpc/proto-loader': 0.7.15
       docker-modem: 5.0.7(supports-color@10.2.2)
+      protobufjs: 7.6.6
+      tar-fs: 2.1.5
+    transitivePeerDependencies:
+      - supports-color
+
+  dockerode@5.0.1(supports-color@7.2.0):
+    dependencies:
+      '@balena/dockerignore': 1.0.2
+      '@grpc/grpc-js': 1.14.6
+      '@grpc/proto-loader': 0.7.15
+      docker-modem: 5.0.7(supports-color@7.2.0)
       protobufjs: 7.6.6
       tar-fs: 2.1.5
     transitivePeerDependencies:
@@ -16806,7 +16847,7 @@ snapshots:
       foreground-child: 3.3.1
       jackspeak: 3.4.3
       minimatch: 9.0.5
-      minipass: 7.1.2
+      minipass: 7.1.3
       package-json-from-dist: 1.0.1
       path-scurry: 1.11.1
 
@@ -18706,7 +18747,7 @@ snapshots:
   path-scurry@1.11.1:
     dependencies:
       lru-cache: 10.4.3
-      minipass: 7.1.2
+      minipass: 7.1.3
 
   path-scurry@2.0.2:
     dependencies:
@@ -18870,6 +18911,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  properties-reader@3.0.1(supports-color@7.2.0):
+    dependencies:
+      '@kwsites/file-exists': 1.1.1(supports-color@7.2.0)
+      mkdirp: 3.0.1
+    transitivePeerDependencies:
+      - supports-color
+
   property-information@7.1.0: {}
 
   protobufjs@7.6.6:
@@ -18883,7 +18931,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.2
-      '@types/node': 26.0.1
+      '@types/node': 24.19.2
       long: 5.3.2
 
   proxy-addr@2.0.7:
@@ -19748,6 +19796,29 @@ snapshots:
       get-port: 5.1.1
       proper-lockfile: 4.1.2
       properties-reader: 3.0.1(supports-color@10.2.2)
+      ssh-remote-port-forward: 1.0.4
+      tar-fs: 3.1.3
+      tmp: 0.2.7
+      undici: 8.12.1
+    transitivePeerDependencies:
+      - bare-abort-controller
+      - bare-buffer
+      - react-native-b4a
+      - supports-color
+
+  testcontainers@12.2.1(supports-color@7.2.0):
+    dependencies:
+      '@balena/dockerignore': 1.0.2
+      '@types/dockerode': 4.0.2
+      archiver: 7.0.1
+      async-lock: 1.4.1
+      byline: 5.0.0
+      debug: 4.4.3(supports-color@7.2.0)
+      docker-compose: 1.5.0
+      dockerode: 5.0.1(supports-color@7.2.0)
+      get-port: 5.1.1
+      proper-lockfile: 4.1.2
+      properties-reader: 3.0.1(supports-color@7.2.0)
       ssh-remote-port-forward: 1.0.4
       tar-fs: 3.1.3
       tmp: 0.2.7

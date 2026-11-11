@@ -32,7 +32,7 @@ const STATUS_MAP: ReadonlyMap<string, number> = new Map([
     [PersistenceError.name, 500],
 ]);
 
-export function errorToHttp(error: DomainError): number {
+function errorToHttp(error: DomainError): number {
     return STATUS_MAP.get(error.name) ?? 500;
 }
 

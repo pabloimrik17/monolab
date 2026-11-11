@@ -5,7 +5,6 @@ export default mergeConfig(
     sharedConfig,
     defineConfig({
         test: {
-            include: ["**/*.{test,spec}.ts"],
             reporters: ["default", "junit"],
             outputFile: {
                 junit: "./test-results.junit.xml",
@@ -19,21 +18,29 @@ export default mergeConfig(
                     "**/*.test-d.ts",
                     "**/*.integration.{ts,tsx}",
                     "**/*.integration-platform.{ts,tsx}",
+                    "**/*.harness.ts",
+                    "**/harness/**",
                     "**/testing/**",
                     "**/vitest-*setup*.ts",
                     "**/*.d.ts",
                 ],
-                // Below the 80 target of ADR 0008 (docs/adr/0008-test-policy.md): these floors are the CI
-                // measurement of 2026-10-18 rounded down to a multiple of 5 (lines 9.54, branches 8.69, functions 12.85,
-                // statements 9.29). Never lower them. Whoever adds tests here re-measures with `test:coverage` and
-                // raises every metric that passed its next multiple of 5, until each one reaches 80.
+                // Floors from the measurement of 2026-11-11 rounded down to a multiple of 5 (lines 93.63,
+                // branches 85.5, functions 100, statements 93.8); ADR 0008 (docs/adr/0008-test-policy.md). Never lower them.
                 thresholds: coverageThresholds({
-                    lines: 5,
-                    branches: 5,
-                    functions: 10,
-                    statements: 5,
+                    lines: 90,
+                    branches: 85,
+                    functions: 100,
+                    statements: 90,
                 }),
             },
+            projects: [
+                {
+                    test: {
+                        name: "integration-platform",
+                        include: ["src/**/*.integration-platform.ts"],
+                    },
+                },
+            ],
         },
     }),
 );
