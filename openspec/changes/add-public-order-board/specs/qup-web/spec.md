@@ -55,7 +55,7 @@ Server functions SHALL be split by trust level. A public server function SHALL c
 - **WHEN** the admin changes an order status
 - **THEN** a server function sends the PATCH to Hono with the PIN from the cookie
 
-#### Scenario: Server function distinguishes API outcomes
+#### Scenario: Server function returns typed Result
 
 - **WHEN** the Hono API answers a board snapshot request with 404 for an unknown code and 409 for a closed session
 - **THEN** the server function returns a discriminated union naming each outcome separately, rather than collapsing both into one failure
