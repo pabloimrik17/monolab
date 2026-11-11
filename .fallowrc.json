@@ -154,7 +154,9 @@
                 "apps/investlab-api/src/core/harness/api.harness.ts",
                 "apps/investlab-api/src/**/*.route.harness.ts",
                 "apps/investlab/src/core/harness/web.harness.tsx",
-                "apps/investlab/src/**/*.page.harness.ts"
+                "apps/investlab/src/**/*.page.harness.ts",
+                "apps/qup-api/src/harness/api.harness.ts",
+                "apps/qup-api/src/**/*.harness.ts"
             ],
             "rules": { "unused-class-members": "off" }
         },

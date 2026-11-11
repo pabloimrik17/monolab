@@ -107,7 +107,7 @@
 - [x] 7.14 Implement `createContainer()` composition root — read DB config from env, pass to dataModule, load domainModule, dataModule, apiModule
 - [x] 7.15 Implement entry point (index.ts) — validate API_ADMIN_PIN, create container, start server
 - [x] 7.16 Add Docker Compose file for local PostgreSQL
-- [ ] 7.17 Test full API flow: create session → create order → update status → SSE events
+- [x] 7.17 Test full API flow: create session → create order → update status → SSE events
 
 ## 8. qup-web — SolidStart frontend
 
