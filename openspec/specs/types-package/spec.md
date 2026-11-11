@@ -33,10 +33,9 @@ The `@m0n0lab/ts-types` package SHALL provide a standard library structure for s
 
 #### Scenario: JSR configuration
 
-- **GIVEN** the types package has JSR publishing enabled
-- **THEN** `deno.json` SHALL exist at the package root
-- **AND** it SHALL have name `@m0n0lab/ts-types`
-- **AND** it SHALL have a valid exports configuration
+- **GIVEN** the types package directory at `packages/ts-types/`
+- **THEN** `deno.json` and `jsr.json` SHALL NOT exist at the package root
+- **AND** the package SHALL NOT be published to JSR
 
 #### Scenario: Nx project configuration
 
@@ -120,24 +119,6 @@ The package SHALL include proper versioning, authoring, and publishing configura
 - **AND** `publishConfig` SHALL set `access: "public"`
 - **AND** `publishConfig` SHALL use npm registry URL
 
-### Requirement: JSR Publishing Configuration
-
-The package SHALL be configured for publishing to JSR (JavaScript Registry) via Deno workspace pattern.
-
-#### Scenario: JSR configuration file
-
-- **WHEN** setting up JSR publishing
-- **THEN** a `deno.json` file SHALL exist in package root
-- **AND** it SHALL have name `@m0n0lab/ts-types`
-- **AND** version SHALL match `package.json` version
-- **AND** `license` field SHALL be set to `MIT`
-
-#### Scenario: JSR exports
-
-- **WHEN** JSR processes the package
-- **THEN** `deno.json` SHALL have `exports` field pointing to `./src/index.ts`
-- **AND** it SHALL export source TypeScript files (not compiled)
-
 ### Requirement: Documentation
 
 The package SHALL include comprehensive documentation for consumers.
@@ -162,13 +143,14 @@ The package SHALL include comprehensive documentation for consumers.
 - **GIVEN** a consumer reads the package README
 - **THEN** the README SHALL reference `@m0n0lab/ts-types` in installation instructions
 - **AND** it SHALL show import examples using `@m0n0lab/ts-types`
-- **AND** it SHALL include npm and JSR installation commands with correct package name
+- **AND** it SHALL include npm-registry installation commands (npm/pnpm) with correct package name
+- **AND** it SHALL NOT include JSR installation commands
 
 #### Scenario: Source code comments reference correct package
 
 - **GIVEN** generated type declarations from the build
 - **THEN** the index.ts header comment SHALL mention `@m0n0lab/ts-types`
-- **AND** test files SHALL reference `@m0n0lab/ts-types` in describe blocks
+- **AND** test files SHALL follow the test structure rule in ADR 0008 (root `describe` named after the tested symbol or module), not the package name
 
 ### Requirement: Release Configuration
 
@@ -179,7 +161,7 @@ The package SHALL be configured for automated releases with the new name.
 - **GIVEN** Release Please manages package versions
 - **THEN** `release-please-config.json` SHALL have an entry for `packages/ts-types`
 - **AND** the entry SHALL specify `package-name: "@m0n0lab/ts-types"`
-- **AND** it SHALL include `extra-files: ["deno.json"]` for synchronized versioning
+- **AND** the entry SHALL NOT list `deno.json` in `extra-files`
 
 ### Requirement: Code Coverage Integration
 

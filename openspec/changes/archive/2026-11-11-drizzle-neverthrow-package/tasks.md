@@ -11,6 +11,6 @@
 
 ## 3. Adoption and verification
 
-- [ ] 3.1 `investlab-data-server` replaces `ResultAsync.fromPromise` calls (task 9.3 of `investlab-portfolio-instruments`)
+- [x] 3.1 `investlab-data-server` replaces `ResultAsync.fromPromise` calls (task 9.3 of `investlab-portfolio-instruments`) (done there; DB access now goes through `wrap` in `packages/investlab-platform/src/server/db/pg.client.ts`)
 - [x] 3.2 Verify `nx run drizzle-neverthrow:build`, `nx run drizzle-neverthrow:test`, `nx run drizzle-neverthrow:typecheck`
-- [ ] 3.3 `qup-data` adoption tracked in beads, not in this change
+- [x] 3.3 `qup-data` adoption tracked in beads, not in this change (agentic-task-5au3)

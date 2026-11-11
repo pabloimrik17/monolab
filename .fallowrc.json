@@ -1,13 +1,6 @@
 {
     "$schema": "./node_modules/fallow/schema.json",
     "entry": [
-        // qup-web SolidStart entries (mirror knip.config.ts EXCEPT src/server/** so dead "use server" endpoints stay detectable)
-        "apps/qup-web/app.config.ts",
-        "apps/qup-web/src/entry-client.tsx",
-        "apps/qup-web/src/entry-server.tsx",
-        "apps/qup-web/src/app.tsx",
-        "apps/qup-web/src/middleware.ts",
-        "apps/qup-web/src/routes/**/*.tsx",
         // type-level test files are entries for their assertions
         "**/*.test-d.ts",
         // tool-loaded config (validate-branch-name via husky)
@@ -26,12 +19,8 @@
         // tool-loaded (stryker resolves plugins at runtime)
         "@stryker-mutator/typescript-checker",
         "@stryker-mutator/vitest-runner",
-        // tool-loaded (swc node register / helpers, injected by toolchain)
-        "@swc-node/register",
-        "@swc/helpers",
+        // tool-loaded (injected by toolchain)
         "tslib",
-        // loaded by husky hook via CLI, never imported
-        "validate-branch-name",
         // loaded by eslint-plugin-boundaries through the `import/resolver` setting, never imported
         "eslint-import-resolver-typescript",
         // scoped intent: driver used by drizzle in *-data workspaces only
@@ -45,7 +34,74 @@
         "@m0n0lab/react-clean",
         "@m0n0lab/drizzle-neverthrow"
     ],
-    "ignoreDecorators": ["injectable"],
+    // zones mirror the eslint-plugin-boundaries layout rules in eslint.config.ts (layer direction, server/client split, app core vs modules); keep both in sync
+    "boundaries": {
+        "zones": [
+            {
+                "name": "domain",
+                "patterns": ["packages/investlab-*/src/domain/**"]
+            },
+            {
+                "name": "shared-data",
+                "patterns": ["packages/investlab-*/src/data/shared/**"]
+            },
+            {
+                "name": "server-application",
+                "patterns": ["packages/investlab-*/src/application/server/**"]
+            },
+            {
+                "name": "client-application",
+                "patterns": ["packages/investlab-*/src/application/client/**"]
+            },
+            {
+                "name": "server-data",
+                "patterns": ["packages/investlab-*/src/data/server/**"]
+            },
+            {
+                "name": "client-data",
+                "patterns": ["packages/investlab-*/src/data/client/**"]
+            },
+            // core/harness boots the app entry, so it stays outside the zone
+            {
+                "name": "app-core",
+                "patterns": [
+                    "apps/investlab*/src/core/{route,middleware,mapper,error,page,component,hook,view-model,form}/**"
+                ]
+            },
+            { "name": "app-di", "patterns": ["apps/investlab*/src/di/**"] },
+            {
+                "name": "app-module",
+                "patterns": ["apps/investlab*/src/{catalog,portfolio,quotes,roger}/**"]
+            }
+        ],
+        "rules": [
+            { "from": "domain", "allow": [] },
+            { "from": "shared-data", "allow": ["domain"] },
+            { "from": "server-application", "allow": ["domain"] },
+            { "from": "client-application", "allow": ["domain"] },
+            {
+                "from": "server-data",
+                "allow": ["domain", "shared-data", "server-application"]
+            },
+            {
+                "from": "client-data",
+                "allow": ["domain", "shared-data", "client-application"]
+            },
+            // core/ imports packages and di/, never a module (the package zones are listed because fallow rules are allow-lists)
+            {
+                "from": "app-core",
+                "allow": [
+                    "app-di",
+                    "domain",
+                    "shared-data",
+                    "server-application",
+                    "client-application",
+                    "server-data",
+                    "client-data"
+                ]
+            }
+        ]
+    },
     "duplicates": {
         // type-level test files are per-type assertion boilerplate; clone detection adds no signal there
         "ignore": ["**/*.test-d.ts"]
@@ -63,17 +119,8 @@
         // view-model members are consumed in routes via container.get<T>() + useViewModel;
         // fallow misses member usage through generic receivers (reported upstream)
         { "extends": "BaseViewModel", "members": ["*"] },
-        // port implementations bound in DI; members invoked by use-cases via the port interface
-        { "implements": "MenuItemRepository", "members": ["*"] },
-        { "implements": "OrderRepository", "members": ["*"] },
-        { "implements": "SessionRepository", "members": ["*"] },
-        { "implements": "PortfolioItemRepository", "members": ["*"] },
-        { "implements": "InstrumentRepository", "members": ["*"] },
-        { "implements": "PortfolioItemQuery", "members": ["*"] },
-        { "implements": "QuoteRepository", "members": ["*"] },
         // error `code` discriminant: fallow misses its usage when workspace imports resolve to a built dist/
-        { "extends": "Error", "members": ["code"] },
-        { "extends": "DomainError", "members": ["code"] }
+        { "extends": "Error", "members": ["code"] }
     ],
     "rules": {
         "require-suppression-reason": "warn"
