@@ -105,7 +105,7 @@ function updateSchema(state: RogerState): FormSchema<{ current: EntryRef; values
         .object({ ...refShape, state: z.literal(state), ...valuesShape(state) })
         .transform((form) => {
             const { id: _id, state: _state, expectedUpdatedAt: _at, ...values } = form;
-            return { current: refOf(form), values: values as EntryValues };
+            return { current: refOf(form), values };
         });
 }
 
@@ -114,7 +114,7 @@ function transitionSchema(
 ): FormSchema<{ current: EntryRef; to: RogerState; values: EntryValues }> {
     return z.object({ ...refShape, to: z.literal(to), ...valuesShape(to) }).transform((form) => {
         const { id: _id, state: _state, expectedUpdatedAt: _at, to: _to, ...values } = form;
-        return { current: refOf(form), to, values: values as EntryValues };
+        return { current: refOf(form), to, values };
     });
 }
 
@@ -124,7 +124,7 @@ const reEnterSchema = z
         const { id: entryId, state, ...values } = form;
         return {
             current: { id: entryId, state },
-            values: values as Pick<EntryValues, "entryPrice" | "quantity">,
+            values,
         };
     });
 
