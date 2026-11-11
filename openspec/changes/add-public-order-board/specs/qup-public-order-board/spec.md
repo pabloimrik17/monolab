@@ -10,7 +10,7 @@ The system SHALL define a public order board projection exposing only: session n
 
 The projection SHALL NOT expose order notes, item customizations, menu item identifiers, the session identifier, or any timestamp other than `visibleUntil`. The order identifier is a stable rendering key and SHALL NOT be displayed. Possession of that identifier SHALL NOT authorize any read or mutation.
 
-Leverages the existing `@m0n0lab/qup-shared` DTO package and the `Order` aggregate's single status (ADR 0001); no entity, database, or item-level status change is introduced.
+Leverages the existing `@m0n0lab/qup-shared` DTO package and the `Order` aggregate's single status (ADR 0011); no entity, database, or item-level status change is introduced.
 
 #### Scenario: Projection omits private fields
 

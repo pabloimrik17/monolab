@@ -2,12 +2,12 @@
 
 See `proposal.md` — Why. Design-relevant current state, verified in code:
 
-- `Order` owns one status; `OrderItem` has none (ADR 0001). `orders.updated_at` is refreshed on every status transition, so it is exactly "time of last status change" — the input retention needs.
+- `Order` owns one status; `OrderItem` has none (ADR 0011). `orders.updated_at` is refreshed on every status transition, so it is exactly "time of last status change" — the input retention needs.
 - `PgOrderRepository.findBySessionId` already returns orders sorted by `createdAt` with their items attached. No repository or schema work is needed.
 - `GetSessionByCodeUseCase` rejects closed sessions with `SessionClosedError` → 409. Every code-scoped public endpoint inherits the Q37/Q43 state machine for free.
 - `apps/qup-api/src/serializers/dto-serializers.ts` is the single serialization seam; `event.routes.ts` is the only place that serializes an `Order` into an SSE frame.
 - `apps/qup-web/src/server/data.ts` holds unauthenticated reads; `mutations.ts` holds PIN-forwarding writes. Neither checks the admin cookie — SolidStart server functions are reachable by any client that can reach the web app, so `mutations.ts` is already an open proxy to host-only endpoints. This change has to close that to avoid re-opening the hole it is meant to shut.
-- SSE runs on an in-memory `EventEmitter` with no replay (ADR 0003).
+- SSE runs on an in-memory `EventEmitter` with no replay (ADR 0013).
 - Browsers connect to SSE directly against `qup-api` (`sse-url.ts`), bypassing the SolidStart BFF. Anything on a stream is public regardless of which screen consumes it.
 
 ## Goals / Non-Goals
@@ -21,7 +21,7 @@ See `proposal.md` — Why. Design-relevant current state, verified in code:
 
 **Non-Goals:**
 
-- Multi-replica live updates (ADR 0003).
+- Multi-replica live updates (ADR 0013).
 - Automated tests (Q38/Q44).
 - Reworking the guest ordering flow or the admin queue UI.
 - Real authentication for guests. The session code and guest name stay a convenience trust model.
@@ -144,7 +144,7 @@ The monotonically increasing request id is kept as defence in depth, because des
 - **Sanitizing SSE removes the admin queue's optimistic path** → the queue already patches locally on its own mutations; the refetch only has to cover other people's changes.
 - **Knip has a 40-issue budget (`knip --max-issues 40`)** and this adds exported types and a new dependency → keep every new export consumed by a real caller in the same slice that introduces it.
 - **Wake lock is released by the browser on tab hide** and is not re-acquired automatically → re-request on `visibilitychange` when the board becomes visible again.
-- **Single API process** (ADR 0003) → documented, not mitigated. Snapshots stay correct; only live invalidation depends on it.
+- **Single API process** (ADR 0013) → documented, not mitigated. Snapshots stay correct; only live invalidation depends on it.
 - **`docs/` is not markdownlint-ignored** (unlike `openspec/`), and `CONTEXT.md` at the repo root is not in `.markdownlintignore` → these new files must pass `lint:markdownlint` or be added to the ignore list.
 
 ## Migration Plan

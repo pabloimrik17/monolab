@@ -36,10 +36,10 @@ Note on sequencing: `qup-api`, `qup-realtime-events`, `qup-web`, and `qup-admin-
 ## Impact
 
 - `packages/qup-shared`: new public DTOs and board event names in `dtos.ts` / `events.ts`, re-exported from `index.ts`. Published package — export surface changes require `attw --pack` validation.
-- `packages/qup-domain`: new `GetPublicOrderBoardUseCase` and `GetGuestOrdersUseCase` (or equivalent) plus tokens and `domainModule` bindings. No entity, value-object, or schema change — `Order` keeps one status (ADR 0001), `OrderItem` gains nothing.
+- `packages/qup-domain`: new `GetPublicOrderBoardUseCase` and `GetGuestOrdersUseCase` (or equivalent) plus tokens and `domainModule` bindings. No entity, value-object, or schema change — `Order` keeps one status (ADR 0011), `OrderItem` gains nothing.
 - `packages/qup-data`: unchanged. `findBySessionId` already returns orders ordered by `createdAt` with items attached.
 - `apps/qup-api`: new public projection serializer; `session.routes.ts` gains `/code/:code/board` and `/code/:code/orders` and puts `adminOnly()` on `GET /` and `GET /:id/orders`; `event.routes.ts` gains the board stream and stops serializing `Order` into `order:created`.
 - `apps/qup-web`: new `routes/session/[code]/board.tsx`, `view-models/order-board.viewmodel.ts`, board components, and a QR helper; `server/data.ts` splits into public reads and admin-authenticated reads; `order-status.viewmodel.ts` and `order-queue.viewmodel.ts` change their data sources; `sse-url.ts` gains a board URL builder.
 - New runtime dependency for QR rendering in `qup-web` (pinned exact, per workspace convention).
-- Deployment: live updates remain single-API-process only (ADR 0003); this is now an explicit, documented constraint rather than an accident.
+- Deployment: live updates remain single-API-process only (ADR 0013); this is now an explicit, documented constraint rather than an accident.
 - `CONTEXT.md` and `docs/` are new untracked files that ship with this change; `docs/` is not markdownlint-ignored, unlike `openspec/`.

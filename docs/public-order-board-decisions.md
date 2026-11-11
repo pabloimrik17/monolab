@@ -6,7 +6,7 @@ Status: design complete; awaiting explicit shared-understanding confirmation bef
 
 Add a read-only public board at `/session/:code/board` that shows every order's current status. It is primarily displayed on a shared tablet or computer near the host, remains usable on personal devices, and requires the session code but no host PIN.
 
-Domain language lives in [`../CONTEXT.md`](../CONTEXT.md). Architectural decisions live in [`adr/0001-track-status-per-order.md`](adr/0001-track-status-per-order.md), [`adr/0002-use-a-dedicated-public-order-projection.md`](adr/0002-use-a-dedicated-public-order-projection.md), and [`adr/0003-run-live-updates-on-one-api-instance.md`](adr/0003-run-live-updates-on-one-api-instance.md).
+Domain language lives in [`../CONTEXT.md`](../CONTEXT.md). Architectural decisions live in [`adr/0011-track-status-per-order.md`](adr/0011-track-status-per-order.md), [`adr/0012-use-a-dedicated-public-order-projection.md`](adr/0012-use-a-dedicated-public-order-projection.md), and [`adr/0013-run-live-updates-on-one-api-instance.md`](adr/0013-run-live-updates-on-one-api-instance.md).
 
 ## Settled questions
 
