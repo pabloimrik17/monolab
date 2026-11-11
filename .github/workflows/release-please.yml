@@ -157,9 +157,10 @@ jobs:
                     echo "Processing package: $PACKAGE_NAME@$VERSION"
 
                     # Build the package using Nx (skip if no build target — e.g. config-only packages)
+                    # --skip-nx-cache: publish exactly what this commit's source builds, never a cached (possibly poisoned) artifact
                     if pnpm exec nx show project "$PACKAGE_NAME" --json 2>/dev/null | jq -e '.targets.build' >/dev/null; then
                       echo "Building $PACKAGE_NAME..."
-                      pnpm nx run $PKG_DIR:build
+                      pnpm nx run $PKG_DIR:build --skip-nx-cache
                     else
                       echo "No build target for $PACKAGE_NAME — skipping build"
                     fi
