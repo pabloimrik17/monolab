@@ -156,6 +156,7 @@ describe("sessionRoutes", () => {
                     status: "PENDING",
                     items: [{ name: "Flat white", quantity: 2 }],
                     hiddenItemCount: 0,
+                    visibleUntil: null,
                 },
             ]);
             expect(find.calls).toEqual([["abc123"]]);
