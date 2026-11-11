@@ -45,16 +45,26 @@ export function eventRoutes(container: Container) {
             subscribe("order:cancelled");
             subscribe("session:closed");
 
-            stream.onAbort(() => {
-                for (const dispose of disposers) {
-                    dispose();
-                }
+            const aborted = new Promise<void>((resolve) => {
+                stream.onAbort(() => {
+                    for (const dispose of disposers) {
+                        dispose();
+                    }
+                    resolve();
+                });
             });
 
-            // Keep stream alive
-            while (true) {
+            // Keep stream alive until the client disconnects
+            while (!stream.aborted) {
                 await stream.writeSSE({ event: "ping", data: "" });
-                await stream.sleep(30_000);
+                let wake: ReturnType<typeof setTimeout> | undefined;
+                await Promise.race([
+                    aborted,
+                    new Promise<void>((resolve) => {
+                        wake = setTimeout(resolve, 30_000);
+                    }),
+                ]);
+                clearTimeout(wake);
             }
         });
     });

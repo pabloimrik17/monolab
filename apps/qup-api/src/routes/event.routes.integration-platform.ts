@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, onTestFinished, vi } from "vitest";
 import { InvalidCodeError, SessionNotFoundError } from "@m0n0lab/qup-domain";
 import { makeOrder, makeSession } from "../harness/builders.ts";
 import { EventRouteHarness } from "./event.routes.harness.ts";
@@ -88,15 +88,22 @@ describe("eventRoutes", () => {
             ]);
         });
 
-        it("drops the stream's subscriptions once the client disconnects", async () => {
+        it("lets go of its subscriptions and its ping once the client disconnects", async () => {
+            vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+            onTestFinished(() => {
+                vi.useRealTimers();
+            });
             await using api = await EventRouteHarness.launch();
             api.givenSession(makeSession());
             const events = await api.watchSession("ABC123");
             expect(api.subscriptions()).toBe(4);
 
             events.close();
-
             await expect.poll(() => api.subscriptions()).toBe(0);
+            // A second covers fetch's own sub-second housekeeping timer; a ping waits 30.
+            await vi.advanceTimersByTimeAsync(1_000);
+
+            expect(vi.getTimerCount()).toBe(0);
         });
 
         it("answers 404 SESSION_NOT_FOUND without opening a stream", async () => {
