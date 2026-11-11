@@ -129,11 +129,11 @@
 - [x] 8.16 Implement admin routes: `/admin/session/:id` — order queue with OrderQueueViewModel + SSE
 - [x] 8.17 Implement admin routes: `/admin/menu` — menu CRUD with MenuManagementViewModel
 - [x] 8.18 Add SolidStart middleware for admin route protection (redirect to /admin if no valid cookie)
-- [ ] 8.19 Test full flow: create session → guest joins → places order → admin sees and manages
+- [x] 8.19 Test full flow: create session → guest joins → places order → admin sees and manages (verified by hand; fixes 3d534802, ee4a546e, 48aca9f9)
 
 ## 9. Integration and verification
 
 - [x] 9.1 Verify `nx run-many --target=build` succeeds for all qup projects
 - [x] 9.2 Verify `nx run-many --target=test` passes for solid-clean, qup-domain, qup-api
-- [ ] 9.3 End-to-end manual test: full guest + admin flow on local network
+- [x] 9.3 End-to-end manual test: full guest + admin flow on local network (verified by hand on the LAN; fixes 3d534802, 0c093372, ee4a546e)
 - [x] 9.4 Verify `attw --pack` passes for solid-clean and qup-shared (publishable packages)

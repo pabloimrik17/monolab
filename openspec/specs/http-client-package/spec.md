@@ -18,7 +18,6 @@ The system SHALL provide an `@m0n0lab/http-client` package with complete directo
   - `packages/http-client/dist/` (build output, generated)
   - `packages/http-client/coverage/` (test coverage, generated)
   - `packages/http-client/package.json` (npm metadata)
-  - `packages/http-client/deno.json` (JSR publishing config)
   - `packages/http-client/project.json` (Nx configuration)
   - `packages/http-client/tsconfig.json` (TypeScript configuration)
   - `packages/http-client/vitest.config.ts` (test configuration)
@@ -37,16 +36,13 @@ The system SHALL provide an `@m0n0lab/http-client` package with complete directo
   - Node.js engine: `^20.18.0 || >=22.0.0`
   - pnpm version: `12.14.0`
   - Scripts for build, lint, test, typecheck
-  - publishConfig with JSR and npm registry information
+  - publishConfig with npm registry information
 
 #### Scenario: Package has JSR configuration
 
-- **WHEN** `packages/http-client/deno.json` is created
-- **THEN** it SHALL include:
-  - Package name: `@m0n0lab/http-client`
-  - Version matching package.json
-  - Exports pointing to `./src/index.ts`
-  - License: `MIT`
+- **WHEN** the http-client package is inspected
+- **THEN** `packages/http-client/deno.json` and `packages/http-client/jsr.json` SHALL NOT exist
+- **AND** the package SHALL NOT be published to JSR
 
 #### Scenario: Package has Nx project configuration
 
@@ -169,7 +165,7 @@ The system SHALL provide comprehensive documentation for the http-client package
 - **THEN** it SHALL describe the package purpose: abstracted HTTP client for web and Node.js
 - **AND** it SHALL state that implementation is currently placeholder/foundation
 - **AND** it SHALL outline future roadmap: neverthrow and effect-ts wrappers
-- **AND** it SHALL include installation instructions for JSR and npm
+- **AND** it SHALL include installation instructions for npm only (no JSR)
 
 #### Scenario: CHANGELOG tracks version history
 

@@ -34,6 +34,74 @@
         "@m0n0lab/react-clean",
         "@m0n0lab/drizzle-neverthrow"
     ],
+    // zones mirror the eslint-plugin-boundaries layout rules in eslint.config.ts (layer direction, server/client split, app core vs modules); keep both in sync
+    "boundaries": {
+        "zones": [
+            {
+                "name": "domain",
+                "patterns": ["packages/investlab-*/src/domain/**"]
+            },
+            {
+                "name": "shared-data",
+                "patterns": ["packages/investlab-*/src/data/shared/**"]
+            },
+            {
+                "name": "server-application",
+                "patterns": ["packages/investlab-*/src/application/server/**"]
+            },
+            {
+                "name": "client-application",
+                "patterns": ["packages/investlab-*/src/application/client/**"]
+            },
+            {
+                "name": "server-data",
+                "patterns": ["packages/investlab-*/src/data/server/**"]
+            },
+            {
+                "name": "client-data",
+                "patterns": ["packages/investlab-*/src/data/client/**"]
+            },
+            // core/harness boots the app entry, so it stays outside the zone
+            {
+                "name": "app-core",
+                "patterns": [
+                    "apps/investlab*/src/core/{route,middleware,mapper,error,page,component,hook,view-model,form}/**"
+                ]
+            },
+            { "name": "app-di", "patterns": ["apps/investlab*/src/di/**"] },
+            {
+                "name": "app-module",
+                "patterns": ["apps/investlab*/src/{catalog,portfolio,quotes,roger}/**"]
+            }
+        ],
+        "rules": [
+            { "from": "domain", "allow": [] },
+            { "from": "shared-data", "allow": ["domain"] },
+            { "from": "server-application", "allow": ["domain"] },
+            { "from": "client-application", "allow": ["domain"] },
+            {
+                "from": "server-data",
+                "allow": ["domain", "shared-data", "server-application"]
+            },
+            {
+                "from": "client-data",
+                "allow": ["domain", "shared-data", "client-application"]
+            },
+            // core/ imports packages and di/, never a module (the package zones are listed because fallow rules are allow-lists)
+            {
+                "from": "app-core",
+                "allow": [
+                    "app-di",
+                    "domain",
+                    "shared-data",
+                    "server-application",
+                    "client-application",
+                    "server-data",
+                    "client-data"
+                ]
+            }
+        ]
+    },
     "duplicates": {
         // type-level test files are per-type assertion boilerplate; clone detection adds no signal there
         "ignore": ["**/*.test-d.ts"]
