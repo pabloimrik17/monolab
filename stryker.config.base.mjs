@@ -3,6 +3,9 @@ const config = {
     packageManager: "pnpm",
     plugins: ["@stryker-mutator/vitest-runner", "@stryker-mutator/typescript-checker"],
     testRunner: "vitest",
+    checkers: ["typescript"],
+    // Package tsconfig.json: src minus tests, with decorators, JSX and project references.
+    tsconfigFile: "tsconfig.json",
     mutate: [
         "src/**/*.ts",
         "src/**/*.tsx",

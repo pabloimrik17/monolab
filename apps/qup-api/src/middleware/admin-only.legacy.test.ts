@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { adminOnly } from "./admin-only.ts";
 
-describe("adminOnly middleware", () => {
+describe("adminOnly", () => {
     let app: Hono;
     const ORIGINAL_ENV = process.env.API_ADMIN_PIN;
 

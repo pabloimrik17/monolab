@@ -70,28 +70,6 @@ The system SHALL use Stryker's incremental mode to cache mutation results and on
 - **THEN** Stryker only tests mutants in changed files
 - **AND** reuses cached results for unchanged files
 
-### Requirement: CI Integration on Main Branches
-
-The system SHALL run mutation testing in CI only on pushes to main and develop branches, not on pull requests.
-
-#### Scenario: Pull request without mutation testing
-
-- **WHEN** pull request CI runs
-- **THEN** mutation testing is skipped
-- **AND** PR feedback remains fast
-
-#### Scenario: Push to develop with mutation testing
-
-- **WHEN** code is pushed to develop branch
-- **THEN** mutation testing runs on all packages
-- **AND** uses incremental cache from previous runs
-
-#### Scenario: Push to main with mutation testing
-
-- **WHEN** code is pushed to main branch
-- **THEN** mutation testing runs on all packages
-- **AND** enforces mutation score thresholds
-
 ### Requirement: GitHub Actions Cache Strategy
 
 The system SHALL cache Stryker incremental files between CI runs using GitHub Actions cache with appropriate fallback strategy.
@@ -119,28 +97,6 @@ The system SHALL cache Stryker incremental files between CI runs using GitHub Ac
 - **WHEN** no cache exists for branch or develop
 - **THEN** cache from any recent branch is restored
 - **AND** Stryker detects code differences automatically
-
-### Requirement: Mutation Score Thresholds
-
-The system SHALL enforce mutation score thresholds that vary by package type and complexity.
-
-#### Scenario: Utility package thresholds
-
-- **WHEN** mutation testing runs on utility packages (is-even, is-odd)
-- **THEN** high threshold is 90%, low is 75%, break is 75%
-- **AND** build fails if mutation score < 75%
-
-#### Scenario: React package thresholds
-
-- **WHEN** mutation testing runs on React packages (react-hooks, react-clean)
-- **THEN** high threshold is 80%, low is 65%, break is 60%
-- **AND** build fails if mutation score < 60%
-
-#### Scenario: Config package thresholds
-
-- **WHEN** mutation testing runs on config packages (ts-configs)
-- **THEN** high threshold is 70%, low is 50%, break is 50%
-- **AND** build fails if mutation score < 50%
 
 ### Requirement: Report Generation
 
@@ -210,13 +166,14 @@ The system SHALL document mutation testing usage, interpretation, and CI behavio
 
 ### Requirement: Dashboard Integration
 
-The system SHALL upload mutation testing reports to Stryker Dashboard with per-package module tracking for monorepo visibility.
+The system SHALL upload mutation testing reports to Stryker Dashboard with per-package module tracking for monorepo visibility. Uploads SHALL happen on pushes to main and develop only, so pull request runs never overwrite branch reports.
 
 #### Scenario: Dashboard configured in base config
 
 - **WHEN** base configuration is loaded
 - **THEN** dashboard project and baseUrl are configured
 - **AND** version is set to current branch name
+- **AND** the dashboard reporter is enabled when the dashboard API key is present
 
 #### Scenario: Per-package module identifier
 
@@ -241,3 +198,66 @@ The system SHALL upload mutation testing reports to Stryker Dashboard with per-p
 - **WHEN** mutation testing runs on develop branch
 - **THEN** results upload with version="develop"
 - **AND** dashboard tracks scores per branch over time
+
+#### Scenario: Pull request run
+
+- **WHEN** mutation testing runs on a pull request
+- **THEN** no report is uploaded to the dashboard
+
+### Requirement: CI Integration
+
+The system SHALL run mutation testing in CI on pull requests, for the affected packages that have a Stryker configuration, and on pushes to main and develop, for every such package. A run below a package's break threshold SHALL fail CI.
+
+#### Scenario: Pull request with mutation testing
+
+- **WHEN** pull request CI runs
+- **THEN** mutation testing runs on the affected packages that have a Stryker configuration
+- **AND** uses the incremental cache restored from the branch or, failing that, from develop
+- **AND** a package scoring below its break threshold fails the run
+
+#### Scenario: Push to develop with mutation testing
+
+- **WHEN** code is pushed to develop branch
+- **THEN** mutation testing runs on all packages
+- **AND** uses incremental cache from previous runs
+
+#### Scenario: Push to main with mutation testing
+
+- **WHEN** code is pushed to main branch
+- **THEN** mutation testing runs on all packages
+- **AND** enforces mutation score thresholds
+
+### Requirement: Mutation Score Target and Floors
+
+The system SHALL enforce mutation score thresholds that follow the test policy's target: break at 80, low at 80 and high at 90 by default. A package scoring below 80 SHALL set its break and low thresholds to its measured score rounded down to a multiple of 5. Its thresholds SHALL NOT be lowered, and SHALL be raised when its score passes the next multiple of 5.
+
+#### Scenario: Package meeting the target
+
+- **WHEN** mutation testing runs on a package whose score is 90.9%, such as react-clean
+- **THEN** high threshold is 90%, low is 80%, break is 80%
+- **AND** build fails if mutation score < 80%
+
+#### Scenario: Package below the target
+
+- **WHEN** mutation testing runs on a package whose score is 76.1%, such as qup-domain
+- **THEN** low and break thresholds are 75%
+- **AND** build fails if mutation score < 75%
+
+#### Scenario: Thresholds only rise
+
+- **WHEN** a package below the target scores 81% on develop
+- **THEN** its break and low thresholds are raised to 80% in the next change that touches its Stryker configuration
+
+### Requirement: Mutation runs over every non-e2e test
+
+Stryker SHALL run every Vitest project of a package except e2e, so a mutant in a use case or adapter can be killed by an integration or integration-platform test. Test files of every kind, legacy tests included, SHALL be excluded from mutation.
+
+#### Scenario: Use case covered only by integration tests
+
+- **WHEN** Stryker mutates a use case whose only tests are integration tests
+- **THEN** those integration tests run against the mutant and can kill it
+
+#### Scenario: Test files are never mutated
+
+- **WHEN** Stryker collects files to mutate
+- **THEN** `*.test.*`, `*.legacy.test.*`, `*.integration.*`, `*.integration-platform.*` and `*.test-d.ts` files are excluded

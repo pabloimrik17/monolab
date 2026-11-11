@@ -1,11 +1,31 @@
 import { defineConfig, mergeConfig } from "vitest/config";
 import { coverageThresholds, sharedConfig } from "@m0n0lab/vitest-config";
+import { headlessChromium } from "@m0n0lab/vitest-config/browser";
 
 export default mergeConfig(
     sharedConfig,
     defineConfig({
+        resolve: {
+            // Dedupe React so vitest-browser-react and the app share one copy
+            // (avoids "Invalid hook call" from a duplicate/mismatched React in browser mode).
+            dedupe: ["react", "react-dom"],
+        },
         test: {
-            include: ["**/*.{test,spec}.{ts,tsx}"],
+            projects: [
+                // extends: true carries sharedConfig's tsconfig-paths resolution (#core/*, #di/*) into both projects
+                {
+                    extends: true,
+                    test: { name: "unit", include: ["src/**/*.{test,spec}.{ts,tsx}"] },
+                },
+                {
+                    extends: true,
+                    test: {
+                        name: "integration-platform",
+                        include: ["src/**/*.integration-platform.{ts,tsx}"],
+                        browser: headlessChromium(),
+                    },
+                },
+            ],
             passWithNoTests: true,
             reporters: ["default", "junit"],
             outputFile: {
@@ -15,25 +35,27 @@ export default mergeConfig(
                 provider: "v8",
                 reporter: ["lcov", "text", "json", "html"],
                 reportsDirectory: "./coverage",
-                include: ["app/**/*.{ts,tsx}"],
+                include: ["src/**/*.{ts,tsx}"],
                 exclude: [
                     "**/*.test-d.ts",
                     "**/*.integration.{ts,tsx}",
                     "**/*.integration-platform.{ts,tsx}",
                     "**/testing/**",
+                    "**/*.harness.{ts,tsx}",
+                    "**/harness/**",
                     "**/vitest-*setup*.ts",
                     "**/.react-router/**",
                     "**/*.d.ts",
                 ],
-                // Below the 80 target of ADR 0008 (docs/adr/0008-test-policy.md): these floors are the CI
-                // measurement of 2026-10-18 rounded down to a multiple of 5 (lines 53.26, branches 46.66, functions 47.27,
-                // statements 52.98). Never lower them. Whoever adds tests here re-measures with `test:coverage` and
-                // raises every metric that passed its next multiple of 5, until each one reaches 80.
+                // Below ADR 0008's 80 target: a one-off exception to its never-lower rule, recorded in the
+                // clean-architecture-layout design §12. agentic-task-1caz continues the climb. Whoever adds
+                // tests here re-measures with `test:coverage` and raises every metric that passed its next
+                // multiple of 5, until each one reaches 80.
                 thresholds: coverageThresholds({
-                    lines: 50,
-                    branches: 45,
-                    functions: 45,
-                    statements: 50,
+                    lines: 65,
+                    branches: 75,
+                    functions: 70,
+                    statements: 70,
                 }),
             },
         },

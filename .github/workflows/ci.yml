@@ -35,12 +35,15 @@ jobs:
               uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
 
             - name: Setup Nodejs
-              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
               with:
                   node-version-file: .nvmrc
 
             - name: Set Nx SHA
               uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+              with:
+                  # Push only: base = last green run on the pushed branch. PRs ignore it (merge-base with base.ref).
+                  main-branch-name: ${{ github.ref_name }}
 
             - name: Restore cached npm dependencies
               id: cache-dependencies-restore
@@ -91,7 +94,7 @@ jobs:
               run: pnpm exec nx run-many -t lint:legacy-tests
 
             - name: 🔍 Validate OpenSpec change proposals
-              run: pnpm dlx @fission-ai/openspec@1.2.0 validate --changes --no-interactive
+              run: pnpx @fission-ai/openspec@1.15.0 validate --changes --no-interactive
 
             - name: 🔍 Execute lint checks for affected files (Affected)
               run: pnpm exec nx affected -t lint:eslint lint:stylelint lint:markdownlint lint:oxfmt && pnpm run lint:knip
@@ -137,12 +140,15 @@ jobs:
               uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
 
             - name: Setup Nodejs
-              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
               with:
                   node-version-file: .nvmrc
 
             - name: Set Nx SHA
               uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+              with:
+                  # Push only: base = last green run on the pushed branch. PRs ignore it (merge-base with base.ref).
+                  main-branch-name: ${{ github.ref_name }}
 
             - name: Restore cached npm dependencies
               id: cache-dependencies-restore
@@ -221,7 +227,7 @@ jobs:
               id: affected-codecov
               run: |
                   # name:path pairs — single source of truth for the upload-codecov matrix.
-                  PACKAGES="react-hooks:packages/react-hooks react-clean:packages/react-clean ts-types:packages/ts-types http-client:packages/http-client drizzle-neverthrow:packages/drizzle-neverthrow qup-api:apps/qup-api qup-data:packages/qup-data qup-domain:packages/qup-domain solid-clean:packages/solid-clean investlab-core:packages/investlab-core investlab-quotes:packages/investlab-quotes investlab-portfolio:packages/investlab-portfolio green-beard:apps/green-beard qup-web:apps/qup-web investlab:apps/investlab investlab-api:apps/investlab-api qup-shared:packages/qup-shared plugin-experiments:claude-plugins/experiments"
+                  PACKAGES="react-hooks:packages/react-hooks react-clean:packages/react-clean ts-types:packages/ts-types http-client:packages/http-client drizzle-neverthrow:packages/drizzle-neverthrow qup-api:apps/qup-api qup-data:packages/qup-data qup-domain:packages/qup-domain solid-clean:packages/solid-clean investlab-core:packages/investlab-core investlab-quotes:packages/investlab-quotes investlab-catalog:packages/investlab-catalog investlab-portfolio:packages/investlab-portfolio investlab-roger:packages/investlab-roger green-beard:apps/green-beard qup-web:apps/qup-web investlab:apps/investlab investlab-api:apps/investlab-api qup-shared:packages/qup-shared plugin-experiments:claude-plugins/experiments"
 
                   if [ "${{ github.event_name }}" = "pull_request" ]; then
                     AFFECTED_PROJECTS=$(pnpm exec nx show projects --affected)
@@ -251,7 +257,7 @@ jobs:
             # Single small artifact (<2MB typically); retention 1 day is enough for the
             # follow-up job to download.
             - name: 📦 Upload coverage artifacts
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               if: ${{ !cancelled() }}
               with:
                   name: codecov-artifacts
@@ -288,12 +294,15 @@ jobs:
               uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
 
             - name: Setup Nodejs
-              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
               with:
                   node-version-file: .nvmrc
 
             - name: Set Nx SHA
               uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+              with:
+                  # Push only: base = last green run on the pushed branch. PRs ignore it (merge-base with base.ref).
+                  main-branch-name: ${{ github.ref_name }}
 
             - name: Restore cached npm dependencies
               id: cache-dependencies-restore
@@ -405,7 +414,7 @@ jobs:
                   key: ${{ steps.cache-stryker-restore.outputs.cache-primary-key }}
 
             - name: 📊 Upload mutation reports as artifacts
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
               with:
                   name: mutation-reports
@@ -455,7 +464,7 @@ jobs:
               # report would otherwise hard-fail the job. The uploads below no-op on a
               # missing file (fail_ci_if_error: false), keeping the run green.
               continue-on-error: true
-              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+              uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
               with:
                   name: codecov-artifacts
 

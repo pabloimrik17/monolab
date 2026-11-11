@@ -15,6 +15,7 @@
     },
     "scripts": {
         "build": "tsdown",
+        "build:check-exports": "attw --pack . --profile esm-only",
         "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
         "lint:eslint:fix": "eslint --cache --concurrency=auto --max-warnings 40 --fix .",
         "test": "vitest run",
@@ -30,6 +31,7 @@
         "zod": "3.25.76"
     },
     "devDependencies": {
+        "@arethetypeswrong/cli": "catalog:",
         "@m0n0lab/vitest-config": "workspace:*",
         "tsdown": "catalog:",
         "typescript": "catalog:",

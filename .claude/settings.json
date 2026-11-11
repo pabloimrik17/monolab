@@ -26,6 +26,9 @@
       "allowUnixSockets": [
         "/tmp/.nx",
         "~/.nx"
+      ],
+      "allowedDomains": [
+        "www.google-analytics.com"
       ]
     }
   }

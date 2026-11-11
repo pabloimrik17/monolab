@@ -1,49 +1,46 @@
+import { Container } from "inversify";
 import { okAsync } from "neverthrow";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { domainModule } from "../domain.module.ts";
 import { MenuItem } from "../entities/menu-item.ts";
+import { TOKENS } from "../tokens.ts";
 import { Category } from "../value-objects/category.ts";
-import { DeleteMenuItemUseCase } from "./delete-menu-item.use-case.ts";
 import type { MenuItemRepository } from "../ports/menu-item.repository.ts";
+import type { DeleteMenuItemUseCase } from "./delete-menu-item.use-case.ts";
 
 describe("DeleteMenuItemUseCase", () => {
-    it("deletes an existing menu item", async () => {
-        const item = MenuItem.create({ name: "Espresso", category: Category.COFFEE });
-        if (item.isErr()) {
-            throw new Error("unexpected");
-        }
+    let espresso: MenuItem;
+    let deleted: string[];
+    let remove: DeleteMenuItemUseCase;
 
-        const mockMenuItemRepo: MenuItemRepository = {
-            save: vi.fn(),
-            findById: vi.fn(() => okAsync(item.value)),
-            findAll: vi.fn(),
-            findAllAvailable: vi.fn(),
-            update: vi.fn(),
-            delete: vi.fn(() => okAsync(undefined)),
-        };
-
-        const useCase = new DeleteMenuItemUseCase(mockMenuItemRepo);
-        const result = await useCase.execute(item.value.id);
-
-        expect(result.isOk()).toBe(true);
-        expect(mockMenuItemRepo.delete).toHaveBeenCalledWith(item.value.id);
+    beforeEach(() => {
+        espresso = MenuItem.create({ name: "Espresso", category: Category.COFFEE })._unsafeUnwrap();
+        deleted = [];
+        const container = new Container();
+        container.load(domainModule);
+        container.bind(TOKENS.MenuItemRepository).toConstantValue({
+            findById: (id: string) => okAsync(id === espresso.id ? espresso : null),
+            delete: (id: string) => {
+                deleted.push(id);
+                return okAsync(undefined);
+            },
+        } satisfies Partial<MenuItemRepository>);
+        remove = container.get<DeleteMenuItemUseCase>(TOKENS.DeleteMenuItemUseCase);
     });
 
-    it("returns MenuItemNotFoundError for unknown id", async () => {
-        const mockMenuItemRepo: MenuItemRepository = {
-            save: vi.fn(),
-            findById: vi.fn(() => okAsync(null)),
-            findAll: vi.fn(),
-            findAllAvailable: vi.fn(),
-            update: vi.fn(),
-            delete: vi.fn(),
-        };
+    describe("removing a menu item", () => {
+        it("deletes an item on the menu", async () => {
+            const result = await remove.execute(espresso.id);
 
-        const useCase = new DeleteMenuItemUseCase(mockMenuItemRepo);
-        const result = await useCase.execute("unknown");
+            expect(result.isOk()).toBe(true);
+            expect(deleted).toEqual([espresso.id]);
+        });
 
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error.code).toBe("MENU_ITEM_NOT_FOUND");
-        }
+        it("refuses an unknown item, deleting nothing", async () => {
+            const error = (await remove.execute("unknown"))._unsafeUnwrapErr();
+
+            expect(error.code).toBe("MENU_ITEM_NOT_FOUND");
+            expect(deleted).toEqual([]);
+        });
     });
 });

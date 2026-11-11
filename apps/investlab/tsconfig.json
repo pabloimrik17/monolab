@@ -24,7 +24,16 @@
         "resolveJsonModule": true,
         "types": ["node", "vite/client"],
         "experimentalDecorators": true,
-        "emitDecoratorMetadata": true
+        "emitDecoratorMetadata": true,
+        "paths": {
+            "#core/*": ["./src/core/*"],
+            "#di/*": ["./src/di/*"],
+            "#portfolio/*": ["./src/portfolio/*"],
+            "#quotes/*": ["./src/quotes/*"],
+            "#roger/*": ["./src/roger/*"],
+            "#root": ["./src/root.tsx"],
+            "#routes/*": ["./src/routes/*"]
+        }
     },
     "references": [
       {
@@ -34,10 +43,16 @@
         "path": "../../packages/investlab-core"
       },
       {
+        "path": "../../packages/investlab-catalog"
+      },
+      {
         "path": "../../packages/investlab-quotes"
       },
       {
         "path": "../../packages/investlab-portfolio"
+      },
+      {
+        "path": "../../packages/investlab-roger"
       },
       {
         "path": "../../packages/investlab-platform"

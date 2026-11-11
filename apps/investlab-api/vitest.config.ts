@@ -14,7 +14,7 @@ export default mergeConfig(
                 reporter: ["lcov", "text", "json", "html"],
                 reportsDirectory: "./coverage",
                 include: ["src/**/*.ts"],
-                exclude: ["**/*.integration-platform.ts", "**/*.harness.ts", "**/testing/**"],
+                exclude: ["**/*.integration-platform.ts", "**/*.harness.ts", "**/harness/**"],
                 thresholds: coverageThresholds({
                     lines: 80,
                     branches: 80,
@@ -24,7 +24,6 @@ export default mergeConfig(
             },
             projects: [
                 {
-                    extends: true,
                     test: {
                         name: "integration-platform",
                         include: ["src/**/*.integration-platform.ts"],

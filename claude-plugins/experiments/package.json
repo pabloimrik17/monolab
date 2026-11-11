@@ -4,6 +4,8 @@
     "private": true,
     "description": "Beta skills and commands staging area for monolab",
     "scripts": {
+        "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
+        "lint:eslint:fix": "eslint --cache --concurrency=auto --max-warnings 40 --fix .",
         "test": "vitest run",
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",

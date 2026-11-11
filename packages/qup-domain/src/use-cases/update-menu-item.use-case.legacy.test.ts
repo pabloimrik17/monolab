@@ -1,73 +1,58 @@
+import { Container } from "inversify";
 import { okAsync } from "neverthrow";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { domainModule } from "../domain.module.ts";
 import { MenuItem } from "../entities/menu-item.ts";
+import { TOKENS } from "../tokens.ts";
 import { Category } from "../value-objects/category.ts";
-import { UpdateMenuItemUseCase } from "./update-menu-item.use-case.ts";
 import type { MenuItemRepository } from "../ports/menu-item.repository.ts";
+import type { UpdateMenuItemUseCase } from "./update-menu-item.use-case.ts";
 
 describe("UpdateMenuItemUseCase", () => {
-    it("updates an existing menu item", async () => {
-        const item = MenuItem.create({ name: "Espresso", category: Category.COFFEE });
-        if (item.isErr()) {
-            throw new Error("unexpected");
-        }
+    let espresso: MenuItem;
+    let updated: MenuItem[];
+    let update: UpdateMenuItemUseCase;
 
-        const mockMenuItemRepo: MenuItemRepository = {
-            save: vi.fn(),
-            findById: vi.fn(() => okAsync(item.value)),
-            findAll: vi.fn(),
-            findAllAvailable: vi.fn(),
-            update: vi.fn(() => okAsync(undefined)),
-            delete: vi.fn(),
-        };
-
-        const useCase = new UpdateMenuItemUseCase(mockMenuItemRepo);
-        const result = await useCase.execute(item.value.id, { name: "Double Espresso" });
-
-        expect(result.isOk()).toBe(true);
-        expect(mockMenuItemRepo.update).toHaveBeenCalled();
+    beforeEach(() => {
+        espresso = MenuItem.create({ name: "Espresso", category: Category.COFFEE })._unsafeUnwrap();
+        updated = [];
+        const container = new Container();
+        container.load(domainModule);
+        container.bind(TOKENS.MenuItemRepository).toConstantValue({
+            findById: (id: string) => okAsync(id === espresso.id ? espresso : null),
+            update: (menuItem: MenuItem) => {
+                updated.push(menuItem);
+                return okAsync(undefined);
+            },
+        } satisfies Partial<MenuItemRepository>);
+        update = container.get<UpdateMenuItemUseCase>(TOKENS.UpdateMenuItemUseCase);
     });
 
-    it("returns MenuItemNotFoundError for unknown id", async () => {
-        const mockMenuItemRepo: MenuItemRepository = {
-            save: vi.fn(),
-            findById: vi.fn(() => okAsync(null)),
-            findAll: vi.fn(),
-            findAllAvailable: vi.fn(),
-            update: vi.fn(),
-            delete: vi.fn(),
-        };
+    describe("editing a menu item", () => {
+        it("stores the item with its new details", async () => {
+            const result = await update.execute(espresso.id, {
+                name: "Double Espresso",
+                available: false,
+            });
 
-        const useCase = new UpdateMenuItemUseCase(mockMenuItemRepo);
-        const result = await useCase.execute("unknown", { name: "New Name" });
+            expect(result.isOk()).toBe(true);
+            expect(updated).toEqual([espresso]);
+            expect(espresso).toMatchObject({ name: "Double Espresso", available: false });
+        });
 
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error.code).toBe("MENU_ITEM_NOT_FOUND");
-        }
-    });
+        it("refuses an unknown item", async () => {
+            const error = (
+                await update.execute("unknown", { name: "Double Espresso" })
+            )._unsafeUnwrapErr();
 
-    it("returns ValidationError for empty name", async () => {
-        const item = MenuItem.create({ name: "Espresso", category: Category.COFFEE });
-        if (item.isErr()) {
-            throw new Error("unexpected");
-        }
+            expect(error.code).toBe("MENU_ITEM_NOT_FOUND");
+        });
 
-        const mockMenuItemRepo: MenuItemRepository = {
-            save: vi.fn(),
-            findById: vi.fn(() => okAsync(item.value)),
-            findAll: vi.fn(),
-            findAllAvailable: vi.fn(),
-            update: vi.fn(),
-            delete: vi.fn(),
-        };
+        it("refuses an empty name, storing nothing", async () => {
+            const error = (await update.execute(espresso.id, { name: "" }))._unsafeUnwrapErr();
 
-        const useCase = new UpdateMenuItemUseCase(mockMenuItemRepo);
-        const result = await useCase.execute(item.value.id, { name: "" });
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error.code).toBe("VALIDATION_ERROR");
-        }
+            expect(error.code).toBe("VALIDATION_ERROR");
+            expect(updated).toEqual([]);
+        });
     });
 });

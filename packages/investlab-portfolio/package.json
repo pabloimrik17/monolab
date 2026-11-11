@@ -26,11 +26,14 @@
     },
     "scripts": {
         "build": "tsdown",
+        "build:check-exports": "attw --pack . --profile esm-only",
         "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
         "lint:eslint:fix": "eslint --cache --concurrency=auto --max-warnings 40 --fix .",
         "test": "vitest run",
         "test:changed": "vitest run --changed",
         "test:coverage": "vitest run --coverage",
+        "test:mutation": "stryker run",
+        "test:mutation:report": "open reports/mutation/index.html",
         "test:integration": "vitest run --project integration:server --project integration:client",
         "test:integration:changed": "vitest run --project integration:server --project integration:client --changed",
         "test:integration:coverage": "vitest run --project integration:server --project integration:client --coverage",
@@ -42,6 +45,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
+        "@m0n0lab/investlab-catalog": "workspace:*",
         "@m0n0lab/investlab-core": "workspace:*",
         "@m0n0lab/investlab-platform": "workspace:*",
         "drizzle-orm": "catalog:",
@@ -50,8 +54,12 @@
         "zod": "3.25.76"
     },
     "devDependencies": {
+        "@arethetypeswrong/cli": "catalog:",
         "@m0n0lab/investlab-database": "workspace:*",
         "@m0n0lab/vitest-config": "workspace:*",
+        "@stryker-mutator/core": "catalog:",
+        "@stryker-mutator/typescript-checker": "catalog:",
+        "@stryker-mutator/vitest-runner": "catalog:",
         "@testcontainers/postgresql": "catalog:",
         "@types/node": "catalog:",
         "@types/pg": "catalog:",

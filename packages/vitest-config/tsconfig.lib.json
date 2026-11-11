@@ -2,6 +2,6 @@
     "extends": "./tsconfig.json",
     "compilerOptions": {
         "outDir": "./dist",
-        "tsBuildInfoFile": "./tsconfig.lib.tsbuildinfo"
+        "tsBuildInfoFile": "./dist/tsconfig.lib.tsbuildinfo"
     }
 }

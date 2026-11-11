@@ -1,84 +1,80 @@
+import { Container } from "inversify";
 import { okAsync } from "neverthrow";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { domainModule } from "../domain.module.ts";
 import { Order } from "../entities/order.ts";
+import { TOKENS } from "../tokens.ts";
 import { OrderItem } from "../value-objects/order-item.ts";
 import { OrderStatus } from "../value-objects/order-status.ts";
-import { CancelOrderUseCase } from "./cancel-order.use-case.ts";
 import type { EventBus } from "../ports/event-bus.ts";
 import type { OrderRepository } from "../ports/order.repository.ts";
+import type { CancelOrderUseCase } from "./cancel-order.use-case.ts";
 
-const makeOrder = (status: OrderStatus = OrderStatus.PENDING) =>
-    Order.reconstitute({
-        id: "o1",
-        sessionId: "s1",
-        guestName: "Alice",
-        items: [
+describe("CancelOrderUseCase", () => {
+    let orders: Order[];
+    let updated: Order[];
+    let events: unknown[][];
+    let cancel: CancelOrderUseCase;
+
+    function givenPendingOrder(): Order {
+        const items = [
             OrderItem.create({
-                menuItemId: "mi1",
+                menuItemId: "mi-1",
                 menuItemName: "Espresso",
                 quantity: 1,
             })._unsafeUnwrap(),
-        ],
-        status,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        ];
+        const order = Order.create({ sessionId: "s-1", guestName: "Alice", items })._unsafeUnwrap();
+        orders.push(order);
+        return order;
+    }
+
+    beforeEach(() => {
+        orders = [];
+        updated = [];
+        events = [];
+        const container = new Container();
+        container.load(domainModule);
+        container.bind(TOKENS.OrderRepository).toConstantValue({
+            findById: (id: string) => okAsync(orders.find((order) => order.id === id) ?? null),
+            updateStatus: (order: Order) => {
+                updated.push(order);
+                return okAsync(undefined);
+            },
+        } satisfies Partial<OrderRepository>);
+        container.bind(TOKENS.EventBus).toConstantValue({
+            emit: (...event: unknown[]) => events.push(event),
+        } satisfies Partial<EventBus>);
+        cancel = container.get<CancelOrderUseCase>(TOKENS.CancelOrderUseCase);
     });
 
-describe("CancelOrderUseCase", () => {
-    it("cancels a pending order", async () => {
-        const order = makeOrder();
-        const mockOrderRepo: OrderRepository = {
-            save: vi.fn(),
-            findById: vi.fn(() => okAsync(order)),
-            findBySessionId: vi.fn(),
-            updateStatus: vi.fn(() => okAsync(undefined)),
-        };
-        const mockEventBus: EventBus = { emit: vi.fn(), on: vi.fn() };
+    describe("cancelling an order", () => {
+        it("stores a pending order as cancelled and announces it", async () => {
+            const order = givenPendingOrder();
 
-        const useCase = new CancelOrderUseCase(mockOrderRepo, mockEventBus);
-        const result = await useCase.execute("o1");
+            const result = await cancel.execute(order.id);
 
-        expect(result.isOk()).toBe(true);
-        expect(mockEventBus.emit).toHaveBeenCalledWith("order:cancelled", {
-            orderId: "o1",
-            sessionId: "s1",
+            expect(result.isOk()).toBe(true);
+            expect(updated).toEqual([order]);
+            expect(order.status).toBe(OrderStatus.CANCELLED);
+            expect(events).toEqual([["order:cancelled", { orderId: order.id, sessionId: "s-1" }]]);
         });
-    });
 
-    it("returns OrderNotFoundError for unknown id", async () => {
-        const mockOrderRepo: OrderRepository = {
-            save: vi.fn(),
-            findById: vi.fn(() => okAsync(null)),
-            findBySessionId: vi.fn(),
-            updateStatus: vi.fn(),
-        };
-        const mockEventBus: EventBus = { emit: vi.fn(), on: vi.fn() };
+        it("refuses an unknown order", async () => {
+            const error = (await cancel.execute("unknown"))._unsafeUnwrapErr();
 
-        const useCase = new CancelOrderUseCase(mockOrderRepo, mockEventBus);
-        const result = await useCase.execute("unknown");
+            expect(error.code).toBe("ORDER_NOT_FOUND");
+        });
 
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error.code).toBe("ORDER_NOT_FOUND");
-        }
-    });
+        it("refuses an order already being prepared, storing and announcing nothing", async () => {
+            const order = givenPendingOrder();
+            order.markPreparing();
 
-    it("returns OrderNotCancellableError for preparing order", async () => {
-        const order = makeOrder(OrderStatus.PREPARING);
-        const mockOrderRepo: OrderRepository = {
-            save: vi.fn(),
-            findById: vi.fn(() => okAsync(order)),
-            findBySessionId: vi.fn(),
-            updateStatus: vi.fn(),
-        };
-        const mockEventBus: EventBus = { emit: vi.fn(), on: vi.fn() };
+            const error = (await cancel.execute(order.id))._unsafeUnwrapErr();
 
-        const useCase = new CancelOrderUseCase(mockOrderRepo, mockEventBus);
-        const result = await useCase.execute("o1");
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error.code).toBe("ORDER_NOT_CANCELLABLE");
-        }
+            expect(error.code).toBe("ORDER_NOT_CANCELLABLE");
+            expect(updated).toEqual([]);
+            expect(events).toEqual([]);
+        });
     });
 });

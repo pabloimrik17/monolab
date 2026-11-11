@@ -29,7 +29,6 @@ export default mergeConfig(
             },
             projects: [
                 {
-                    extends: true,
                     test: { name: "unit", include: ["scripts/**/*.test.mjs"] },
                 },
             ],

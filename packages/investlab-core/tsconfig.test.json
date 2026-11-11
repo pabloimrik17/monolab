@@ -1,0 +1,10 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./out-tsc/test",
+        "tsBuildInfoFile": "./out-tsc/tsconfig.test.tsbuildinfo"
+    },
+    "include": ["src/**/*"],
+    "exclude": [],
+    "references": [{ "path": "../vitest-config" }]
+}

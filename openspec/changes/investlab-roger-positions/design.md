@@ -2,103 +2,132 @@
 
 ## Context
 
-Roger module tracks active stock positions following a trader's methodology. Each position (Entry) follows a strict 6-state lifecycle. The foundation layer (Instrument entity, PostgreSQL, Drizzle) already exists from `investlab-foundation`.
+This change lands after `investlab-instrument-catalog`: `Instrument` lives in `@m0n0lab/investlab-catalog`, whose `./server` entry exports the `instruments` table, and modules depend on each other only along declared edges (ADR 0010). Packages follow ADR 0007 and the `clean-architecture-layout` spec; tests follow ADR 0008. Terms follow the InvestLab glossary (`packages/investlab-portfolio/src/domain/GLOSSARY.md`, Roger section). The April 2026 version of this change predates all of these and is fully replaced.
 
 ## Goals / Non-Goals
 
 **Goals:**
-- Entry entity with full state machine in domain layer
-- CRUD operations with state-aware validation
-- `/roger` route with grouped entry table
-- Transition UI with pre-filled forms
-- Cleanup stale EN_ESPERA entries
+
+- One place where an entry's lifecycle rules live, used by the API to enforce them and by the web to offer only valid actions and the right fields.
+- Roger stays removable: a leaf module that only the apps load.
 
 **Non-Goals:**
-- No metrics/calculations (separate change: `investlab-roger-metrics-ui`)
-- No real-time price fetching in this change
-- No portfolio integration
+
+- Stale-ticker cleanup, the Roger summary and breakdown (`investlab-roger-dashboard`), the stock-picking summary (`investlab-overview`). When the first view across trader modules lands, roger implements the port that view owns (ADR 0010); nothing here prepares for it.
+- Calculated prices, current quotes and price indicators (`investlab-roger-metrics-ui`).
+- A log of every transition; only the time in the current state is kept.
+- Currency: amounts are in the instrument's trading currency, as in Portfolio.
+- Any change to Portfolio.
 
 ## Decisions
 
-### 1. Entry entity in investlab-domain
+### 1. Package and dependencies
 
-```typescript
-Entry {
-  id: uuid
-  instrumentId: uuid
-  state: RogerState        // EN_ESPERA | OPERATIVA | ROGER | COMPRAR | INVERTIDO | VENDER
-  desiredPrice: number     // always required
-  quantity?: number         // required from COMPRAR onward
-  commission?: number       // required from INVERTIDO onward
-  createdAt: Date
-  updatedAt: Date
-}
-```
+`@m0n0lab/investlab-roger` has the standard layout and entries `.`, `./server`, `./client`, `./testing`. `eslint.config.ts` adds `roger` to `investlabLayout.modules` and `roger: ["catalog"]` to `dependsOn`. Nothing lists roger as a dependency. Roger imports from the catalog only: `Instrument`, its value objects and the errors `InstrumentNotFoundError` and `InstrumentAlreadyExistsError` (`.`), the `instruments` table and the server `CATALOG.InstrumentCreate` token and use-case type (`./server`), and the instrument builder (`./testing`, tests only). `rogerServerModule` requires `catalogServerModule`, so the API container loads the catalog server module before roger's, as it does before portfolio's.
 
-One Instrument can have many Entries (multiple positions at different price points).
+`domain/error/roger-remote.error.ts` holds `RogerErrorCode` and `RogerRemoteError = RemotePortError<InstrumentNotFoundError | InstrumentAlreadyExistsError | EntryNotFoundError | EntryConflictError | InvalidTransitionError | MissingRequiredFieldError | FieldNotInStateError>`, the errors the client ports return, as `catalog-remote.error.ts` and `portfolio-remote.error.ts` do for their modules. The two catalog errors come from create: an unknown `instrumentId` or a `newInstrument` whose symbol exists.
 
-**Why**: Matches domain reality. Trader may have multiple entries in same ticker at different prices.
+### 2. One aggregate: Entry
 
-### 2. State machine as pure domain logic
+`Entry` (`domain/model/entry.model.ts`) holds `id`, `instrumentId`, `state`, `entryPrice`, `quantity?`, `buyCommission?`, `buyDate?`, `exitPrice?`, `sellCommission?`, `sellDate?`, `stateSince`, `createdAt`, `updatedAt`. The transition table and the fields per state are data in `domain/value-object/roger-state.value-object.ts`, exported from `.`: `RogerState`, `RADAR_STATES`, `transitionsFrom(state)` and `fieldsOf(state)`. `Entry.create`, `entry.edit(values)`, `entry.transition(to, values)` and `entry.reEnter(values)` return `Result`s and are the only way to change an entry.
 
-StateTransition value object encapsulates the transition matrix:
+The web imports `transitionsFrom` and `fieldsOf` from `.` to decide which buttons and form fields to show, so the rules exist once. The API re-checks everything through the same model.
 
-```
-To EN_ESPERA:   from ANY
-To OPERATIVA:   from ANY
-To ROGER:       ONLY from OPERATIVA
-To COMPRAR:     from ALL EXCEPT INVERTIDO
-To INVERTIDO:   ONLY from COMPRAR or VENDER
-To VENDER:      ONLY from INVERTIDO
-```
+The client does not use `EntryRepository`. The API has one route per action, and a create with `newInstrument` has no instrument id yet, so neither `update(entry)` nor `save(entry)` can say what to call. `domain/repository/entry-remote.repository.ts` is a client-only port with one method per route: `create`, `edit`, `transition`, `reEnter` and `delete`. Its methods take the entry reference (`id`, `state`, `updatedAt`), which also gives the client what it needs to rebuild errors from `code`. Client use cases call this port and do not run the model; the API is the authority.
 
-Data requirements per target state:
-| Field | EN_ESPERA | OPERATIVA | ROGER | COMPRAR | INVERTIDO | VENDER |
-|-------|:---------:|:---------:|:-----:|:-------:|:---------:|:------:|
-| desired_price | R | R | R | R | R | R |
-| quantity | - | - | - | R | R | R |
-| commission | - | - | - | - | R | R |
+Alternatives rejected: a state-pattern class per state (seven classes for one table lookup), and the instrument as the aggregate root with entries as children (no invariant spans entries; every transition would load and lock all entries of an instrument).
 
-R = required, - = not applicable
+### 3. How a transition fills and clears fields
 
-**Why pure domain**: No framework dependencies. Testable in isolation. Same logic whether called from UI or API.
+A transition receives the target state and values for some of its fields. For each field of the target state: a supplied value wins; otherwise the entry's current value is kept; if neither exists, the transition fails with `MISSING_REQUIRED_FIELD` naming the field. Every field the target state does not use is cleared. Cancelling a buy order therefore drops the quantity, and cancelling a sell order drops the exit price. `stateSince` becomes now.
 
-### 3. Transition data rules
+The web form shows exactly `fieldsOf(to)`. Known values are pre-filled and editable. New fields are empty, except that dates default to today and the sell commission defaults to the buy commission. These defaults belong to the form; the domain receives explicit values.
 
-- **Price**: Can change when entering COMPRAR from EN_ESPERA/OPERATIVA. Otherwise preserved from current value.
-- **Quantity**: Doesn't change once set. Pre-filled from current if transitioning between states that require it.
-- **Commission**: Doesn't change once set. Pre-filled from current.
-- **Clearing**: Transitioning to EN_ESPERA/OPERATIVA clears quantity and commission (those states don't use them).
+### 4. Create with a new instrument
 
-On transition, UI pre-fills form with current entry values. Only requests missing required fields.
+`POST /roger/entries` takes either `instrumentId` or `newInstrument` (`symbol`, `name`, optional `sector`). The server `EntryCreateUseCase` first validates the entry draft without an instrument. With `newInstrument`, it then calls the catalog's server `InstrumentCreate` use case with type `stock` and asset class `equity`, and saves the entry with the new id. A duplicate symbol fails with `INSTRUMENT_ALREADY_EXISTS` before anything is written. An unknown `instrumentId` fails through the foreign key as `INSTRUMENT_NOT_FOUND`, as in the catalog change.
 
-### 4. Transition handler
+The two writes are not one transaction: if the entry save fails after the instrument was created, the instrument stays in the catalog. That is harmless reference data, and the user can pick it on retry. The client side needs no catalog code: the web makes one API call.
 
-```typescript
-transitionEntry(entry: Entry, targetState: RogerState, data: TransitionData): Result<Entry, TransitionError>
-```
+Alternative rejected: the web calls the catalog create endpoint, then the entry create. The route would orchestrate business steps (ADR 0009).
 
-Steps: validate transition allowed -> check required fields present -> apply data rules (preserve/clear) -> return updated Entry.
+### 5. Persistence
 
-TransitionError variants: `InvalidTransition`, `MissingRequiredField`.
+`roger_entries` (`data/server/infra/db/entry.table.ts`), with these columns:
 
-### 5. UI: /roger route
+- `id` uuid PK
+- `instrument_id` uuid FK → `instruments.id`, restrict on delete
+- `state` varchar(20), with a check constraint over the seven values
+- `entry_price` and `exit_price` numeric(14,4)
+- `quantity` integer
+- `buy_commission` and `sell_commission` numeric(10,2)
+- `buy_date` and `sell_date` date
+- `state_since`, `created_at` and `updated_at` timestamptz
 
-Table of entries grouped by instrument symbol. Columns: symbol, state (badge), desired price, quantity, commission, updated_at. Sortable by column. Filterable by state.
+There is an index on `instrument_id`. Columns a state does not use are null; the model, not the database, ties fields to states.
 
-State badges with distinct colors per state for quick scanning.
+The database package's glob already picks up `entry.table.ts`. drizzle-kit 0.31 loads table files through a CJS loader. The `instruments` import from the catalog's `./server` already loads, through that entry's `default` condition, and `db:generate` builds the catalog first (catalog design §3). If the state check imports the state list from the domain instead of spelling the seven values, drizzle-kit must still load the table file. The list read query joins `instruments` (catalog's exported table) and returns entries with `symbol`, `name` and `sector`: active entries are every state but `SOLD`, ordered by symbol then `createdAt`; history is `SOLD`, ordered by `sell_date` descending.
 
-### 6. Cleanup stale entries
+### 6. API
 
-Button triggers: find instruments where ALL entries have state=EN_ESPERA AND updated_at < now - 7 days. Delete those entries. Instrument entities are not deleted by this cleanup action.
+All routes live in `apps/investlab-api/src/roger/route/entry.route.ts`. Concurrency is optimistic, with `expectedUpdatedAt` as in Portfolio.
 
-**Why button not automatic**: User should control when cleanup happens. Avoids accidental data loss.
+| Route | Answer |
+| --- | --- |
+| `GET /roger/entries?view=active\|history` | 200, entries with instrument data; `active` by default |
+| `POST /roger/entries` | 201, created entry |
+| `PUT /roger/entries/:id` | 200; edits fields of the current state; body carries `expectedUpdatedAt` |
+| `DELETE /roger/entries/:id` | 204 |
+| `POST /roger/entries/:id/transitions` | 200; body `{ to, …values, expectedUpdatedAt }` |
+| `POST /roger/entries/:id/re-entries` | 201, the new entry; body `{ entryPrice?, quantity? }` |
+
+New codes and their statuses:
+
+- `ENTRY_NOT_FOUND`: 404
+- `ENTRY_CONFLICT`: 409
+- `INVALID_TRANSITION`: 409, for a transition not in the table, the same state, or a re-entry from anything but `SOLD`
+- `MISSING_REQUIRED_FIELD`: 422
+- `FIELD_NOT_IN_STATE`: 422, for an edit that touches a field the current state does not use
+
+`MISSING_REQUIRED_FIELD` and `FIELD_NOT_IN_STATE` name the field in the envelope's `issues[0].path`, so the client can rebuild the error and the web can show it inline.
+
+Request validation (types, ranges, decimals, dates) stays `VALIDATION_ERROR`.
+
+### 7. Web
+
+| Piece | Location |
+| --- | --- |
+| Route file: loader and action | `src/routes/roger.tsx` |
+| Page | `src/roger/page/roger.page.tsx` |
+| View model | `src/roger/view-model/roger.view-model.ts` |
+| Components: table, row, badge, entry form, transition form | `src/roger/component/` |
+| Form schemas | `src/roger/form/entry.form.ts` |
+
+The loader calls the roger client `EntryList` use case (with the requested view) and the catalog client `InstrumentList` use case for the instrument picker. The action dispatches on `intent`: `create`, `update`, `delete`, `transition` and `re-enter`, as `routes/portfolio.tsx` does. The history is the same route with `?view=history`. `root.tsx` gains a "Roger" link.
+
+### 8. Tests (ADR 0008)
+
+- **Unit** (`entry.model.test.ts`, `roger-state.value-object.test.ts`): the full 7×7 transition table as one parametrized table, fields per state, the fill-and-clear rule, re-entry, value rules.
+- **Integration**: one per use case and side. Server against Postgres with Testcontainers, client against the API with MSW. Instruments come from the catalog's builder, the seed, or `newInstrument`.
+- **API integration-platform** (`entry.route.integration-platform.ts` with `entry.route.harness.ts`): status and body per route, and the new error codes.
+- **Web integration-platform** (`roger.page.integration-platform.tsx`) on the UI harness of `agentic-task-3ao3`: grouping, filter, available actions, form fields and defaults, history view.
+- **Builders**: `entry.builder.ts`, exported from `./testing`.
+- **Gates**: the package starts at coverage 80 and Stryker 90/80/80, the ADR 0008 target. Stryker `timeoutMS` is 60 s, as in the catalog and portfolio: under the default, slow integration tests count as kills. Unlike the catalog, the run does not exclude `*.table.ts`: portfolio's table mutants are killed, and `agentic-task-rnoc` has not yet explained the catalog's timeouts. The web and API keep their floors.
+
+### 9. Delivery
+
+The stack is, from the bottom: the catalog change, `agentic-task-3ao3` (the UI harness), then this change, as two layers:
+
+1. Package, migration and API (tasks 1–4).
+2. Web (tasks 5–6). It starts once the `agentic-task-3ao3` layer is done; it does not need to be merged into develop.
 
 ## Risks / Trade-offs
 
-| Risk | Mitigation |
-|------|------------|
-| State machine complexity in UI | Pre-fill form reduces user friction; only valid transitions shown |
-| Multiple entries per instrument complicates table | Group by instrument, collapsible rows |
-| Cleanup could delete entries user still cares about | 7-day threshold + manual trigger; confirm dialog |
-| State enum may need extension later | Enum in domain layer, easy to extend; migration adds new values |
+- [Orphan instrument if the entry save fails after creating it] → Reference data the user can reuse; no cleanup needed.
+- [Nullable columns let the database hold a field a state does not use] → Only the model writes entries, and its tests cover every transition. A per-state check constraint would duplicate the table in SQL.
+- [Web part needs the UI harness] → The harness is its own layer below this change (`agentic-task-3ao3`), so the web layer builds on it directly. Because it sits below, the first layer (package and API) merges after it.
+- [Downstream changes (`roger-metrics-ui`, `roger-sectors`, `roger-dashboard`) still describe the April model] → Their rewrite is tracked in Linear; they must use these state and field names.
+
+## Migration Plan
+
+The new table comes with its own migration; no existing data changes. Rollback: revert, then drop `roger_entries` with a down migration, or leave the table, which nothing else reads.

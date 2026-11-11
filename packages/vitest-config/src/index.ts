@@ -5,8 +5,8 @@ import type { ViteUserConfig } from "vitest/config";
  * Keep arrays out: mergeConfig concatenates them with the consumer's.
  */
 export const sharedConfig: ViteUserConfig = {
+    resolve: { tsconfigPaths: true },
     test: {
-        clearMocks: true,
         restoreMocks: true,
         unstubEnvs: true,
         unstubGlobals: true,

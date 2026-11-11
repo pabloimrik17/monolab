@@ -1,60 +1,49 @@
+import { Container } from "inversify";
 import { okAsync } from "neverthrow";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { domainModule } from "../domain.module.ts";
 import { Order } from "../entities/order.ts";
+import { TOKENS } from "../tokens.ts";
 import { OrderItem } from "../value-objects/order-item.ts";
-import { OrderStatus } from "../value-objects/order-status.ts";
-import { GetSessionOrdersUseCase } from "./get-session-orders.use-case.ts";
 import type { OrderRepository } from "../ports/order.repository.ts";
+import type { GetSessionOrdersUseCase } from "./get-session-orders.use-case.ts";
 
 describe("GetSessionOrdersUseCase", () => {
-    it("returns orders for session", async () => {
-        const order = Order.reconstitute({
-            id: "o1",
-            sessionId: "s1",
-            guestName: "Alice",
-            items: [
-                OrderItem.create({
-                    menuItemId: "mi1",
-                    menuItemName: "Espresso",
-                    quantity: 1,
-                })._unsafeUnwrap(),
-            ],
-            status: OrderStatus.PENDING,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        });
+    let orders: Order[];
+    let getOrders: GetSessionOrdersUseCase;
 
-        const mockOrderRepo: OrderRepository = {
-            save: vi.fn(),
-            findById: vi.fn(),
-            findBySessionId: vi.fn(() => okAsync([order])),
-            updateStatus: vi.fn(),
-        };
+    function givenOrder(sessionId: string): Order {
+        const items = [
+            OrderItem.create({
+                menuItemId: "mi-1",
+                menuItemName: "Espresso",
+                quantity: 1,
+            })._unsafeUnwrap(),
+        ];
+        const order = Order.create({ sessionId, guestName: "Alice", items })._unsafeUnwrap();
+        orders.push(order);
+        return order;
+    }
 
-        const useCase = new GetSessionOrdersUseCase(mockOrderRepo);
-        const result = await useCase.execute("s1");
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-            expect(result.value).toHaveLength(1);
-            expect(result.value[0]?.id).toBe("o1");
-        }
+    beforeEach(() => {
+        orders = [];
+        const container = new Container();
+        container.load(domainModule);
+        container.bind(TOKENS.OrderRepository).toConstantValue({
+            findBySessionId: (sessionId: string) =>
+                okAsync(orders.filter((order) => order.sessionId === sessionId)),
+        } satisfies Partial<OrderRepository>);
+        getOrders = container.get<GetSessionOrdersUseCase>(TOKENS.GetSessionOrdersUseCase);
     });
 
-    it("returns empty array when no orders", async () => {
-        const mockOrderRepo: OrderRepository = {
-            save: vi.fn(),
-            findById: vi.fn(),
-            findBySessionId: vi.fn(() => okAsync([])),
-            updateStatus: vi.fn(),
-        };
+    describe("listing a session's orders", () => {
+        it("lists the orders placed in that session only", async () => {
+            const mine = givenOrder("s-1");
+            givenOrder("s-2");
 
-        const useCase = new GetSessionOrdersUseCase(mockOrderRepo);
-        const result = await useCase.execute("s1");
+            const listed = (await getOrders.execute("s-1"))._unsafeUnwrap();
 
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-            expect(result.value).toHaveLength(0);
-        }
+            expect(listed).toEqual([mine]);
+        });
     });
 });

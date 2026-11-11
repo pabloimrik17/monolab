@@ -1,6 +1,6 @@
-import type { HttpClient } from "../shared/http-client.ts";
-import type { ClientConfig } from "./config.ts";
-import type { InvestlabApiClient } from "./investlab-api-client.ts";
+import type { ClientConfig } from "#client/config/client.config.ts";
+import type { InvestlabApiClient } from "#client/http/investlab-api.client.ts";
+import type { HttpClient } from "#shared/http/http.client.ts";
 import type { ServiceIdentifier } from "inversify";
 
 export const PLATFORM = {

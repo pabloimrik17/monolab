@@ -9,16 +9,31 @@
         "composite": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-        "types": ["node"]
+        "types": ["node"],
+        "paths": {
+            "#app": ["./src/app.ts"],
+            "#catalog/*": ["./src/catalog/*"],
+            "#core/*": ["./src/core/*"],
+            "#di/*": ["./src/di/*"],
+            "#portfolio/*": ["./src/portfolio/*"],
+            "#quotes/*": ["./src/quotes/*"],
+            "#roger/*": ["./src/roger/*"]
+        }
     },
     "include": ["src/**/*"],
     "exclude": ["**/*.test.ts", "**/*.spec.ts"],
     "references": [
       {
+        "path": "../../packages/investlab-catalog"
+      },
+      {
         "path": "../../packages/investlab-quotes"
       },
       {
         "path": "../../packages/investlab-portfolio"
+      },
+      {
+        "path": "../../packages/investlab-roger"
       },
       {
         "path": "../../packages/investlab-platform"
@@ -31,6 +46,9 @@
       },
       {
         "path": "./tsconfig.node.json"
+      },
+      {
+        "path": "./tsconfig.test.json"
       }
     ]
 }

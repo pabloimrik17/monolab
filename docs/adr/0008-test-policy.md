@@ -22,6 +22,15 @@ There are five kinds of test, plus type tests for libraries. A kind's file suffi
 - Node or a browser is the test environment, set by the Vitest project. It is never a kind: no file is named `*.browser.test.*` and no script is named `test:browser`.
 - Type tests guard the public types of published libraries. Another package may add them only for an exported generic other packages build on, such as `RemotePortError<E>` in investlab-core. Apps and plugins carry none.
 
+### Test structure
+
+These rules apply to every kind, legacy and type tests included.
+
+- **One root `describe`, named after the unit under test:** the exact exported symbol it tests, a class or a function (`describe("portfolioItemRoutes")`, each endpoint a nested `describe`). A file that tests several exported symbols names the root after its module, without suffix (`describe("nullable")`), with one nested `describe` per symbol and flat tests inside.
+- **One nested level at most:** one `describe` per behaviour inside the root.
+- **Setup inside the root.** `let` declarations, `beforeEach` and the other hooks live inside the root `describe`, never at file level. Global setup files (`vitest-*-setup.ts`) register project-wide hooks and are exempt.
+- **Linted structure, reviewed name.** ESLint (`@vitest/eslint-plugin`) enforces the structure on every test file, with the fleet's Vitest rules: an invalid `expect` or title fails, a focused or disabled test warns. Review checks the root `describe` name.
+
 ## What each project category tests
 
 | Category                              | unit                  | integration                | integration-platform | load                                            |
@@ -49,7 +58,7 @@ An integration-platform test enters an app through a harness.
 - **Base harness, one per app.** It launches the app on its platform, arranges the fakes and hides the framework. It is the only test code that knows the app's framework and how the app is launched, so replacing the framework rewrites the base harness and no test.
 - **One harness per entry point:** a route file for an API, a page for a UI. Its public methods are named after the domain (`givenItems`, `listItems`, `updateItem`). It holds no assertions.
 - **Givens take data.** A `given*` method stays generic and takes what it arranges (`givenItems(list)`, `givenUpdateFails(error)`); the package builders supply valid defaults. A scenario-named given is added only when the same arrangement repeats across tests or names a domain state, and it returns what it created so the test can assert on it.
-- **Flat tests.** A test opens its harness with `await using api = await PortfolioItemsHarness.launch()`, then arranges, acts and asserts over harness methods with `expect`. One `describe` level at most; no `beforeEach` or `afterEach` manages a harness. The harness implements `Symbol.asyncDispose`, so the app closes when the scope ends, on failure too; `close()` is idempotent.
+- **Flat tests.** A test opens its harness with `await using api = await PortfolioItemRouteHarness.launch()`, then arranges, acts and asserts over harness methods with `expect`. Two `describe` levels at most: the unit, then the behaviour; no `beforeEach` or `afterEach` manages a harness. The harness implements `Symbol.asyncDispose`, so the app closes when the scope ends, on failure too; `close()` is idempotent.
 - **Test-data builders sit next to the model they build** (`<model>.builder.ts`) and are re-exported through the owning package's `./testing` subpath (`@m0n0lab/investlab-portfolio/testing`, `@m0n0lab/investlab-quotes/testing`) so every app's harness can reuse them, and excluded from coverage.
 
 An API's harness adds these rules:
@@ -61,7 +70,15 @@ An API's harness adds these rules:
 - **The 5xx log is silenced in the base harness.** The API logs the cause of every 5xx it hides. A test that provokes one calls `api.silenceErrorLog()`, which mutes `console.error` until `close()` and returns the logged calls so the test can assert the cause.
 - **Error hiding is tested once.** `app.onError` and `errorJson` hide causes for every route, so `app.integration-platform.ts` proves it through one route harness: a thrown error and an unmapped domain error answer a generic 500 `INTERNAL_ERROR`, and a persistence failure answers 500 `PERSISTENCE_ERROR` with its message hidden and its cause logged. A route suite tests the errors its routes map (404, 409, 422), plus the error branch of a route that answers without `replyJson` or `replyEmpty`.
 
-The living guide is `apps/investlab-api/src/testing/base-api-harness.ts` with `apps/investlab-api/src/routes/portfolio-items.routes.integration-platform.ts`. There is no separate harness document and no lint rule; new suites copy the reference suite and review corrects them. The UI harness follows the same rules; its concrete design is settled with the first UI integration-platform test (`agentic-task-3ao3`).
+A UI's harness adds these rules:
+
+- **Everything runs in the browser.** The real route file (loader, action, page) is mounted in Chromium on a memory router under the app's real root; the web's server composition root runs there too.
+- **Opening a page.** The base harness takes a synchronous setup callback that runs before the first render. Each page harness chooses whether to take arguments and fill that callback or to expose it. The page comes back open and settled. Only what the page needs to open goes there; other givens are plain methods callable afterwards and return the recording fake.
+- **Same fakes and guards as an API.** Real `getContainer()`, `snapshot()`/`restore()` per test, `PLATFORM.Config` bound to constants, guards on `PLATFORM.HttpClient` and `PLATFORM.InvestlabApiClient`; a breach fails the test. Defaults cover only the use cases the page's loader needs, so an unarranged action reaches a guard.
+- **Reads are plain data.** Domain-named reads return data and count only what is visible; `expect` stays in the test. Every action waits for the router to rest and React to drain, so reads need no retry. A timer-driven page needs a retry on those reads.
+- **What it does not prove.** The server render, hydration, loader-to-page serialization and the route table; nothing automated covers them until staging and e2e exist.
+
+The living guide is `apps/investlab-api/src/core/harness/api.harness.ts` with `apps/investlab-api/src/portfolio/route/portfolio-item.route.integration-platform.ts`. There is no separate harness document and no harness lint rule (ESLint checks only the test structure); new suites copy the reference suite and review corrects them. The UI reference is `apps/investlab/src/core/harness/web.harness.tsx` with `apps/investlab/src/portfolio/page/portfolio.page.integration-platform.tsx`.
 
 ## Load tests are reserved
 
@@ -81,7 +98,7 @@ Frontend performance budgets (web vitals, bundle size, requests per page) are si
 - **One coverage figure per project**, from all its non-e2e kinds together. `coverage.include` covers every source file, so an untested file counts as 0%; test files, type tests, `**/testing/**`, setup files and generated folders are excluded.
 - **Thresholds** live in each `vitest.config.ts`, through a helper in `@m0n0lab/vitest-config` that enforces them only on the aggregate `test:coverage`; a `test:<kind>:coverage` run is informational. CI runs `test:coverage`, affected projects on pull requests and every project on pushes.
 - **Target and floors.** The target is 80 for lines, branches, functions and statements. A project below it sets each metric to its measured value rounded down to a multiple of 5, or 0 when it has no tests. Floors are never lowered and rise when the measured value passes the next multiple of 5. Codecov's patch target is 80%.
-- **Mutation.** Stryker runs over every non-e2e test of a project and never mutates a test file of any kind. Thresholds are high 90, low 80, break 80, with floors set the same way (qup-domain and solid-clean sit at 75). Pull requests gate the affected projects, using the incremental cache from `develop` without saving it; only pushes to `main` and `develop` upload to the Stryker dashboard. Projects with tests but no Stryker configuration are tracked in `agentic-task-0wd7`.
+- **Mutation.** Stryker runs over every non-e2e test of a project and never mutates a test file of any kind. Thresholds are high 90, low 80, break 80, with floors set the same way (qup-domain, solid-clean, investlab-catalog and investlab-portfolio sit at 75). Pull requests gate the affected projects, using the incremental cache from `develop` without saving it; only pushes to `main` and `develop` upload to the Stryker dashboard. Projects with tests but no Stryker configuration are tracked in `agentic-task-0wd7`.
 
 ## Legacy tests
 
@@ -92,9 +109,9 @@ A test written under the strategy that predates this policy is renamed `*.legacy
 | Group                                         | Files                                                                                   | Replaced by                                  | Issue               |
 | --------------------------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------- | ------------------- |
 | qup-domain use cases with mocked repositories | `packages/qup-domain/src/use-cases/*.use-case.legacy.test.ts` (11)                      | integration tests per use case               | `agentic-task-5xv8` |
-| investlab web unit tests                      | `apps/investlab/app/**/*.legacy.test.{ts,tsx}` (9)                                      | integration-platform tests on a UI harness   | `agentic-task-3ao3` |
+| investlab web unit tests                      | `apps/investlab/src/**/*.legacy.test.{ts,tsx}` (7)                                      | integration-platform tests on a UI harness   | `agentic-task-1caz` |
 | qup-api unit tests                            | `apps/qup-api/src/**/*.legacy.test.ts` (3)                                              | integration-platform tests on an API harness | `agentic-task-rhex` |
-| DTO, mapper and batch tests                   | investlab-portfolio (5), investlab-quotes (2) and investlab-core (1) `*.legacy.test.ts` | use-case integration tests                   | `agentic-task-82ja` |
+| DTO and mapper tests                          | investlab-portfolio (5), investlab-quotes (1) and investlab-core (1) `*.legacy.test.ts` | use-case integration tests                   | `agentic-task-82ja` |
 
 ## Considered options
 
@@ -110,6 +127,10 @@ A test written under the strategy that predates this policy is renamed `*.legacy
 - A lint rule forbidding framework imports in tests: rejected; the reference suite and review hold the pattern.
 - Coverage thresholds as CLI flags on every per-kind script, or only in CI: rejected; about 30 scripts to keep in step, or a local `test:coverage` that differs from CI.
 - Load tests in pull-request CI, or load as an e2e profile: rejected; runner noise fails pull requests at random, and the two kinds fake different things.
+- A real SSR server driven by Playwright for page tests: rejected; browser-side fakes would cross processes and browser coverage would be merged by hand.
+- `createRoutesStub`: rejected; it hides the router, so waiting for it to rest needs an `UNSAFE_` import.
+- Assertion methods in a page harness (`await page.showsEmptyPortfolio()`): rejected; a forgotten `await` passes silently, and a harness holds no assertions.
+- Locators handed to the test: rejected; each harness is shorter, but tests read as DOM checks instead of the domain.
 
 ## Consequences
 
@@ -118,4 +139,5 @@ A test written under the strategy that predates this policy is renamed `*.legacy
 - Coverage and mutation floors stop regressions from today's level and ratchet towards 80.
 - The mutation gate lengthens pull-request CI; incremental mode limits it to mutants in changed code.
 - E2E and load tests wait for staging.
+- The web's server render has no automated test until staging and e2e exist.
 - The harness pattern follows the fleet convention (beads `WebstormProjects-tdhc.13`) with two monolab variants posted back to it: APIs are driven over real HTTP, and the lifecycle uses `await using`.

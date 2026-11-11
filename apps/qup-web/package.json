@@ -28,7 +28,8 @@
         "@tailwindcss/postcss": "4.3.3",
         "@types/node": "catalog:",
         "@vitest/coverage-v8": "catalog:",
-        "postcss": "8.5.19",
+        "msw": "catalog:",
+        "postcss": "8.5.23",
         "tailwindcss": "4.3.3",
         "typescript": "catalog:",
         "vitest": "catalog:"

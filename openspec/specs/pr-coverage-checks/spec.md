@@ -2,7 +2,9 @@
 
 ## Purpose
 TBD - created by archiving change add-codecov. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: Pull requests MUST receive automated coverage comments
 
 Codecov MUST post comments on pull requests with coverage analysis.
@@ -37,7 +39,7 @@ Codecov MUST post comments on pull requests with coverage analysis.
 
 ### Requirement: Pull requests MUST receive coverage status checks
 
-Codecov MUST create GitHub status checks that appear in the PR checks section.
+Codecov MUST create GitHub status checks that appear in the PR checks section. The patch check MUST require 80% coverage on the lines a pull request adds or changes, the test policy's coverage target.
 
 #### Scenario: Status check passes when coverage is maintained
 
@@ -58,14 +60,12 @@ Codecov MUST create GitHub status checks that appear in the PR checks section.
 
 #### Scenario: Status check fails when patch coverage is too low
 
-**Given** a pull request adds code with less than 65% test coverage
+**Given** a pull request adds code with less than 80% test coverage
 **When** Codecov evaluates the patch coverage
 **And** patch coverage threshold is enforced
 **Then** the `codecov/patch` status check is marked as "failure"
 **And** the status check message shows the patch coverage percentage
 **And** the status check blocks PR merge if branch protection is enabled
-
----
 
 ### Requirement: Coverage checks MUST integrate with GitHub branch protection
 
@@ -122,4 +122,3 @@ Codecov MUST gracefully handle pull requests when no baseline coverage exists.
 **Then** it establishes the baseline coverage
 **And** subsequent PRs will compare against this baseline
 **And** the coverage is visible in the Codecov dashboard
-

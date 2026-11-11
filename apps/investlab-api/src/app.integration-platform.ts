@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { ApiHarness } from "#core/harness/api.harness.ts";
+import { PortfolioItemRouteHarness } from "#portfolio/route/portfolio-item.route.harness.ts";
 import { DomainError, PersistenceError, type ApiErrorDto } from "@m0n0lab/investlab-core";
-import { PortfolioItemsHarness } from "./routes/portfolio-items.harness.ts";
-import { BaseApiHarness } from "./testing/base-api-harness.ts";
 
 const TOKEN = "s3cret-token";
 
@@ -17,129 +17,161 @@ const INTERNAL_ERROR = {
     statusCode: 500,
 } satisfies ApiErrorDto;
 
-describe("the API as a platform", () => {
-    it("serves GET /health without a token", async () => {
-        await using api = await BaseApiHarness.launch();
+describe("createApp", () => {
+    describe("the API as a platform", () => {
+        it("serves GET /health without a token", async () => {
+            await using api = await ApiHarness.launch();
 
-        const res = await api.health();
+            const res = await api.health();
 
-        expect(res.status).toBe(200);
-        expect(await res.json()).toEqual({ status: "ok" });
+            expect(res.status).toBe(200);
+            expect(await res.json()).toEqual({ status: "ok" });
+        });
+
+        it("exposes exactly the documented routes", async () => {
+            await using api = await ApiHarness.launch();
+
+            // Hono lists one entry per handler, so a route with validators repeats.
+            const routes = [...new Set(api.routes())]
+                .filter((route) => !route.startsWith("ALL "))
+                .sort();
+
+            expect(routes).toEqual(
+                [
+                    "GET /health",
+                    "GET /portfolio-items",
+                    "POST /portfolio-items",
+                    "PUT /portfolio-items/:id",
+                    "DELETE /portfolio-items/:id",
+                    "GET /instruments",
+                    "POST /instruments",
+                    "PUT /instruments/:id",
+                    "DELETE /instruments/:id",
+                    "GET /quotes",
+                    "GET /roger/entries",
+                    "POST /roger/entries",
+                    "PUT /roger/entries/:id",
+                    "DELETE /roger/entries/:id",
+                    "POST /roger/entries/:id/transitions",
+                    "POST /roger/entries/:id/re-entries",
+                ].sort(),
+            );
+        });
+
+        it("answers unknown routes 404 once authenticated", async () => {
+            await using api = await ApiHarness.launch();
+
+            const res = await api.get("/nope");
+
+            expect(res.status).toBe(404);
+        });
+
+        it("fails a request whose use case reaches a guarded platform port, naming the port", async () => {
+            await using api = await ApiHarness.launch();
+            api.silenceErrorLog();
+
+            await expect(api.get("/portfolio-items")).rejects.toThrow(
+                "system boundary reached: PLATFORM.Db",
+            );
+        });
     });
 
-    it("answers unknown routes 404 once authenticated", async () => {
-        await using api = await BaseApiHarness.launch();
+    // Every route answers through the same `errorJson` and `app.onError`, so one route proves it.
+    describe("errors hidden behind a 500", () => {
+        it("answers a generic 500 for a use case that throws and logs the cause", async () => {
+            await using api = await PortfolioItemRouteHarness.launch();
+            const log = api.silenceErrorLog();
+            const error = new Error("leaky");
+            api.givenListThrows(error);
 
-        const res = await api.get("/nope");
+            const { status, body } = await api.listItems();
 
-        expect(res.status).toBe(404);
+            expect(status).toBe(500);
+            expect(body).toEqual(INTERNAL_ERROR);
+            expect(log.calls).toEqual([[expect.any(String), error]]);
+        });
+
+        it("answers a generic 500 for a domain error the API does not map", async () => {
+            class UnmappedError extends DomainError<"UNMAPPED"> {
+                readonly code = "UNMAPPED";
+            }
+            await using api = await PortfolioItemRouteHarness.launch();
+            api.silenceErrorLog();
+            api.givenListThrows(new UnmappedError("leaky"));
+
+            const { status, body } = await api.listItems();
+
+            expect(status).toBe(500);
+            expect(body).toEqual(INTERNAL_ERROR);
+        });
+
+        it("answers 500 PERSISTENCE_ERROR without its message and logs the cause", async () => {
+            await using api = await PortfolioItemRouteHarness.launch();
+            const log = api.silenceErrorLog();
+            const error = new PersistenceError(new Error("db down"));
+            api.givenListFails(error);
+
+            const { status, body } = await api.listItems();
+
+            expect(status).toBe(500);
+            expect(body).toEqual({
+                code: "PERSISTENCE_ERROR",
+                message: "Internal server error",
+                statusCode: 500,
+            } satisfies ApiErrorDto);
+            expect(log.calls).toEqual([[expect.any(String), error]]);
+        });
     });
 
-    it("fails a request whose use case reaches a guarded platform port, naming the port", async () => {
-        await using api = await BaseApiHarness.launch();
-        api.silenceErrorLog();
+    describe("bearer authentication", () => {
+        it("rejects a request without an Authorization header", async () => {
+            await using api = await ApiHarness.launch();
 
-        await expect(api.get("/portfolio-items")).rejects.toThrow(
-            "system boundary reached: PLATFORM.Db",
-        );
-    });
-});
+            const res = await api.anonymous("/portfolio-items");
 
-// Every route answers through the same `errorJson` and `app.onError`, so one route proves it.
-describe("errors hidden behind a 500", () => {
-    it("answers a generic 500 for a use case that throws and logs the cause", async () => {
-        await using api = await PortfolioItemsHarness.launch();
-        const log = api.silenceErrorLog();
-        const error = new Error("leaky");
-        api.givenListThrows(error);
+            expect(res.status).toBe(401);
+            expect(await res.json()).toEqual(UNAUTHORIZED);
+        });
 
-        const { status, body } = await api.listItems();
+        it("rejects a wrong token", async () => {
+            await using api = await ApiHarness.launch();
 
-        expect(status).toBe(500);
-        expect(body).toEqual(INTERNAL_ERROR);
-        expect(log.calls).toEqual([[expect.any(String), error]]);
-    });
+            const res = await api.withAuthorization("/portfolio-items", "Bearer wrong-token");
 
-    it("answers a generic 500 for a domain error the API does not map", async () => {
-        class UnmappedError extends DomainError<"UNMAPPED"> {
-            readonly code = "UNMAPPED";
-        }
-        await using api = await PortfolioItemsHarness.launch();
-        api.silenceErrorLog();
-        api.givenListThrows(new UnmappedError("leaky"));
+            expect(res.status).toBe(401);
+            expect(await res.json()).toEqual(UNAUTHORIZED);
+        });
 
-        const { status, body } = await api.listItems();
+        it("rejects a token of the same length but different content", async () => {
+            await using api = await ApiHarness.launch();
 
-        expect(status).toBe(500);
-        expect(body).toEqual(INTERNAL_ERROR);
-    });
+            const res = await api.withAuthorization(
+                "/portfolio-items",
+                `Bearer ${"x".repeat(TOKEN.length)}`,
+            );
 
-    it("answers 500 PERSISTENCE_ERROR without its message and logs the cause", async () => {
-        await using api = await PortfolioItemsHarness.launch();
-        const log = api.silenceErrorLog();
-        const error = new PersistenceError(new Error("db down"));
-        api.givenListFails(error);
+            expect(res.status).toBe(401);
+            expect(await res.json()).toEqual(UNAUTHORIZED);
+        });
 
-        const { status, body } = await api.listItems();
+        it("rejects a non-Bearer scheme", async () => {
+            await using api = await ApiHarness.launch();
 
-        expect(status).toBe(500);
-        expect(body).toEqual({
-            code: "PERSISTENCE_ERROR",
-            message: "Internal server error",
-            statusCode: 500,
-        } satisfies ApiErrorDto);
-        expect(log.calls).toEqual([[expect.any(String), error]]);
-    });
-});
+            const res = await api.withAuthorization("/portfolio-items", `Basic ${TOKEN}`);
 
-describe("bearer authentication", () => {
-    it("rejects a request without an Authorization header", async () => {
-        await using api = await BaseApiHarness.launch();
+            expect(res.status).toBe(401);
+            expect(await res.json()).toEqual(UNAUTHORIZED);
+        });
 
-        const res = await api.anonymous("/portfolio-items");
+        it("rejects every request while no token is configured, even an empty bearer", async () => {
+            await using api = await ApiHarness.launch({ token: "" });
 
-        expect(res.status).toBe(401);
-        expect(await res.json()).toEqual(UNAUTHORIZED);
-    });
+            const responses = await Promise.all([
+                api.withAuthorization("/portfolio-items", "Bearer "),
+                api.anonymous("/portfolio-items"),
+            ]);
 
-    it("rejects a wrong token", async () => {
-        await using api = await BaseApiHarness.launch();
-
-        const res = await api.withAuthorization("/portfolio-items", "Bearer wrong-token");
-
-        expect(res.status).toBe(401);
-        expect(await res.json()).toEqual(UNAUTHORIZED);
-    });
-
-    it("rejects a token of the same length but different content", async () => {
-        await using api = await BaseApiHarness.launch();
-
-        const res = await api.withAuthorization(
-            "/portfolio-items",
-            `Bearer ${"x".repeat(TOKEN.length)}`,
-        );
-
-        expect(res.status).toBe(401);
-        expect(await res.json()).toEqual(UNAUTHORIZED);
-    });
-
-    it("rejects a non-Bearer scheme", async () => {
-        await using api = await BaseApiHarness.launch();
-
-        const res = await api.withAuthorization("/portfolio-items", `Basic ${TOKEN}`);
-
-        expect(res.status).toBe(401);
-        expect(await res.json()).toEqual(UNAUTHORIZED);
-    });
-
-    it("rejects every request while no token is configured, even an empty bearer", async () => {
-        await using api = await BaseApiHarness.launch({ token: "" });
-
-        const responses = await Promise.all([
-            api.withAuthorization("/portfolio-items", "Bearer "),
-            api.anonymous("/portfolio-items"),
-        ]);
-
-        expect(responses.map((r) => r.status)).toEqual([401, 401]);
+            expect(responses.map((r) => r.status)).toEqual([401, 401]);
+        });
     });
 });

@@ -39,7 +39,7 @@
         },
         {
             "description": "Seguir versionado de Expo con ~",
-            "rangeStrategy": "tilde",
+            "rangeStrategy": "replace",
             "matchPackageNames": ["/^expo($|-)/", "/^@expo//"]
         },
         {
@@ -73,38 +73,79 @@
     "customManagers": [
         {
             "customType": "regex",
-            "description": "Update pinned MCP server versions in opencode.json",
-            "managerFilePatterns": ["/^opencode\\.json$/"],
-            "matchStrings": ["\"(?<depName>@?[^\"@]+)@(?<currentValue>[^\"]+)\""],
-            "datasourceTemplate": "npm"
-        },
-        {
-            "customType": "regex",
-            "description": "Update pinned MCP server versions in .mcp.json",
-            "managerFilePatterns": ["/^\\.mcp\\.json$/"],
-            "matchStrings": ["\"(?<depName>@?[^\"@]+)@(?<currentValue>[^\"]+)\""],
-            "datasourceTemplate": "npm"
-        },
-        {
-            "customType": "regex",
-            "description": "Update pinned CLI tool versions in CI workflows (pnpm dlx/bunx/npx)",
-            "managerFilePatterns": ["/^\\.github/workflows/.+\\.ya?ml$/"],
+            "description": "Pinned pnpx packages in package.json scripts",
+            "managerFilePatterns": ["/(^|/)package\\.json$/"],
             "matchStrings": [
-                "(?:pnpm dlx|bunx|npx) (?<depName>(?:@[^/\\s]+/)?[^@\\s]+)@(?<currentValue>[^\\s]+)"
+                "\\bpnpx\\s+(?:(?:--package|-p)(?:\\s+|=))?(?<depName>(?:@[a-z0-9_.-]+/)?[a-z0-9_.-]+)@(?<currentValue>\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?)(?:$|[\\s\"\\x27`\\\\;|&)\\]}])"
             ],
-            "datasourceTemplate": "npm"
+            "datasourceTemplate": "npm",
+            "versioningTemplate": "npm"
         },
         {
             "customType": "regex",
-            "description": "Update pinned 'pnpm dlx --package <pkg>@<ver>' versions (renovate-config-validator and similar)",
+            "description": "Pinned pnpx packages in CI/CD pipelines",
             "managerFilePatterns": [
-                "/^\\.github/workflows/.+\\.ya?ml$/",
-                "/^lint-staged\\.config\\.ts$/"
+                "/(^|/)(?:\\.github/workflows|\\.github/actions|\\.eas/workflows)/.*\\.ya?ml$/",
+                "/(^|/)(?:bitbucket-pipelines|\\.gitlab-ci|azure-pipelines)\\.ya?ml$/"
             ],
             "matchStrings": [
-                "pnpm dlx --package (?<depName>(?:@[^/\\s]+/)?[^@\\s]+)@(?<currentValue>[^\\s]+)"
+                "\\bpnpx\\s+(?:(?:--package|-p)(?:\\s+|=))?(?<depName>(?:@[a-z0-9_.-]+/)?[a-z0-9_.-]+)@(?<currentValue>\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?)(?:$|[\\s\"\\x27`\\\\;|&)\\]}])"
             ],
-            "datasourceTemplate": "npm"
+            "datasourceTemplate": "npm",
+            "versioningTemplate": "npm"
+        },
+        {
+            "customType": "regex",
+            "description": "Pinned pnpx packages in Git hooks and their tooling",
+            "managerFilePatterns": [
+                "/(^|/)\\.husky/[^/]+$/",
+                "/(^|/)(?:\\.?lint-?staged(?:\\.config)?\\.(?:[cm]?[jt]s|json)|\\.lintstagedrc(?:\\.(?:[cm]?[jt]s|json|ya?ml))?)$/"
+            ],
+            "matchStrings": [
+                "\\bpnpx\\s+(?:(?:--package|-p)(?:\\s+|=))?(?<depName>(?:@[a-z0-9_.-]+/)?[a-z0-9_.-]+)@(?<currentValue>\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?)(?:$|[\\s\"\\x27`\\\\;|&)\\]}])"
+            ],
+            "datasourceTemplate": "npm",
+            "versioningTemplate": "npm"
+        },
+        {
+            "customType": "regex",
+            "description": "Pinned pnpx packages in Dockerfiles and Compose files",
+            "managerFilePatterns": [
+                "/(^|/)(?:Dockerfile(?:\\.[^/]+)?|[^/]+\\.Dockerfile)$/",
+                "/(^|/)(?:docker-)?compose(?:\\.[^/]+)?\\.ya?ml$/"
+            ],
+            "matchStrings": [
+                "\\bpnpx\\s+(?:(?:--package|-p)(?:\\s+|=))?(?<depName>(?:@[a-z0-9_.-]+/)?[a-z0-9_.-]+)@(?<currentValue>\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?)(?:$|[\\s\"\\x27`\\\\;|&)\\]}])",
+                "\\bcommand[\"\\x27]?\\s*[:=]\\s*\\[\\s*\"pnpx\"\\s*,\\s*(?:\"(?:--package|-p)\"\\s*,\\s*)?\"(?<depName>(?:@[a-z0-9_.-]+/)?[a-z0-9_.-]+)@(?<currentValue>\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?)\""
+            ],
+            "datasourceTemplate": "npm",
+            "versioningTemplate": "npm"
+        },
+        {
+            "customType": "regex",
+            "description": "Pinned pnpx packages in agentic CLI and MCP server configs",
+            "managerFilePatterns": [
+                "/(^|/)(?:\\.mcp|opencode)\\.json$/",
+                "/(^|/)\\.(?:gemini|codex|claude|cursor)/.*\\.(?:jsonc?|toml|ya?ml|[cm]?[jt]s)$/",
+                "/(^|/)\\.junie/mcp/mcp\\.json$/"
+            ],
+            "matchStrings": [
+                "\\bpnpx\\s+(?:(?:--package|-p)(?:\\s+|=))?(?<depName>(?:@[a-z0-9_.-]+/)?[a-z0-9_.-]+)@(?<currentValue>\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?)(?:$|[\\s\"\\x27`\\\\;|&)\\]}])",
+                "\\bcommand[\"\\x27]?\\s*[:=]\\s*\"pnpx\"\\s*,?\\s*[\"\\x27]?args[\"\\x27]?\\s*[:=]\\s*\\[\\s*(?:\"(?:--package|-p)\"\\s*,\\s*)?\"(?<depName>(?:@[a-z0-9_.-]+/)?[a-z0-9_.-]+)@(?<currentValue>\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?)\"",
+                "\\bcommand[\"\\x27]?\\s*[:=]\\s*\\[\\s*\"pnpx\"\\s*,\\s*(?:\"(?:--package|-p)\"\\s*,\\s*)?\"(?<depName>(?:@[a-z0-9_.-]+/)?[a-z0-9_.-]+)@(?<currentValue>\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?)\""
+            ],
+            "datasourceTemplate": "npm",
+            "versioningTemplate": "npm"
+        },
+        {
+            "customType": "regex",
+            "description": "Pinned pnpx packages in shell scripts and task runners",
+            "managerFilePatterns": ["/\\.(?:sh|bash|zsh)$/", "/(^|/)(?:[Mm]akefile|[Jj]ustfile)$/"],
+            "matchStrings": [
+                "\\bpnpx\\s+(?:(?:--package|-p)(?:\\s+|=))?(?<depName>(?:@[a-z0-9_.-]+/)?[a-z0-9_.-]+)@(?<currentValue>\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?)(?:$|[\\s\"\\x27`\\\\;|&)\\]}])"
+            ],
+            "datasourceTemplate": "npm",
+            "versioningTemplate": "npm"
         }
     ]
 }
