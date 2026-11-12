@@ -1,1 +1,39 @@
 @import "tailwindcss";
+
+/* Board card motion: gated behind the media query itself (not a `motion-safe:` utility class)
+   so a card that never gets these classes toggled still has zero animation under reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+    .board-card {
+        animation: board-card-enter 320ms ease-out;
+    }
+
+    .board-card-new {
+        animation:
+            board-card-enter 320ms ease-out,
+            board-card-highlight 2400ms ease-out;
+    }
+}
+
+@keyframes board-card-enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes board-card-highlight {
+    0% {
+        box-shadow: 0 0 0 4px rgb(217 119 6 / 60%);
+        background-color: #fef3c7;
+    }
+
+    100% {
+        box-shadow: 0 0 0 4px rgb(217 119 6 / 0%);
+        background-color: #fff;
+    }
+}
