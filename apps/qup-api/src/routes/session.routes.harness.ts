@@ -12,7 +12,7 @@ import type {
     Order,
     Session,
 } from "@m0n0lab/qup-domain";
-import type { OrderDto, SessionDto } from "@m0n0lab/qup-shared";
+import type { OrderDto, PublicOrderSummaryDto, SessionDto } from "@m0n0lab/qup-shared";
 
 export class SessionRouteHarness extends ApiHarness {
     givenSessionCreated(session: Session) {
@@ -79,7 +79,7 @@ export class SessionRouteHarness extends ApiHarness {
 
     /** `query` is the raw search string, `?status=OPEN` or empty. */
     listSessions(query: string) {
-        return this.reply<SessionDto[]>(this.request(`/sessions${query}`));
+        return this.reply<SessionDto[]>(this.admin(`/sessions${query}`));
     }
 
     sessionByCode(code: string) {
@@ -87,11 +87,18 @@ export class SessionRouteHarness extends ApiHarness {
     }
 
     sessionById(id: string) {
-        return this.reply<SessionDto>(this.request(`/sessions/${id}`));
+        return this.reply<SessionDto>(this.admin(`/sessions/${id}`));
+    }
+
+    /** `query` is the raw search string, such as `?guest=Ana`. */
+    guestOrders(code: string, query: string) {
+        return this.reply<PublicOrderSummaryDto[]>(
+            this.request(`/sessions/code/${code}/orders${query}`),
+        );
     }
 
     sessionOrders(id: string) {
-        return this.reply<OrderDto[]>(this.request(`/sessions/${id}/orders`));
+        return this.reply<OrderDto[]>(this.admin(`/sessions/${id}/orders`));
     }
 
     closeSession(id: string) {

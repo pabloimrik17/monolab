@@ -11,6 +11,7 @@ import {
 import { errorJson } from "../errors/error-mapping.ts";
 import { adminOnly } from "../middleware/admin-only.ts";
 import { toOrderDto, toSessionDto } from "../serializers/dto-serializers.ts";
+import { toPublicOrderSummary } from "../serializers/public-serializers.ts";
 import type { CreateSessionRequest } from "@m0n0lab/qup-shared";
 import type { Container } from "inversify";
 
@@ -30,8 +31,8 @@ export function sessionRoutes(container: Container) {
         );
     });
 
-    // GET /sessions?status=OPEN
-    app.get("/", async (c) => {
+    // GET /sessions?status=OPEN (admin)
+    app.get("/", adminOnly(), async (c) => {
         const status = c.req.query("status");
         if (status === "OPEN") {
             const uc = container.get<GetActiveSessionsUseCase>(TOKENS.GetActiveSessionsUseCase);
@@ -60,9 +61,42 @@ export function sessionRoutes(container: Container) {
         );
     });
 
-    // GET /sessions/:id/orders
-    app.get("/:id/orders", async (c) => {
-        const sessionId = c.req.param("id");
+    // GET /sessions/code/:code/orders?guest=Y
+    app.get("/code/:code/orders", async (c) => {
+        // `guest` is a filter, not authentication — but it is required, so the route
+        // can never degrade into "every order in the session".
+        const guest = c.req.query("guest");
+        if (!guest) {
+            return c.json(
+                {
+                    code: "VALIDATION_ERROR",
+                    message: "guest query param required",
+                    statusCode: 422,
+                },
+                422,
+            );
+        }
+
+        const code = c.req.param("code");
+        const getSession = container.get<GetSessionByCodeUseCase>(TOKENS.GetSessionByCodeUseCase);
+        const sessionResult = await getSession.execute(code);
+        if (sessionResult.isErr()) {
+            return errorJson(c, sessionResult.error);
+        }
+
+        const uc = container.get<GetSessionOrdersUseCase>(TOKENS.GetSessionOrdersUseCase);
+        const result = await uc.execute(sessionResult.value.id);
+
+        return result.match(
+            (orders) =>
+                c.json(orders.filter((o) => o.guestName === guest).map(toPublicOrderSummary)),
+            (error) => errorJson(c, error),
+        );
+    });
+
+    // GET /sessions/:id/orders (admin)
+    app.get("/:id/orders", adminOnly(), async (c) => {
+        const sessionId = c.req.param("id")!;
         const uc = container.get<GetSessionOrdersUseCase>(TOKENS.GetSessionOrdersUseCase);
         const result = await uc.execute(sessionId);
 
@@ -72,9 +106,9 @@ export function sessionRoutes(container: Container) {
         );
     });
 
-    // GET /sessions/:id
-    app.get("/:id", async (c) => {
-        const id = c.req.param("id");
+    // GET /sessions/:id (admin)
+    app.get("/:id", adminOnly(), async (c) => {
+        const id = c.req.param("id")!;
         const uc = container.get<GetSessionByIdUseCase>(TOKENS.GetSessionByIdUseCase);
 
         const result = await uc.execute(id);

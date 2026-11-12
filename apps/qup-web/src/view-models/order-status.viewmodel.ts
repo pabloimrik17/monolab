@@ -1,7 +1,10 @@
 import { injectable } from "inversify";
 import { createSignal } from "solid-js";
 import { BaseViewModel } from "@m0n0lab/solid-clean";
-import { getSessionByCode, getSessionOrders } from "../server/data.ts";
+import { getSessionByCode } from "../server/data.ts";
+// Host read, so this guest screen refuses until task 5.3 moves it onto the public
+// per-guest projection (GET /sessions/code/:code/orders?guest=).
+import { getSessionOrders } from "../server/host-data.ts";
 import { sessionEventsUrl } from "../services/sse-url.ts";
 import type { OrderDto } from "@m0n0lab/qup-shared";
 

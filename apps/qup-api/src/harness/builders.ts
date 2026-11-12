@@ -34,18 +34,23 @@ export function makeMenuItem(overrides: Partial<MenuItemProps> = {}): MenuItem {
     });
 }
 
+type OrderItemProps = Parameters<typeof OrderItem.reconstitute>[0];
+
+export function makeOrderItem(overrides: Partial<OrderItemProps> = {}): OrderItem {
+    return OrderItem.reconstitute({
+        menuItemId: "6b3389b3-bff8-416e-93ad-e6d411808d95",
+        menuItemName: "Flat white",
+        quantity: 2,
+        ...overrides,
+    });
+}
+
 export function makeOrder(overrides: Partial<OrderProps> = {}): Order {
     return Order.reconstitute({
         id: crypto.randomUUID(),
         sessionId: crypto.randomUUID(),
         guestName: "Ana",
-        items: [
-            OrderItem.reconstitute({
-                menuItemId: "6b3389b3-bff8-416e-93ad-e6d411808d95",
-                menuItemName: "Flat white",
-                quantity: 2,
-            }),
-        ],
+        items: [makeOrderItem()],
         status: OrderStatus.PENDING,
         createdAt: new Date("2026-11-06T09:05:00.000Z"),
         updatedAt: new Date("2026-11-06T09:05:00.000Z"),

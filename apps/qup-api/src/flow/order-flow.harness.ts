@@ -68,6 +68,6 @@ export class OrderFlowHarness extends ApiHarness {
     }
 
     sessionOrders(id: string) {
-        return this.reply<OrderDto[]>(this.request(`/sessions/${id}/orders`));
+        return this.reply<OrderDto[]>(this.admin(`/sessions/${id}/orders`));
     }
 }

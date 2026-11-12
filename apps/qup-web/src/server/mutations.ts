@@ -1,5 +1,6 @@
 "use server";
 
+import { adminHeaders } from "./admin-guard.ts";
 import type {
     CreateMenuItemRequest,
     CreateOrderRequest,
@@ -13,16 +14,10 @@ import type {
 
 const API_URL = process.env["QUP_API_URL"] ?? "http://localhost:3001";
 
-function adminHeaders(): Record<string, string> {
-    const pin = process.env["API_ADMIN_PIN"];
-    if (!pin) throw new Error("API_ADMIN_PIN is required");
-    return { "X-Admin-Pin": pin };
-}
-
 async function post<T>(path: string, body?: unknown, admin = false): Promise<T> {
     const res = await fetch(`${API_URL}${path}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...(admin && adminHeaders()) },
+        headers: { "Content-Type": "application/json", ...(admin ? await adminHeaders() : {}) },
         body: body ? JSON.stringify(body) : null,
     });
     if (!res.ok) throw new Error(`POST ${path} failed: ${res.status}`);
@@ -33,7 +28,7 @@ async function post<T>(path: string, body?: unknown, admin = false): Promise<T> 
 async function patch(path: string, body: unknown, admin = false): Promise<void> {
     const res = await fetch(`${API_URL}${path}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", ...(admin && adminHeaders()) },
+        headers: { "Content-Type": "application/json", ...(admin ? await adminHeaders() : {}) },
         body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error(`PATCH ${path} failed: ${res.status}`);
@@ -42,7 +37,7 @@ async function patch(path: string, body: unknown, admin = false): Promise<void> 
 async function del(path: string, admin = false): Promise<void> {
     const res = await fetch(`${API_URL}${path}`, {
         method: "DELETE",
-        headers: { ...(admin && adminHeaders()) },
+        headers: admin ? await adminHeaders() : {},
     });
     if (!res.ok) throw new Error(`DELETE ${path} failed: ${res.status}`);
 }

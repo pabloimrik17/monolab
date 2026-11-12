@@ -6,7 +6,6 @@ import type {
     CancelOrderUseCase,
     CreateOrderUseCase,
     GetSessionByCodeUseCase,
-    GetSessionOrdersUseCase,
     Order,
     Session,
     UpdateOrderStatusUseCase,
@@ -28,14 +27,6 @@ export class OrderRouteHarness extends ApiHarness {
 
     givenCreateFails(error: UseCaseError<CreateOrderUseCase>) {
         return this.fake<CreateOrderUseCase>(TOKENS.CreateOrderUseCase, errAsync(error));
-    }
-
-    givenSessionOrders(orders: Order[]) {
-        return this.fake<GetSessionOrdersUseCase>(TOKENS.GetSessionOrdersUseCase, okAsync(orders));
-    }
-
-    givenSessionOrdersFail(error: UseCaseError<GetSessionOrdersUseCase>) {
-        return this.fake<GetSessionOrdersUseCase>(TOKENS.GetSessionOrdersUseCase, errAsync(error));
     }
 
     givenStatusUpdated() {
@@ -62,11 +53,6 @@ export class OrderRouteHarness extends ApiHarness {
 
     createOrder(body: unknown) {
         return this.reply<OrderDto>(this.json("/orders", "POST", body));
-    }
-
-    /** `query` is the raw search string, such as `?sessionId=…&guest=Ana`. */
-    listOrders(query: string) {
-        return this.reply<OrderDto[]>(this.request(`/orders${query}`));
     }
 
     updateStatus(id: string, body: unknown) {
