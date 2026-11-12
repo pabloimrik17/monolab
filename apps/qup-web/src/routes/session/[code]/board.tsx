@@ -97,8 +97,15 @@ export default function BoardPage() {
                     <p class="text-center text-2xl text-stone-700">Session not found</p>
                 </Show>
 
-                <Show when={vm.state() === "ended"}>
+                {/* Shown both for a session that was already closed on load and for one
+                    that closed while the board was open — in the second case the cards
+                    stay exactly as they were. */}
+                <Show when={vm.state() === "ended" || vm.sessionEnded()}>
                     <p class="text-center text-2xl text-stone-700">Session ended</p>
+                </Show>
+
+                <Show when={vm.reconnecting()}>
+                    <p class="text-center text-xl text-amber-700">Reconnecting…</p>
                 </Show>
 
                 <Show when={vm.state() === "error"}>
