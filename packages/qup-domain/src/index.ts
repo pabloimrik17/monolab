@@ -49,7 +49,10 @@ export { CreateSessionUseCase } from "./use-cases/create-session.use-case.ts";
 export { DeleteMenuItemUseCase } from "./use-cases/delete-menu-item.use-case.ts";
 export { GetMenuUseCase } from "./use-cases/get-menu.use-case.ts";
 export { GetActiveSessionsUseCase } from "./use-cases/get-active-sessions.use-case.ts";
-export { GetPublicOrderBoardUseCase } from "./use-cases/get-public-order-board.use-case.ts";
+export {
+    boardVisibleUntil,
+    GetPublicOrderBoardUseCase,
+} from "./use-cases/get-public-order-board.use-case.ts";
 export type { PublicOrderBoard } from "./use-cases/get-public-order-board.use-case.ts";
 export { GetSessionByCodeUseCase } from "./use-cases/get-session-by-code.use-case.ts";
 export { GetSessionByIdUseCase } from "./use-cases/get-session-by-id.use-case.ts";
