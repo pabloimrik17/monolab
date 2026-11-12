@@ -5,6 +5,7 @@ export type {
     MenuItemDto,
     PublicOrderItemLineDto,
     PublicOrderSummaryDto,
+    PublicOrderBoardDto,
 } from "./dtos.ts";
 export type { ApiErrorDto } from "./api-error.ts";
 export type {

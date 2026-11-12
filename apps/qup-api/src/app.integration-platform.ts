@@ -33,6 +33,7 @@ describe("createApp", () => {
                     "GET /sessions",
                     "GET /sessions/code/:code",
                     "GET /sessions/code/:code/orders",
+                    "GET /sessions/code/:code/board",
                     "GET /sessions/:id/orders",
                     "GET /sessions/:id",
                     "PATCH /sessions/:id/close",

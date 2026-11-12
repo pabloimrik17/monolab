@@ -8,6 +8,7 @@ import { CreateSessionUseCase } from "./use-cases/create-session.use-case.ts";
 import { DeleteMenuItemUseCase } from "./use-cases/delete-menu-item.use-case.ts";
 import { GetActiveSessionsUseCase } from "./use-cases/get-active-sessions.use-case.ts";
 import { GetMenuUseCase } from "./use-cases/get-menu.use-case.ts";
+import { GetPublicOrderBoardUseCase } from "./use-cases/get-public-order-board.use-case.ts";
 import { GetSessionByCodeUseCase } from "./use-cases/get-session-by-code.use-case.ts";
 import { GetSessionByIdUseCase } from "./use-cases/get-session-by-id.use-case.ts";
 import { GetSessionOrdersUseCase } from "./use-cases/get-session-orders.use-case.ts";
@@ -24,6 +25,7 @@ export const domainModule = new ContainerModule(({ bind }) => {
     bind(TOKENS.UpdateOrderStatusUseCase).to(UpdateOrderStatusUseCase);
     bind(TOKENS.CancelOrderUseCase).to(CancelOrderUseCase);
     bind(TOKENS.GetSessionOrdersUseCase).to(GetSessionOrdersUseCase);
+    bind(TOKENS.GetPublicOrderBoardUseCase).to(GetPublicOrderBoardUseCase);
     bind(TOKENS.GetMenuUseCase).to(GetMenuUseCase);
     bind(TOKENS.CreateMenuItemUseCase).to(CreateMenuItemUseCase);
     bind(TOKENS.UpdateMenuItemUseCase).to(UpdateMenuItemUseCase);
