@@ -1,8 +1,7 @@
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
-import { type EventBus, type GetSessionByCodeUseCase, Order, TOKENS } from "@m0n0lab/qup-domain";
+import { type EventBus, type GetSessionByCodeUseCase, TOKENS } from "@m0n0lab/qup-domain";
 import { errorJson } from "../errors/error-mapping.ts";
-import { toOrderDto } from "../serializers/dto-serializers.ts";
 import type { Context } from "hono";
 import type { SSEMessage, SSEStreamingApi } from "hono/streaming";
 import type { Container } from "inversify";
@@ -102,17 +101,16 @@ function sessionStream(container: Container, events: readonly string[], toFrame:
 export function eventRoutes(container: Container) {
     const app = new Hono();
 
-    // GET /events/sessions/:code — SSE filtered by session
+    // GET /events/sessions/:code — SSE filtered by session. No PIN, so nothing private may
+    // ride on it: every payload the bus carries for these events is already a flat signal
+    // record (see the interfaces in `@m0n0lab/qup-shared`), no entity is ever emitted, and
+    // this route has no serializer to turn one into a DTO even if one were.
     app.get(
         "/sessions/:code",
-        sessionStream(container, SESSION_STREAM_EVENTS, (event, data) => {
-            // Serialize Order entity to DTO for order:created
-            const serialized =
-                event === "order:created" && data["order"] instanceof Order
-                    ? { ...data, order: toOrderDto(data["order"]) }
-                    : data;
-            return { event, data: JSON.stringify(serialized) };
-        }),
+        sessionStream(container, SESSION_STREAM_EVENTS, (event, data) => ({
+            event,
+            data: JSON.stringify(data),
+        })),
     );
 
     // GET /events/sessions/:code/board — payload-free signals for the public board.

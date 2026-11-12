@@ -7,7 +7,7 @@ const CONTAINER_TIMEOUT = 120_000;
 
 describe("order flow", () => {
     it(
-        "streams the order and its status change to the session's watchers",
+        "streams a bare order signal and its status change to the session's watchers",
         { timeout: CONTAINER_TIMEOUT },
         async () => {
             await using api = await OrderFlowHarness.launch();
@@ -22,25 +22,21 @@ describe("order flow", () => {
             const { status: placed, body: order } = await api.placeOrder({
                 sessionCode: code,
                 guestName: "Ana",
-                items: [{ menuItemId: (item as MenuItemDto).id, quantity: 2 }],
+                items: [
+                    {
+                        menuItemId: (item as MenuItemDto).id,
+                        quantity: 2,
+                        customization: "oat milk",
+                    },
+                ],
+                notes: "at the window",
             });
             const orderId = (order as OrderDto).id;
             const { status: updated } = await api.updateStatus(orderId, "PREPARING");
 
             expect([opened, placed, updated]).toEqual([201, 201, 200]);
-            expect(await events.next()).toEqual({
-                event: "order:created",
-                data: {
-                    sessionId,
-                    order: expect.objectContaining({
-                        id: orderId,
-                        status: "PENDING",
-                        items: [
-                            expect.objectContaining({ menuItemName: "Flat white", quantity: 2 }),
-                        ],
-                    }),
-                },
-            });
+            // Exact: the stream needs no PIN, so the guest's notes and customizations stay off it.
+            expect(await events.next()).toEqual({ event: "order:created", data: { sessionId } });
             expect(await events.next()).toEqual({
                 event: "order:status",
                 data: { orderId, sessionId, status: "PREPARING", updatedAt: expect.any(String) },
