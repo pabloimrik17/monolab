@@ -72,7 +72,8 @@
         {
             "matchDatasources": ["npm"],
             "matchPackageNames": ["markdownlint", "markdownlint-cli"],
-            "groupName": "markdownlint engine, CLI and schema"
+            "groupName": "markdownlint engine, CLI and schema",
+            "separateMajorMinor": false
         }
     ],
     "customManagers": [
