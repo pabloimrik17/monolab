@@ -804,6 +804,10 @@ export default tseslint.config(
             },
         },
     },
+    {
+        files: ["**/*.cjs"],
+        rules: { "@typescript-eslint/no-require-imports": "off" },
+    },
     // Type-aware linting (project service; excludes out-of-project config files).
     {
         files: ["**/*.{ts,tsx,mts,cts}"],
