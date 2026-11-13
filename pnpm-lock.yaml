@@ -544,10 +544,10 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 2.0.10
-        version: 2.0.10(hono@4.12.30)
+        version: 2.0.10(hono@4.13.16)
       '@hono/zod-validator':
         specifier: 0.9.1
-        version: 0.9.1(hono@4.12.30)(zod@3.25.76)
+        version: 0.9.1(hono@4.13.16)(zod@3.25.76)
       '@m0n0lab/investlab-catalog':
         specifier: workspace:*
         version: link:../../packages/investlab-catalog
@@ -570,8 +570,8 @@ importers:
         specifier: 'catalog:'
         version: 2.0.4(varlock@1.21.0)
       hono:
-        specifier: 4.12.30
-        version: 4.12.30
+        specifier: 4.13.16
+        version: 4.13.16
       inversify:
         specifier: 'catalog:'
         version: 8.2.3(reflect-metadata@0.2.2)
@@ -611,7 +611,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 2.0.10
-        version: 2.0.10(hono@4.12.30)
+        version: 2.0.10(hono@4.13.16)
       '@m0n0lab/qup-data':
         specifier: workspace:*
         version: link:../../packages/qup-data
@@ -625,8 +625,8 @@ importers:
         specifier: 'catalog:'
         version: 0.45.2(@types/pg@8.20.0)(pg@8.22.0)
       hono:
-        specifier: 4.12.30
-        version: 4.12.30
+        specifier: 4.13.16
+        version: 4.13.16
       inversify:
         specifier: 'catalog:'
         version: 8.2.3(reflect-metadata@0.2.2)
@@ -7673,8 +7673,8 @@ packages:
   highlight.js@10.7.3:
     resolution: {integrity: sha512-tzcUFauisWKNHaRkN4Wjl/ZA07gENAjFl3J/c480dprkGTg5EQstgaNFqBfUqCq54kZRIEcreTsAgF/m2quD7A==}
 
-  hono@4.12.30:
-    resolution: {integrity: sha512-emn+JoJjrN9YTpRDS5it/UI2SO9BAE37T6I3d963RxcZ81G9A4pr2SZTEiiaiKbzx+NKRg5BZ89fCL7gCJCUog==}
+  hono@4.13.16:
+    resolution: {integrity: sha512-AOLOEhvrV+iH92xXCnFr/5+3KjPKcI3xP63XJtX5spAnkznPdHijlIsUTpi7/9EhWqrTCekw5c5zh1K+YsVw7A==}
     engines: {node: '>=16.9.0'}
 
   hookable@5.5.3:
@@ -12692,13 +12692,13 @@ snapshots:
       protobufjs: 7.6.6
       yargs: 17.7.2
 
-  '@hono/node-server@2.0.10(hono@4.12.30)':
+  '@hono/node-server@2.0.10(hono@4.13.16)':
     dependencies:
-      hono: 4.12.30
+      hono: 4.13.16
 
-  '@hono/zod-validator@0.9.1(hono@4.12.30)(zod@3.25.76)':
+  '@hono/zod-validator@0.9.1(hono@4.13.16)(zod@3.25.76)':
     dependencies:
-      hono: 4.12.30
+      hono: 4.13.16
       zod: 3.25.76
 
   '@humanfs/core@0.19.1': {}
@@ -17011,7 +17011,7 @@ snapshots:
 
   highlight.js@10.7.3: {}
 
-  hono@4.12.30: {}
+  hono@4.13.16: {}
 
   hookable@5.5.3: {}
 
