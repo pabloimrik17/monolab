@@ -18,6 +18,8 @@ export default {
         ".junie",
         ".opencode",
         "CHANGELOG.md",
+        // markdownlint rejects the trailing comma oxfmt adds to JSONC
+        ".markdownlint.jsonc",
         "reports",
         "tsconfig.json",
     ],

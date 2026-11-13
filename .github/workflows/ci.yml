@@ -94,8 +94,14 @@ jobs:
             - name: 🔍 Validate OpenSpec change proposals
               run: pnpx @fission-ai/openspec@1.15.0 validate --changes --no-interactive
 
+            - name: 🔍 Check Markdown schema version
+              run: pnpm run lint:markdownlint:schema
+
+            - name: 🔍 Lint Markdown
+              run: pnpm run lint:markdownlint
+
             - name: 🔍 Execute lint checks for affected files (Affected)
-              run: pnpm exec nx affected -t lint:eslint lint:stylelint lint:markdownlint lint:oxfmt && pnpm run lint:knip
+              run: pnpm exec nx affected -t lint:eslint lint:stylelint lint:oxfmt && pnpm run lint:knip
               if: ${{ github.event_name == 'pull_request' }}
 
             - name: 🔍 Fallow audit (changed-code quality gate)
@@ -107,7 +113,7 @@ jobs:
               if: ${{ github.event_name == 'pull_request' }}
 
             - name: 🔍 Execute lint checks for all files (All)
-              run: pnpm exec nx run-many -t lint:publint lint:knip lint:eslint lint:stylelint lint:markdownlint lint:oxfmt lint:fallow
+              run: pnpm exec nx run-many -t lint:publint lint:knip lint:eslint lint:stylelint lint:oxfmt lint:fallow
               if: ${{ github.event_name == 'push' }}
 
             - name: Cache Nx results

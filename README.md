@@ -1,5 +1,3 @@
-<!-- markdownlint-disable MD041 -->
-
 ![MonoLab](monolab-logo.png)
 [![CI - Dev](https://github.com/pabloimrik17/monolab/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/pabloimrik17/monolab/actions/workflows/ci.yml)
 [![CI - Main](https://github.com/pabloimrik17/monolab/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/pabloimrik17/monolab/actions/workflows/ci.yml)
@@ -12,8 +10,6 @@
 [![pnpm](https://img.shields.io/badge/pnpm-12.14.0-orange?logo=pnpm)](https://pnpm.io/)
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/pabloimrik17/monolab?utm_source=oss&utm_medium=github&utm_campaign=pabloimrik17%2Fmonolab&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 [![Maintained with](https://img.shields.io/badge/Maintained%20with-❤️-red)](https://github.com/pabloimrik17/monolab)
-
-<!-- markdownlint-enable MD041 -->
 
 ## Published Packages
 
@@ -63,13 +59,9 @@ npm install @m0n0lab/http-client
 
 This project uses Node.js version 24.21.0. To install and use this specific version:
 
-<!-- markdownlint-disable MD013 MD029 -->
-
 1. Make sure you have [nvm (Node Version Manager)](https://github.com/nvm-sh/nvm) installed
 2. Clone the repository and navigate to the project directory
 3. Run the following command to install and use the correct Node.js version:
-
- <!-- markdownlint-restore -->
 
 ```bash
 nvm use
@@ -78,8 +70,6 @@ nvm use
 This will automatically read the `.nvmrc` file and switch to Node.js version 24.21.0.
 
 ### Package Manager Setup
-
-<!-- markdownlint-disable MD013 MD029 -->
 
 This project uses pnpm as the package manager. To activate pnpm version 12.14.0 using corepack:
 
@@ -96,8 +86,6 @@ corepack prepare pnpm@12.14.0 --activate
 ```
 
 3. Verify the installation:
-
- <!-- markdownlint-restore -->
 
 ```bash
 pnpm --version
@@ -244,11 +232,7 @@ Tests run automatically in CI via Nx Cloud distribution:
 
 ### Mutation Testing
 
-<!-- markdownlint-disable MD013 -->
-
 [![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fpabloimrik17%2Fmonolab%2Fdevelop)](https://dashboard.stryker-mutator.io/reports/github.com/pabloimrik17/monolab/develop)
-
-<!-- markdownlint-restore -->
 
 This project uses [Stryker Mutator](https://stryker-mutator.io/) for mutation
 testing to validate the quality of our test suites. Mutation testing introduces
@@ -300,8 +284,6 @@ Each package has graduated thresholds based on complexity:
 
 Mutation testing runs automatically in CI with the following behavior:
 
-<!-- markdownlint-disable MD013 -->
-
 - **Execution**: Only on push to `main` or `develop` branches (skipped on PRs)
 - **Incremental Mode**: Reuses results from previous runs to minimize execution
   time
@@ -311,8 +293,6 @@ Mutation testing runs automatically in CI with the following behavior:
   [Stryker Dashboard](https://dashboard.stryker-mutator.io/reports/github.com/pabloimrik17/monolab/develop)
   for historical tracking
 - **Artifacts**: Mutation reports are uploaded as CI artifacts for 30 days
-
-<!-- markdownlint-restore -->
 
 #### Local Development
 

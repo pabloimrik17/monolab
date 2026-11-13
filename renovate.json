@@ -68,6 +68,11 @@
             "description": "Update the fallow CLI and its GitHub Action together",
             "matchPackageNames": ["fallow", "fallow-rs/fallow"],
             "groupName": "fallow"
+        },
+        {
+            "matchDatasources": ["npm"],
+            "matchPackageNames": ["markdownlint", "markdownlint-cli"],
+            "groupName": "markdownlint engine, CLI and schema"
         }
     ],
     "customManagers": [
@@ -144,6 +149,16 @@
             "matchStrings": [
                 "\\bpnpx\\s+(?:(?:--package|-p)(?:\\s+|=))?(?<depName>(?:@[a-z0-9_.-]+/)?[a-z0-9_.-]+)@(?<currentValue>\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?)(?:$|[\\s\"\\x27`\\\\;|&)\\]}])"
             ],
+            "datasourceTemplate": "npm",
+            "versioningTemplate": "npm"
+        },
+        {
+            "customType": "regex",
+            "managerFilePatterns": ["/^\\.markdownlint\\.jsonc$/"],
+            "matchStrings": [
+                "\"\\$schema\"\\s*:\\s*\"https://raw\\.githubusercontent\\.com/DavidAnson/markdownlint/v(?<currentValue>\\d+\\.\\d+\\.\\d+)/schema/markdownlint-config-schema\\.json\""
+            ],
+            "depNameTemplate": "markdownlint",
             "datasourceTemplate": "npm",
             "versioningTemplate": "npm"
         }
