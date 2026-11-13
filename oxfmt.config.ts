@@ -18,7 +18,7 @@ export default {
         ".junie",
         ".opencode",
         "CHANGELOG.md",
-        // markdownlint rejects the trailing comma oxfmt adds to JSONC
+        // TODO: drop this entry once `markdownlint --config` accepts trailing commas in JSONC (run-con's strict JSON.parse rejects them); re-check on markdownlint-cli and formatter upgrades
         ".markdownlint.jsonc",
         "reports",
         "tsconfig.json",
