@@ -25,7 +25,7 @@
         "@sveltejs/vite-plugin-svelte": "7.2.0",
         "@vitest/coverage-v8": "catalog:",
         "msw": "catalog:",
-        "svelte": "5.56.6",
+        "svelte": "5.57.3",
         "svelte-check": "4.7.3",
         "typescript": "catalog:",
         "vite": "catalog:",
