@@ -72,7 +72,7 @@
         "@vitest/coverage-v8": "catalog:",
         "@vitest/eslint-plugin": "catalog:",
         "@vitest/ui": "catalog:",
-        "eslint": "10.7.0",
+        "eslint": "10.14.0",
         "eslint-config-prettier": "10.1.8",
         "eslint-import-resolver-typescript": "4.4.5",
         "eslint-plugin-boundaries": "7.4.2",
