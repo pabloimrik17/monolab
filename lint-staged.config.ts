@@ -4,7 +4,7 @@ import { defineConfig } from "lint-staged/config";
 
 const ESLINT_MAX_WARNINGS = 40;
 
-const MARKDOWN_FILES = /\.md$/;
+const MARKDOWN_FILES = /\.(?:md|markdown)$/;
 const FALLOW_FILES = /\.(?:ts|tsx|js|jsx|mjs|cjs|json|jsonc)$/;
 const RENOVATE_FILES = /(?:^|\/)renovate\.json$/;
 
@@ -52,7 +52,11 @@ export default defineConfig({
         "oxfmt --no-error-on-unmatched-pattern",
         // Each fixer writes only its own file type, so they can run together.
         (filenames: readonly string[]): string[] => [
-            ...forStaged(MARKDOWN_FILES, "markdownlint --fix", filenames),
+            ...forStaged(
+                MARKDOWN_FILES,
+                "markdownlint --config .markdownlint.jsonc --fix",
+                filenames,
+            ),
             affected("lint:stylelint:fix", filenames),
         ],
         (filenames: readonly string[]): string[] => [

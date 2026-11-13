@@ -1,21 +1,38 @@
-# Ignore markdown files in these directories
-openspec/
-.agent/
-.agents/
-.claude/
-.codex/
-.junie/
-.opencode/
+# Dependencies and generated output at any package depth
 node_modules/
 dist/
 coverage/
 
-# Ignore AI agent instruction files
-AGENTS.md
-CLAUDE.md
+# Git metadata and local worktrees
+.git/
+.worktrees/
 
-# Ignore auto-generated changelog files
+# Root agent/editor scaffolding; nested product examples stay in scope
+/.agent/
+/.agents/
+/.amazonq/
+/.claude/
+/.codex/
+/.cursor/
+/.gemini/
+/.junie/
+/.opencode/
+/.pi/
+/.github/agents/
+/.github/prompts/
+/.github/skills/
+/.github/copilot-instructions.md
+
+# Root OpenSpec workflow artifacts
+/openspec/
+
+# Maintained AGENTS.md and CLAUDE.md guides remain in scope.
+
+# Nx task cache
+.nx/
+
+# Generated workspace and package release changelogs
 **/CHANGELOG.md
 
-# Ignore captured run artefacts kept as test fixtures
-claude-plugins/experiments/scripts/fixtures/
+# Captured run artifacts preserved as test fixtures
+/claude-plugins/experiments/scripts/fixtures/
