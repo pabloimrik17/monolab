@@ -50,7 +50,7 @@ catalog:
     "@testcontainers/postgresql": 12.2.0
     "@testcontainers/redis": 12.2.0
     "@types/node": 24.19.2
-    "@types/pg": 8.20.0
+    "@types/pg": 8.23.1
     "@types/react": 19.2.17
     "@varlock/1password-plugin": 2.0.4
     "@varlock/vite-integration": 1.5.2
@@ -65,7 +65,7 @@ catalog:
     ioredis: 5.11.1
     msw: 3.0.4
     neverthrow: 8.2.0
-    pg: 8.22.0
+    pg: 8.23.1
     react: 19.2.7
     react-dom: 19.2.7
     solid-js: 1.9.14
