@@ -1,99 +1,101 @@
 packages:
-    - apps/*
-    - packages/*
-    - claude-plugins/*
+  - apps/*
+  - packages/*
+  - claude-plugins/*
 
 allowBuilds:
-    # builds from source only if npm_config_build_from_source is set; not needed (prebuilt binaries)
-    "@parcel/watcher": false
-    # postinstall only checks the native binding; not needed (prebuilt @swc/core-* on every platform)
-    "@swc/core": false
-    # postinstall only swaps in the native binary as a speed-up; not needed (@esbuild/* prebuilt)
-    esbuild: false
-    # postinstall pre-fetches the Nx Cloud client; not needed (@nx/nx-* prebuilt, client fetched on demand)
-    nx: false
-    # postinstall only acts when msw.workerDirectory is set; not needed (unset here)
-    msw: false
-    # node-gyp build of ssh2's optional CPU probe; not needed (ssh2 falls back without it)
-    cpu-features: false
-    # only warns on a version-scheme mismatch; not needed
-    protobufjs: false
-    # node-gyp build of an optional crypto binding; not needed (pure-JS fallback)
-    ssh2: false
-    # postinstall only checks the native binding; not needed (prebuilt @unrs/resolver-binding-* on every platform)
-    unrs-resolver: false
+  # builds from source only if npm_config_build_from_source is set; not needed (prebuilt binaries)
+  "@parcel/watcher": false
+  # postinstall only checks the native binding; not needed (prebuilt @swc/core-* on every platform)
+  "@swc/core": false
+  # postinstall only swaps in the native binary as a speed-up; not needed (@esbuild/* prebuilt)
+  esbuild: false
+  # postinstall pre-fetches the Nx Cloud client; not needed (@nx/nx-* prebuilt, client fetched on demand)
+  nx: false
+  # postinstall only acts when msw.workerDirectory is set; not needed (unset here)
+  msw: false
+  # node-gyp build of ssh2's optional CPU probe; not needed (ssh2 falls back without it)
+  cpu-features: false
+  # only warns on a version-scheme mismatch; not needed
+  protobufjs: false
+  # node-gyp build of an optional crypto binding; not needed (pure-JS fallback)
+  ssh2: false
+  # postinstall only checks the native binding; not needed (prebuilt @unrs/resolver-binding-* on every platform)
+  unrs-resolver: false
 
 blockExoticSubdeps: true
 
 trustPolicy: no-downgrade
 
 trustPolicyExclude:
-    # Maintainer published 4.0.2/4.0.3 locally (no provenance); tarball matches upstream tag, no advisories
-    - chokidar@4.0.3
-    # Backport of the ReDoS fix to the 6.x line, published without provenance; tarball identical to upstream tag v6.3.1
-    - semver@6.3.1
-    # Maintainer arcanis published 3.2.2 by hand (no provenance); tarball matches upstream berry 2eb98307, no advisories
-    - "@yarnpkg/libzip@3.2.2"
+  # Maintainer published 4.0.2/4.0.3 locally (no provenance); tarball matches upstream tag, no advisories
+  - chokidar@4.0.3
+  # Backport of the ReDoS fix to the 6.x line, published without provenance; tarball identical to upstream tag v6.3.1
+  - semver@6.3.1
+  # Maintainer arcanis published 3.2.2 by hand (no provenance); tarball matches upstream berry 2eb98307, no advisories
+  - "@yarnpkg/libzip@3.2.2"
 
 strictDepBuilds: true
 
 strictPeerDependencies: false
 
 catalog:
-    "@arethetypeswrong/cli": 0.18.5
-    "@codecov/rollup-plugin": 2.0.1
-    "@codecov/vite-plugin": 2.0.1
-    "@stryker-mutator/api": 10.1.1
-    "@stryker-mutator/core": 10.1.1
-    "@stryker-mutator/typescript-checker": 10.1.1
-    "@stryker-mutator/vitest-runner": 10.1.1
-    "@testcontainers/postgresql": 12.2.0
-    "@testcontainers/redis": 12.2.0
-    "@types/node": 24.19.2
-    "@types/pg": 8.20.0
-    "@types/react": 19.2.17
-    "@varlock/1password-plugin": 2.0.4
-    "@varlock/vite-integration": 1.5.2
-    "@vitejs/plugin-react-swc": 4.3.3
-    "@vitest/browser-playwright": 5.1.0
-    "@vitest/coverage-v8": 5.1.0
-    "@vitest/eslint-plugin": 1.6.28
-    "@vitest/ui": 5.1.0
-    drizzle-kit: 0.31.10
-    drizzle-orm: 0.45.2
-    inversify: 8.2.3
-    ioredis: 5.11.1
-    msw: 3.0.4
-    neverthrow: 8.2.0
-    pg: 8.22.0
-    react: 19.2.7
-    react-dom: 19.2.7
-    solid-js: 1.9.14
-    tsdown: 0.22.9
-    tslib: 2.8.1
-    typescript: 6.0.3
-    varlock: 1.21.0
-    vite: 8.1.6
-    vite-plugin-solid: 2.11.12
-    vitest: 5.1.0
-    vitest-browser-react: 2.3.0
+  "@arethetypeswrong/cli": 0.18.5
+  "@codecov/rollup-plugin": 2.0.1
+  "@codecov/vite-plugin": 2.0.1
+  "@stryker-mutator/api": 10.1.1
+  "@stryker-mutator/core": 10.1.1
+  "@stryker-mutator/typescript-checker": 10.1.1
+  "@stryker-mutator/vitest-runner": 10.1.1
+  "@testcontainers/postgresql": 12.2.0
+  "@testcontainers/redis": 12.2.0
+  "@types/node": 24.19.2
+  "@types/pg": 8.20.0
+  "@types/react": 19.2.17
+  "@varlock/1password-plugin": 2.0.4
+  "@varlock/vite-integration": 1.5.2
+  "@vitejs/plugin-react-swc": 4.3.3
+  "@vitest/browser-playwright": 5.1.0
+  "@vitest/coverage-v8": 5.1.0
+  "@vitest/eslint-plugin": 1.6.28
+  "@vitest/ui": 5.1.0
+  drizzle-kit: 0.31.10
+  drizzle-orm: 0.45.2
+  inversify: 8.2.3
+  ioredis: 5.11.1
+  msw: 3.0.4
+  neverthrow: 8.2.0
+  pg: 8.22.0
+  react: 19.2.7
+  react-dom: 19.2.7
+  solid-js: 1.9.14
+  tsdown: 0.22.9
+  tslib: 2.8.1
+  typescript: 6.0.3
+  varlock: 1.21.0
+  vite: 8.1.6
+  vite-plugin-solid: 2.11.12
+  vitest: 5.1.0
+  vitest-browser-react: 2.3.0
 
 minimumReleaseAge: 1440
 
 patchedDependencies:
-    "@codecov/sveltekit-plugin@2.0.1": patches/@codecov__sveltekit-plugin@2.0.1.patch
+  "@codecov/sveltekit-plugin@2.0.1": patches/@codecov__sveltekit-plugin@2.0.1.patch
 
 permissions:
-    fallow:
-        skills: true
-    varlock:
-        skills: true
+  fallow:
+    skills: true
+  varlock:
+    skills: true
 minimumReleaseAgeExclude:
-    # Renovate security update: vite@8.1.6
-    - vite@8.1.6
-    # Renovate security update: react-router@8.3.0
-    - react-router@8.3.0
-    # Renovate security update: postcss@8.5.23
-    - postcss@8.5.23
-    # Renovate security update: nx@23.2.1
-    - nx@23.2.1
+  # Renovate security update: vite@8.1.6
+  - vite@8.1.6
+  # Renovate security update: react-router@8.3.0
+  - react-router@8.3.0
+  # Renovate security update: postcss@8.5.23
+  - postcss@8.5.23
+  # Renovate security update: nx@23.2.1
+  - nx@23.2.1
+  # Renovate security update: @hono/node-server@2.1.6
+  - "@hono/node-server@2.1.6"
