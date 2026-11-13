@@ -30,7 +30,7 @@
         "@m0n0lab/investlab-quotes": "workspace:*",
         "@m0n0lab/investlab-roger": "workspace:*",
         "@varlock/1password-plugin": "catalog:",
-        "hono": "4.12.30",
+        "hono": "4.13.16",
         "inversify": "catalog:",
         "neverthrow": "catalog:",
         "varlock": "catalog:",
