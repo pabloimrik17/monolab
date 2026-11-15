@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/pabloimrik17/monolab/compare/experiments--v1.7.0...experiments--v2.0.0) (2026-11-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* **investlab:** watchlists saved under the old key no longer load.
+
+### Features
+
+* **investlab:** clean architecture layout and per-product layer lint ([#375](https://github.com/pabloimrik17/monolab/issues/375)) ([1565cec](https://github.com/pabloimrik17/monolab/commit/1565cec7c08c952dee56db451be67de21edb663c))
+
 ## [1.7.0](https://github.com/pabloimrik17/monolab/compare/experiments--v1.6.0...experiments--v1.7.0) (2026-10-04)
 
 
