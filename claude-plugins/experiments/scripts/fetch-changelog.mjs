@@ -43,7 +43,7 @@ import {
     writeRawSource,
     writeVerifiedVersion,
 } from "./lib/cache.mjs";
-import { detectPattern, extractSections } from "./lib/changelog-parse.mjs";
+import { extractSections } from "./lib/changelog-parse.mjs";
 import { ENGINES, isEngineRequest, nodeVersionsFromDistIndex } from "./lib/engines.mjs";
 import {
     defaultHttp,

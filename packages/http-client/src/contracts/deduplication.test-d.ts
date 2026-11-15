@@ -11,92 +11,94 @@ import type {
  * @vitest-environment node
  */
 
-describe("DeduplicationKey type safety", () => {
-    test("DeduplicationKey is a string", () => {
-        const key: DeduplicationKey = "GET:/users/1";
+describe("deduplication", () => {
+    describe("DeduplicationKey type safety", () => {
+        test("DeduplicationKey is a string", () => {
+            const key: DeduplicationKey = "GET:/users/1";
 
-        expectTypeOf(key).toEqualTypeOf<string>();
-    });
-});
-
-describe("HttpDeduplicationKeyGenerator type safety", () => {
-    test("HttpDeduplicationKeyGenerator accepts config and returns DeduplicationKey", () => {
-        const keyGenerator: HttpDeduplicationKeyGenerator = (
-            config: HttpRequestConfig,
-        ): DeduplicationKey => {
-            expectTypeOf(config).toMatchTypeOf<HttpRequestConfig>();
-            return "dedup-key";
-        };
-
-        expectTypeOf(keyGenerator).toMatchTypeOf<HttpDeduplicationKeyGenerator>();
-
-        const result = keyGenerator({});
-        expectTypeOf(result).toEqualTypeOf<DeduplicationKey>();
+            expectTypeOf(key).toEqualTypeOf<string>();
+        });
     });
 
-    test("HttpDeduplicationKeyGenerator return type is string", () => {
-        const keyGenerator: HttpDeduplicationKeyGenerator = (config) => {
-            const method = "GET";
-            const url = config.baseUrl || "";
-            return `${method}:${url}`;
-        };
+    describe("HttpDeduplicationKeyGenerator type safety", () => {
+        test("HttpDeduplicationKeyGenerator accepts config and returns DeduplicationKey", () => {
+            const keyGenerator: HttpDeduplicationKeyGenerator = (
+                config: HttpRequestConfig,
+            ): DeduplicationKey => {
+                expectTypeOf(config).toMatchTypeOf<HttpRequestConfig>();
+                return "dedup-key";
+            };
 
-        const result = keyGenerator({ baseUrl: "https://api.example.com" });
-        expectTypeOf(result).toEqualTypeOf<string>();
-    });
-});
+            expectTypeOf(keyGenerator).toMatchTypeOf<HttpDeduplicationKeyGenerator>();
 
-describe("HttpDeduplicationConfig type safety", () => {
-    test("HttpDeduplicationConfig requires enabled property", () => {
-        const config: HttpDeduplicationConfig = {
-            enabled: true,
-        };
+            const result = keyGenerator({});
+            expectTypeOf(result).toEqualTypeOf<DeduplicationKey>();
+        });
 
-        expectTypeOf(config.enabled).toEqualTypeOf<boolean>();
-    });
+        test("HttpDeduplicationKeyGenerator return type is string", () => {
+            const keyGenerator: HttpDeduplicationKeyGenerator = (config) => {
+                const method = "GET";
+                const url = config.baseUrl || "";
+                return `${method}:${url}`;
+            };
 
-    test("HttpDeduplicationConfig has optional keyGenerator", () => {
-        const keyGenerator: HttpDeduplicationKeyGenerator = (config) => `${config.baseUrl}`;
-
-        const config: HttpDeduplicationConfig = {
-            enabled: true,
-            keyGenerator,
-        };
-
-        expectTypeOf(config.keyGenerator).toEqualTypeOf<
-            HttpDeduplicationKeyGenerator | undefined
-        >();
+            const result = keyGenerator({ baseUrl: "https://api.example.com" });
+            expectTypeOf(result).toEqualTypeOf<string>();
+        });
     });
 
-    test("HttpDeduplicationConfig has optional ttl", () => {
-        const config: HttpDeduplicationConfig = {
-            enabled: true,
-            ttl: 5000,
-        };
+    describe("HttpDeduplicationConfig type safety", () => {
+        test("HttpDeduplicationConfig requires enabled property", () => {
+            const config: HttpDeduplicationConfig = {
+                enabled: true,
+            };
 
-        expectTypeOf(config.ttl).toEqualTypeOf<number | undefined>();
-    });
+            expectTypeOf(config.enabled).toEqualTypeOf<boolean>();
+        });
 
-    test("HttpDeduplicationConfig has optional criticalHeaders", () => {
-        const config: HttpDeduplicationConfig = {
-            enabled: true,
-            criticalHeaders: ["Authorization", "Content-Type"],
-        };
+        test("HttpDeduplicationConfig has optional keyGenerator", () => {
+            const keyGenerator: HttpDeduplicationKeyGenerator = (config) => `${config.baseUrl}`;
 
-        expectTypeOf(config.criticalHeaders).toEqualTypeOf<string[] | undefined>();
-    });
+            const config: HttpDeduplicationConfig = {
+                enabled: true,
+                keyGenerator,
+            };
 
-    test("HttpDeduplicationConfig accepts full configuration", () => {
-        const keyGenerator: HttpDeduplicationKeyGenerator = (config) =>
-            `${config.baseUrl}:${config.timeout}`;
+            expectTypeOf(config.keyGenerator).toEqualTypeOf<
+                HttpDeduplicationKeyGenerator | undefined
+            >();
+        });
 
-        const config: HttpDeduplicationConfig = {
-            enabled: true,
-            keyGenerator,
-            ttl: 5000,
-            criticalHeaders: ["Authorization", "Content-Type", "X-API-Key"],
-        };
+        test("HttpDeduplicationConfig has optional ttl", () => {
+            const config: HttpDeduplicationConfig = {
+                enabled: true,
+                ttl: 5000,
+            };
 
-        expectTypeOf(config).toMatchTypeOf<HttpDeduplicationConfig>();
+            expectTypeOf(config.ttl).toEqualTypeOf<number | undefined>();
+        });
+
+        test("HttpDeduplicationConfig has optional criticalHeaders", () => {
+            const config: HttpDeduplicationConfig = {
+                enabled: true,
+                criticalHeaders: ["Authorization", "Content-Type"],
+            };
+
+            expectTypeOf(config.criticalHeaders).toEqualTypeOf<string[] | undefined>();
+        });
+
+        test("HttpDeduplicationConfig accepts full configuration", () => {
+            const keyGenerator: HttpDeduplicationKeyGenerator = (config) =>
+                `${config.baseUrl}:${config.timeout}`;
+
+            const config: HttpDeduplicationConfig = {
+                enabled: true,
+                keyGenerator,
+                ttl: 5000,
+                criticalHeaders: ["Authorization", "Content-Type", "X-API-Key"],
+            };
+
+            expectTypeOf(config).toMatchTypeOf<HttpDeduplicationConfig>();
+        });
     });
 });

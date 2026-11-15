@@ -1,4 +1,0 @@
-{
-    "extends": "./tsconfig.node.tooling.json",
-    "include": ["vitest.config.ts"]
-}

@@ -15,6 +15,6 @@ export default defineConfig({
     sourcemap: true,
     clean: true,
     minify: false,
-    target: "ES2023",
+    target: "ES2024",
     deps: { neverBundle: ["react"] },
 });

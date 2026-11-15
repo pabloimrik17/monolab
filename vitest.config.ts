@@ -1,8 +1,8 @@
 import { defineConfig } from "vitest/config";
 
 /**
- * Config for `vitest` run from the repo root (`pnpm test:ui`): each package's
- * vitest.config.ts becomes a project with its own settings. Nx runs those
+ * Config for `vitest` run from the repo root (`pnpm test:ui`): each app,
+ * package and plugin vitest config becomes a project with its own settings. Nx runs those
  * configs directly instead.
  *
  * Root test options never reach file-based projects; shared settings live in
@@ -10,6 +10,10 @@ import { defineConfig } from "vitest/config";
  */
 export default defineConfig({
     test: {
-        projects: ["packages/*/vitest.config.ts"],
+        projects: [
+            "apps/*/vitest.config.ts",
+            "packages/*/vitest.config.ts",
+            "claude-plugins/*/vitest.config.mjs",
+        ],
     },
 });

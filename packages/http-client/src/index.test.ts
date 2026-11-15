@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { HttpClientOptions, HttpRequestConfig } from "./index.ts";
 
-describe("@m0n0lab/http-client", () => {
+describe("index", () => {
     describe("HttpRequestConfig", () => {
         it("should accept valid configuration object", () => {
             const config: HttpRequestConfig = {

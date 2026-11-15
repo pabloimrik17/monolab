@@ -69,6 +69,13 @@ export default function SessionPage() {
                         </button>
                     </form>
 
+                    <a
+                        href={`/session/${params.code}/board`}
+                        class="block text-center py-3 bg-stone-200 text-stone-700 font-medium rounded-lg hover:bg-stone-300 transition-colors"
+                    >
+                        View board
+                    </a>
+
                     <div class="space-y-3">
                         <h3 class="font-medium text-stone-700">Menu</h3>
                         <For each={vm.menu()}>

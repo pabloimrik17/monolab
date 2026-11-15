@@ -35,6 +35,8 @@
     "scripts": {
         "build": "tsdown",
         "build:check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
+        "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
+        "lint:eslint:fix": "eslint --cache --concurrency=auto --max-warnings 40 --fix .",
         "test": "vitest run",
         "test:changed": "vitest run --changed",
         "test:coverage": "vitest run --coverage",
@@ -44,8 +46,7 @@
         "test:unit:watch": "vitest",
         "test:unit:coverage": "vitest run --coverage",
         "test:mutation": "stryker run",
-        "test:mutation:report": "open reports/mutation/index.html",
-        "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
+        "test:mutation:report": "open reports/mutation/index.html"
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "catalog:",
@@ -64,7 +65,7 @@
     },
     "engines": {
         "node": ">=22.0.0",
-        "pnpm": "11.15.0"
+        "pnpm": "12.14.0"
     },
-    "packageManager": "pnpm@11.15.0"
+    "packageManager": "pnpm@12.14.0"
 }

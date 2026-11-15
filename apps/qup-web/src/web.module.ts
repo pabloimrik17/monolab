@@ -8,6 +8,7 @@ import { CreateOrderViewModel } from "./view-models/create-order.viewmodel.ts";
 import { DashboardViewModel } from "./view-models/dashboard.viewmodel.ts";
 import { JoinSessionViewModel } from "./view-models/join-session.viewmodel.ts";
 import { MenuManagementViewModel } from "./view-models/menu-management.viewmodel.ts";
+import { OrderBoardViewModel } from "./view-models/order-board.viewmodel.ts";
 import { OrderQueueViewModel } from "./view-models/order-queue.viewmodel.ts";
 import { OrderStatusViewModel } from "./view-models/order-status.viewmodel.ts";
 
@@ -18,6 +19,7 @@ export const webModule = new ContainerModule(({ bind }) => {
     bind(TOKENS.JoinSessionViewModel).to(JoinSessionViewModel);
     bind(TOKENS.CreateOrderViewModel).to(CreateOrderViewModel);
     bind(TOKENS.OrderStatusViewModel).to(OrderStatusViewModel);
+    bind(TOKENS.OrderBoardViewModel).to(OrderBoardViewModel);
     bind(TOKENS.AdminLoginViewModel).to(AdminLoginViewModel);
     bind(TOKENS.DashboardViewModel).to(DashboardViewModel);
     bind(TOKENS.OrderQueueViewModel).to(OrderQueueViewModel);

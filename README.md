@@ -1,5 +1,3 @@
-<!-- markdownlint-disable MD041 -->
-
 ![MonoLab](monolab-logo.png)
 [![CI - Dev](https://github.com/pabloimrik17/monolab/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/pabloimrik17/monolab/actions/workflows/ci.yml)
 [![CI - Main](https://github.com/pabloimrik17/monolab/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/pabloimrik17/monolab/actions/workflows/ci.yml)
@@ -9,11 +7,9 @@
 [![Monorepo](https://img.shields.io/badge/Monorepo-Nx-blue)](https://nx.dev)
 [![Nx Cloud](https://img.shields.io/badge/Nx%20Cloud-Enabled-blue?logo=nx)](https://nx.app/)
 [![Node.js](https://img.shields.io/badge/Node.js-24.21.0-green?logo=node.js)](https://nodejs.org)
-[![pnpm](https://img.shields.io/badge/pnpm-10.27.0-orange?logo=pnpm)](https://pnpm.io/)
+[![pnpm](https://img.shields.io/badge/pnpm-12.14.0-orange?logo=pnpm)](https://pnpm.io/)
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/pabloimrik17/monolab?utm_source=oss&utm_medium=github&utm_campaign=pabloimrik17%2Fmonolab&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 [![Maintained with](https://img.shields.io/badge/Maintained%20with-❤️-red)](https://github.com/pabloimrik17/monolab)
-
-<!-- markdownlint-enable MD041 -->
 
 ## Published Packages
 
@@ -63,13 +59,9 @@ npm install @m0n0lab/http-client
 
 This project uses Node.js version 24.21.0. To install and use this specific version:
 
-<!-- markdownlint-disable MD013 MD029 -->
-
 1. Make sure you have [nvm (Node Version Manager)](https://github.com/nvm-sh/nvm) installed
 2. Clone the repository and navigate to the project directory
 3. Run the following command to install and use the correct Node.js version:
-
- <!-- markdownlint-restore -->
 
 ```bash
 nvm use
@@ -79,9 +71,7 @@ This will automatically read the `.nvmrc` file and switch to Node.js version 24.
 
 ### Package Manager Setup
 
-<!-- markdownlint-disable MD013 MD029 -->
-
-This project uses pnpm as the package manager. To activate pnpm version 10.27.0 using corepack:
+This project uses pnpm as the package manager. To activate pnpm version 12.14.0 using corepack:
 
 1. Make sure you have corepack enabled:
 
@@ -89,21 +79,19 @@ This project uses pnpm as the package manager. To activate pnpm version 10.27.0 
 corepack enable
 ```
 
-2. Activate pnpm version 10.27.0:
+2. Activate pnpm version 12.14.0:
 
 ```bash
-corepack prepare pnpm@10.27.0 --activate
+corepack prepare pnpm@12.14.0 --activate
 ```
 
 3. Verify the installation:
-
- <!-- markdownlint-restore -->
 
 ```bash
 pnpm --version
 ```
 
-The output should be `10.27.0`.
+The output should be `12.14.0`.
 
 ## Testing
 
@@ -117,7 +105,7 @@ This project uses Vitest for testing with separate test types organized by purpo
 - Run with: `pnpm run test:unit` or `pnpm run test:unit:affected`
 - Watch mode: `pnpm run test:unit:watch`
 
-**Integration Tests** (`*.integration.ts`)
+**Integration Tests** (`*.integration.ts`, `*.integration.tsx`)
 
 - Tests for module interactions and integration points
 - Run with: `pnpm run test:integration` or `pnpm run test:integration:affected`
@@ -130,12 +118,11 @@ This project uses Vitest for testing with separate test types organized by purpo
 - Run with: `pnpm run test:types` or `pnpm run test:types:affected`
 - Watch mode: `pnpm run test:types:watch`
 
-**Browser Tests** (`*.browser.test.ts`, `*.browser.test.tsx`) - React packages only
+**Integration-platform Tests** (`*.integration-platform.ts`)
 
-- Real browser testing with Playwright (Chromium)
-- Tests actual DOM behavior, not jsdom simulation
-- Run with: `pnpm run test:browser` or `pnpm run test:browser:affected`
-- Watch mode: `pnpm run test:browser:watch`
+- Drive an app on its real platform (UI in a browser, or API requests)
+- Run with: `pnpm run test:integration-platform` or `pnpm run test:integration-platform:affected`
+- Watch mode: `pnpm run test:integration-platform:watch`
 
 ### Interactive UI Mode
 
@@ -156,7 +143,7 @@ pnpm run test                # Every test type
 pnpm run test:unit           # All unit tests
 pnpm run test:integration    # All integration tests
 pnpm run test:types          # All type tests
-pnpm run test:browser        # All browser tests (React packages)
+pnpm run test:integration-platform  # All integration-platform tests
 ```
 
 **Affected tests only (based on git changes):**
@@ -166,7 +153,7 @@ pnpm run test:affected
 pnpm run test:unit:affected
 pnpm run test:integration:affected
 pnpm run test:types:affected
-pnpm run test:browser:affected
+pnpm run test:integration-platform:affected
 ```
 
 **Per-package tests:**
@@ -179,7 +166,7 @@ uncommitted changes) and `:watch` variants, plus `:coverage` when it runs code
 ```bash
 pnpm --filter @m0n0lab/react-hooks run test
 pnpm --filter @m0n0lab/react-hooks run test:unit:changed
-pnpm --filter @m0n0lab/react-hooks run test:browser
+pnpm --filter @m0n0lab/react-hooks run test:integration
 ```
 
 ### Writing Tests
@@ -210,10 +197,10 @@ expectTypeOf(useDidMount).parameter(0).toBeFunction();
 expectTypeOf(useDidMount).returns.toBeVoid();
 ```
 
-**Browser Test Example (React):**
+**Integration Test Example (React):**
 
 ```typescript
-// src/hooks/use-did-mount.browser.test.tsx
+// src/hooks/use-did-mount.integration.tsx
 import { render } from "@testing-library/react";
 import { expect, test } from "vitest";
 
@@ -245,11 +232,7 @@ Tests run automatically in CI via Nx Cloud distribution:
 
 ### Mutation Testing
 
-<!-- markdownlint-disable MD013 -->
-
 [![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fpabloimrik17%2Fmonolab%2Fdevelop)](https://dashboard.stryker-mutator.io/reports/github.com/pabloimrik17/monolab/develop)
-
-<!-- markdownlint-restore -->
 
 This project uses [Stryker Mutator](https://stryker-mutator.io/) for mutation
 testing to validate the quality of our test suites. Mutation testing introduces
@@ -301,8 +284,6 @@ Each package has graduated thresholds based on complexity:
 
 Mutation testing runs automatically in CI with the following behavior:
 
-<!-- markdownlint-disable MD013 -->
-
 - **Execution**: Only on push to `main` or `develop` branches (skipped on PRs)
 - **Incremental Mode**: Reuses results from previous runs to minimize execution
   time
@@ -312,8 +293,6 @@ Mutation testing runs automatically in CI with the following behavior:
   [Stryker Dashboard](https://dashboard.stryker-mutator.io/reports/github.com/pabloimrik17/monolab/develop)
   for historical tracking
 - **Artifacts**: Mutation reports are uploaded as CI artifacts for 30 days
-
-<!-- markdownlint-restore -->
 
 #### Local Development
 

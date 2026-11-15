@@ -26,6 +26,20 @@ export interface OrderDto {
     updatedAt: string; // ISO date
 }
 
+export interface PublicOrderItemLineDto {
+    name: string;
+    quantity: number;
+}
+
+export interface PublicOrderSummaryDto {
+    id: string;
+    guestName: string;
+    status: "PENDING" | "PREPARING" | "DONE" | "CANCELLED";
+    items: PublicOrderItemLineDto[];
+    hiddenItemCount: number;
+    visibleUntil: string | null; // ISO date; null when the order does not expire
+}
+
 export interface MenuItemDto {
     id: string;
     name: string;
@@ -33,4 +47,10 @@ export interface MenuItemDto {
     description: string | null;
     available: boolean;
     sortOrder: number;
+}
+
+export interface PublicOrderBoardDto {
+    sessionName: string;
+    sessionCode: string;
+    orders: PublicOrderSummaryDto[];
 }

@@ -1,0 +1,313 @@
+{
+    "id": "d9674999-edd8-421d-9a14-d0b5bd962a65",
+    "prevId": "8386db1a-af3f-4612-bd84-e6074081285a",
+    "version": "7",
+    "dialect": "postgresql",
+    "tables": {
+        "public.instruments": {
+            "name": "instruments",
+            "schema": "",
+            "columns": {
+                "id": {
+                    "name": "id",
+                    "type": "uuid",
+                    "primaryKey": true,
+                    "notNull": true,
+                    "default": "gen_random_uuid()"
+                },
+                "symbol": {
+                    "name": "symbol",
+                    "type": "varchar(20)",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "name": {
+                    "name": "name",
+                    "type": "varchar(200)",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "type": {
+                    "name": "type",
+                    "type": "varchar(20)",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "asset_class": {
+                    "name": "asset_class",
+                    "type": "varchar(20)",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "exchange": {
+                    "name": "exchange",
+                    "type": "varchar(20)",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "sector": {
+                    "name": "sector",
+                    "type": "varchar(30)",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "replicates": {
+                    "name": "replicates",
+                    "type": "varchar(200)",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "quotable": {
+                    "name": "quotable",
+                    "type": "boolean",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": true
+                }
+            },
+            "indexes": {},
+            "foreignKeys": {},
+            "compositePrimaryKeys": {},
+            "uniqueConstraints": {
+                "instruments_symbol_unique": {
+                    "name": "instruments_symbol_unique",
+                    "nullsNotDistinct": false,
+                    "columns": ["symbol"]
+                }
+            },
+            "policies": {},
+            "checkConstraints": {},
+            "isRLSEnabled": false
+        },
+        "public.portfolio_items": {
+            "name": "portfolio_items",
+            "schema": "",
+            "columns": {
+                "id": {
+                    "name": "id",
+                    "type": "uuid",
+                    "primaryKey": true,
+                    "notNull": true,
+                    "default": "gen_random_uuid()"
+                },
+                "instrument_id": {
+                    "name": "instrument_id",
+                    "type": "uuid",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "broker": {
+                    "name": "broker",
+                    "type": "varchar(100)",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "target_weight": {
+                    "name": "target_weight",
+                    "type": "numeric(5, 2)",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "'0'"
+                },
+                "current_value": {
+                    "name": "current_value",
+                    "type": "numeric(12, 2)",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "'0'"
+                },
+                "notes": {
+                    "name": "notes",
+                    "type": "text",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "created_at": {
+                    "name": "created_at",
+                    "type": "timestamp with time zone",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "now()"
+                },
+                "updated_at": {
+                    "name": "updated_at",
+                    "type": "timestamp with time zone",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": "now()"
+                }
+            },
+            "indexes": {
+                "portfolio_items_instrument_id_idx": {
+                    "name": "portfolio_items_instrument_id_idx",
+                    "columns": [
+                        {
+                            "expression": "instrument_id",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
+                    "isUnique": false,
+                    "concurrently": false,
+                    "method": "btree",
+                    "with": {}
+                }
+            },
+            "foreignKeys": {
+                "portfolio_items_instrument_id_instruments_id_fk": {
+                    "name": "portfolio_items_instrument_id_instruments_id_fk",
+                    "tableFrom": "portfolio_items",
+                    "tableTo": "instruments",
+                    "columnsFrom": ["instrument_id"],
+                    "columnsTo": ["id"],
+                    "onDelete": "no action",
+                    "onUpdate": "no action"
+                }
+            },
+            "compositePrimaryKeys": {},
+            "uniqueConstraints": {},
+            "policies": {},
+            "checkConstraints": {
+                "portfolio_items_target_weight_range": {
+                    "name": "portfolio_items_target_weight_range",
+                    "value": "\"portfolio_items\".\"target_weight\" >= 0 AND \"portfolio_items\".\"target_weight\" <= 100"
+                }
+            },
+            "isRLSEnabled": false
+        },
+        "public.roger_entries": {
+            "name": "roger_entries",
+            "schema": "",
+            "columns": {
+                "id": {
+                    "name": "id",
+                    "type": "uuid",
+                    "primaryKey": true,
+                    "notNull": true
+                },
+                "instrument_id": {
+                    "name": "instrument_id",
+                    "type": "uuid",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "state": {
+                    "name": "state",
+                    "type": "varchar(20)",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "entry_price": {
+                    "name": "entry_price",
+                    "type": "numeric(14, 4)",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "quantity": {
+                    "name": "quantity",
+                    "type": "integer",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "buy_commission": {
+                    "name": "buy_commission",
+                    "type": "numeric(10, 2)",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "buy_date": {
+                    "name": "buy_date",
+                    "type": "date",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "exit_price": {
+                    "name": "exit_price",
+                    "type": "numeric(14, 4)",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "sell_commission": {
+                    "name": "sell_commission",
+                    "type": "numeric(10, 2)",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "sell_date": {
+                    "name": "sell_date",
+                    "type": "date",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "state_since": {
+                    "name": "state_since",
+                    "type": "timestamp with time zone",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "created_at": {
+                    "name": "created_at",
+                    "type": "timestamp with time zone",
+                    "primaryKey": false,
+                    "notNull": true
+                },
+                "updated_at": {
+                    "name": "updated_at",
+                    "type": "timestamp with time zone",
+                    "primaryKey": false,
+                    "notNull": true
+                }
+            },
+            "indexes": {
+                "roger_entries_instrument_id_idx": {
+                    "name": "roger_entries_instrument_id_idx",
+                    "columns": [
+                        {
+                            "expression": "instrument_id",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
+                    "isUnique": false,
+                    "concurrently": false,
+                    "method": "btree",
+                    "with": {}
+                }
+            },
+            "foreignKeys": {
+                "roger_entries_instrument_id_instruments_id_fk": {
+                    "name": "roger_entries_instrument_id_instruments_id_fk",
+                    "tableFrom": "roger_entries",
+                    "tableTo": "instruments",
+                    "columnsFrom": ["instrument_id"],
+                    "columnsTo": ["id"],
+                    "onDelete": "restrict",
+                    "onUpdate": "no action"
+                }
+            },
+            "compositePrimaryKeys": {},
+            "uniqueConstraints": {},
+            "policies": {},
+            "checkConstraints": {
+                "roger_entries_state_check": {
+                    "name": "roger_entries_state_check",
+                    "value": "\"roger_entries\".\"state\" IN ('WATCHING', 'SHORTLISTED', 'TRADER_BOUGHT', 'BUY_ORDER', 'INVESTED', 'SELL_ORDER', 'SOLD')"
+                }
+            },
+            "isRLSEnabled": false
+        }
+    },
+    "enums": {},
+    "schemas": {},
+    "sequences": {},
+    "roles": {},
+    "policies": {},
+    "views": {},
+    "_meta": {
+        "columns": {},
+        "schemas": {},
+        "tables": {}
+    }
+}

@@ -8,7 +8,7 @@ Track per-package bundle sizes via Codecov Bundle Analysis to monitor and contro
 
 ### Requirement: Bundle sizes MUST be tracked per published package
 
-Each package published to JSR MUST have its bundle size tracked separately using Codecov Bundle Analysis.
+Each package published to npm MUST have its bundle size tracked separately using Codecov Bundle Analysis.
 
 #### Scenario: Track bundle size for library packages
 

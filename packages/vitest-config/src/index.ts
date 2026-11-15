@@ -5,11 +5,14 @@ import type { ViteUserConfig } from "vitest/config";
  * Keep arrays out: mergeConfig concatenates them with the consumer's.
  */
 export const sharedConfig: ViteUserConfig = {
+    resolve: { tsconfigPaths: true },
     test: {
-        clearMocks: true,
         restoreMocks: true,
         unstubEnvs: true,
         unstubGlobals: true,
         maxConcurrency: 10,
     },
 };
+
+export { coverageThresholds } from "./coverage-thresholds.ts";
+export type { CoverageThresholds } from "./coverage-thresholds.ts";

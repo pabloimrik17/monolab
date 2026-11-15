@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it } from "vitest";
 import type { StringKeyOf } from "./string-keyof.ts";
 
-describe("StringKeyOf type", () => {
+describe("StringKeyOf", () => {
     it("should extract all keys from simple string-only interfaces", () => {
         interface User {
             id: string;

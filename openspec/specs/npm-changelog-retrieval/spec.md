@@ -103,14 +103,18 @@ For repos with archive files (Angular-style), the skill SHALL also try `CHANGELO
 
 The skill SHALL resolve `{default_branch}` via `gh api /repos/{owner}/{repo}` → `default_branch` field before Strategy A requests. If resolution fails, the version SHALL proceed to Strategy B with failure context recorded.
 
-The skill SHALL fetch via `curl -sL https://raw.githubusercontent.com/{owner}/{repo}/{default_branch}/{filename}`.
+The skill SHALL fetch via `curl -sL https://raw.githubusercontent.com/{owner}/{repo}/{default_branch}/{path}`.
 
-The skill SHALL always fetch from the repo root, never from a monorepo subdirectory.
+For monorepo packages (`_meta.json.isMonorepo=true` AND `_meta.json.monorepoDirectory` is non-null), the skill SHALL probe the subdirectory path `{monorepoDirectory}/{filename}` for the full filename chain BEFORE falling back to the repo root. Versions not found at the subdirectory SHALL fall through to the root chain; versions still unresolved SHALL proceed to Strategy B.
+
+For single-repo packages (no `monorepoDirectory`), the skill SHALL fetch from the repo root only, preserving prior behavior.
+
+Successfully fetched subdirectory files SHALL be cached under `_source/` using a key that encodes the full path (path separators replaced with `__`), so a subdirectory file does not collide with a root file of the same name.
 
 #### Scenario: CHANGELOG.md found
 
-- **WHEN** fetching raw CHANGELOG.md for `react` (facebook/react)
-- **THEN** the skill SHALL successfully retrieve the file and proceed to parsing
+- **WHEN** fetching raw CHANGELOG.md for `react` (facebook/react, no `repository.directory`)
+- **THEN** the skill SHALL successfully retrieve the file from the repo root and proceed to parsing
 
 #### Scenario: Filename fallback
 
@@ -124,8 +128,28 @@ The skill SHALL always fetch from the repo root, never from a monorepo subdirect
 
 #### Scenario: Monorepo root fetch
 
-- **WHEN** resolving a monorepo package like `@angular/core`
-- **THEN** the skill SHALL fetch CHANGELOG.md from the repo root, not from `packages/core/`
+- **WHEN** resolving a monorepo package that has no `repository.directory`, or whose subdirectory has no CHANGELOG (e.g., `@angular/core`)
+- **THEN** the skill SHALL fetch CHANGELOG.md from the repo root
+
+#### Scenario: Monorepo subdirectory fetch
+
+- **WHEN** resolving `@tanstack/query-core` whose `repository.directory` is `packages/query-core`
+- **THEN** the skill SHALL first probe `https://raw.githubusercontent.com/TanStack/query/{branch}/packages/query-core/CHANGELOG.md` and use it when the response is 200
+
+#### Scenario: Monorepo fallback to root
+
+- **WHEN** a monorepo's subdirectory CHANGELOG does not contain entries for all requested versions (e.g., older versions consolidated into the root CHANGELOG)
+- **THEN** the skill SHALL fall through to the repo-root filename chain for the versions still unresolved before proceeding to Strategy B
+
+#### Scenario: Aggregator-family monorepo
+
+- **WHEN** resolving `@angular/core` whose `repository.directory` is `packages/core` but the project maintains a single root `CHANGELOG.md`
+- **THEN** the skill SHALL probe the subdirectory path (which 404s), fall through to the root chain (which 200s), and proceed with the root file
+
+#### Scenario: Subdirectory cache isolation
+
+- **WHEN** a successful subdirectory fetch returns a file named `CHANGELOG.md`
+- **THEN** the skill SHALL store it at `_source/packages__query-core__CHANGELOG.md` (or equivalent path-encoded key) so it does not collide with any root `CHANGELOG.md` cache entry
 
 ---
 
@@ -135,11 +159,20 @@ If Strategy A fails or does not cover all requested versions, the skill SHALL fa
 
 The skill SHALL use `gh api /repos/{owner}/{repo}/releases/tags/{tag}` to fetch individual releases.
 
-The skill SHALL try tag format `v{version}` first, then `{version}` (without prefix) if 404.
+On entry, the skill SHALL read `_meta.json.tagFormat`. If set, the skill SHALL attempt that format first. On miss, the skill SHALL fall through to the standard probe chain below without invalidating the cached value.
+
+The skill SHALL probe tag formats in order, stopping at the first success:
+1. `v{version}`
+2. `{version}` (no prefix)
+3. For monorepo packages (`_meta.json.isMonorepo=true`), also probe: `{package}@{version}`, then `{packageBasename}@{version}` when the package is scoped, then `{package}-v{version}`, then `{packageBasename}-v{version}` when the package is scoped.
+
+On first success, the skill SHALL persist the successful format to `_meta.json.tagFormat` as a templated string (e.g., `"v{version}"`, `"{package}@{version}"`, `"{packageBasename}@{version}"`, `"{package}-v{version}"`, `"{packageBasename}-v{version}"`). The skill SHALL update `tagFormat` only when the successful format differs from the currently cached value, to avoid redundant writes.
+
+For unscoped packages, the scope-stripped variants (`{packageBasename}@{version}`, `{packageBasename}-v{version}`) SHALL be skipped because they are identical to the non-stripped variants.
 
 The skill SHALL extract the `body` field as the changelog content. For Strategy B, the fetched release `body` corresponds to the requested tag/version and SHALL be treated as the final version entry directly — no heading-pattern detection or section extraction is required. If `body` is non-empty, the version is considered retrieved.
 
-The skill SHALL rate-limit requests: max 30 per batch with 100ms delay between requests.
+The skill SHALL rate-limit requests: max 30 per batch with 100ms delay between requests. Each tag-format probe counts as one request against this budget.
 
 #### Scenario: Release found with v prefix
 
@@ -151,6 +184,31 @@ The skill SHALL rate-limit requests: max 30 per batch with 100ms delay between r
 - **WHEN** fetching release for nx 22.5.0 and `v22.5.0` returns 404
 - **THEN** the skill SHALL retry with `gh api /repos/nrwl/nx/releases/tags/22.5.0`
 
+#### Scenario: Scoped monorepo release tag
+
+- **WHEN** fetching release for `@tanstack/query-core` version `5.90.20` and both `v5.90.20` and `5.90.20` return 404
+- **THEN** the skill SHALL probe `gh api /repos/TanStack/query/releases/tags/@tanstack/query-core@5.90.20` and use its body on 200
+
+#### Scenario: Scope-stripped fallback
+
+- **WHEN** `{package}@{version}` returns 404 for a scoped monorepo package
+- **THEN** the skill SHALL probe `{packageBasename}@{version}` (e.g., `query-core@5.90.20`) before moving on to hyphenated variants
+
+#### Scenario: tagFormat cache short-circuit
+
+- **WHEN** `_meta.json.tagFormat` is `"{package}@{version}"` from a prior successful fetch of `@tanstack/query-core@5.90.19`
+- **THEN** on a fresh request for `5.90.20`, the skill SHALL probe `@tanstack/query-core@5.90.20` first and SHALL NOT probe `v5.90.20` or `5.90.20` unless the cached-format probe misses
+
+#### Scenario: tagFormat cache fallthrough on miss
+
+- **WHEN** the cached `tagFormat` probe returns 404 (e.g., repo changed tagging convention mid-history)
+- **THEN** the skill SHALL silently fall through the standard probe chain and SHALL NOT invalidate the cached `tagFormat`. If a different format succeeds, the skill SHALL update `tagFormat` to the new value.
+
+#### Scenario: tagFormat no-op write skip
+
+- **WHEN** the successful format equals the currently cached `tagFormat`
+- **THEN** the skill SHALL NOT rewrite `_meta.json` for this field
+
 #### Scenario: Empty release body
 
 - **WHEN** the release exists but `body` is empty or null
@@ -158,10 +216,8 @@ The skill SHALL rate-limit requests: max 30 per batch with 100ms delay between r
 
 #### Scenario: Rate limiting
 
-- **WHEN** fetching releases for 40 versions
-- **THEN** the skill SHALL batch into groups of 30, with a 100ms delay between each request within and across batches
-
----
+- **WHEN** fetching releases for 40 versions, each potentially probing multiple tag formats
+- **THEN** the skill SHALL batch into groups of 30 total requests, with a 100ms delay between each request within and across batches
 
 ### Requirement: Strategy C — CDN Fallback
 

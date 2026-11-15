@@ -3,7 +3,7 @@
     "compilerOptions": {
         "module": "preserve",
         "moduleResolution": "bundler",
-        "lib": ["ES2023", "dom"],
+        "lib": ["ES2024", "DOM", "DOM.Iterable"],
         "outDir": "./out-tsc",
         "rootDir": "./src",
         "declaration": true,
@@ -16,8 +16,6 @@
         "**/*.test-d.ts",
         "**/*.spec.ts",
         "**/*.spec.tsx",
-        "**/*.browser.test.ts",
-        "**/*.browser.test.tsx",
         "**/*.integration.ts",
         "**/*.integration.tsx"
     ],

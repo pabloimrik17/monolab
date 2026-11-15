@@ -1,7 +1,7 @@
 import { injectable } from "inversify";
 import { createSignal } from "solid-js";
 import { BaseViewModel } from "@m0n0lab/solid-clean";
-import { getActiveSessions, getSessionOrders } from "../server/data.ts";
+import { getActiveSessions, getSessionOrders } from "../server/host-data.ts";
 import { closeSession, createSession } from "../server/mutations.ts";
 import type { OrderDto, SessionDto } from "@m0n0lab/qup-shared";
 

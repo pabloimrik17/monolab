@@ -1,7 +1,8 @@
 import { useParams, useSearchParams } from "@solidjs/router";
 import { For, Show } from "solid-js";
 import { useViewModel } from "@m0n0lab/solid-clean";
-import { OrderCard } from "../../../components/order-card.tsx";
+import { OrderStatusBadge } from "../../../components/order-status-badge.tsx";
+import { PublicOrderCard } from "../../../components/public-order-card.tsx";
 import { VmStatus } from "../../../components/vm-status.tsx";
 import { container } from "../../../container.ts";
 import { TOKENS } from "../../../tokens.ts";
@@ -41,7 +42,17 @@ export default function StatusPage() {
                     <p class="text-center text-stone-500">No orders yet</p>
                 </Show>
 
-                <For each={vm.orders()}>{(order) => <OrderCard order={order} />}</For>
+                {/* The guest's own orders, in the same reduced shape the board gets:
+                    no notes, no customizations, nobody else's orders. */}
+                <ul class="space-y-3">
+                    <For each={vm.orders()}>
+                        {(order) => (
+                            <PublicOrderCard order={order}>
+                                <OrderStatusBadge status={order.status} />
+                            </PublicOrderCard>
+                        )}
+                    </For>
+                </ul>
 
                 <a
                     href={`/session/${params.code}/order?guest=${encodeURIComponent(searchParams.guest ?? "")}`}

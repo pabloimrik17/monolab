@@ -6,37 +6,39 @@ import type { HttpRequestConfig, HttpResponse, HttpStatusCode } from "../index.j
  * @vitest-environment node
  */
 
-describe("HttpResponse type safety", () => {
-    test("response data is typed", () => {
-        interface User {
-            id: number;
-            name: string;
-        }
+describe("response", () => {
+    describe("HttpResponse type safety", () => {
+        test("response data is typed", () => {
+            interface User {
+                id: number;
+                name: string;
+            }
 
-        const response: HttpResponse<User> = {} as HttpResponse<User>;
+            const response: HttpResponse<User> = {} as HttpResponse<User>;
 
-        expectTypeOf(response.data).toEqualTypeOf<User>();
-        expectTypeOf(response.status).toEqualTypeOf<HttpStatusCode>();
-        expectTypeOf(response.statusText).toEqualTypeOf<string>();
-        expectTypeOf(response.url).toEqualTypeOf<string>();
+            expectTypeOf(response.data).toEqualTypeOf<User>();
+            expectTypeOf(response.status).toEqualTypeOf<HttpStatusCode>();
+            expectTypeOf(response.statusText).toEqualTypeOf<string>();
+            expectTypeOf(response.url).toEqualTypeOf<string>();
+        });
+
+        test("response request is readonly", () => {
+            const response: HttpResponse<unknown> = {} as HttpResponse<unknown>;
+
+            expectTypeOf(response.request).toMatchTypeOf<Readonly<HttpRequestConfig>>();
+        });
     });
 
-    test("response request is readonly", () => {
-        const response: HttpResponse<unknown> = {} as HttpResponse<unknown>;
+    describe("HttpResponse readonly enforcement", () => {
+        test("HttpResponse properties are readonly", () => {
+            interface User {
+                id: number;
+            }
 
-        expectTypeOf(response.request).toMatchTypeOf<Readonly<HttpRequestConfig>>();
-    });
-});
+            const response: HttpResponse<User> = {} as HttpResponse<User>;
 
-describe("HttpResponse readonly enforcement", () => {
-    test("HttpResponse properties are readonly", () => {
-        interface User {
-            id: number;
-        }
-
-        const response: HttpResponse<User> = {} as HttpResponse<User>;
-
-        expectTypeOf(response).toHaveProperty("data").toEqualTypeOf<User>();
-        expectTypeOf(response).toHaveProperty("status").toEqualTypeOf<HttpStatusCode>();
+            expectTypeOf(response).toHaveProperty("data").toEqualTypeOf<User>();
+            expectTypeOf(response).toHaveProperty("status").toEqualTypeOf<HttpStatusCode>();
+        });
     });
 });

@@ -1,7 +1,6 @@
-import type { OrderDto } from "./dtos.ts";
-
+// Every payload here travels on the public session stream, which needs no host PIN, so each
+// one carries only what a stream consumer needs to know something changed — never an order.
 export interface OrderCreatedEvent {
-    order: OrderDto;
     sessionId: string;
 }
 

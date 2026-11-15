@@ -4,18 +4,19 @@
  * with Angular-anchor and setext special cases, and version matching.
  */
 
+// `\d.*`: the patch number's later digits fall in `.*`, so no `\d+` backtracks against it.
 export const PATTERNS = [
     {
         id: "conventional-changelog",
-        regex: /^## \[\d+\.\d+\.\d+.*?\]\(.+?\) \(.+\)$/,
+        regex: /^## \[\d+\.\d+\.\d.*?\]\(.+?\) \(.+\)$/,
     },
-    { id: "standard-h2-date", regex: /^## \d+\.\d+\.\d+.* \(.+\)$/ },
-    { id: "standard-h2-v-date", regex: /^## v\d+\.\d+\.\d+.* \(.+\)$/ },
-    { id: "h1-date", regex: /^# \d+\.\d+\.\d+.* \(.+\)$/ },
-    { id: "h1-bare", regex: /^# \d+\.\d+\.\d+[^ ]*$/ },
-    { id: "h2-bare", regex: /^## \d+\.\d+\.\d+[^ ]*$/ },
+    { id: "standard-h2-date", regex: /^## \d+\.\d+\.\d.* \(.+\)$/ },
+    { id: "standard-h2-v-date", regex: /^## v\d+\.\d+\.\d.* \(.+\)$/ },
+    { id: "h1-date", regex: /^# \d+\.\d+\.\d.* \(.+\)$/ },
+    { id: "h1-bare", regex: /^# \d+\.\d+\.\d[^ ]*$/ },
+    { id: "h2-bare", regex: /^## \d+\.\d+\.\d[^ ]*$/ },
     { id: "setext", regex: /^\d+\.\d+\.\d+ \/ .+$/ },
-    { id: "eslint-style", regex: /^v\d+\.\d+\.\d+.* - .+$/ },
+    { id: "eslint-style", regex: /^v\d+\.\d+\.\d.* - .+$/ },
     { id: "universal-fallback", regex: /^#{0,2}\s*\[?v?\d+\.\d+\.\d+/ },
 ];
 

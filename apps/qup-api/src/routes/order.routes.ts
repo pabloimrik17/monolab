@@ -3,7 +3,6 @@ import {
     type CancelOrderUseCase,
     type CreateOrderUseCase,
     type GetSessionByCodeUseCase,
-    type GetSessionOrdersUseCase,
     TOKENS,
     type UpdateOrderStatusUseCase,
 } from "@m0n0lab/qup-domain";
@@ -38,33 +37,6 @@ export function orderRoutes(container: Container) {
 
         return result.match(
             (order) => c.json(toOrderDto(order), 201),
-            (error) => errorJson(c, error),
-        );
-    });
-
-    // GET /orders?sessionId&guest
-    app.get("/", async (c) => {
-        const sessionId = c.req.query("sessionId");
-        if (!sessionId) {
-            return c.json(
-                {
-                    code: "VALIDATION_ERROR",
-                    message: "sessionId query param required",
-                    statusCode: 422,
-                },
-                422,
-            );
-        }
-
-        const uc = container.get<GetSessionOrdersUseCase>(TOKENS.GetSessionOrdersUseCase);
-        const result = await uc.execute(sessionId);
-
-        return result.match(
-            (orders) => {
-                const guest = c.req.query("guest");
-                const filtered = guest ? orders.filter((o) => o.guestName === guest) : orders;
-                return c.json(filtered.map(toOrderDto));
-            },
             (error) => errorJson(c, error),
         );
     });

@@ -1,4 +1,0 @@
-{
-    "extends": "../../packages/ts-configs/tsconfig.node.tooling.json",
-    "include": ["vite.config.ts"]
-}

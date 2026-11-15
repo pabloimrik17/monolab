@@ -148,7 +148,8 @@ function h2Sections(content, canonicalTitles) {
     const sections = [];
     let current = null;
     for (const line of lines) {
-        const m = /^## (.+?)\s*$/.exec(line);
+        // Matches as `^## (.+?)\s*$` does, without its backtracking.
+        const m = /^## ((?=\s).|.*?\S)\s*$/.exec(line);
         if (m && canonical.has(m[1])) {
             current = { title: m[1], body: [] };
             sections.push(current);

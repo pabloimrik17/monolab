@@ -1,5 +1,13 @@
-# style: reformat with prettier v3.8
-46cb3939644a9bd574a8608607791ab8e5316635
-
-# style: reformat with oxfmt
-d404bf36ffe17675cc593254d8a429a3d759a760
+# chore: migrate prettier to oxfmt (#141)
+# Squash of PR #141. The reformat commits it was built from (46cb393 "reformat with
+# prettier v3.8", d404bf3 "reformat with oxfmt") were squashed away and no longer exist.
+# MIXED commit: besides the reformatting it carries real, non-formatting changes, so
+# blame for these lines now skips this commit too:
+#   - removed .prettierrc and every .prettierignore (root, apps/demo, packages/*)
+#   - added .oxfmtrc.json
+#   - .github/workflows/ci.yml, nx.json (lint:oxfmt targets), eslint.config.ts,
+#     lint-staged.config.ts, tsconfig.json (apps/demo reference)
+#   - package.json files (root, apps/demo, packages/*) and pnpm-lock.yaml
+#     (prettier -> oxfmt, typescript-eslint 8.56.1)
+#   - openspec/changes/migrate-prettier-to-oxfmt/tasks.md
+02567d9bcac209e9c65535142a12ecd59cb6536a

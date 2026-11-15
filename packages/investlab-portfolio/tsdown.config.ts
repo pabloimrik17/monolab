@@ -2,12 +2,18 @@ import { defineConfig } from "tsdown";
 
 export default defineConfig({
     name: "@m0n0lab/investlab-portfolio",
-    entry: ["src/index.ts", "src/server.ts", "src/client.ts"],
+    entry: {
+        index: "src/index.ts",
+        server: "src/server.ts",
+        client: "src/client.ts",
+        testing: "src/testing.ts",
+    },
     format: ["esm"],
     fixedExtension: false,
     outDir: "dist",
     deps: {
         neverBundle: [
+            /^@m0n0lab\/investlab-catalog($|\/)/,
             /^@m0n0lab\/investlab-core($|\/)/,
             /^@m0n0lab\/investlab-platform($|\/)/,
             /^inversify($|\/)/,
@@ -25,5 +31,5 @@ export default defineConfig({
     sourcemap: true,
     clean: true,
     minify: false,
-    target: "ES2023",
+    target: "ES2024",
 });

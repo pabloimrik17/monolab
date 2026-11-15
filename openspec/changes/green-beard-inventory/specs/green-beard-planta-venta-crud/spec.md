@@ -1,12 +1,8 @@
 ## ADDED Requirements
 
-### Requirement: PlantaVenta entity
+### Requirement: PlantaVenta model
 
-The system SHALL model PlantaVenta as a domain entity with: id (UUID), plantaId (UUID, required), identificador (positive integer, assigned automatically), fotos (array of `{ key: string, url: string }`), altoPlantaCm (number, positive), macetaId (UUID, required), sustratoId (UUID, required), costePlanta (number, nullable — present for purchased, null for home-grown).
-
-Private constructor with `static create()` returning `Result<PlantaVenta, ValidationError>` and `static reconstitute()`.
-
-`create()` receives `identificador` as a parameter (computed by the use case, not the entity).
+The system SHALL model PlantaVenta in `domain/model/planta-venta.model.ts` with id, plantaId, identificador (positive integer), fotos (`{ key, url }[]`), altoPlantaCm (positive), macetaId, sustratoId and costePlanta (nullable: null for home-grown). It refers to Planta, Maceta and Sustrato by id only. `create()` returns `Result<PlantaVenta, ValidationError>` and receives `identificador` from the repository.
 
 #### Scenario: Create valid planta venta
 - **WHEN** `PlantaVenta.create({ plantaId: "...", identificador: 1, altoPlantaCm: 30, macetaId: "...", sustratoId: "...", costePlanta: 15.00 })` is called
@@ -26,7 +22,7 @@ Private constructor with `static create()` returning `Result<PlantaVenta, Valida
 
 ### Requirement: PlantaVenta photo management
 
-The entity SHALL provide methods:
+The model SHALL provide methods:
 - `addFoto(foto: { key: string, url: string })`: adds photo to array
 - `removeFoto(key: string)`: removes photo by key, returns the removed foto or null
 - `getFotos()`: returns copy of fotos array
@@ -63,24 +59,25 @@ The system SHALL assign `identificador` as the smallest positive integer not cur
 - **WHEN** plantaId "X" has [#1, #4, #7]
 - **THEN** next identificador = 2
 
+### Requirement: PlantaVenta list query
+
+The system SHALL define a `PlantaVentaListQuery` port in `domain/query/planta-venta-list.query.ts` returning `PlantaVentaListReadModel` rows, ordered by planta nombre then identificador, optionally filtered by plantaId, and one row by id.
+
+#### Scenario: List filtered by planta
+- **WHEN** the query is run with a plantaId
+- **THEN** only that planta's rows are returned, ordered by identificador
+
 ### Requirement: Display name derivation
 
-The system SHALL derive a display name: `"{planta.nombre} #{identificador}"` (e.g., "Monstera Deliciosa #2"). This is computed in the DTO, not stored.
+The system SHALL derive a display name `"{planta.nombre} #{identificador}"` (e.g., "Monstera Deliciosa #2") in the read model returned by `PlantaVentaListQuery`, implemented with a SQL join in `data/server/query/planta-venta-list-pg.query.ts`. It is not stored.
 
 #### Scenario: Display name format
 - **WHEN** API returns a PlantaVenta for planta "Monstera" with identificador 3
 - **THEN** displayName = "Monstera #3"
 
-### Requirement: PlantaVentaRepository port
+### Requirement: PlantaVenta repository and list query
 
-The system SHALL define a `PlantaVentaRepository` interface with `ResultAsync` methods:
-- `save(plantaVenta)`: persists
-- `findById(id)`: returns with fotos
-- `findAll()`: returns all, ordered by planta nombre then identificador
-- `findByPlantaId(plantaId)`: returns all for a planta
-- `update(plantaVenta)`: updates including fotos JSONB
-- `delete(id)`: deletes entity (R2 cleanup handled separately)
-- `getNextIdentificador(plantaId)`: returns next available integer (smallest gap)
+The system SHALL define the `PlantaVentaRepository` port in `domain/repository/planta-venta.repository.ts` with `save`, `findById`, `findByPlantaId`, `update`, `delete` and `getNextIdentificador(plantaId)` (smallest free integer), implemented by `PlantaVentaPgRepository` and `PlantaVentaApiRepository`. It SHALL NOT call other aggregates' repositories.
 
 #### Scenario: getNextIdentificador finds gap
 - **WHEN** called for plantaId with existing [1, 3]
@@ -92,17 +89,10 @@ The system SHALL define a `PlantaVentaRepository` interface with `ResultAsync` m
 
 ### Requirement: PlantaVenta CRUD use cases
 
-The system SHALL provide injectable use cases:
-- `CreatePlantaVentaUseCase`: validates plantaId (exists in PlantaRepository, returns PlantaNotFoundError if not), macetaId (exists in MacetaRepository, returns MacetaNotFoundError if not), sustratoId (exists in SustratoRepository, returns SustratoNotFoundError if not), gets next identificador, creates entity, persists atomically; on unique-collision retries allocation with bounded attempts
-- `GetPlantasVentaUseCase`: returns all
-- `GetPlantaVentaByIdUseCase`: returns PlantaVenta or PlantaVentaNotFoundError
-- `UpdatePlantaVentaUseCase`: validates existence (PlantaVentaNotFoundError), validates FK changes (entity-specific NotFoundError), updates
-- `DeletePlantaVentaUseCase`: validates existence (PlantaVentaNotFoundError), collects all foto keys, deletes entity, then performs best-effort R2 cleanup of collected keys (logs failures without returning errors to caller)
-
-Photo upload/delete are handled by separate use cases (see photo-storage spec).
+The system SHALL provide server use cases in `application/server/use-case/planta-venta-<verb>.use-case.ts` (create, list, get, update, delete), with client counterparts in `application/client/use-case/` over the API repository. Create validates plantaId, macetaId and sustratoId, assigns the identificador and retries a bounded number of times on a unique collision. Delete removes the row, then cleans R2 best-effort.
 
 #### Scenario: Create with non-existent planta
-- **WHEN** `CreatePlantaVentaUseCase` is executed with non-existent plantaId
+- **WHEN** `PlantaVentaCreateUseCase` is executed with non-existent plantaId
 - **THEN** it returns `Err<PlantaNotFoundError>`
 
 #### Scenario: Create with non-existent maceta
@@ -114,18 +104,16 @@ Photo upload/delete are handled by separate use cases (see photo-storage spec).
 - **THEN** the new PlantaVenta gets identificador = 2
 
 #### Scenario: Concurrent create for same plantaId
-- **WHEN** two `CreatePlantaVentaUseCase` executions run concurrently for the same `plantaId`
+- **WHEN** two `PlantaVentaCreateUseCase` executions run concurrently for the same `plantaId`
 - **THEN** both complete with distinct `identificador` values and no duplicate `(planta_id, identificador)`
 
 #### Scenario: Delete with R2 cleanup failure
-- **WHEN** `DeletePlantaVentaUseCase` is executed and R2 deletion of foto keys fails
-- **THEN** the PlantaVenta entity is still deleted, cleanup failure is logged, and the use case returns `Ok<void>`
+- **WHEN** `PlantaVentaDeleteUseCase` is executed and R2 deletion of foto keys fails
+- **THEN** the PlantaVenta row is still deleted, cleanup failure is logged, and the use case returns `Ok<void>`
 
 ### Requirement: Drizzle plantas_venta table
 
-The system SHALL define a `plantas_venta` table: `id` (UUID PK), `planta_id` (UUID FK→plantas, NOT NULL), `identificador` (INTEGER, NOT NULL, CHECK identificador >= 1), `fotos` (JSONB, NOT NULL, DEFAULT '[]'), `alto_planta_cm` (NUMERIC(10,2), NOT NULL, CHECK alto_planta_cm > 0), `maceta_id` (UUID FK→macetas, NOT NULL), `sustrato_id` (UUID FK→sustratos, NOT NULL), `coste_planta` (NUMERIC(10,2), nullable, CHECK coste_planta IS NULL OR coste_planta >= 0).
-
-Composite UNIQUE constraint: `(planta_id, identificador)`.
+The system SHALL define `plantas_venta` in `data/server/infra/db/planta-venta.table.ts` (migration generated in `@m0n0lab/green-beard-database`) with UUID `id`, NOT NULL FKs `planta_id`, `maceta_id`, `sustrato_id`, `identificador` (INTEGER >= 1), `fotos` (JSONB, default '[]'), `alto_planta_cm` (NUMERIC(10,2) > 0), nullable `coste_planta` (NUMERIC(10,2) >= 0) and UNIQUE `(planta_id, identificador)`.
 
 #### Scenario: Unique constraint on planta+identificador
 - **WHEN** two rows with same planta_id and identificador are inserted
@@ -137,13 +125,7 @@ Composite UNIQUE constraint: `(planta_id, identificador)`.
 
 ### Requirement: PlantaVenta DTOs
 
-The system SHALL define in `green-beard-shared`:
-- `PlantaVentaFotoDto`: `{ key: string, url: string }`
-- `PlantaVentaDto`: `{ id, plantaId, plantaNombre, familiaName, identificador, displayName, fotos: PlantaVentaFotoDto[], altoPlantaCm, macetaId, macetaNombre, sustratoId, sustratoNombre, costePlanta: number | null }`
-- `CreatePlantaVentaRequest`: `{ plantaId, altoPlantaCm, macetaId, sustratoId, costePlanta? }`
-- `UpdatePlantaVentaRequest`: `{ altoPlantaCm?, macetaId?, sustratoId?, costePlanta?: number | null }`
-
-Note: identificador is auto-assigned, not in create request. plantaId cannot be changed after creation.
+The system SHALL define in `data/shared/dto/planta-venta.dto.ts` the DTOs `PlantaVentaFotoDto`, `PlantaVentaDto` (with denormalized names and displayName), `PlantaVentaCreateRequest` and `PlantaVentaUpdateRequest`. The identificador is auto-assigned, so it is not in the create request; plantaId cannot change after creation.
 
 #### Scenario: DTO includes denormalized names
 - **WHEN** API returns a PlantaVenta
@@ -151,14 +133,7 @@ Note: identificador is auto-assigned, not in create request. plantaId cannot be 
 
 ### Requirement: PlantaVenta API routes
 
-The system SHALL expose:
-- `GET /plantas-venta` → list all (optional `?plantaId=<uuid>` filter)
-- `GET /plantas-venta/:id` → get by id
-- `POST /plantas-venta` → create (auto-assigns identificador)
-- `PATCH /plantas-venta/:id` → update
-- `DELETE /plantas-venta/:id` → delete (triggers R2 cleanup)
-- `POST /plantas-venta/:id/fotos` → upload photo(s) (multipart)
-- `DELETE /plantas-venta/:id/fotos?key=<encoded-storage-key>` → delete specific photo
+The system SHALL expose from `apps/green-beard-api/src/nursery/route/planta-venta.route.ts`, a Hono sub-app mounted by `src/app.ts`: `GET /plantas-venta` (optional `?plantaId=`), `GET /:id`, `POST /`, `PATCH /:id`, `DELETE /:id`, `POST /:id/fotos` (multipart) and `DELETE /:id/fotos?key=<encoded-storage-key>`.
 
 #### Scenario: Create planta venta via API
 - **WHEN** `POST /plantas-venta` with valid body
@@ -166,4 +141,4 @@ The system SHALL expose:
 
 #### Scenario: Upload photo
 - **WHEN** `POST /plantas-venta/:id/fotos` with multipart file
-- **THEN** photo uploaded to R2, foto entry added to entity, returns updated PlantaVentaDto
+- **THEN** photo uploaded to R2, foto entry added to the model, returns updated PlantaVentaDto

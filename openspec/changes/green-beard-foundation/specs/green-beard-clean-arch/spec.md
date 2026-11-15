@@ -1,99 +1,171 @@
+## Purpose
+
+Defines how Green Beard is built: one business module package plus core, platform and database packages, an API and a SvelteKit BFF as composition roots, typed errors, and local Postgres. Where files go and how they are named comes from the `clean-architecture-layout` spec; this spec only adds what is specific to Green Beard.
+
 ## ADDED Requirements
 
-### Requirement: Package structure with strict dependency direction
+### Requirement: Green Beard projects
 
-The system SHALL provide 4 new projects following Clean Architecture:
+Green Beard SHALL consist of the packages `@m0n0lab/green-beard-nursery`, `@m0n0lab/green-beard-core`, `@m0n0lab/green-beard-platform` and `@m0n0lab/green-beard-database`, and the apps `apps/green-beard-api` and `apps/green-beard`. Every project except the database package SHALL follow `clean-architecture-layout`. No layer package (`green-beard-domain`, `green-beard-data`, `green-beard-shared`) SHALL exist.
 
-- `packages/green-beard-domain`: entities, ports, use cases, tokens, errors. Deps: inversify, neverthrow only
-- `packages/green-beard-data`: Drizzle schema, mappers, repository implementations. Deps: green-beard-domain, drizzle-orm, pg
-- `packages/green-beard-shared`: DTOs, request types. Zero runtime deps
-- `apps/green-beard-api`: Hono REST API, route factories, error mapping, DI composition root. Deps: green-beard-domain, green-beard-data, green-beard-shared, hono, inversify
+#### Scenario: Workspace projects
 
-Domain SHALL NOT import data, shared, or api packages. Data SHALL NOT import api. Shared SHALL NOT import domain or data.
+- **WHEN** workspace projects are listed
+- **THEN** the four packages and two apps appear, and no `green-beard-domain`, `green-beard-data` or `green-beard-shared` project exists
 
-#### Scenario: Domain has no infrastructure imports
-- **WHEN** green-beard-domain source is inspected
-- **THEN** it has no imports from drizzle-orm, pg, hono, or any green-beard package except neverthrow and inversify
+#### Scenario: Projects build
 
-#### Scenario: Build succeeds with workspace deps
-- **WHEN** `pnpm nx run-many -t build --projects=@m0n0lab/green-beard-domain,@m0n0lab/green-beard-data,@m0n0lab/green-beard-shared,@m0n0lab/green-beard-api` is executed
-- **THEN** all 4 projects build successfully
+- **WHEN** `pnpm nx run-many -t build -p '@m0n0lab/green-beard*'` runs
+- **THEN** every Green Beard project builds
 
-### Requirement: Inversify DI wiring with ContainerModule per package
+### Requirement: One business module
 
-Each package SHALL export a `ContainerModule` that binds its services. The API composition root SHALL load all modules into a single `Container`.
+`@m0n0lab/green-beard-nursery` SHALL hold every Green Beard business concept, Familia and Planta in this change, laid out per `clean-architecture-layout`. Its entries SHALL be `.`, `./server`, `./client` and `./testing`, and `./testing` SHALL export only builders, from `src/testing.ts`.
 
-- `green-beard-domain` exports `domainModule` binding use cases
-- `green-beard-data` exports `dataModule` binding repository implementations
-- `green-beard-api` defines `createContainer()` loading domainModule + dataModule + binding DrizzleDb
+#### Scenario: Use case location
 
-#### Scenario: Container resolves use cases
-- **WHEN** `createContainer()` is called with a valid DATABASE_URL
-- **THEN** all use case tokens resolve to their implementations
+- **WHEN** the server use case that creates a Familia is located
+- **THEN** it is `packages/green-beard-nursery/src/application/server/use-case/familia-create.use-case.ts`
 
-#### Scenario: Container resolves repositories
-- **WHEN** `createContainer()` is called
-- **THEN** all repository tokens resolve to Drizzle-backed implementations
+#### Scenario: Exports are valid
 
-### Requirement: neverthrow typed errors throughout
+- **WHEN** `pnpm nx run @m0n0lab/green-beard-nursery:build:check-exports` runs
+- **THEN** every entry passes
 
-All repository methods SHALL return `ResultAsync<T, PersistenceError>`. All use cases SHALL return `ResultAsync<T, DomainError>`. No try/catch in domain or use case layer.
+### Requirement: Core package
 
-Error hierarchy:
-- `DomainError` (abstract): `code` property
-- `ValidationError`: input validation failures
-- `NotFoundError`: entity not found (takes entity name + id)
-- `DuplicateError`: unique constraint violations
-- `PersistenceError`: wraps unknown DB errors
+`@m0n0lab/green-beard-core` SHALL hold, behind a single root entry, the kernel errors in `src/domain/error/<concept>.error.ts` and the API error envelope schema in `src/data/shared/dto/api-error.dto.ts`. It SHALL import no Green Beard package and no infrastructure library.
 
-#### Scenario: Use case returns typed error on not found
-- **WHEN** a use case looks up a non-existent entity
-- **THEN** it returns `Err<NotFoundError>` with entity name and id
+#### Scenario: Core depends on nothing of ours
 
-#### Scenario: Repository wraps DB errors
-- **WHEN** a database operation fails
-- **THEN** the repository returns `Err<PersistenceError>` wrapping the original error
+- **WHEN** the imports of `@m0n0lab/green-beard-core` are listed
+- **THEN** none points to another `@m0n0lab/green-beard-*` package, nor to `pg`, `drizzle-orm`, `hono` or `inversify`
 
-### Requirement: Hono REST API with route factories
+### Requirement: Platform package
 
-The API SHALL use Hono with route factory functions that receive the Inversify `Container`. Each route resolves use cases from the container and maps `Result` to HTTP responses.
+`@m0n0lab/green-beard-platform` SHALL export `./server` and `./client` only. The server side SHALL provide `Config` and the Postgres handle; the client side SHALL provide `Config`, the HTTP client and the Green Beard API client. Each side SHALL have one `Config` adapter per runtime that reads the environment, and static container modules in `src/di/`.
 
-Error mapping: `NotFoundError` → 404, `ValidationError` → 422, `DuplicateError` → 409, `PersistenceError` → 500.
+#### Scenario: Only Config adapters read the environment
 
-#### Scenario: Successful API call
-- **WHEN** a valid request is made to a CRUD endpoint
-- **THEN** the route resolves the use case, executes it, and returns the DTO with appropriate status code
+- **WHEN** Green Beard source files that read `process.env` or `$env` are listed
+- **THEN** only the platform's `Config` adapters appear
 
-#### Scenario: Error API call
-- **WHEN** a request results in a domain error
-- **THEN** the route returns `{ code, message, statusCode }` with the mapped HTTP status
+### Requirement: Database package
 
-### Requirement: SvelteKit BFF via server routes
-
-The SvelteKit app SHALL call the Hono API from `+page.server.ts` load functions and form actions. The browser SHALL NOT call the Hono API directly.
-
-An HTTP client utility SHALL be provided in the SvelteKit app for making typed requests to the API.
-
-#### Scenario: Load function fetches data
-- **WHEN** a page with a load function is requested
-- **THEN** the SvelteKit server calls the Hono API and returns data to the page
-
-#### Scenario: Form action mutates data
-- **WHEN** a form is submitted
-- **THEN** the SvelteKit form action calls the Hono API and redirects/returns result
-
-### Requirement: Drizzle + PostgreSQL schema and migrations
-
-The system SHALL use Drizzle ORM with PostgreSQL. Schema files SHALL be in `green-beard-data/src/schema/`. Migrations SHALL be generated via `drizzle-kit generate` and applied via `drizzle-kit migrate`.
+`@m0n0lab/green-beard-database` SHALL own the drizzle config, the migrations folder, a `migrate(databaseUrl)` helper and the `db:generate` and `db:migrate` scripts. Its drizzle config SHALL list the module's `src/data/server/infra/db/*.table.ts` files by glob, so a new table needs no config change.
 
 #### Scenario: Migration creates tables
-- **WHEN** `pnpm nx run @m0n0lab/green-beard-data:db:migrate` is executed against an empty database
-- **THEN** all schema tables are created
+
+- **WHEN** `pnpm nx run @m0n0lab/green-beard-database:db:migrate` runs against an empty database
+- **THEN** the `familias` and `plantas` tables are created
+
+#### Scenario: Table found by glob
+
+- **WHEN** a new `*.table.ts` file is added under `packages/green-beard-nursery/src/data/server/infra/db/` and `db:generate` runs
+- **THEN** a migration for it is generated without editing the drizzle config
+
+### Requirement: Dependency direction between packages
+
+The nursery module SHALL depend on core and on the platform side it runs on. The platform SHALL depend on core only. The API SHALL import the nursery `.` and `./server` entries and the platform `./server` entry; the SvelteKit app SHALL import the nursery `.` and `./client` entries and the platform `./client` entry.
+
+#### Scenario: Web never imports server code
+
+- **WHEN** the imports of `apps/green-beard` are listed
+- **THEN** none points to `@m0n0lab/green-beard-nursery/server` or `@m0n0lab/green-beard-platform/server`
+
+### Requirement: Container modules per side
+
+The nursery module SHALL bind its use cases, repositories and read queries in static Inversify container modules, `src/di/server.module.ts` and `src/di/client.module.ts`. The platform SHALL do the same for its own pieces. Each token SHALL live in the `tokens.ts` at the root of the side folder that injects it.
+
+#### Scenario: Server module resolves a use case
+
+- **WHEN** a container loads the platform and nursery server modules with a `Config` bound
+- **THEN** every server use case token resolves, backed by the Postgres repositories and read queries
+
+### Requirement: Apps are composition roots
+
+Each app SHALL build its container in `src/di/`: the API in `container.ts`, the SvelteKit app in `container.server.ts`. A container SHALL bind only its runtime's `Config` adapter and load the platform and nursery modules of its side. Routes, loaders and actions SHALL call use cases and SHALL NOT resolve repositories or read the environment.
+
+#### Scenario: API container
+
+- **WHEN** `apps/green-beard-api/src/di/container.ts` is read
+- **THEN** it binds the platform's process-env `Config` adapter and loads the platform and nursery server modules, and binds nothing else
+
+### Requirement: Typed errors with neverthrow
+
+Repositories, read queries and use cases SHALL return `ResultAsync` and SHALL NOT throw for expected failures. Kernel errors SHALL live in core: `ValidationError`, `NotFoundError` (concept name and id), `DuplicateError`, `PersistenceError` (wraps a database failure) and `NetworkError` (the API could not be reached), each with a stable `code`.
+
+#### Scenario: Use case returns a typed error
+
+- **WHEN** a use case looks up an id that does not exist
+- **THEN** it returns `Err<NotFoundError>` with the concept name and id
+
+#### Scenario: Repository wraps a database failure
+
+- **WHEN** a database operation fails unexpectedly
+- **THEN** the repository returns `Err<PersistenceError>` wrapping the original error
+
+### Requirement: Hono routes as module sub-apps
+
+Each concept's routes SHALL live in `apps/green-beard-api/src/nursery/route/<concept>.route.ts`, exporting a Hono sub-app built from the container that `src/app.ts` mounts. Request bodies SHALL be validated against the DTO schemas. `src/core/mapper/error-http.mapper.ts` SHALL map error codes to HTTP status: not found 404, validation 422, duplicate 409, persistence 500.
+
+#### Scenario: Successful call
+
+- **WHEN** a valid request reaches a CRUD route
+- **THEN** the route calls its use case and answers the DTO with the route's success status
+
+#### Scenario: Error call
+
+- **WHEN** a request ends in a kernel error
+- **THEN** the API answers the error envelope `{ code, message, statusCode }` with the mapped HTTP status
+
+### Requirement: SvelteKit BFF through client use cases
+
+`apps/green-beard` SHALL keep pages, components, loaders, actions and forms in `src/nursery/`. Files in `src/routes/` SHALL be thin: `+page.svelte` only renders a module page, and `+page.server.ts` only re-exports `load` and `actions` from `src/nursery/`. Loaders and actions SHALL call client use cases, which reach the API through the platform's API client. The browser SHALL NOT call the API.
+
+#### Scenario: Load function reads data
+
+- **WHEN** the Familia list page is requested
+- **THEN** `src/nursery/loader/familia-list.loader.server.ts` calls the client list use case, whose API repository calls the API through the platform's API client
+
+#### Scenario: Form action mutates data
+
+- **WHEN** the Familia create form is submitted
+- **THEN** an action in `src/nursery/action/` calls the client create use case and redirects, or returns the error to the form
+
+#### Scenario: Thin route file
+
+- **WHEN** `apps/green-beard/src/routes/familias/+page.server.ts` is read
+- **THEN** it only re-exports `load` and `actions` from `src/nursery/`
+
+### Requirement: Tests follow the test policy
+
+Tests SHALL follow ADR 0008. Models SHALL have unit tests (`<x>.model.test.ts`). Each use case SHALL have an integration test next to it (`<x>.use-case.integration.ts`): server side against Postgres through Testcontainers, client side against the API faked with MSW. Each API route SHALL have a harness and an integration-platform test next to it. No use-case test SHALL mock a repository.
+
+#### Scenario: Server use case test
+
+- **WHEN** the integration test of the server Familia create use case runs
+- **THEN** it uses the real Postgres repository against a Testcontainers database, built from the nursery server module
+
+#### Scenario: Route test
+
+- **WHEN** the Familia routes are tested
+- **THEN** `apps/green-beard-api/src/nursery/route/familia.route.integration-platform.ts` drives them through `familia.route.harness.ts`, which extends `src/core/harness/api.harness.ts`
+
+### Requirement: Green Beard under the layout lint
+
+Every Green Beard project in scope SHALL be checked by the `clean-architecture-layout` lint through one factory call with the `green-beard` prefix, and CI SHALL fail on a violation.
+
+#### Scenario: Lint passes
+
+- **WHEN** `pnpm nx run-many -t lint:eslint -p '@m0n0lab/green-beard*'` runs
+- **THEN** every Green Beard project except the database package is checked against the layout, and all pass
 
 ### Requirement: Docker Compose for local PostgreSQL
 
-A `docker-compose.yml` SHALL provide a PostgreSQL instance for local development. Database name: `green_beard`.
+`apps/green-beard-api/docker-compose.yml` SHALL provide a PostgreSQL instance for local development, with a database named `green_beard`.
 
 #### Scenario: Docker Compose starts PostgreSQL
-- **WHEN** `docker compose up -d` is run
-- **THEN** PostgreSQL is accessible at `localhost:5432` with the configured credentials
+
+- **WHEN** `docker compose up -d` runs in `apps/green-beard-api`
+- **THEN** PostgreSQL is reachable on `localhost:5432` with the configured credentials and the `green_beard` database

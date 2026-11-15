@@ -12,6 +12,7 @@ export const TOKENS = {
     UpdateOrderStatusUseCase: Symbol.for("UpdateOrderStatusUseCase"),
     CancelOrderUseCase: Symbol.for("CancelOrderUseCase"),
     GetSessionOrdersUseCase: Symbol.for("GetSessionOrdersUseCase"),
+    GetPublicOrderBoardUseCase: Symbol.for("GetPublicOrderBoardUseCase"),
     GetMenuUseCase: Symbol.for("GetMenuUseCase"),
     CreateMenuItemUseCase: Symbol.for("CreateMenuItemUseCase"),
     UpdateMenuItemUseCase: Symbol.for("UpdateMenuItemUseCase"),

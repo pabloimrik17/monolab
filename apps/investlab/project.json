@@ -3,6 +3,15 @@
     "targets": {
         "build": {
             "outputs": ["{projectRoot}/build"]
+        },
+        "typecheck": {
+            "cache": true,
+            "inputs": ["default", "^production", "sharedGlobals"],
+            "outputs": [
+                "{projectRoot}/.react-router/types",
+                "{projectRoot}/out-tsc",
+                "{projectRoot}/tsconfig*.tsbuildinfo"
+            ]
         }
     }
 }

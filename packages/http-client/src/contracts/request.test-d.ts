@@ -6,24 +6,26 @@ import type { HttpRequestConfig } from "../index.js";
  * @vitest-environment node
  */
 
-describe("HttpRequestConfig type safety", () => {
-    test("HttpRequestConfig has all optional properties", () => {
-        const config: HttpRequestConfig = {};
+describe("request", () => {
+    describe("HttpRequestConfig type safety", () => {
+        test("HttpRequestConfig has all optional properties", () => {
+            const config: HttpRequestConfig = {};
 
-        expectTypeOf(config.baseUrl).toEqualTypeOf<string | undefined>();
-        expectTypeOf(config.timeout).toEqualTypeOf<number | undefined>();
-        expectTypeOf(config.deduplicate).toEqualTypeOf<boolean | undefined>();
+            expectTypeOf(config.baseUrl).toEqualTypeOf<string | undefined>();
+            expectTypeOf(config.timeout).toEqualTypeOf<number | undefined>();
+            expectTypeOf(config.deduplicate).toEqualTypeOf<boolean | undefined>();
+        });
     });
-});
 
-describe("HttpRequestConfig readonly enforcement", () => {
-    test("HttpRequestConfig properties are readonly", () => {
-        const config: HttpRequestConfig = {
-            baseUrl: "https://api.example.com",
-            timeout: 5000,
-        };
+    describe("HttpRequestConfig readonly enforcement", () => {
+        test("HttpRequestConfig properties are readonly", () => {
+            const config: HttpRequestConfig = {
+                baseUrl: "https://api.example.com",
+                timeout: 5000,
+            };
 
-        expectTypeOf(config).toHaveProperty("baseUrl").toMatchTypeOf<string | undefined>();
-        expectTypeOf(config).toHaveProperty("timeout").toMatchTypeOf<number | undefined>();
+            expectTypeOf(config).toHaveProperty("baseUrl").toMatchTypeOf<string | undefined>();
+            expectTypeOf(config).toHaveProperty("timeout").toMatchTypeOf<number | undefined>();
+        });
     });
 });

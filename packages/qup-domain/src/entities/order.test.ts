@@ -19,6 +19,7 @@ describe("Order", () => {
                 sessionId: "session-1",
                 guestName: "Alice",
                 items: [makeItem()],
+                notes: "Extra hot",
             });
             expect(result.isOk()).toBe(true);
             if (result.isOk()) {
@@ -26,6 +27,7 @@ describe("Order", () => {
                 expect(order.guestName).toBe("Alice");
                 expect(order.status.equals(OrderStatus.PENDING)).toBe(true);
                 expect(order.items).toHaveLength(1);
+                expect(order.notes).toBe("Extra hot");
                 expect(order.id).toBeDefined();
             }
         });
@@ -52,6 +54,16 @@ describe("Order", () => {
             if (result.isErr()) {
                 expect(result.error.code).toBe("VALIDATION_ERROR");
             }
+        });
+
+        it("returns ValidationError for whitespace-only guest name", () => {
+            const error = Order.create({
+                sessionId: "session-1",
+                guestName: "   ",
+                items: [makeItem()],
+            })._unsafeUnwrapErr();
+
+            expect(error.code).toBe("VALIDATION_ERROR");
         });
 
         it("trims guest name", () => {

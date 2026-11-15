@@ -6,7 +6,7 @@ import type { HttpError, HttpRetryConfig } from "../index.js";
  * @vitest-environment node
  */
 
-describe("HttpRetryConfig type safety", () => {
+describe("HttpRetryConfig", () => {
     test("HttpRetryConfig has required and optional properties", () => {
         const config: HttpRetryConfig = {
             attempts: 3,

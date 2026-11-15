@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "build": "tsdown",
-        "db:generate": "pnpm --filter @m0n0lab/investlab-database db:generate",
+        "db:generate": "nx run @m0n0lab/investlab-database:db:generate",
         "db:migrate": "pnpm --filter @m0n0lab/investlab-database db:migrate",
         "dev": "tsx watch src/index.ts",
         "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
@@ -14,19 +14,21 @@
         "test": "vitest run",
         "test:changed": "vitest run --changed",
         "test:coverage": "vitest run --coverage",
-        "test:watch": "vitest",
-        "test:unit": "vitest run",
-        "test:unit:changed": "vitest run --changed",
-        "test:unit:watch": "vitest",
-        "test:unit:coverage": "vitest run --coverage",
-        "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
+        "test:integration-platform": "vitest run --project integration-platform",
+        "test:integration-platform:changed": "vitest run --project integration-platform --changed",
+        "test:integration-platform:coverage": "vitest run --project integration-platform --coverage",
+        "test:integration-platform:watch": "vitest --project integration-platform",
+        "test:watch": "vitest"
     },
     "dependencies": {
         "@hono/node-server": "2.0.10",
+        "@hono/zod-validator": "0.9.1",
+        "@m0n0lab/investlab-catalog": "workspace:*",
         "@m0n0lab/investlab-core": "workspace:*",
         "@m0n0lab/investlab-platform": "workspace:*",
         "@m0n0lab/investlab-portfolio": "workspace:*",
         "@m0n0lab/investlab-quotes": "workspace:*",
+        "@m0n0lab/investlab-roger": "workspace:*",
         "@varlock/1password-plugin": "catalog:",
         "hono": "4.12.30",
         "inversify": "catalog:",
@@ -45,7 +47,7 @@
     },
     "engines": {
         "node": "24.21.0",
-        "pnpm": "11.15.0"
+        "pnpm": "12.14.0"
     },
-    "packageManager": "pnpm@11.15.0"
+    "packageManager": "pnpm@12.14.0"
 }

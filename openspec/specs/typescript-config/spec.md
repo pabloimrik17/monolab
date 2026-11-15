@@ -1,8 +1,10 @@
 # typescript-config Specification
 
 ## Purpose
-TBD - created by archiving change add-tsconfig-web-app. Update Purpose after archive.
+Shared tsconfig presets in `@m0n0lab/ts-configs` for web and Node applications and libraries, so every workspace project extends one base instead of repeating compiler options.
+
 ## Requirements
+
 ### Requirement: Web Application Configuration
 The monorepo SHALL provide a TypeScript configuration file (`tsconfig.web.app.json`) that extends the web base configuration with settings optimized for web applications.
 
@@ -63,7 +65,7 @@ The monorepo SHALL provide a TypeScript configuration file (`tsconfig.web.lib.js
 - **WHEN** a web library uses `tsconfig.web.lib.json`
 - **THEN** declaration files (.d.ts) are generated
 - **AND** declaration maps are generated for better IDE support
-- **AND** the output is suitable for publishing to JSR
+- **AND** the output is suitable for publishing to npm
 
 #### Scenario: Composite builds support
 - **WHEN** using TypeScript project references
@@ -112,7 +114,7 @@ The monorepo SHALL provide a TypeScript configuration file (`tsconfig.node.lib.j
 - **WHEN** a Node.js library uses `tsconfig.node.lib.json`
 - **THEN** declaration files (.d.ts) are generated
 - **AND** declaration maps are generated for better IDE support
-- **AND** the output is suitable for publishing to JSR
+- **AND** the output is suitable for publishing to npm
 
 #### Scenario: Composite builds support
 - **WHEN** using TypeScript project references
@@ -148,4 +150,3 @@ The monorepo SHALL provide a base TypeScript configuration file (`tsconfig.node.
 - **WHEN** projects need to extend this configuration
 - **THEN** they can use the "extends" field in their tsconfig.json
 - **AND** override specific options as needed for their use case
-

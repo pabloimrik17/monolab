@@ -1,5 +1,5 @@
 {
-    "extends": "./tsconfig.node.base.json",
+    "extends": ["./tsconfig.node.base.json", "./tsconfig.node24.json"],
     "compilerOptions": {
         /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
          * Node.js Tooling Configuration

@@ -7,16 +7,17 @@
         "build": "tsdown",
         "dev": "tsx watch src/index.ts",
         "dev:migrate": "pnpm --filter @m0n0lab/qup-data db:migrate",
+        "lint:eslint": "eslint --cache --concurrency=auto --max-warnings 40 .",
+        "lint:eslint:fix": "eslint --cache --concurrency=auto --max-warnings 40 --fix .",
         "start": "node dist/index.mjs",
         "test": "vitest run",
         "test:changed": "vitest run --changed",
         "test:coverage": "vitest run --coverage",
-        "test:watch": "vitest",
-        "test:unit": "vitest run",
-        "test:unit:changed": "vitest run --changed",
-        "test:unit:watch": "vitest",
-        "test:unit:coverage": "vitest run --coverage",
-        "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
+        "test:integration-platform": "vitest run --project integration-platform",
+        "test:integration-platform:changed": "vitest run --project integration-platform --changed",
+        "test:integration-platform:coverage": "vitest run --project integration-platform --coverage",
+        "test:integration-platform:watch": "vitest --project integration-platform",
+        "test:watch": "vitest"
     },
     "dependencies": {
         "@hono/node-server": "2.0.10",
@@ -31,7 +32,9 @@
     "devDependencies": {
         "@codecov/rollup-plugin": "catalog:",
         "@m0n0lab/vitest-config": "workspace:*",
+        "@testcontainers/postgresql": "catalog:",
         "@types/node": "catalog:",
+        "neverthrow": "catalog:",
         "tsdown": "catalog:",
         "tsx": "4.23.1",
         "typescript": "catalog:",
@@ -39,7 +42,7 @@
     },
     "engines": {
         "node": "24.21.0",
-        "pnpm": "11.15.0"
+        "pnpm": "12.14.0"
     },
-    "packageManager": "pnpm@11.15.0"
+    "packageManager": "pnpm@12.14.0"
 }

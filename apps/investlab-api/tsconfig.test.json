@@ -1,0 +1,18 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./out-tsc/test",
+        "tsBuildInfoFile": "./out-tsc/tsconfig.test.tsbuildinfo"
+    },
+    "include": ["src/**/*"],
+    "exclude": [],
+    "references": [
+        { "path": "../../packages/investlab-catalog" },
+        { "path": "../../packages/investlab-quotes" },
+        { "path": "../../packages/investlab-portfolio" },
+        { "path": "../../packages/investlab-roger" },
+        { "path": "../../packages/investlab-platform" },
+        { "path": "../../packages/investlab-core" },
+        { "path": "../../packages/vitest-config" }
+    ]
+}

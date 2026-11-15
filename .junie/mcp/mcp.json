@@ -1,44 +1,38 @@
 {
     "mcpServers": {
         "eslint": {
-            "command": "npx",
+            "command": "pnpx",
             "args": [
-                "-y",
                 "@eslint/mcp@0.3.0"
             ]
         },
         "context7": {
-            "command": "npx",
+            "command": "pnpx",
             "args": [
-                "-y",
                 "@upstash/context7-mcp@2.1.2"
             ]
         },
         "knip": {
-            "command": "npx",
+            "command": "pnpx",
             "args": [
-                "-y",
                 "@knip/mcp@0.0.19"
             ]
         },
         "memory": {
-            "command": "npx",
+            "command": "pnpx",
             "args": [
-                "-y",
                 "@modelcontextprotocol/server-memory@2026.1.26"
             ]
         },
         "playwright": {
-            "command": "npx",
+            "command": "pnpx",
             "args": [
-                "-y",
                 "@playwright/mcp@0.0.68"
             ]
         },
         "chrome-devtools": {
-            "command": "npx",
+            "command": "pnpx",
             "args": [
-                "-y",
                 "chrome-devtools-mcp@0.18.1"
             ]
         },

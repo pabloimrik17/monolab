@@ -33,6 +33,37 @@ describe("BaseViewModel", () => {
         expect(() => vm.willUnmount()).not.toThrow();
     });
 
+    it("should run every cleanup and throw the failures together", () => {
+        const vm = new TestViewModel();
+        const boom1 = new Error("first");
+        const boom2 = new Error("second");
+        const after = vi.fn();
+
+        vm.addCleanup(
+            () => {
+                throw boom1;
+            },
+            () => {
+                throw boom2;
+            },
+            after,
+        );
+
+        const thrown = (() => {
+            try {
+                vm.willUnmount();
+            } catch (e) {
+                return e;
+            }
+        })();
+
+        expect(thrown).toBeInstanceOf(AggregateError);
+        expect((thrown as AggregateError).message).toBe("Errors during cleanup");
+        expect((thrown as AggregateError).errors).toEqual([boom1, boom2]);
+        expect(after).toHaveBeenCalledOnce();
+        expect(() => vm.willUnmount()).not.toThrow();
+    });
+
     it("should call didMount with owner", async () => {
         const owner = {} as Owner;
 

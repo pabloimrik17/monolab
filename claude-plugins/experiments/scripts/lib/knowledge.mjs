@@ -40,7 +40,7 @@ export function parseFrontmatter(content) {
     const data = {};
     for (const line of m[1].split(/\r?\n/)) {
         if (!line.trim()) continue;
-        const kv = /^([A-Za-z0-9_]+):\s*(.*)$/.exec(line);
+        const kv = /^(\w+):\s*((?:\S.*)?)$/.exec(line);
         if (!kv) continue;
         data[kv[1]] = parseYamlValue(kv[2]);
     }
@@ -116,7 +116,7 @@ const RESERVED_SCALARS = new Set(["true", "false", "null", "~"]);
 function needsQuoting(s) {
     if (s === "") return true;
     if (RESERVED_SCALARS.has(s)) return true;
-    if (/^-?\d+(\.\d+)?$/.test(s)) return true;
+    if (/^-?\d+(?:\.\d+)?$/.test(s)) return true;
     if (/^\s|\s$/.test(s)) return true;
     if (s.includes("..")) return true;
     return /: |[\n#[\]{}",&*|>'%!@]/.test(s);
@@ -158,7 +158,7 @@ export function computePreimageHash(content) {
     return createHash("sha256").update(blankSlots(content)).digest("hex");
 }
 
-const PREIMAGE_MARKER_RE = /\n?<!-- knowledge:preimage ([0-9a-f]{64}) -->\n(?![\s\S])/;
+const PREIMAGE_MARKER_RE = /\n?<!-- knowledge:preimage ([0-9a-f]{64}) -->\n$/;
 
 export function stripPreimageMarker(content) {
     return content.replace(PREIMAGE_MARKER_RE, "\n");
@@ -216,8 +216,9 @@ export function withSupersededBy(markerLine, supersededBy) {
 }
 
 // Supports legacy, universal-only, and universal/project heading contracts.
-const PACKAGE_HEADING_RE = /^## (.+?)\s*\(([^()]+)\)\s*$/;
-const H3_RE = /^### (.+?)\s*$/;
+// `((?=\s).|.*?\S)\s*` matches as `(.+?)\s*` does, without its backtracking.
+const PACKAGE_HEADING_RE = /^## ((?=\s).|.*?\S)\s*\(([^()]+)\)\s*$/;
+const H3_RE = /^### ((?=\s).|.*?\S)\s*$/;
 const SOURCE_LINE_RE = /^source:\s*prior-run\s+(\S+)/;
 const COPIED_UNIVERSAL_LABEL_RE =
     /^\*\*((?:Workarounds resolved|Improvements applicable) \(universal\))\*\*$/;
@@ -240,6 +241,7 @@ export function parseResearchPackages(content) {
 }
 
 function splitArrow(range) {
+    // eslint-disable-next-line regexp/no-super-linear-backtracking -- lazy first-arrow split; input is one trimmed heading line
     const m = /^(.+?)\s*(?:→|->)\s*(.+)$/.exec(range.trim());
     return m ? [m[1].trim(), m[2].trim()] : [range.trim(), range.trim()];
 }

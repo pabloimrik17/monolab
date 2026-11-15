@@ -1,5 +1,5 @@
 ---
-status: amended by ADR-0007
+status: amended by ADR-0007, ADR-0008
 ---
 
 # InvestLab use cases are tested through real adapters, faking only the far edge

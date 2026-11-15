@@ -1,4 +1,12 @@
-export type { SessionDto, OrderDto, OrderItemDto, MenuItemDto } from "./dtos.ts";
+export type {
+    SessionDto,
+    OrderDto,
+    OrderItemDto,
+    MenuItemDto,
+    PublicOrderItemLineDto,
+    PublicOrderSummaryDto,
+    PublicOrderBoardDto,
+} from "./dtos.ts";
 export type { ApiErrorDto } from "./api-error.ts";
 export type {
     CreateSessionRequest,
