@@ -8,6 +8,23 @@
 
 -   Pablo F. Guerra @pabloimrik17
 
+## [2.0.0](https://github.com/pabloimrik17/monolab/compare/react-hooks-v1.4.2...react-hooks-v2.0.0) (2026-11-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* **investlab:** watchlists saved under the old key no longer load.
+
+### Features
+
+* **investlab:** clean architecture layout and per-product layer lint ([#375](https://github.com/pabloimrik17/monolab/issues/375)) ([1565cec](https://github.com/pabloimrik17/monolab/commit/1565cec7c08c952dee56db451be67de21edb663c))
+* **investlab:** track Roger positions through their states ([#419](https://github.com/pabloimrik17/monolab/issues/419)) ([38c5d7e](https://github.com/pabloimrik17/monolab/commit/38c5d7e0c20a9af9c94362a76df1e95c8132577a))
+
+
+### Bug Fixes
+
+* **deps:** update knip to 6.43.0 and simplify its config ([#371](https://github.com/pabloimrik17/monolab/issues/371)) ([1463f6a](https://github.com/pabloimrik17/monolab/commit/1463f6a3c3a71e0dc005a6758f5f3acb7bd059cf))
+
 ## [1.4.2](https://github.com/pabloimrik17/monolab/compare/react-hooks-v1.4.1...react-hooks-v1.4.2) (2026-10-17)
 
 

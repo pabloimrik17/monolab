@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/pabloimrik17/monolab/compare/ts-configs-v1.3.0...ts-configs-v1.3.1) (2026-11-15)
+
+
+### Bug Fixes
+
+* **deps:** update knip to 6.43.0 and simplify its config ([#371](https://github.com/pabloimrik17/monolab/issues/371)) ([1463f6a](https://github.com/pabloimrik17/monolab/commit/1463f6a3c3a71e0dc005a6758f5f3acb7bd059cf))
+
 ## [1.3.0](https://github.com/pabloimrik17/monolab/compare/ts-configs-v1.2.1...ts-configs-v1.3.0) (2026-10-17)
 
 
