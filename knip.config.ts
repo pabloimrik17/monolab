@@ -17,7 +17,7 @@ export default {
         ".": { entry: ["scripts/*.{cjs,mjs}!"] },
         // Executed by the plugin skills/commands, never imported.
         "claude-plugins/experiments": {
-            entry: ["scripts/*.mjs!"],
+            entry: ["scripts/*.mjs!", "!scripts/*.test.mjs"],
             // lib helpers are exported so the colocated tests can import them; only the tests use them from outside.
             ignoreExportsUsedInFile: true,
         },
