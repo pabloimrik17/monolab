@@ -21,7 +21,7 @@ export async function defaultHttp(url, init = {}) {
 }
 
 let ghAvailable = null;
-export function hasGhCli() {
+function hasGhCli() {
     if (ghAvailable !== null) return ghAvailable;
     try {
         execFileSync("gh", ["--version"], { stdio: "ignore" });

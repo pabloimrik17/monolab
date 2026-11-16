@@ -5,7 +5,7 @@
  */
 
 // `\d.*`: the patch number's later digits fall in `.*`, so no `\d+` backtracks against it.
-export const PATTERNS = [
+const PATTERNS = [
     {
         id: "conventional-changelog",
         regex: /^## \[\d+\.\d+\.\d.*?\]\(.+?\) \(.+\)$/,

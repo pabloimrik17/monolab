@@ -40,7 +40,7 @@ export const ENGINES = {
     },
 };
 
-export const ALWAYS_ENGINE = new Set(["node", "deno", "bun"]);
+const ALWAYS_ENGINE = new Set(["node", "deno", "bun"]);
 
 export function isEngineRequest(name, engineFlag) {
     if (ALWAYS_ENGINE.has(name)) return true;
