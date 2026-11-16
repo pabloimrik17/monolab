@@ -13,7 +13,7 @@ const MIN_INTERVAL = 15_000;
 const MAX_INTERVAL = 60_000;
 const DEFAULT_INTERVAL = 30_000;
 
-export interface QuotePollerOptions {
+interface QuotePollerOptions {
     interval?: number;
     onUpdate: (quotes: Map<string, Quote>) => void;
     onError?: (error: QuotesRequestError) => void;

@@ -14,6 +14,8 @@
         "health:coverage": "node scripts/merge-coverage.mjs && fallow health --coverage coverage/merged",
         "lint:fallow": "fallow dead-code --fail-on-issues",
         "lint:knip": "knip --max-issues 60 && knip --cycles --max-issues 1",
+        "lint:knip:production": "knip --production --max-issues 60",
+        "lint:knip:production:strict": "knip --strict --max-issues 60",
         "lint:legacy-tests": "git ls-files '*.legacy.test.*' | diff docs/legacy-tests.txt -",
         "lint:knip:fix": "knip --fix",
         "lint:markdownlint": "markdownlint --config .markdownlint.jsonc --dot .",

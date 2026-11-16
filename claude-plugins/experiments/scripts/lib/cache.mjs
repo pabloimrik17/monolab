@@ -40,7 +40,7 @@ export function sha256(content) {
     return createHash("sha256").update(content).digest("hex");
 }
 
-export function readJsonIfExists(path) {
+function readJsonIfExists(path) {
     if (!existsSync(path)) return null;
     try {
         return JSON.parse(readFileSync(path, "utf8"));

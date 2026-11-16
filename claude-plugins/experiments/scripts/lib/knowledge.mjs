@@ -147,14 +147,14 @@ export function isSlotUnfilled(slotContent) {
 }
 
 // Hash only script-owned content; slot bodies remain model-owned.
-export function blankSlots(content) {
+function blankSlots(content) {
     return content.replace(
         /<!-- slot:(\w+) -->\n?[\s\S]*?<!-- \/slot -->/g,
         (_all, name) => `<!-- slot:${name} -->\n<!-- /slot -->`,
     );
 }
 
-export function computePreimageHash(content) {
+function computePreimageHash(content) {
     return createHash("sha256").update(blankSlots(content)).digest("hex");
 }
 
