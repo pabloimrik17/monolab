@@ -9,7 +9,7 @@
         "context7": {
             "command": "pnpx",
             "args": [
-                "@upstash/context7-mcp@2.1.2"
+                "@upstash/context7-mcp@4.4.4"
             ]
         },
         "knip": {
