@@ -28,8 +28,8 @@ pnpm add @m0n0lab/react-clean
 ## Usage
 
 ```typescript
-import { BaseViewModel } from "@m0n0lab/react-clean";
 import { injectable } from "inversify";
+import { BaseViewModel } from "@m0n0lab/react-clean";
 
 @injectable()
 class MyViewModel extends BaseViewModel {

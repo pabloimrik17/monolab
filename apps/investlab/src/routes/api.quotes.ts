@@ -21,9 +21,10 @@ export async function loader({ request }: Route.LoaderArgs): Promise<Response> {
     return result.match(
         (quotes) =>
             Response.json(
-                quotes.map(
-                    (quote): QuoteDto => ({ ...quote, updatedAt: quote.updatedAt.toISOString() }),
-                ),
+                quotes.map((quote): QuoteDto => ({
+                    ...quote,
+                    updatedAt: quote.updatedAt.toISOString(),
+                })),
             ),
         (error) =>
             Response.json(
