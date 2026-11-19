@@ -36,8 +36,8 @@ Tasks are split by pull request in a gh-stack. Groups 1–5 are PR1 (agentic-tas
 
 ## 6. Clear the findings (PR2)
 
-- [ ] 6.1 Upgrade the direct dependencies that carry blocking advisories and add scoped `overrides` in `pnpm-workspace.yaml` for transitive ones, never crossing a major; verify after each batch with `mise x -- osv-scanner scan source -L pnpm-lock.yaml --config osv-scanner.toml --format json | jq -e -f .github/osv-gate.jq` and with the affected `nx affected -t lint test typecheck build`
-- [ ] 6.2 Record every remaining blocking advisory that has no fixed version, or whose fix needs a major migration (Zod 3 → agentic-task-vfdd, Codecov → agentic-task-fu5s, SvelteKit 2 → agentic-task-wmnx), as an Accepted advisory (expiry ≤ 90 days, reason naming its migration task, `Owner: pfe`) and verify the jq gate passes locally
+- [x] 6.1 Upgrade the direct dependencies that carry blocking advisories and add scoped `overrides` in `pnpm-workspace.yaml` for transitive ones, never crossing a major; verify after each batch with `mise x -- osv-scanner scan source -L pnpm-lock.yaml --config osv-scanner.toml --format json | jq -e -f .github/osv-gate.jq` and with the affected `nx affected -t lint test typecheck build`
+- [x] 6.2 Record every remaining blocking advisory that has no fixed version, or whose fix needs a major migration (Zod 3 → agentic-task-vfdd, Codecov → agentic-task-fu5s, SvelteKit 2 → agentic-task-wmnx), as an Accepted advisory (expiry ≤ 90 days, reason naming its migration task, `Owner: pfe`) and verify the jq gate passes locally
 
 ## 7. Make the gate blocking (PR2)
 
