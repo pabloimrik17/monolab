@@ -418,18 +418,25 @@ jobs:
                   path: .nx
                   key: ${{ steps.cache-nx-restore.outputs.cache-primary-key }}
 
+    cve:
+        uses: ./.github/workflows/cve-scan.yml
+        permissions:
+            contents: read
+            security-events: write
+
     # The branch-protection ruleset requires one check named `main`; this job keeps that
     # name whatever the job layout above.
     main:
-        needs: [lint, tests, build]
+        needs: [lint, tests, build, cve]
         if: always()
         runs-on: ubuntu-latest
         steps:
-            - name: ✅ Require lint, tests and build to pass
+            - name: ✅ Require lint, tests, build and cve to pass
               run: |
                   echo "lint: ${{ needs.lint.result }}"
                   echo "tests: ${{ needs.tests.result }}"
                   echo "build: ${{ needs.build.result }}"
+                  echo "cve: ${{ needs.cve.result }}"
                   if [ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" = "true" ]; then
                     exit 1
                   fi

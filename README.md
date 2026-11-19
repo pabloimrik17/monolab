@@ -93,6 +93,22 @@ pnpm --version
 
 The output should be `12.14.0`.
 
+### External tools
+
+An external tool is a command-line program that a check runs and that is not an npm package. Node.js and pnpm are not external tools: they stay on `.nvmrc` and `packageManager`.
+
+External tools are managed with [mise](https://mise.jdx.dev/getting-started.html). Install mise 2026.10.0 or newer.
+
+Versions are pinned in `mise.toml` and checksums in `mise.lock`. Renovate keeps both current. Git hooks install the tools on first use, so there is no setup step.
+
+To run osv-scanner by hand:
+
+```bash
+mise x -- osv-scanner scan source -L pnpm-lock.yaml --config osv-scanner.toml
+```
+
+It exits with 1 when it finds advisories.
+
 ## Testing
 
 This project uses Vitest for testing with separate test types organized by purpose.

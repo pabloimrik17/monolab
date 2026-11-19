@@ -1,0 +1,18 @@
+# CVE gate policy (docs/adr/0014-osv-scanner-with-a-severity-filter-as-the-cve-gate.md)
+#
+# CI blocks on a finding scored CVSS >= 7.0, and on an unscored one unless its
+# database labels it LOW or MODERATE (.github/osv-gate.jq). Everything else is
+# reported only.
+#
+# This file is the only valve. An Accepted advisory is one [[IgnoredVulns]] entry:
+#   id          = the advisory id osv-scanner reports (GHSA-…, CVE-…)
+#   ignoreUntil = review date, at most 90 days after the entry is added; past it,
+#                 the advisory blocks again. Switch to effectiveUntil once the
+#                 pinned osv-scanner is >= 2.7.1, which deprecates ignoreUntil.
+#   reason      = why it cannot be fixed yet, ending with "Owner: <handle>"
+# Review rejects an entry missing any of them.
+#
+# [[IgnoredVulns]]
+# id = "GHSA-xxxx-xxxx-xxxx"
+# ignoreUntil = 2027-02-17
+# reason = "No fixed version; only reached through dev tooling. Owner: pfe"
