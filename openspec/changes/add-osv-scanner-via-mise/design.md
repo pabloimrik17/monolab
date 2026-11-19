@@ -109,7 +109,7 @@ The three-dot diff compares with the merge base, so a branch that is only behind
 Two stacked pull requests, managed with gh-stack:
 
 1. **PR1** (base `develop`): everything in this change with `CVE_GATE_MODE: report`. CI is green, and the run lists the current findings in its job summary, as annotations and as alerts.
-2. **PR2** (on PR1): upgrade direct dependencies, add `pnpm.overrides` for transitive ones, accept the advisories that have no fix, and set `CVE_GATE_MODE: block`. Its green CI is the proof that the lockfile is clean. Archive the change after PR2 merges.
+2. **PR2** (on PR1): upgrade direct dependencies, add scoped `overrides` in `pnpm-workspace.yaml` for transitive ones (pnpm 12 ignores `package.json#pnpm.overrides`), accept the advisories whose fix needs a major migration or does not exist, each with a migration task, and set `CVE_GATE_MODE: block`. Its green CI is the proof that the lockfile is clean. Archive the change after PR2 merges.
 
 Rollback: set `CVE_GATE_MODE: report` (one line), or revert PR1.
 

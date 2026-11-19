@@ -23,7 +23,7 @@ Nothing checks `pnpm-lock.yaml` for known vulnerabilities. Renovate's OSV alerts
 - README documents External tools under Development Setup.
 - The change lands as two stacked pull requests:
     - PR1 adds everything above with the gate set to report only, so CI stays green.
-    - PR2 clears the findings, accepts the advisories that have no fix, and switches the gate to blocking. Its green CI is the proof that the lockfile is clean.
+    - PR2 clears the findings it can within each package's major, accepts the rest (no fix, or a fix only behind a major migration that gets its own task), and switches the gate to blocking. Its green CI is the proof that the lockfile is clean.
 
 ## Capabilities
 
@@ -39,7 +39,7 @@ Nothing checks `pnpm-lock.yaml` for known vulnerabilities. Renovate's OSV alerts
 ## Impact
 
 - New files: `mise.toml`, `mise.lock`, `osv-scanner.toml`, `.github/workflows/cve-scan.yml`, the gate's jq filter, `.husky/pre-push`.
-- Changed files: `.github/workflows/ci.yml` (new `cve` job, `main.needs`), `README.md`. PR2 also changes `package.json` and `pnpm-lock.yaml` (upgrades and overrides).
+- Changed files: `.github/workflows/ci.yml` (new `cve` job, `main.needs`), `README.md`. PR2 also changes `package.json`, `pnpm-workspace.yaml` and `pnpm-lock.yaml` (upgrades and overrides).
 - Developers need mise 2026.10.0 or newer to push. The hook installs osv-scanner on first use.
 - New SHA-pinned actions: `jdx/mise-action` and `github/codeql-action/upload-sarif`.
 - No new package, no change to exports and no change to peer dependencies.
