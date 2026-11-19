@@ -109,6 +109,32 @@ mise x -- osv-scanner scan source -L pnpm-lock.yaml --config osv-scanner.toml
 
 It exits with 1 when it finds advisories.
 
+gitleaks runs the Secret scan. It scans staged changes in the pre-commit hook, the commits no remote has in the pre-push hook, and the full history in CI. Any finding blocks the commit, the push or the CI run.
+
+To run it by hand:
+
+```bash
+mise x -- gitleaks git --redact -v --log-opts="--remerge-diff HEAD"
+```
+
+To tell a False positive from a real credential, look at the matched line without `--redact`. A live token or key is a real credential. An identifier or test value that only fits the rule's pattern is a False positive. When in doubt, treat it as real.
+
+To record a False positive:
+
+- Add an `[[allowlists]]` entry to `.gitleaks.toml`.
+- Set `targetRules` to the one rule that matched.
+- Add a pattern for the matched text.
+- Add a `description` saying why it is not a credential.
+
+To handle a real credential:
+
+- Revoke it at the provider first.
+- Add the fingerprint gitleaks prints (`<commit>:<file>:<rule>:<line>`) to `.gitleaksignore`, under a comment `# revoked YYYY-MM-DD: <provider, reason>`.
+- Only that one commit is skipped, so the same credential added again fails the Secret scan.
+- Never record a real credential as a False positive.
+
+History is never rewritten.
+
 ## Testing
 
 This project uses Vitest for testing with separate test types organized by purpose.

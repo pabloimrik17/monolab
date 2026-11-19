@@ -424,19 +424,40 @@ jobs:
             contents: read
             security-events: write
 
+    secrets:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  fetch-depth: 0
+                  persist-credentials: false
+
+            - name: Install mise and External tools
+              uses: jdx/mise-action@90f833d396d0cc3674b631d2d225e306476c303a # v5.2.10
+              with:
+                  version: 2026.11.2
+                  install_args: gitleaks
+
+            - name: Scan history for secrets
+              run: gitleaks git --redact -v --no-banner --log-opts="--remerge-diff HEAD"
+
     # The branch-protection ruleset requires one check named `main`; this job keeps that
     # name whatever the job layout above.
     main:
-        needs: [lint, tests, build, cve]
+        needs: [lint, tests, build, cve, secrets]
         if: always()
         runs-on: ubuntu-latest
         steps:
-            - name: ✅ Require lint, tests, build and cve to pass
+            - name: ✅ Require lint, tests, build, cve and secrets to pass
               run: |
                   echo "lint: ${{ needs.lint.result }}"
                   echo "tests: ${{ needs.tests.result }}"
                   echo "build: ${{ needs.build.result }}"
                   echo "cve: ${{ needs.cve.result }}"
+                  echo "secrets: ${{ needs.secrets.result }}"
                   if [ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" = "true" ]; then
                     exit 1
                   fi
