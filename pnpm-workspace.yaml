@@ -39,6 +39,28 @@ strictDepBuilds: true
 
 strictPeerDependencies: false
 
+overrides:
+    # Browserslist advisory groups in Babel compilation targets and core-js-compat.
+    "@babel/helper-compilation-targets@7>browserslist": 4.28.7
+    "@babel/helper-compilation-targets@8.0.7>browserslist": 4.28.7
+    "core-js-compat@3.45.0>browserslist": 4.28.7
+    # fast-uri advisory groups in Ajv schema validation.
+    "ajv@8>fast-uri": 3.1.7
+    # js-yaml advisory groups in Cosmiconfig config loading.
+    "cosmiconfig@8.3.6>js-yaml": 4.3.2
+    "cosmiconfig@9.0.2>js-yaml": 4.3.2
+    # minimatch 5 and 9 advisory groups in archive file matching.
+    "glob@10.5.0>minimatch": 9.0.9
+    "readdir-glob@1.1.3>minimatch": 5.1.8
+    # picomatch 2 advisory groups in file matching and watching.
+    "anymatch@3.1.3>picomatch": 2.3.2
+    "micromatch@4.0.8>picomatch": 2.3.2
+    # Undici 6 and 8 advisory groups in Actions clients and Testcontainers.
+    "@actions/github@9.1.1>undici": 6.29.1
+    "@actions/http-client@3.0.2>undici": 6.29.1
+    "@actions/http-client@4.0.1>undici": 6.29.1
+    "testcontainers@12.2.1>undici": 8.12.2
+
 catalog:
     "@arethetypeswrong/cli": 0.18.5
     "@codecov/rollup-plugin": 2.0.1
