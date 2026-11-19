@@ -170,3 +170,15 @@ _Avoid_: audit, vulnerability scan.
 **Accepted advisory**:
 An advisory the CVE gate ignores until a review date, recorded with a reason and an owner.
 _Avoid_: whitelist, suppression, exception.
+
+**Secret scan**:
+The check that fails a change when one of its commits adds text matching a credential pattern.
+_Avoid_: leak check, gitleaks.
+
+**False positive**:
+A Secret scan match that is not a credential, recorded with a reason so the Secret scan skips it. A real credential is never one: it is revoked and becomes a Revoked secret.
+_Avoid_: whitelist, allowlist, ignored leak, exception.
+
+**Revoked secret**:
+A real credential that stays in history after it was revoked, recorded with its revocation date so the Secret scan skips that one occurrence; the same credential added again fails the Secret scan.
+_Avoid_: False positive, ignored leak.
