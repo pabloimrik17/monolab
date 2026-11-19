@@ -1,6 +1,7 @@
 "use server";
 
 import { adminHeaders } from "./admin-guard.ts";
+import { API_URL } from "./api-url.ts";
 import type {
     CreateMenuItemRequest,
     CreateOrderRequest,
@@ -12,12 +13,15 @@ import type {
     UpdateOrderStatusRequest,
 } from "@m0n0lab/qup-shared";
 
-const API_URL = process.env["QUP_API_URL"] ?? "http://localhost:3001";
+// Admin endpoints get the PIN header, which `adminHeaders` only hands out to an admin session.
+async function authHeaders(admin: boolean): Promise<Record<string, string>> {
+    return admin ? adminHeaders() : {};
+}
 
 async function post<T>(path: string, body?: unknown, admin = false): Promise<T> {
     const res = await fetch(`${API_URL}${path}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...(admin ? await adminHeaders() : {}) },
+        headers: { "Content-Type": "application/json", ...(await authHeaders(admin)) },
         body: body ? JSON.stringify(body) : null,
     });
     if (!res.ok) throw new Error(`POST ${path} failed: ${res.status}`);
@@ -28,7 +32,7 @@ async function post<T>(path: string, body?: unknown, admin = false): Promise<T> 
 async function patch(path: string, body: unknown, admin = false): Promise<void> {
     const res = await fetch(`${API_URL}${path}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", ...(admin ? await adminHeaders() : {}) },
+        headers: { "Content-Type": "application/json", ...(await authHeaders(admin)) },
         body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error(`PATCH ${path} failed: ${res.status}`);
@@ -37,7 +41,7 @@ async function patch(path: string, body: unknown, admin = false): Promise<void> 
 async function del(path: string, admin = false): Promise<void> {
     const res = await fetch(`${API_URL}${path}`, {
         method: "DELETE",
-        headers: admin ? await adminHeaders() : {},
+        headers: await authHeaders(admin),
     });
     if (!res.ok) throw new Error(`DELETE ${path} failed: ${res.status}`);
 }
