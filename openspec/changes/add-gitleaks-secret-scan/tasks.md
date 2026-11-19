@@ -9,8 +9,8 @@ One pull request (agentic-task-6c2p.57). No task affects package exports, so no 
 
 ## 2. Hooks
 
-- [ ] 2.1 Rewrite `.husky/pre-commit` as in design.md: mise check with the one-line hint, the `MISE_EXEC_AUTO_INSTALL`/`MISE_AUTO_INSTALL` exports, then `validate-branch-name` and lint-staged, then `mise x -- gitleaks git --pre-commit --staged --redact -v --no-banner`. Verify that staging a file with a fake AWS key (`AKIA` + 16 uppercase alphanumerics) blocks the commit with the redacted rule, file and line, that a clean commit passes, and that a commit with `PATH` stripped of mise fails with the hint
-- [ ] 2.2 Add the gitleaks line from design.md to `.husky/pre-push` before osv-scanner, and change its mise hint to name the git hooks. Verify on a throwaway branch that a commit made with `--no-verify` that adds a fake key blocks the push, that a push with nothing new scans 0 bytes and proceeds, and that a push with `PATH` stripped of mise fails with the hint; delete the throwaway branch and commit afterwards
+- [x] 2.1 Rewrite `.husky/pre-commit` as in design.md: mise check with the one-line hint, the `MISE_EXEC_AUTO_INSTALL`/`MISE_AUTO_INSTALL` exports, then `validate-branch-name` and lint-staged, then `mise x -- gitleaks git --pre-commit --staged --redact -v --no-banner`. Verify that staging a file with a fake AWS key (`AKIA` + 16 uppercase alphanumerics) blocks the commit with the redacted rule, file and line, that a clean commit passes, and that a commit with `PATH` stripped of mise fails with the hint
+- [x] 2.2 Add the gitleaks line from design.md to `.husky/pre-push` before osv-scanner, and change its mise hint to name the git hooks. Verify on a throwaway branch that a commit made with `--no-verify` that adds a fake key blocks the push, that a push with nothing new scans 0 bytes and proceeds, and that a push with `PATH` stripped of mise fails with the hint; delete the throwaway branch and commit afterwards
 
 ## 3. CI
 
