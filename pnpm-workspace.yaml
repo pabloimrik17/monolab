@@ -69,6 +69,40 @@ overrides:
     "@actions/http-client@3.0.2>undici": 6.29.1
     "@actions/http-client@4.0.1>undici": 6.29.1
     "testcontainers@12.2.1>undici": 8.12.2
+    # Undici 7 advisory groups in Nx's HTTP client.
+    "nx@23.3.0>undici": 7.30.2
+    # Zod 4 advisory group in Vinxi and Stryker's mutation protocol.
+    "mutation-server-protocol@0.4.1>zod": 4.6.6
+    "vinxi@0.5.11>zod": 4.6.6
+    # H3 advisory groups in the Vinxi server and its listeners and storage.
+    "@vinxi/listhen@1.5.6>h3": 1.15.11
+    "listhen@1.9.0>h3": 1.15.11
+    "unstorage@1.17.4>h3": 1.15.11
+    "vinxi@0.5.11>h3": 1.15.11
+    # Vite 6 advisory group in Vinxi's bundler.
+    "vinxi@0.5.11>vite": 6.4.6
+    # serialize-javascript advisory group in Nitro's Terser plugin.
+    "vinxi@0.5.11>nitropack": 2.13.2
+    # Devalue advisory groups in Svelte and SvelteKit.
+    "@sveltejs/kit@2.70.0>devalue": 5.9.4
+    "svelte@5.56.6>devalue": 5.9.4
+    # defu advisory group in the Vinxi runtime.
+    "vinxi@0.5.11>defu": 6.1.7
+    # node-forge advisory groups in Vinxi and Nitro TLS tooling.
+    "@vinxi/listhen@1.5.6>node-forge": 1.4.3
+    "listhen@1.9.0>node-forge": 1.4.3
+    # source-map-js advisory group in Tailwind and css-tree.
+    "@tailwindcss/node@4.3.3>source-map-js": 1.2.2
+    "css-tree@3.2.1>source-map-js": 1.2.2
+    # Express request parsing, proxy address and compression advisory groups.
+    "@react-router/serve@8.3.0>express": 5.3.0
+    "@react-router/serve@8.3.0>compression": 1.8.2
+    "express@5.3.0>body-parser": 2.4.0
+    # Seroval advisory groups in SolidStart, aligned with Solid JS.
+    "@solidjs/start@1.3.5>seroval": 1.6.12
+    "@solidjs/start@1.3.5>seroval-plugins": 1.6.12
+    # tar advisory groups in Nitro's native dependency tracing.
+    "@mapbox/node-pre-gyp@2.0.3>tar": 7.5.21
 
 catalog:
     "@arethetypeswrong/cli": 0.18.5
@@ -99,12 +133,12 @@ catalog:
     pg: 8.22.0
     react: 19.2.7
     react-dom: 19.2.7
-    solid-js: 1.9.14
+    solid-js: 1.9.18
     tsdown: 0.22.9
     tslib: 2.8.1
     typescript: 6.0.3
     varlock: 1.21.0
-    vite: 8.1.6
+    vite: 8.3.4
     vite-plugin-solid: 2.11.12
     vitest: 5.1.0
     vitest-browser-react: 2.3.0
@@ -120,11 +154,5 @@ permissions:
     varlock:
         skills: true
 minimumReleaseAgeExclude:
-    # Renovate security update: vite@8.1.6
-    - vite@8.1.6
     # Renovate security update: react-router@8.3.0
     - react-router@8.3.0
-    # Renovate security update: postcss@8.5.23
-    - postcss@8.5.23
-    # Renovate security update: nx@23.2.1
-    - nx@23.2.1
