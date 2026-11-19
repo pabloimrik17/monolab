@@ -65,7 +65,7 @@ Push runs come after a merge, so they block nothing. They keep `develop` red unt
 ### Gate mechanics
 
 1. Run `osv-scanner scan source -L pnpm-lock.yaml --config osv-scanner.toml --format json > osv.json`, capturing the exit code. Exit codes 0 and 1 continue; any other fails the job.
-2. `jq -e 'has("results")' osv.json` fails the job on output it cannot read.
+2. `jq -e '.results | type == "array"' osv.json` fails the job on output it cannot read, including a `results` that is not an array.
 3. One jq expression prints each finding as `::error` when it blocks or `::warning` otherwise, with id, `package@version` and `max_severity`. Another writes every finding to `$GITHUB_STEP_SUMMARY` as a Markdown table (id, `package@version`, severity, blocks). Both share the severity rule with the filter file. GitHub shows only about 10 error and 10 warning annotations per step and drops the rest silently, so the summary is the complete list in the run itself.
 4. `.github/osv-gate.jq` encodes the threshold:
     - a group blocks when `max_severity` ≥ 7.0;
