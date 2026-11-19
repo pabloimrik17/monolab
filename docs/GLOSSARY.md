@@ -1,6 +1,6 @@
 # Workspace
 
-How the monolab monorepo classifies its projects, how Clean Architecture code is divided inside them, and the tests each kind of project carries. Business language lives in each product's own glossary; this one covers the workspace itself.
+How the monolab monorepo classifies its projects, how Clean Architecture code is divided inside them, the tests each kind of project carries and the tools its checks run. Business language lives in each product's own glossary; this one covers the workspace itself.
 
 ## Language
 
@@ -152,3 +152,21 @@ Using every published library in at least one of the monorepo's own apps or pack
 **Legacy test**:
 A test written under the strategy that predates this policy, kept only until it is replaced and never to be imitated.
 _Avoid_: old test.
+
+### Tooling
+
+**Node toolchain**:
+The Node and pnpm versions the whole workspace installs, builds and runs its scripts with.
+_Avoid_: runtime, engines.
+
+**External tool**:
+A command-line program the workspace's checks run that is not distributed as an npm package, so it is neither part of the Node toolchain nor a dev dependency.
+_Avoid_: binary, runtime, dev dependency, security tool.
+
+**CVE gate**:
+The check that fails a change when its lockfile resolves a package with a known advisory of blocking severity; below that severity it only reports.
+_Avoid_: audit, vulnerability scan.
+
+**Accepted advisory**:
+An advisory the CVE gate ignores until a review date, recorded with a reason and an owner.
+_Avoid_: whitelist, suppression, exception.
