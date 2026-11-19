@@ -46,10 +46,10 @@ function whenStaged(pattern: RegExp, command: string, filenames: readonly string
 export default defineConfig({
     // Steps run in order, so writers never overlap; an array a step returns runs in parallel.
     "**/*": [
+        // First, so the linters see formatted code and a rule that fights the formatter still fails the commit.
+        "oxfmt --no-error-on-unmatched-pattern",
         (filenames: readonly string[]): string =>
             `${affected("lint:eslint:fix", filenames)} -- --max-warnings=${ESLINT_MAX_WARNINGS}`,
-        // After ESLint: its unused-import removal leaves code that oxfmt must re-format.
-        "oxfmt --no-error-on-unmatched-pattern",
         // Each fixer writes only its own file type, so they can run together.
         (filenames: readonly string[]): string[] => [
             ...forStaged(
@@ -59,6 +59,8 @@ export default defineConfig({
             ),
             affected("lint:stylelint:fix", filenames),
         ],
+        // After the last fixer: autofixes (unused-import removal, markdown rewrites) leave code that oxfmt must re-format.
+        "oxfmt --no-error-on-unmatched-pattern",
         (filenames: readonly string[]): string[] => [
             "pnpm run lint:knip",
             // New-only ratchet vs the merge-base; the full-repo lint:fallow gate stays in push CI.
