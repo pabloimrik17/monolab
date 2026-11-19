@@ -7,6 +7,10 @@ function apiOrigin(): string {
     );
 }
 
+// The session stream carries no order data, so every one of these names means the same thing
+// to a listener: something in the session moved, refetch the snapshot.
+export const SESSION_ORDER_EVENTS = ["order:created", "order:status", "order:cancelled"] as const;
+
 export function sessionEventsUrl(sessionCode: string): string {
     return `${apiOrigin()}/events/sessions/${encodeURIComponent(sessionCode)}`;
 }
