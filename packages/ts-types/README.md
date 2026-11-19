@@ -38,8 +38,8 @@ pnpm add @m0n0lab/ts-types
 Handle nullable values with type-safe utilities:
 
 ```typescript
-import type { Nullable, NonNullable } from "@m0n0lab/ts-types";
 import { isNullable, isNonNullable } from "@m0n0lab/ts-types";
+import type { Nullable, NonNullable } from "@m0n0lab/ts-types";
 
 // Type definitions
 type NullableString = Nullable<string>; // string | null
@@ -61,8 +61,8 @@ const validItems = items.filter(isNonNullable); // string[]
 Work with optional values safely:
 
 ```typescript
-import type { Undefinable, NonUndefinable } from "@m0n0lab/ts-types";
 import { isUndefinable, isNonUndefinable } from "@m0n0lab/ts-types";
+import type { Undefinable, NonUndefinable } from "@m0n0lab/ts-types";
 
 // Type definitions
 type OptionalString = Undefinable<string>; // string | undefined
@@ -80,8 +80,8 @@ if (isNonUndefinable(value)) {
 Handle both null and undefined:
 
 ```typescript
-import type { Nullish, NonNullish } from "@m0n0lab/ts-types";
 import { isNullish, isNonNullish } from "@m0n0lab/ts-types";
+import type { Nullish, NonNullish } from "@m0n0lab/ts-types";
 
 // Type definitions
 type MaybeString = Nullish<string>; // string | null | undefined
