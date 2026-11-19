@@ -22,7 +22,7 @@ Tasks are split by pull request in a gh-stack. Groups 1–5 are PR1 (agentic-tas
 - [x] 3.4 Add the SARIF scan and the SHA-pinned `github/codeql-action/upload-sarif` step (`category: osv-scanner`, skipped for fork PRs) and verify the alerts appear under Security → Code scanning
 - [x] 3.5 Add the `cve` job to `ci.yml` (`uses: ./.github/workflows/cve-scan.yml`, permissions `contents: read` and `security-events: write`) and set `main.needs` to `[lint, tests, build, cve]`; verify in the PR1 run that `cve` starts in parallel with the other jobs and `main` waits for it
 - [x] 3.6 Verify the fail-closed paths on a throwaway branch or by local simulation: a scanner exit code other than 0/1 and a JSON without `results` both fail the step even with `CVE_GATE_MODE: report`
-- [ ] 3.7 After PR1 merges, trigger `cve-scan.yml` with `workflow_dispatch` on `develop` (GitHub dispatches only workflows present on the default branch) and verify it runs alone (no lint, tests or build)
+- [x] 3.7 After PR1 merges, trigger `cve-scan.yml` with `workflow_dispatch` on `develop` (GitHub dispatches only workflows present on the default branch) and verify it runs alone (no lint, tests or build)
 
 ## 4. Pre-push hook (PR1)
 
