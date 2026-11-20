@@ -2,7 +2,7 @@
 
 ## Why
 
-Nothing in the workspace looks for credentials before they reach the public repository. GitHub's push protection blocks only provider tokens it recognises and only at the push itself, so a secret in a pattern it does not cover lands on `develop` unnoticed. On 2026-11-19 gitleaks 8.30.1 scanned the whole history (716 commits) in under a second and found one match, a False positive. A blocking Secret scan therefore costs almost nothing now and turns into history clean-up later. mise now pins External tools, so gitleaks can be pinned the same way.
+Nothing in the workspace looks for credentials before they reach the public repository. GitHub's push protection blocks only provider tokens it recognises and only at the push itself, so a secret in a pattern it does not cover lands on `develop` unnoticed. On 2026-11-19 gitleaks 8.30.1 scanned the 640 commits reachable from `HEAD` in under a second and found one match, a False positive. A blocking Secret scan therefore costs almost nothing now and turns into history clean-up later. mise now pins External tools, so gitleaks can be pinned the same way.
 
 ## What Changes
 

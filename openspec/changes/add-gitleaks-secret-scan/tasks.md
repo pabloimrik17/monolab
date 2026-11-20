@@ -9,7 +9,7 @@ One pull request (agentic-task-6c2p.57). No task affects package exports, so no 
 
 ## 2. Hooks
 
-- [x] 2.1 Rewrite `.husky/pre-commit` as in design.md: mise check with the one-line hint, the `MISE_EXEC_AUTO_INSTALL`/`MISE_AUTO_INSTALL` exports, then `validate-branch-name` and lint-staged, then `mise x -- gitleaks git --pre-commit --staged --redact -v --no-banner`. Verify that staging a file with a fake AWS key (`AKIA` + 16 uppercase alphanumerics) blocks the commit with the redacted rule, file and line, that a clean commit passes, and that a commit with `PATH` stripped of mise fails with the hint
+- [x] 2.1 Rewrite `.husky/pre-commit` as in design.md: mise check with the one-line hint, the `MISE_EXEC_AUTO_INSTALL`/`MISE_AUTO_INSTALL` exports, then `validate-branch-name` and lint-staged, then `mise x -- gitleaks git --pre-commit --staged --redact -v --no-banner`. Verify that staging a file with a fake AWS key (`AKIA` + 16 random characters from `A`–`Z` and `2`–`7`, the alphabet gitleaks' `aws-access-token` rule requires) blocks the commit with the redacted rule, file and line, that a clean commit passes, and that a commit with `PATH` stripped of mise fails with the hint
 - [x] 2.2 Add the gitleaks line from design.md to `.husky/pre-push` before osv-scanner, and change its mise hint to name the git hooks. Verify on a throwaway branch that a commit made with `--no-verify` that adds a fake key blocks the push, that a push with nothing new scans 0 bytes and proceeds, and that a push with `PATH` stripped of mise fails with the hint; delete the throwaway branch and commit afterwards
 
 ## 3. CI
@@ -23,7 +23,7 @@ One pull request (agentic-task-6c2p.57). No task affects package exports, so no 
 ## 5. Integration
 
 - [x] 5.1 Run `pnpm exec openspec validate add-gitleaks-secret-scan --strict` and verify it passes
-- [ ] 5.2 Open the pull request against `develop` and verify that the `secrets` job starts in parallel with lint, tests, build and cve, scans the full history with no leaks, and that `main` waits for it and is green
+- [x] 5.2 Open the pull request against `develop` and verify that the `secrets` job starts in parallel with lint, tests, build and cve, scans the full history with no leaks, and that `main` waits for it and is green
 
 ## Workflow follow-up
 

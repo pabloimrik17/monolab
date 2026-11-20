@@ -126,14 +126,16 @@ To record a False positive:
 - Add a pattern for the matched text.
 - Add a `description` saying why it is not a credential.
 
-To handle a real credential:
+To handle a real credential found by a hook, remove it from the staged changes or the unpushed commits. It has not reached the remote, so nothing is recorded.
+
+To handle a real credential found in pushed history:
 
 - Revoke it at the provider first.
-- Add the fingerprint gitleaks prints (`<commit>:<file>:<rule>:<line>`) to `.gitleaksignore`, under a comment `# revoked YYYY-MM-DD: <provider, reason>`.
-- Only that one commit is skipped, so the same credential added again fails the Secret scan.
+- Add its commit fingerprint (`<commit>:<file>:<rule>:<line>`) to `.gitleaksignore`, under a comment `# revoked YYYY-MM-DD: <provider, reason>`. Only that one commit is skipped, so the same credential added again fails the Secret scan.
+- Never add a fingerprint without a commit (`<file>:<rule>:<line>`, as the pre-commit hook prints it): it skips that line in every commit.
 - Never record a real credential as a False positive.
 
-History is never rewritten.
+Pushed history is never rewritten.
 
 ## Testing
 
