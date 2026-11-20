@@ -24,6 +24,7 @@ jobs:
             checks: write
         env:
             NX_CLOUD_ACCESS_TOKEN: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && secrets.NX_CLOUD_ACCESS_TOKEN || secrets.NX_CLOUD_ACCESS_TOKEN_READONLY }}
+            NX_CACHE_DIRECTORY: .nx/cache
         steps:
             - name: Checkout code
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -128,6 +129,7 @@ jobs:
         runs-on: ubuntu-latest
         env:
             NX_CLOUD_ACCESS_TOKEN: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && secrets.NX_CLOUD_ACCESS_TOKEN || secrets.NX_CLOUD_ACCESS_TOKEN_READONLY }}
+            NX_CACHE_DIRECTORY: .nx/cache
         outputs:
             matrix: ${{ steps.affected-codecov.outputs.matrix }}
         steps:
@@ -276,6 +278,7 @@ jobs:
         runs-on: ubuntu-latest
         env:
             NX_CLOUD_ACCESS_TOKEN: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && secrets.NX_CLOUD_ACCESS_TOKEN || secrets.NX_CLOUD_ACCESS_TOKEN_READONLY }}
+            NX_CACHE_DIRECTORY: .nx/cache
         steps:
             - name: Checkout code
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
