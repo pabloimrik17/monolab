@@ -530,8 +530,8 @@ importers:
         specifier: 'catalog:'
         version: 1.21.0
       zod:
-        specifier: 3.25.76
-        version: 3.25.76
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@codecov/vite-plugin':
         specifier: 'catalog:'
@@ -580,7 +580,7 @@ importers:
         version: 2.0.10(hono@4.12.30)
       '@hono/zod-validator':
         specifier: 0.9.1
-        version: 0.9.1(hono@4.12.30)(zod@3.25.76)
+        version: 0.9.1(hono@4.12.30)(zod@4.6.6)
       '@m0n0lab/investlab-catalog':
         specifier: workspace:*
         version: link:../../packages/investlab-catalog
@@ -615,8 +615,8 @@ importers:
         specifier: 'catalog:'
         version: 1.21.0
       zod:
-        specifier: 3.25.76
-        version: 3.25.76
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@codecov/rollup-plugin':
         specifier: 'catalog:'
@@ -847,8 +847,8 @@ importers:
         specifier: 'catalog:'
         version: 8.2.0
       zod:
-        specifier: 3.25.76
-        version: 3.25.76
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@arethetypeswrong/cli':
         specifier: 'catalog:'
@@ -896,8 +896,8 @@ importers:
   packages/investlab-core:
     dependencies:
       zod:
-        specifier: 3.25.76
-        version: 3.25.76
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@arethetypeswrong/cli':
         specifier: 'catalog:'
@@ -967,8 +967,8 @@ importers:
         specifier: 'catalog:'
         version: 8.22.0
       zod:
-        specifier: 3.25.76
-        version: 3.25.76
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@arethetypeswrong/cli':
         specifier: 'catalog:'
@@ -1019,8 +1019,8 @@ importers:
         specifier: 'catalog:'
         version: 8.2.0
       zod:
-        specifier: 3.25.76
-        version: 3.25.76
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@arethetypeswrong/cli':
         specifier: 'catalog:'
@@ -1083,8 +1083,8 @@ importers:
         specifier: 'catalog:'
         version: 8.2.0
       zod:
-        specifier: 3.25.76
-        version: 3.25.76
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@arethetypeswrong/cli':
         specifier: 'catalog:'
@@ -1132,8 +1132,8 @@ importers:
         specifier: 'catalog:'
         version: 8.2.0
       zod:
-        specifier: 3.25.76
-        version: 3.25.76
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@arethetypeswrong/cli':
         specifier: 'catalog:'
@@ -12767,10 +12767,10 @@ snapshots:
     dependencies:
       hono: 4.12.30
 
-  '@hono/zod-validator@0.9.1(hono@4.12.30)(zod@3.25.76)':
+  '@hono/zod-validator@0.9.1(hono@4.12.30)(zod@4.6.6)':
     dependencies:
       hono: 4.12.30
-      zod: 3.25.76
+      zod: 4.6.6
 
   '@humanfs/core@0.19.1': {}
 
