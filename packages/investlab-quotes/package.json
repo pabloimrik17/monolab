@@ -52,7 +52,7 @@
         "inversify": "catalog:",
         "ioredis": "catalog:",
         "neverthrow": "catalog:",
-        "zod": "3.25.76"
+        "zod": "4.6.6"
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "catalog:",
