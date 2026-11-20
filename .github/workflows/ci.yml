@@ -193,6 +193,14 @@ jobs:
               if: ${{ steps.cache-playwright.outputs.cache-hit == 'true' }}
               run: pnpm exec playwright install-deps chromium
 
+            # Each container Testcontainers starts gives its veth an IPv6 link-local address. Chromium
+            # takes any address change as a network change and aborts in-flight requests, localhost
+            # included, so a browser tester whose module import is aborted never becomes ready.
+            - name: Keep container starts from aborting browser requests
+              run: |
+                  sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
+                  sudo sysctl -w net.ipv6.conf.docker0.disable_ipv6=1 || true
+
             - name: Restore Nx cache
               id: cache-nx-restore
               uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -338,6 +346,14 @@ jobs:
             - name: Install Playwright system dependencies
               if: ${{ steps.cache-playwright.outputs.cache-hit == 'true' }}
               run: pnpm exec playwright install-deps chromium
+
+            # Each container Testcontainers starts gives its veth an IPv6 link-local address. Chromium
+            # takes any address change as a network change and aborts in-flight requests, localhost
+            # included, so a browser tester whose module import is aborted never becomes ready.
+            - name: Keep container starts from aborting browser requests
+              run: |
+                  sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
+                  sudo sysctl -w net.ipv6.conf.docker0.disable_ipv6=1 || true
 
             - name: Restore Nx cache
               id: cache-nx-restore
