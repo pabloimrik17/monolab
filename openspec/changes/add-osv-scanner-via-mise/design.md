@@ -65,7 +65,7 @@ Push runs come after a merge, so they block nothing. They keep `develop` red unt
 ### Gate mechanics
 
 1. Run `osv-scanner scan source -L pnpm-lock.yaml --config osv-scanner.toml --format json > osv.json`, capturing the exit code. Exit codes 0 and 1 continue; any other fails the job.
-2. `jq -e 'has("results")' osv.json` fails the job on output it cannot read.
+2. `jq -e '.results | type == "array"' osv.json` fails the job on output it cannot read, including a `results` that is not an array.
 3. One jq expression prints each finding as `::error` when it blocks or `::warning` otherwise, with id, `package@version` and `max_severity`. Another writes every finding to `$GITHUB_STEP_SUMMARY` as a Markdown table (id, `package@version`, severity, blocks). Both share the severity rule with the filter file. GitHub shows only about 10 error and 10 warning annotations per step and drops the rest silently, so the summary is the complete list in the run itself.
 4. `.github/osv-gate.jq` encodes the threshold:
     - a group blocks when `max_severity` ≥ 7.0;
@@ -109,7 +109,7 @@ The three-dot diff compares with the merge base, so a branch that is only behind
 Two stacked pull requests, managed with gh-stack:
 
 1. **PR1** (base `develop`): everything in this change with `CVE_GATE_MODE: report`. CI is green, and the run lists the current findings in its job summary, as annotations and as alerts.
-2. **PR2** (on PR1): upgrade direct dependencies, add `pnpm.overrides` for transitive ones, accept the advisories that have no fix, and set `CVE_GATE_MODE: block`. Its green CI is the proof that the lockfile is clean. Archive the change after PR2 merges.
+2. **PR2** (on PR1): upgrade direct dependencies, add scoped `overrides` in `pnpm-workspace.yaml` for transitive ones (pnpm 12 ignores `package.json#pnpm.overrides`), accept the advisories whose fix needs a major migration or does not exist, each with a migration task, and set `CVE_GATE_MODE: block`. Its green CI is the proof that the lockfile is clean. Archive the change after PR2 merges.
 
 Rollback: set `CVE_GATE_MODE: report` (one line), or revert PR1.
 

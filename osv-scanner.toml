@@ -16,3 +16,13 @@
 # id = "GHSA-xxxx-xxxx-xxxx"
 # ignoreUntil = 2027-02-17
 # reason = "No fixed version; only reached through dev tooling. Owner: pfe"
+
+[[IgnoredVulns]]
+id = "GHSA-mrhx-c7xc-m3w5"
+ignoreUntil = 2027-02-17
+reason = "zod 3.25.76 has no fixed 3.x release; the fix is zod 4. Investlab pins zod 3 directly (agentic-task-vfdd) and the Codecov bundler plugin core requires it (agentic-task-fu5s). Owner: pfe"
+
+[[IgnoredVulns]]
+id = "GHSA-3r8g-jcqq-3p5j"
+ignoreUntil = 2027-02-17
+reason = "@sveltejs/kit 2.70.0 in green-beard is fixed only in 3.1.1; the SvelteKit 3 migration is agentic-task-wmnx, blocked by the Codecov plugin replacement. Owner: pfe"
