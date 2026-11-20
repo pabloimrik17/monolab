@@ -122,7 +122,7 @@ secrets:
 
 - [A gitleaks bump adds a rule that matches an old commit] → The Renovate pull request fails its `secrets` job. Record the match as a False positive or, if it is real, revoke it and record it as a Revoked secret on that branch. This is the intended behaviour of the full-history scan.
 - [gitleaks is feature-frozen] → `.gitleaks.toml` stays valid for Betterleaks v1. Spike `agentic-task-6c2p.48` decides the switch.
-- [Committing now needs mise] → The hint names the install page. Agents get mise in their worktrees through the worktrunk post-start, and README already requires it for pushing.
+- [Committing now needs mise] → The hint names the install page. Agents get mise in their worktrees through the worktrunk post-start, and README already requires it for pushing. The Pullfrog workflow commits on a runner without mise, so it gains a `jdx/mise-action` step that installs gitleaks before the agent runs. Its pushes pin `core.hooksPath` to `.git/hooks`, so only the pre-commit hook reaches it.
 - [mise start-up adds about 0.6 s to every commit] → It stays within the pre-commit budget of under 5 s. The scan itself takes about 0.2 s on a typical staged diff.
 - [Some overlap with GitHub push protection] → The two are complementary. Push protection covers provider tokens with validity checks on GitHub's side. gitleaks runs before the commit exists and covers patterns GitHub does not.
 - [This change and `add-osv-scanner-via-mise` both modify `ci-job-layout`] → This delta is written on top of that one (five jobs). Archive `add-osv-scanner-via-mise` first; archiving this change first would let that archive overwrite the requirement with four jobs.

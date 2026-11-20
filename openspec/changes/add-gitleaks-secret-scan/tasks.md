@@ -15,6 +15,7 @@ One pull request (agentic-task-6c2p.57). No task affects package exports, so no 
 ## 3. CI
 
 - [x] 3.1 Add the `secrets` job to `ci.yml` as in design.md (checkout `3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1` with `fetch-depth: 0`, no `filter`, `persist-credentials: false`; `jdx/mise-action@90f833d396d0cc3674b631d2d225e306476c303a # v5.2.10` with the same `version` as `cve-scan.yml` and `install_args: gitleaks`; `gitleaks git --redact -v --no-banner --log-opts="--remerge-diff HEAD"`) and set `main.needs` to `[lint, tests, build, cve, secrets]`. Verify every `uses:` is SHA-pinned with a `# vX.Y.Z` comment and that `pnpx --package renovate@44.181.6 renovate-config-validator --strict renovate.json` and `pnpm run lint:oxfmt` pass
+- [x] 3.2 Add a `jdx/mise-action` step (same SHA and `version` as 3.1, `install_args: gitleaks`) to `pullfrog.yml` before "Run agent", so Pullfrog commits pass the pre-commit hook. Verify the YAML parses and `pnpm run lint:oxfmt` passes
 
 ## 4. Documentation
 

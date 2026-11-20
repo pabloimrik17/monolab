@@ -30,7 +30,7 @@ Nothing in the workspace looks for credentials before they reach the public repo
 ## Impact
 
 - New files: `.gitleaks.toml`.
-- Changed files: `mise.toml`, `mise.lock`, `.husky/pre-commit`, `.husky/pre-push`, `.github/workflows/ci.yml` (new `secrets` job, `main.needs`), `README.md`.
+- Changed files: `mise.toml`, `mise.lock`, `.husky/pre-commit`, `.husky/pre-push`, `.github/workflows/ci.yml` (new `secrets` job, `main.needs`), `.github/workflows/pullfrog.yml` (mise before the agent commits), `README.md`.
 - Developers need mise 2026.10.0 or newer to commit, not only to push. The hooks install gitleaks on first use.
 - No new action: the `secrets` job reuses `actions/checkout` and `jdx/mise-action` at the SHAs `cve-scan.yml` already pins.
 - No package, export or peer dependency changes.
