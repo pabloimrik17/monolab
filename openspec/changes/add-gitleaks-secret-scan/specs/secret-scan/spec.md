@@ -122,6 +122,7 @@ A credential the Secret scan finds in history SHALL be revoked at its provider. 
 - **WHEN** the Secret scan finds a real credential in a commit already pushed
 - **THEN** the credential is revoked
 - **AND** its fingerprint is added to `.gitleaksignore` with the revocation date
+- **AND** the credential is removed from the code in the same change, so a squash or rebase merge, which creates commits the fingerprint does not name, brings none of it to `develop`
 
 #### Scenario: Same credential added again
 

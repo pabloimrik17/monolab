@@ -132,6 +132,7 @@ To handle a real credential found in pushed history:
 
 - Revoke it at the provider first.
 - Add its commit fingerprint (`<commit>:<file>:<rule>:<line>`) to `.gitleaksignore`, under a comment `# revoked YYYY-MM-DD: <provider, reason>`. Only that one commit is skipped, so the same credential added again fails the Secret scan.
+- Remove it from the code in the same pull request. Squash and rebase merges create new commits the fingerprint does not name, so the credential must not reach `develop`.
 - Never add a fingerprint without a commit (`<file>:<rule>:<line>`, as the pre-commit hook prints it): it skips that line in every commit.
 - Never record a real credential as a False positive.
 

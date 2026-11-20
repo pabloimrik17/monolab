@@ -51,7 +51,7 @@ regexes = ['''^Finnhub\w*Error$''']
 ```
 
 - **False positive**: a pattern on the matched text (the regex target defaults to the secret), scoped with `targetRules` to the rule that misfired. A pattern still matches after the code moves, and it cannot silence any other rule. A lowercase 20-character token still matches `finnhub-access-token`; this was checked against a fake one.
-- **Revoked secret**: a line in `.gitleaksignore` holding the fingerprint gitleaks prints (`<commit>:<file>:<rule>:<line>`), preceded by `# revoked YYYY-MM-DD: <provider, reason>`. A fingerprint names one commit, so the same credential added in a new commit fails again. The file is created only when the first Revoked secret occurs.
+- **Revoked secret**: a line in `.gitleaksignore` holding the fingerprint gitleaks prints (`<commit>:<file>:<rule>:<line>`), preceded by `# revoked YYYY-MM-DD: <provider, reason>`. A fingerprint names one commit, so the same credential added in a new commit fails again. For the same reason the credential leaves the code in the pull request that records it: a squash or rebase merge gives `develop` new commits the fingerprint does not name. The file is created only when the first Revoked secret occurs.
 - Alternative: fingerprints for False positives. Rejected: the working-tree fingerprint carries a line number, so it breaks on the first edit above it, and the commit fingerprint covers only that one commit.
 - Alternative: an inline `gitleaks:allow` comment. Rejected: it does not cover commit `61d57a52`, which the full-history scan reads.
 
