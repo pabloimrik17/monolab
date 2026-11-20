@@ -109,6 +109,35 @@ mise x -- osv-scanner scan source -L pnpm-lock.yaml --config osv-scanner.toml
 
 It exits with 1 when it finds advisories.
 
+gitleaks runs the Secret scan. It scans staged changes in the pre-commit hook, the commits no remote has in the pre-push hook, and the full history in CI. Any finding blocks the commit, the push or the CI run.
+
+To run it by hand:
+
+```bash
+mise x -- gitleaks git --redact -v --log-opts="--remerge-diff HEAD"
+```
+
+To tell a False positive from a real credential, look at the matched line without `--redact`. A live token or key is a real credential. An identifier or test value that only fits the rule's pattern is a False positive. When in doubt, treat it as real.
+
+To record a False positive:
+
+- Add an `[[allowlists]]` entry to `.gitleaks.toml`.
+- Set `targetRules` to the one rule that matched.
+- Add a pattern for the matched text.
+- Add a `description` saying why it is not a credential.
+
+To handle a real credential found by a hook, remove it from the staged changes or the unpushed commits. That copy has not reached the remote. If the same value already appears in pushed history, treat it as exposed and follow the steps for pushed history below.
+
+To handle a real credential found in pushed history:
+
+- Revoke it at the provider first.
+- Add its commit fingerprint (`<commit>:<file>:<rule>:<line>`) to `.gitleaksignore`, under a comment `# revoked YYYY-MM-DD: <provider, reason>`. Only that one commit is skipped, so the same credential added again fails the Secret scan.
+- Remove it from the code in the same pull request. Squash and rebase merges create new commits the fingerprint does not name, so the credential must not reach `develop`.
+- Never add a fingerprint without a commit (`<file>:<rule>:<line>`, as the pre-commit hook prints it): it skips that line in every commit.
+- Never record a real credential as a False positive.
+
+Pushed history is never rewritten.
+
 ## Testing
 
 This project uses Vitest for testing with separate test types organized by purpose.

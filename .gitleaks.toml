@@ -1,0 +1,7 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "False positive: Finnhub type names such as FinnhubResponseError fill the 20-character token slot of finnhub-access-token; real Finnhub tokens are lowercase"
+targetRules = ["finnhub-access-token"]
+regexes = ['''^Finnhub\w*Error$''']
