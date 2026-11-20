@@ -1,5 +1,6 @@
 "use server";
 
+import { API_URL } from "./api-url.ts";
 import type {
     MenuItemDto,
     PublicOrderBoardDto,
@@ -9,7 +10,6 @@ import type {
 
 // Public reads only: every endpoint called here needs no admin PIN.
 // Host reads live in host-data.ts behind the admin-session check.
-const API_URL = process.env["QUP_API_URL"] ?? "http://localhost:3001";
 
 export async function getSessionByCode(code: string): Promise<SessionDto> {
     const res = await fetch(`${API_URL}/sessions/code/${code}`);

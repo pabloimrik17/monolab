@@ -36,7 +36,6 @@ export class OrderBoardViewModel extends BaseViewModel {
     // Which order ids are mid-highlight right now, keyed by id so BoardCard can look itself up.
     private readonly _highlighted = createSignal<ReadonlySet<string>>(new Set());
     private _requestedCode = "";
-    private _hasBoard = false;
     private _expiryTimer: ReturnType<typeof setTimeout> | undefined;
     private _refetch: CoalescingRefetch | null = null;
     private _signals: EventSource | null = null;
@@ -68,7 +67,7 @@ export class OrderBoardViewModel extends BaseViewModel {
     }
 
     readonly sessionName = (): string => this._board[0].sessionName;
-    readonly sessionCode = (): string => this._board[0].sessionCode || this._requestedCode;
+    readonly sessionCode = (): string => this._board[0].sessionCode;
 
     // The snapshot already arrives in board order (see GetPublicOrderBoardUseCase): the public
     // projection carries no timestamp, so the sections keep the order the server gave them and
@@ -218,14 +217,12 @@ export class OrderBoardViewModel extends BaseViewModel {
             // of being torn down and rebuilt, which is what lets a status change animate as a
             // move rather than a remount, and lets the highlight below target real arrivals.
             this._board[1]("orders", reconcile(result.board.orders, { key: "id" }));
-            this._hasBoard = true;
             this.scheduleExpiry();
             this._state[1]("ready");
             return;
         }
 
         this.clearExpiryTimer();
-        this._hasBoard = false;
         this._board[1]("orders", []);
         if (result.status === "error") {
             this._error[1](result.message);
@@ -234,12 +231,13 @@ export class OrderBoardViewModel extends BaseViewModel {
     }
 
     // Highlights any order id that wasn't in the previous snapshot. The very first snapshot
-    // never highlights anything — those orders were already there, not "just arrived".
+    // never highlights anything — those orders were already there, not "just arrived". Runs
+    // before `applySnapshot` sets the new state, so `hasBoard()` still describes the last one.
     private trackArrivals(orders: PublicOrderSummaryDto[]): void {
         const previouslyKnown = this._knownOrderIds;
         this._knownOrderIds = new Set(orders.map((order) => order.id));
 
-        if (!this._hasBoard) return;
+        if (!this.hasBoard()) return;
 
         for (const order of orders) {
             if (!previouslyKnown.has(order.id)) this.highlight(order.id);
@@ -304,8 +302,6 @@ export class OrderBoardViewModel extends BaseViewModel {
     }
 
     private dropExpired(): void {
-        if (!this._hasBoard) return;
-
         const now = Date.now();
         const orders = this._board[0].orders;
         const visible = orders.filter((order) => (deadlineOf(order) ?? Infinity) > now);
@@ -318,9 +314,13 @@ export class OrderBoardViewModel extends BaseViewModel {
     private applyFailure(error: unknown): void {
         // A refetch that never reached the server leaves the last known board up; only the
         // first load, which has nothing to show yet, falls back to the error state.
-        if (this._hasBoard) return;
+        if (this.hasBoard()) return;
         this._error[1](error instanceof Error ? error.message : "Failed to load the board");
         this._state[1]("error");
+    }
+
+    private hasBoard(): boolean {
+        return this._state[0]() === "ready";
     }
 
     private section(status: PublicOrderSummaryDto["status"]): PublicOrderSummaryDto[] {

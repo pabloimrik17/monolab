@@ -3,13 +3,9 @@ import { createSignal } from "solid-js";
 import { BaseViewModel } from "@m0n0lab/solid-clean";
 import { getPublicGuestOrders } from "../server/data.ts";
 import { createCoalescingRefetch } from "../services/coalescing-refetch.ts";
-import { sessionEventsUrl } from "../services/sse-url.ts";
+import { SESSION_ORDER_EVENTS, sessionEventsUrl } from "../services/sse-url.ts";
 import type { CoalescingRefetch } from "../services/coalescing-refetch.ts";
 import type { PublicOrderSummaryDto } from "@m0n0lab/qup-shared";
-
-// The stream carries no payload, so all three names mean the same thing here: something in
-// the session moved, ask the server what this guest's orders look like now.
-const ORDER_EVENTS = ["order:created", "order:status", "order:cancelled"] as const;
 
 @injectable()
 export class OrderStatusViewModel extends BaseViewModel {
@@ -73,7 +69,7 @@ export class OrderStatusViewModel extends BaseViewModel {
         const es = new EventSource(sessionEventsUrl(this._sessionCode));
 
         // The API sends named SSE events, which never reach `onmessage`.
-        for (const event of ORDER_EVENTS) {
+        for (const event of SESSION_ORDER_EVENTS) {
             es.addEventListener(event, () => void this._refetch?.trigger());
         }
 

@@ -1,11 +1,11 @@
 "use server";
 
 import { adminHeaders } from "./admin-guard.ts";
+import { API_URL } from "./api-url.ts";
 import type { OrderDto, SessionDto } from "@m0n0lab/qup-shared";
 
 // Host reads: each one calls an adminOnly() endpoint, so each one first proves the
 // caller holds an admin session and only then attaches the PIN.
-const API_URL = process.env["QUP_API_URL"] ?? "http://localhost:3001";
 
 export async function getSessionOrders(sessionId: string): Promise<OrderDto[]> {
     const res = await fetch(`${API_URL}/sessions/${sessionId}/orders`, {
