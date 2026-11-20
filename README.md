@@ -126,7 +126,7 @@ To record a False positive:
 - Add a pattern for the matched text.
 - Add a `description` saying why it is not a credential.
 
-To handle a real credential found by a hook, remove it from the staged changes or the unpushed commits. It has not reached the remote, so nothing is recorded.
+To handle a real credential found by a hook, remove it from the staged changes or the unpushed commits. That copy has not reached the remote. If the same value already appears in pushed history, treat it as exposed and follow the steps for pushed history below.
 
 To handle a real credential found in pushed history:
 
