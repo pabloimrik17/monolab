@@ -24,6 +24,7 @@ jobs:
             checks: write
         env:
             NX_CLOUD_ACCESS_TOKEN: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && secrets.NX_CLOUD_ACCESS_TOKEN || secrets.NX_CLOUD_ACCESS_TOKEN_READONLY }}
+            NX_CACHE_DIRECTORY: .nx/cache
         steps:
             - name: Checkout code
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -40,7 +41,7 @@ jobs:
                   node-version-file: .nvmrc
 
             - name: Set Nx SHA
-              uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+              uses: nrwl/nx-set-shas@e602fada7ad5987b0f7b1905e7a99ea1c661514c # v5.1.0
               with:
                   # Push only: base = last green run on the pushed branch. PRs ignore it (merge-base with base.ref).
                   main-branch-name: ${{ github.ref_name }}
@@ -128,6 +129,7 @@ jobs:
         runs-on: ubuntu-latest
         env:
             NX_CLOUD_ACCESS_TOKEN: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && secrets.NX_CLOUD_ACCESS_TOKEN || secrets.NX_CLOUD_ACCESS_TOKEN_READONLY }}
+            NX_CACHE_DIRECTORY: .nx/cache
         outputs:
             matrix: ${{ steps.affected-codecov.outputs.matrix }}
         steps:
@@ -146,7 +148,7 @@ jobs:
                   node-version-file: .nvmrc
 
             - name: Set Nx SHA
-              uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+              uses: nrwl/nx-set-shas@e602fada7ad5987b0f7b1905e7a99ea1c661514c # v5.1.0
               with:
                   # Push only: base = last green run on the pushed branch. PRs ignore it (merge-base with base.ref).
                   main-branch-name: ${{ github.ref_name }}
@@ -284,6 +286,7 @@ jobs:
         runs-on: ubuntu-latest
         env:
             NX_CLOUD_ACCESS_TOKEN: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && secrets.NX_CLOUD_ACCESS_TOKEN || secrets.NX_CLOUD_ACCESS_TOKEN_READONLY }}
+            NX_CACHE_DIRECTORY: .nx/cache
         steps:
             - name: Checkout code
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -300,7 +303,7 @@ jobs:
                   node-version-file: .nvmrc
 
             - name: Set Nx SHA
-              uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+              uses: nrwl/nx-set-shas@e602fada7ad5987b0f7b1905e7a99ea1c661514c # v5.1.0
               with:
                   # Push only: base = last green run on the pushed branch. PRs ignore it (merge-base with base.ref).
                   main-branch-name: ${{ github.ref_name }}
