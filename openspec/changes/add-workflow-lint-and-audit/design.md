@@ -192,7 +192,7 @@ The pedantic and auditor personas add 61 findings, mostly low-confidence. They s
 
 - [`release-please.yml` changes cannot run in pull request CI] → The Workflow lint and the Workflow audit pass on them. A post-merge task watches the next develop→main release: release PR created, `prettify-pr` push, publish, back-merge. The rollback is a revert.
 - [actionlint is unmaintained, so the `$/` entry and the hook's `-shellcheck=` may stay for a long time] → Tool review `agentic-task-6c2p.63`.
-- [actionlint checks an action's inputs only for references in its built-in data, which names tags, so it checks none of the SHA-pinned actions here] → Accepted: SHA pins stay. A misspelled input still shows up when the step runs.
+- [actionlint checks an action's inputs only for references in its built-in data, which names tags, so it checks none of the SHA-pinned actions here] → Accepted: SHA pins stay. A misspelled input only draws a runner warning ("Unexpected input(s)"): the step runs with that input's default and CI stays green. The Workflow audit still catches a misspelled `persist-credentials`.
 - [A zizmor release adds an audit the workflows fail, so Renovate's bump pull request goes red in every repository that copied the template] → mise.lock pins zizmor, so only that bump pull request fails, never `develop`. The fix, or an Accepted finding, goes into it, usually the same change in every repository.
     - Measured on 2026-11-22: one new audit since 1.26.
     - Renovate's minor schedule (the 8th, every 2 months) brings at most one zizmor minor per repository in that period.
