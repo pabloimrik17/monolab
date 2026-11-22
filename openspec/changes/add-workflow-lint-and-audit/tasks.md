@@ -30,7 +30,7 @@ One pull request (agentic-task-6c2p.59). No task affects package exports, so no 
     - `mise x -- actionlint -pyflakes=` reports nothing.
     - `GH_TOKEN=$(gh auth token) mise x -- zizmor .` reports no findings.
     - No `# zizmor: ignore` comment exists, and `.github/zizmor.yml` holds only its comment and `rules: {}`.
-- [ ] 2.5 Add `.github/zizmor.yml` with a short comment and `rules: {}`, 4-space YAML indent. The comment says:
+- [x] 2.5 Add `.github/zizmor.yml` with a short comment and `rules: {}`, 4-space YAML indent. The comment says:
     - zizmor reads this file.
     - It is kept with zizmor's defaults on purpose, so there is one place to change one.
     - An Accepted finding is never recorded here, but on its line with `# zizmor: ignore[<audit>] <reason>`.
