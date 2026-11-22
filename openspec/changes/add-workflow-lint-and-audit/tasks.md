@@ -76,7 +76,7 @@ One pull request (agentic-task-6c2p.59). No task affects package exports, so no 
 ## 6. Integration
 
 - [x] 6.1 Run `pnpm exec openspec validate add-workflow-lint-and-audit --strict` and verify it passes.
-- [ ] 6.2 Open the pull request against `develop`. Verify:
+- [x] 6.2 Open the pull request against `develop`. Verify:
     - The `workflows` job starts in parallel with lint, tests, build, cve and secrets, with both its steps green.
     - `cve` runs through `$/` with the CVE gate green.
     - `main` waits for all six jobs and is green.
