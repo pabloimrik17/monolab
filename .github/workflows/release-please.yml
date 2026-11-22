@@ -11,16 +11,16 @@ on:
                 required: true
                 type: string
 
-permissions:
-    contents: write
-    issues: write
-    pull-requests: write
-    id-token: write
+permissions: {}
 
 jobs:
     release-please:
         if: ${{ github.event_name == 'push' }}
         runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            issues: write
+            pull-requests: write
         outputs:
             releases_created: ${{ steps.release.outputs.releases_created }}
             paths_released: ${{ steps.release.outputs.paths_released }}
@@ -55,6 +55,7 @@ jobs:
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   ref: ${{ needs.release-please.outputs.head_branch }}
+                  persist-credentials: true
 
             - name: Setup pnpm
               uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -98,6 +99,8 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
 
             - name: Setup pnpm
               uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -129,13 +132,12 @@ jobs:
                     echo "Released packages: $PACKAGES"
                   fi
 
-                  echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
+                  echo "packages=$PACKAGES" >> "$GITHUB_OUTPUT"
 
             - name: Build and publish packages to npm
+              env:
+                  PACKAGES: ${{ steps.released-packages.outputs.packages }}
               run: |
-                  # Get list of packages
-                  PACKAGES="${{ steps.released-packages.outputs.packages }}"
-
                   # Build and publish all packages to npm
                   for PKG_DIR in $PACKAGES; do
                     PKG_PATH="packages/$PKG_DIR"
@@ -158,7 +160,7 @@ jobs:
                     # --skip-nx-cache: publish exactly what this commit's source builds, never a cached (possibly poisoned) artifact
                     if pnpm exec nx show project "$PACKAGE_NAME" --json 2>/dev/null | jq -e '.targets.build' >/dev/null; then
                       echo "Building $PACKAGE_NAME..."
-                      pnpm nx run $PKG_DIR:build --skip-nx-cache
+                      pnpm nx run "$PKG_DIR":build --skip-nx-cache
                     else
                       echo "No build target for $PACKAGE_NAME — skipping build"
                     fi
@@ -172,11 +174,15 @@ jobs:
 
             - name: Summary
               if: success()
+              env:
+                  PACKAGES: ${{ steps.released-packages.outputs.packages }}
               run: |
-                  echo "✅ All packages published successfully!" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "Published packages:" >> $GITHUB_STEP_SUMMARY
-                  echo "${{ steps.released-packages.outputs.packages }}" >> $GITHUB_STEP_SUMMARY
+                  {
+                    echo "✅ All packages published successfully!"
+                    echo ""
+                    echo "Published packages:"
+                    echo "$PACKAGES"
+                  } >> "$GITHUB_STEP_SUMMARY"
 
     # release-please bumps versions only on `main` (target-branch: main), but the
     # repo's default branch is `develop` — which is what Claude Code plugin
