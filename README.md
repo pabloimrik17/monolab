@@ -151,6 +151,8 @@ GH_TOKEN=$(gh auth token) mise x -- zizmor .
 
 Without a token, add `--offline` to the zizmor command. That skips the online audits, as the hook does.
 
+On Apple Silicon, if actionlint hangs, add `-shellcheck=` to its command. CI still runs shellcheck.
+
 Fix every finding except an Accepted finding. To record an Accepted finding, write the reason where the tool reads it:
 
 - zizmor: add `# zizmor: ignore[<audit>] <reason>` on the line it reports.
