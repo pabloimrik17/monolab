@@ -1,0 +1,4 @@
+# zizmor reads this file. It is kept with zizmor's defaults on purpose, so there
+# is one place to change one. An Accepted finding is never recorded here, but on
+# its line with `# zizmor: ignore[<audit>] <reason>`.
+rules: {}

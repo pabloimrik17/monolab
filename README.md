@@ -138,6 +138,27 @@ To handle a real credential found in pushed history:
 
 Pushed history is never rewritten.
 
+actionlint runs the Workflow lint and zizmor runs the Workflow audit. Both check the workflow files staged in the pre-commit hook and every workflow in the `workflows` CI job. Any finding blocks the commit or the CI run.
+
+The hook skips shellcheck for `run:` steps and zizmor's online audits. CI runs both.
+
+To run them by hand from the repository root:
+
+```bash
+mise x -- actionlint -pyflakes=
+GH_TOKEN=$(gh auth token) mise x -- zizmor .
+```
+
+Without a token, add `--offline` to the zizmor command. That skips the online audits, as the hook does.
+
+On Apple Silicon, if actionlint hangs, add `-shellcheck=` to its command. CI still runs shellcheck.
+
+Fix every finding except an Accepted finding. To record an Accepted finding, write the reason where the tool reads it:
+
+- zizmor: add `# zizmor: ignore[<audit>] <reason>` on the line it reports.
+- shellcheck: add `# shellcheck disable=SC<code> # <reason>` in the script, above the line.
+- Any other actionlint finding: add an `ignore` pattern for the file path and the message to `.github/actionlint.yaml`, with a comment saying why.
+
 ## Testing
 
 This project uses Vitest for testing with separate test types organized by purpose.

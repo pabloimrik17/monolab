@@ -182,3 +182,15 @@ _Avoid_: whitelist, allowlist, ignored leak, exception.
 **Revoked secret**:
 A real credential that stays in history after it was revoked, recorded with its revocation date so the Secret scan skips that one occurrence; the same credential added again fails the Secret scan.
 _Avoid_: False positive, ignored leak.
+
+**Workflow lint**:
+The check that fails a change when a CI workflow would not run as written: invalid syntax, a wrong expression or action input, or a shell mistake in one of its steps.
+_Avoid_: actionlint, workflow validation.
+
+**Workflow audit**:
+The check that fails a change when a CI workflow could be abused: permissions broader than its jobs need, untrusted input reaching a command, credentials left where later steps can read them, or an action not pinned to an exact commit.
+_Avoid_: zizmor, workflow scan, workflow security scan.
+
+**Accepted finding**:
+A Workflow lint or Workflow audit finding left in place on purpose, recorded with the reason it stays. Unlike an Accepted advisory, it has no review date.
+_Avoid_: False positive, which belongs to the Secret scan; suppression, whitelist, exception.
