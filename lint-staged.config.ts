@@ -7,6 +7,7 @@ const ESLINT_MAX_WARNINGS = 40;
 const MARKDOWN_FILES = /\.(?:md|markdown)$/;
 const FALLOW_FILES = /\.(?:ts|tsx|js|jsx|mjs|cjs|json|jsonc)$/;
 const RENOVATE_FILES = /(?:^|\/)renovate\.json$/;
+const WORKFLOW_FILES = /^\.github\/workflows\/[^/]+\.ya?ml$/;
 
 function toRelativePath(filename: string): string {
     return path.relative(process.cwd(), filename).replaceAll("\\", "/");
@@ -68,6 +69,9 @@ export default defineConfig({
                 "pnpx --package renovate@44.181.6 renovate-config-validator --strict",
                 filenames,
             ),
+            ...forStaged(WORKFLOW_FILES, "mise x -- zizmor --offline", filenames),
+            // No shellcheck: actionlint 1.7.12 can deadlock on it (rhysd/actionlint#650); CI runs it.
+            ...forStaged(WORKFLOW_FILES, "mise x -- actionlint -shellcheck= -pyflakes=", filenames),
         ],
     ],
 });
