@@ -32,7 +32,7 @@ Tasks are split by pull request in a gh-stack. Groups 1–5 are PR1 (agentic-tas
 
 - [x] 5.1 Run `openspec validate add-osv-scanner-via-mise --strict`, `pnpm run lint:oxfmt` and the Renovate config validator, and verify all pass
 - [x] 5.2 Open PR1 against `develop` with gh-stack and verify CI is green with the `cve` job reporting findings and `main` green
-- [ ] 5.3 Verify Renovate's dependency dashboard lists osv-scanner under the mise manager after PR1 merges, and that the osv-scanner pull request Renovate opened in the pilot repository updated `mise.lock`
+- [x] 5.3 Verify Renovate's dependency dashboard lists osv-scanner under the mise manager after PR1 merges, and that the osv-scanner pull request Renovate opened in the pilot repository updated `mise.lock`
 
 ## 6. Clear the findings (PR2)
 
@@ -41,8 +41,8 @@ Tasks are split by pull request in a gh-stack. Groups 1–5 are PR1 (agentic-tas
 
 ## 7. Make the gate blocking (PR2)
 
-- [ ] 7.1 Set `CVE_GATE_MODE: block` in `cve-scan.yml` and verify the PR2 run is green with the gate blocking
-- [ ] 7.2 Open PR2 stacked on PR1 with gh-stack and verify CI is green; after both merge, verify the next push run and the next 07:17 Europe/Madrid run on `develop` are green
+- [x] 7.1 Set `CVE_GATE_MODE: block` in `cve-scan.yml` and verify the PR2 run is green with the gate blocking
+- [x] 7.2 Open PR2 stacked on PR1 with gh-stack and verify CI is green; after both merge, verify the next push run and the next 07:17 Europe/Madrid run on `develop` are green
 
 ## Workflow follow-up
 
