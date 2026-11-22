@@ -4,14 +4,14 @@ One pull request (agentic-task-6c2p.59). No task affects package exports, so no 
 
 ## 1. Pin the tools
 
-- [ ] 1.1 Add `zizmor = "1.32.0"`, `"aqua:rhysd/actionlint" = "1.7.12"` and `shellcheck = "0.11.0"` to `mise.toml` `[tools]`, run `mise lock`. Verify:
+- [x] 1.1 Add `zizmor = "1.32.0"`, `"aqua:rhysd/actionlint" = "1.7.12"` and `shellcheck = "0.11.0"` to `mise.toml` `[tools]`, run `mise lock`. Verify:
     - `mise.lock` holds checksums for `aqua:zizmorcore/zizmor`, `aqua:rhysd/actionlint` and `aqua:koalaman/shellcheck` on linux-x64, macos-arm64 and macos-x64.
     - `mise x -- zizmor --version`, `mise x -- actionlint -version` and `mise x -- shellcheck --version` print 1.32.0, 1.7.12 and 0.11.0.
 
 ## 2. Fix the baseline
 
-- [ ] 2.1 Set `persist-credentials: false` on the checkouts of the `ci.yml` lint, tests and build jobs, `renovate-config-validator.yml` and `pullfrog.yml`. In `pullfrog.yml`, add a comment that it is not part of the generated file. Verify `mise x -- zizmor --offline .github/workflows/ci.yml .github/workflows/renovate-config-validator.yml .github/workflows/pullfrog.yml` reports no `artipacked` finding.
-- [ ] 2.2 Apply the `release-please.yml` fixes from design.md:
+- [x] 2.1 Set `persist-credentials: false` on the checkouts of the `ci.yml` lint, tests and build jobs, `renovate-config-validator.yml` and `pullfrog.yml`. In `pullfrog.yml`, add a comment that it is not part of the generated file. Verify `mise x -- zizmor --offline .github/workflows/ci.yml .github/workflows/renovate-config-validator.yml .github/workflows/pullfrog.yml` reports no `artipacked` finding.
+- [x] 2.2 Apply the `release-please.yml` fixes from design.md:
     - Top-level `permissions: {}`.
     - `contents`, `issues` and `pull-requests: write` on the `release-please` job.
     - `persist-credentials: false` on `publish` and explicit `persist-credentials: true` on `prettify-pr`.
@@ -22,11 +22,11 @@ One pull request (agentic-task-6c2p.59). No task affects package exports, so no 
     Verify:
     - `mise x -- zizmor --offline .github/workflows/release-please.yml` and `mise x -- actionlint -pyflakes= .github/workflows/release-please.yml` (shellcheck on) report nothing.
     - Every job's permissions match the table in design.md.
-- [ ] 2.3 Change `cve` to `uses: $/.github/workflows/cve-scan.yml` and add `.github/actionlint.yaml` with the path-scoped ignore and reason comment from design.md, using 4-space YAML indent. Verify:
+- [x] 2.3 Change `cve` to `uses: $/.github/workflows/cve-scan.yml` and add `.github/actionlint.yaml` with the path-scoped ignore and reason comment from design.md, using 4-space YAML indent. Verify:
     - `mise x -- actionlint -pyflakes=` run from the repository root passes.
     - A scratch copy of `ci.yml` with an invalid `shell:` still fails it.
     - `pnpm run lint:oxfmt` passes.
-- [ ] 2.4 Verify the whole baseline is clear from the repository root:
+- [x] 2.4 Verify the whole baseline is clear from the repository root:
     - `mise x -- actionlint -pyflakes=` reports nothing.
     - `GH_TOKEN=$(gh auth token) mise x -- zizmor .` reports no findings.
     - No `# zizmor: ignore` comment and no `.github/zizmor.yml` exist.
@@ -44,7 +44,7 @@ One pull request (agentic-task-6c2p.59). No task affects package exports, so no 
 
 ## 4. CI
 
-- [ ] 4.1 Add the `workflows` job to `ci.yml` as in design.md:
+- [x] 4.1 Add the `workflows` job to `ci.yml` as in design.md:
     - `contents: read`.
     - The checkout and `jdx/mise-action` SHAs and `version` the `secrets` job uses.
     - `install_args: zizmor aqua:rhysd/actionlint shellcheck`.
@@ -57,7 +57,7 @@ One pull request (agentic-task-6c2p.59). No task affects package exports, so no 
 
 ## 5. Documentation
 
-- [ ] 5.1 Add actionlint and zizmor paragraphs to README's External tools section. Cover:
+- [x] 5.1 Add actionlint and zizmor paragraphs to README's External tools section. Cover:
     - The manual commands, run from the repository root: `mise x -- actionlint -pyflakes=` and `GH_TOKEN=$(gh auth token) mise x -- zizmor .`, or `--offline`.
     - That the hook skips shellcheck and zizmor's online audits, which CI runs.
     - How to record an Accepted finding with each tool, as in design.md.
@@ -67,7 +67,7 @@ One pull request (agentic-task-6c2p.59). No task affects package exports, so no 
 
 ## 6. Integration
 
-- [ ] 6.1 Run `pnpm exec openspec validate add-workflow-lint-and-audit --strict` and verify it passes.
+- [x] 6.1 Run `pnpm exec openspec validate add-workflow-lint-and-audit --strict` and verify it passes.
 - [ ] 6.2 Open the pull request against `develop`. Verify:
     - The `workflows` job starts in parallel with lint, tests, build, cve and secrets, with both its steps green.
     - `cve` runs through `$/` with the CVE gate green.
