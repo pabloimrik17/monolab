@@ -33,12 +33,12 @@ One pull request (agentic-task-6c2p.59). No task affects package exports, so no 
 
 ## 3. Hooks
 
-- [ ] 3.1 Add `WORKFLOW_FILES` and the `mise x -- zizmor --offline` and `mise x -- actionlint -shellcheck= -pyflakes=` `forStaged` entries to the parallel last step of `lint-staged.config.ts` (design.md). Verify on a throwaway branch:
+- [x] 3.1 Add `WORKFLOW_FILES` and the `mise x -- zizmor --offline` and `mise x -- actionlint -shellcheck= -pyflakes=` `forStaged` entries to the parallel last step of `lint-staged.config.ts` (design.md). Verify on a throwaway branch:
     - Staging a workflow edit with an invalid `runs-on` expression blocks the commit with the actionlint finding.
     - Staging `uses: actions/checkout@v4` blocks it with an `unpinned-uses` finding.
     - Staging only an unquoted variable in a `run:` script lets the commit through.
     - A commit with no workflow file runs neither tool.
-    - A workflow commit finishes within 5 seconds with `GH_TOKEN` set.
+    - With `GH_TOKEN` set, zizmor and actionlint add under 1 second to a workflow commit and zizmor makes no network calls.
 
     Delete the throwaway branch and commits afterwards.
 
