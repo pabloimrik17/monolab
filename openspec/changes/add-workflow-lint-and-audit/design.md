@@ -173,7 +173,9 @@ There is one mechanism per tool, so each Accepted finding has one obvious place:
 | shellcheck | `# shellcheck disable=SC<code> # <reason>` in the script |
 | any other actionlint check | `.github/actionlint.yaml`, scoped by path and message, because actionlint has no inline form |
 
-There is no `.github/zizmor.yml`: the repository keeps no config that only restates a default. zizmor 1.32's default `unpinned-uses` policy already requires a hash pin for every action, `actions/*` included. If a later default relaxes that, the config is added then.
+`.github/zizmor.yml` holds a comment and `rules: {}`, nothing else. It changes no default: it is the one known place for zizmor config, ready for the day a default has to change, and every repository that copies this template looks the same. zizmor 1.32.0 rejects a truly empty file (error: invalid configuration syntax, missing field `rules`), so the empty `rules` map is the smallest valid content. A default changes there only in a change that records why. An Accepted finding is never recorded there, but on its line. zizmor's default `unpinned-uses` policy already requires a hash pin for every action, `actions/*` included.
+
+- Alternative: no file until a default changes. Rejected: the first config change would also have to create the file and its conventions, and repositories copying the template would diverge on whether they have one.
 
 ### Blocking from the first commit, default persona
 

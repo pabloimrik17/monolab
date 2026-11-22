@@ -26,6 +26,7 @@ So both checks can block from the first commit. mise already pins External tools
 - Define the Accepted finding: a Workflow lint or Workflow audit finding left in place on purpose.
     - It is recorded at its line when the tool allows: `# zizmor: ignore[...]` or `# shellcheck disable=...`, each with a reason.
     - Otherwise it goes in `.github/actionlint.yaml`, scoped by path and message.
+    - `.github/zizmor.yml` stays at zizmor's defaults: a comment and an empty `rules` map.
     - The only one today: actionlint 1.7.12 rejects `$/`.
 - README documents both tools under External tools.
 
@@ -43,7 +44,7 @@ So both checks can block from the first commit. mise already pins External tools
 
 ## Impact
 
-- New files: `.github/actionlint.yaml`.
+- New files: `.github/actionlint.yaml` and `.github/zizmor.yml` (zizmor's defaults: a comment and `rules: {}`).
 - Changed files:
     - `mise.toml`, `mise.lock`, `lint-staged.config.ts`.
     - `.github/workflows/ci.yml`: new `workflows` job, `main.needs`, checkouts, and `$/` for `cve`.

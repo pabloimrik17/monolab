@@ -8,12 +8,18 @@ Defines the Workflow audit: the check that fails a change when a CI workflow cou
 
 ### Requirement: The audit uses the pinned zizmor with its defaults
 
-The Workflow audit SHALL run zizmor at the version `mise.toml` pins, with zizmor's default persona and default audit settings. The repository SHALL NOT keep a zizmor config file that only restates those defaults. Each finding SHALL name the audit, file, line and severity.
+The Workflow audit SHALL run zizmor at the version `mise.toml` pins, with zizmor's default persona and default audit settings. The repository SHALL keep `.github/zizmor.yml` with an empty `rules` map and a comment saying why the file exists, and SHALL NOT change a default there unless a change records why. Each finding SHALL name the audit, file, line and severity.
 
 #### Scenario: Unpinned action
 
 - **WHEN** a workflow uses `actions/checkout@v4` or any other action by tag or branch
 - **THEN** the Workflow audit reports an `unpinned-uses` finding with its file and line
+
+#### Scenario: Config file kept with defaults
+
+- **WHEN** a developer opens `.github/zizmor.yml`
+- **THEN** it holds a comment saying why it exists and `rules: {}`
+- **AND** zizmor reports the same findings as it would with no config file
 
 #### Scenario: Pinned version
 

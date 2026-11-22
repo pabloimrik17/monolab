@@ -29,7 +29,15 @@ One pull request (agentic-task-6c2p.59). No task affects package exports, so no 
 - [x] 2.4 Verify the whole baseline is clear from the repository root:
     - `mise x -- actionlint -pyflakes=` reports nothing.
     - `GH_TOKEN=$(gh auth token) mise x -- zizmor .` reports no findings.
-    - No `# zizmor: ignore` comment and no `.github/zizmor.yml` exist.
+    - No `# zizmor: ignore` comment exists, and `.github/zizmor.yml` holds only its comment and `rules: {}`.
+- [ ] 2.5 Add `.github/zizmor.yml` with a short comment and `rules: {}`, 4-space YAML indent. The comment says:
+    - zizmor reads this file.
+    - It is kept with zizmor's defaults on purpose, so there is one place to change one.
+    - An Accepted finding is never recorded here, but on its line with `# zizmor: ignore[<audit>] <reason>`.
+
+    Verify:
+    - `GH_TOKEN=$(gh auth token) mise x -- zizmor .` and `mise x -- zizmor --offline .` still report no findings.
+    - zizmor discovers the file for `.` and for a single workflow file given as an absolute path, as the hook passes it. Check zizmor's verbose or debug output.
 
 ## 3. Hooks
 
@@ -80,6 +88,6 @@ One pull request (agentic-task-6c2p.59). No task affects package exports, so no 
 
 ## Workflow follow-up
 
-- Fleet template, once merged: write the `mise.toml` lines, the lint-staged entries, the `workflows` job, `.github/actionlint.yaml` and the Accepted finding policy into the notes of agentic-task-6c2p.11–.17 and .20 (hooks) and .21–.27 and .30 (CI). Each repository measures its own baseline.
+- Fleet template, once merged: write the `mise.toml` lines, the lint-staged entries, the `workflows` job, `.github/actionlint.yaml`, `.github/zizmor.yml` and the Accepted finding policy into the notes of agentic-task-6c2p.11–.17 and .20 (hooks) and .21–.27 and .30 (CI). Each repository measures its own baseline.
 - datf (agentic-task-6c2p.18 and .28): bump zizmor 1.30.1 → 1.32.0, add shellcheck for CI only, add the `workflows` job, and switch same-repository references to `$/`.
 - When actionlint, or its replacement from tool review agentic-task-6c2p.63, accepts `$/` and ships the darwin shellcheck fix: remove the `.github/actionlint.yaml` entry and drop `-shellcheck=` from the hook.
