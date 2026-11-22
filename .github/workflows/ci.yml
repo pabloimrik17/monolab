@@ -464,7 +464,7 @@ jobs:
                   install_args: gitleaks
 
             - name: Scan history for secrets
-              run: gitleaks git --redact -v --no-banner --log-opts="--remerge-diff HEAD"
+              run: gitleaks git --redact -v --no-banner --ignore-gitleaks-allow --log-opts="--remerge-diff HEAD"
 
     workflows:
         runs-on: ubuntu-latest
@@ -483,7 +483,7 @@ jobs:
                   install_args: zizmor aqua:rhysd/actionlint shellcheck
 
             - name: Lint workflows
-              run: actionlint -pyflakes=
+              run: actionlint -pyflakes= -format '{{range .}}::error file={{.Filepath}},line={{.Line}},col={{.Column}},title=actionlint [{{.Kind}}]::{{.Message}}\n{{end}}'
 
             - name: Audit workflows
               if: ${{ !cancelled() }}

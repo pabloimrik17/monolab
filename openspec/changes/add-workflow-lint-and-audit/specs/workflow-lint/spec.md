@@ -12,7 +12,7 @@ The Workflow lint SHALL run actionlint at the version `mise.toml` pins, from the
 
 #### Scenario: Invalid expression
 
-- **WHEN** a workflow uses an expression with an unknown context or a wrong type, or passes an input the action does not declare
+- **WHEN** a workflow uses an expression with an unknown context or a wrong type
 - **THEN** the Workflow lint reports it with its file, line, column and rule
 - **AND** exits non-zero
 
@@ -43,12 +43,13 @@ The pre-commit hook SHALL run the Workflow lint, through lint-staged, on each st
 
 ### Requirement: CI lints every workflow with shellcheck
 
-The `workflows` CI job SHALL run the Workflow lint over every workflow on every pull request and every push, with shellcheck at the version `mise.toml` pins checking each `run:` script, and SHALL fail on any finding.
+The `workflows` CI job SHALL run the Workflow lint over every workflow on every pull request and every push, with shellcheck at the version `mise.toml` pins checking each `run:` script, and SHALL fail on any finding. It SHALL report each finding as an annotation on the pull request.
 
 #### Scenario: Shell finding in CI
 
 - **WHEN** a pull request adds a `run:` script with an unquoted variable expansion
 - **THEN** the `workflows` job fails with the shellcheck finding
+- **AND** the finding appears as an annotation on the pull request
 
 #### Scenario: Pull request that changes no workflow
 
