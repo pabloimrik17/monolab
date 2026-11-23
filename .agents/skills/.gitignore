@@ -1,1 +1,5 @@
-pnpm-*
+# pnpm
+/fallow
+/fallow-setup
+/varlock
+# pnpm end

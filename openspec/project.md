@@ -14,8 +14,8 @@
 ## Tech Stack
 
 ### Core Technologies
-- **Node.js**: 24.21.0 (managed via `.nvmrc`)
-- **Package Manager**: pnpm 12.14.0 (pinned in `packageManager`)
+- **Node.js**: 26.13.1 (managed via `.nvmrc`)
+- **Package Manager**: pnpm 12.21.0 (pinned in `packageManager`)
 - **Language**: TypeScript 5.9.2 (strict mode enabled)
 - **Monorepo Tool**: Nx 21.3.11 with @nx/js plugin
 
@@ -201,8 +201,8 @@
 ## Important Constraints
 
 **Runtime Requirements**:
-- **Node.js**: Exactly 24.21.0 (enforced via package.json engines field and `.nvmrc`)
-- **pnpm**: Exactly 12.14.0 (use `corepack prepare pnpm@12.14.0 --activate`)
+- **Node.js**: Exactly 26.13.1 (enforced via package.json engines field and `.nvmrc`)
+- **pnpm**: Exactly 12.21.0 (use `npm install -g pnpm@12.21.0`)
 - Use `nvm use` to automatically switch to the correct Node version
 
 **TypeScript Strictness**:
@@ -257,7 +257,7 @@
 
 **Development Services**:
 - **nvm**: Node version management
-- **corepack**: pnpm version management (built into Node.js)
+- **pnpm**: installed with npm, version pinned in `packageManager`
 - **Husky**: Git hooks management
 
 **Build-Time Dependencies**:
