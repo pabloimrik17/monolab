@@ -34,7 +34,7 @@
         "inversify": "catalog:",
         "neverthrow": "catalog:",
         "varlock": "catalog:",
-        "zod": "3.25.76"
+        "zod": "4.6.6"
     },
     "devDependencies": {
         "@codecov/rollup-plugin": "catalog:",
