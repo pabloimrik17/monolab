@@ -81,7 +81,6 @@ describe("fetch-changelog", () => {
         expect(meta.sha256).toBe(sha(body));
         expect(meta.byteSize).toBe(Buffer.byteLength(body));
 
-        // raw-source snapshot + sha sidecar per the cache contract
         expect(readFileSync(join(dir, "_source", "CHANGELOG.md"), "utf8")).toBe(changelog);
         expect(readFileSync(join(dir, "_source", "CHANGELOG.md.sha256"), "utf8").trim()).toBe(
             sha(changelog),
@@ -91,7 +90,6 @@ describe("fetch-changelog", () => {
         expect(pkgMeta.changelogSource).toBe("raw_changelog");
         expect(pkgMeta.changelogFiles).toContain("CHANGELOG.md");
 
-        // rerun against the same cache: zero network, both versions cached
         const second = makeHttp(routes);
         const rerun = await runFetch(["demo", "1.0.0..1.1.0", "--cache-dir", root], {
             http: second.http,
@@ -133,7 +131,6 @@ describe("fetch-changelog", () => {
                 source: "github_releases",
             }),
         ]);
-        // strategy order: raw CHANGELOG files probed BEFORE the release tag
         const rawIdx = calls.indexOf("https://raw.githubusercontent.com/o/r/main/CHANGELOG.md");
         expect(rawIdx).toBeGreaterThanOrEqual(0);
         expect(rawIdx).toBeLessThan(calls.indexOf(releaseUrl));
@@ -143,13 +140,11 @@ describe("fetch-changelog", () => {
         const meta = readJson(join(dir, "2.0.0.meta.json"));
         expect(meta.sha256).toBe(sha("release notes for 2.0.0"));
         expect(meta.sourceUrl).toBe("https://github.com/o/r/releases/tag/v2.0.0");
-        // successful probe writes the learned tag format back to _meta.json
         expect(readJson(join(dir, "_meta.json")).tagFormat).toBe("v{version}");
     });
 
     test("per-version failure: structured no_changelog_source, run continues, exit 1; non-retryable not refetched", async () => {
         const root = mkdtempSync(join(tmpdir(), "fetchlog-fail-"));
-        // CHANGELOG.md only covers 1.0.0; releases + unpkg 404 for 1.1.0
         const { http, calls } = makeHttp([
             BRANCH_ROUTE,
             [
@@ -163,7 +158,6 @@ describe("fetch-changelog", () => {
             useGh: false,
         });
 
-        // exit classification 1: some versions failed, but the run finished
         expect(exitCode).toBe(1);
         expect(result.ok).toBe(false);
         expect(result.summary).toEqual({
@@ -182,11 +176,9 @@ describe("fetch-changelog", () => {
                 retryable: false,
             }),
         ]);
-        // the whole cascade was exhausted for 1.1.0 before failing
         expect(calls).toContain("https://api.github.com/repos/o/r/releases/tags/v1.1.0");
         expect(calls).toContain("https://unpkg.com/demo@1.1.0/CHANGELOG.md");
 
-        // structured error recorded on disk, no body file
         const dir = join(root, "demo");
         const failMeta = readJson(join(dir, "1.1.0.meta.json"));
         expect(failMeta.status).toBe("failed");
@@ -195,7 +187,6 @@ describe("fetch-changelog", () => {
         expect(failMeta.sha256).toBeNull();
         expect(existsSync(join(dir, "1.1.0.md"))).toBe(false);
 
-        // rerun: non-retryable failure is skipped (no refetch), still exit 1
         const second = makeHttp([]);
         const rerun = await runFetch(["demo", "1.0.0..1.1.0", "--cache-dir", root], {
             http: second.http,
@@ -216,7 +207,7 @@ describe("fetch-changelog", () => {
                 {
                     status: 200,
                     body: JSON.stringify([
-                        { version: "v24.0.0-rc.1" }, // prerelease → excluded
+                        { version: "v24.0.0-rc.1" },
                         { version: "v23.1.0" },
                         { version: "v22.9.0" },
                     ]),
@@ -244,7 +235,6 @@ describe("fetch-changelog", () => {
 
         expect(exitCode).toBe(0);
         expect(result.engine).toBe(true);
-        // latest = max STABLE version from the dist index
         expect(result.from).toBe("23.1.0");
         expect(result.to).toBe("23.1.0");
         expect(result.versions).toEqual([
@@ -254,8 +244,6 @@ describe("fetch-changelog", () => {
                 source: "github_releases",
             }),
         ]);
-        // exactly: enumeration + one tag probe. No default-branch lookup, no
-        // raw CHANGELOG cascade (strategy A skipped), no unpkg fallback.
         expect(calls).toEqual(["https://nodejs.org/dist/index.json", releaseUrl]);
         const dir = join(root, "node");
         expect(readFileSync(join(dir, "23.1.0.md"), "utf8")).toBe("node release notes");
@@ -269,7 +257,7 @@ describe("fetch-changelog", () => {
             npmViewCalls.push([pkg, fields]);
             return ["9.4.0", "9.5.0"];
         };
-        const { http, calls } = makeHttp([]); // every request 404s
+        const { http, calls } = makeHttp([]);
         const { result, exitCode } = await runFetch(
             ["pnpm", "9.5.0", "--engine", "--cache-dir", root],
             { http, npmView: npmViewFake, useGh: false },
@@ -277,10 +265,7 @@ describe("fetch-changelog", () => {
 
         expect(exitCode).toBe(1);
         expect(result.engine).toBe(true);
-        // versions enumerated from the engine's npm package, not node-dist
         expect(npmViewCalls).toEqual([["pnpm", ["versions"]]]);
-        // engine spec routes to pnpm/pnpm with the single v{version} template;
-        // engine mode never falls back to unpkg
         expect(calls).toEqual(["https://api.github.com/repos/pnpm/pnpm/releases/tags/v9.5.0"]);
         expect(result.versions).toEqual([
             expect.objectContaining({
@@ -296,7 +281,6 @@ describe("fetch-changelog", () => {
     });
 
     test("structural errors: bad argv → CLI exit 2; bad range/version → UsageError; unwritable cache → non-usage throw", async () => {
-        // real process exit code 2 + JSON error for bad argv (no network involved)
         let spawnErr = null;
         try {
             execFileSync(process.execPath, [SCRIPT, "only-one-arg"], {
@@ -311,7 +295,6 @@ describe("fetch-changelog", () => {
         expect(cliJson.ok).toBe(false);
         expect(cliJson.error).toMatch(/^usage:/);
 
-        // inverted range and unknown version → UsageError (main maps to exit 2)
         const root = mkdtempSync(join(tmpdir(), "fetchlog-usage-"));
         const { http } = makeHttp([]);
         const deps = { http, npmView: demoNpmView, useGh: false };
@@ -322,8 +305,7 @@ describe("fetch-changelog", () => {
             /version 3\.3\.3 not found/,
         );
 
-        // unwritable cache root (path through a regular file) → structural
-        // failure that is NOT a UsageError (main classifies as exit 2 too)
+        // a regular file in the path makes the cache root unwritable
         writeFileSync(join(root, "blocker"), "");
         const err = await runFetch(
             ["demo", "2.0.0", "--cache-dir", join(root, "blocker", "nested")],

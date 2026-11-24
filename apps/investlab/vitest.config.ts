@@ -6,8 +6,7 @@ export default mergeConfig(
     sharedConfig,
     defineConfig({
         resolve: {
-            // Dedupe React so vitest-browser-react and the app share one copy
-            // (avoids "Invalid hook call" from a duplicate/mismatched React in browser mode).
+            // vitest-browser-react and the app must share one React copy, or browser mode throws "Invalid hook call".
             dedupe: ["react", "react-dom"],
         },
         test: {

@@ -214,7 +214,6 @@ export function jitterBackoff(baseDelay: number, maxDelay?: number): HttpRetryDe
     return (attempt: number): number => {
         const exponentialDelay = baseDelay * Math.pow(2, attempt - 1);
         const cappedDelay = maxDelay ? Math.min(exponentialDelay, maxDelay) : exponentialDelay;
-        // Add random jitter between 0 and cappedDelay
         return Math.random() * cappedDelay;
     };
 }

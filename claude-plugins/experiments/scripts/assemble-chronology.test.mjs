@@ -16,7 +16,6 @@ import {
 const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), "assemble-chronology.mjs");
 
 function seedCache(root) {
-    // zod: two fetched versions inside the span + the installed one (excluded)
     const zod = packageCacheDir("zod", root);
     ensurePackageMeta(zod, { package: "zod", repository: "colinhacks/zod" });
     updatePackageMeta(zod, { repository: "colinhacks/zod" });
@@ -30,7 +29,6 @@ function seedCache(root) {
             sourceUrl: `https://raw.example/zod/${v}`,
         });
     }
-    // axios: nothing available → sentinel (recorded error only)
     const axios = packageCacheDir("axios", root);
     ensurePackageMeta(axios, { package: "axios", repository: "axios/axios" });
     writeFailedVersion(axios, "1.7.9", "no_changelog_source", false);
@@ -67,20 +65,16 @@ describe("assemble-chronology", () => {
         const out = run(["--scan", scanPath, "--cache-dir", root]);
 
         assert.match(out, /^## Changelogs/m);
-        // alphabetical: axios before zod
         assert.ok(out.indexOf("### axios") < out.indexOf("### zod"));
         assert.match(out, /### zod \(3\.23\.0 → 3\.24\.1\)/);
-        // half-open span: installed 3.23.0 excluded, 3.23.5 + 3.24.1 included ascending
         assert.ok(!out.includes("installed version body"));
         assert.ok(
             out.indexOf("<summary>3.23.5</summary>") < out.indexOf("<summary>3.24.1</summary>"),
         );
         assert.match(out, /<details>\n<summary>3\.23\.5<\/summary>/);
         assert.match(out, /- mid fix/);
-        // links line from cached metadata
         assert.match(out, /\[repository\]\(https:\/\/github\.com\/colinhacks\/zod\)/);
         assert.match(out, /\[3\.24\.1\]\(https:\/\/raw\.example\/zod\/3\.24\.1\)/);
-        // axios has no bodies → links line (repo known) then sentinel
         assert.match(
             out,
             /### axios \(1\.7\.0 → 1\.7\.9\)\n\nSources: \[repository\]\(https:\/\/github\.com\/axios\/axios\)\n\n_no changelog available_/,
@@ -147,14 +141,12 @@ describe("assemble-chronology", () => {
         const out = run(["--scan", scanPath, "--cache-dir", root]);
         assert.ok(!out.includes("tampered body"));
         assert.ok(!out.includes("<summary>3.24.1</summary>"));
-        // intact sibling version still renders
         assert.match(out, /<summary>3\.23\.5<\/summary>/);
     });
 
     test("engine-shaped entries (node) go through the generic path", () => {
         // assemble-chronology has no engines-specific branch: the engines flow
-        // feeds engine release-note cache entries ("node", "pnpm", …) through the
-        // same scan-shaped generic path. Document that this works end to end.
+        // feeds engine release-note cache entries through the same generic path.
         const root = mkdtempSync(join(tmpdir(), "chrono-engines-"));
         const node = packageCacheDir("node", root);
         ensurePackageMeta(node, { package: "node", repository: "nodejs/node" });
@@ -167,7 +159,6 @@ describe("assemble-chronology", () => {
                 sourceUrl: `https://raw.example/node/${v}`,
             });
         }
-        // pnpm: no release notes cached → sentinel
         const pnpm = packageCacheDir("pnpm", root);
         ensurePackageMeta(pnpm, { package: "pnpm", repository: "pnpm/pnpm" });
         writeFailedVersion(pnpm, "10.6.0", "no_changelog_source", false);
@@ -191,13 +182,11 @@ describe("assemble-chronology", () => {
         );
         const out = run(["--scan", scanPath, "--cache-dir", root]);
         assert.match(out, /### node \(22\.11\.0 → 22\.14\.0\)/);
-        // half-open span, ascending: 22.12.0 then 22.14.0
         assert.ok(
             out.indexOf("<summary>22.12.0</summary>") < out.indexOf("<summary>22.14.0</summary>"),
         );
         assert.match(out, /- target note/);
         assert.match(out, /\[repository\]\(https:\/\/github\.com\/nodejs\/node\)/);
-        // engine with no cached notes falls back to the sentinel
         assert.match(
             out,
             /### pnpm \(10\.4\.0 → 10\.6\.0\)\n\nSources: \[repository\]\(https:\/\/github\.com\/pnpm\/pnpm\)\n\n_no changelog available_/,

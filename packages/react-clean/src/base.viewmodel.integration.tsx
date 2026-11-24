@@ -6,7 +6,6 @@ import { render } from "vitest-browser-react";
 import { useDidMount, useWillUnmount } from "@m0n0lab/react-hooks";
 import { BaseViewModel } from "./base.viewmodel.ts";
 
-// Concrete ViewModel for testing
 @injectable()
 class TestViewModel extends BaseViewModel {
     private _count$ = new BehaviorSubject<number>(0);
@@ -17,7 +16,6 @@ class TestViewModel extends BaseViewModel {
     }
 
     override didMount() {
-        // Simulate some initialization
         this._count$.next(1);
     }
 
@@ -31,7 +29,6 @@ interface TestComponentProps {
     viewModel: TestViewModel;
 }
 
-// Component using the ViewModel
 const TestComponent: FC<TestComponentProps> = ({ viewModel }) => {
     const [count, setCount] = useState(0);
 
@@ -61,10 +58,8 @@ describe("BaseViewModel", () => {
 
         const screen = await render(<TestComponent viewModel={viewModel} />);
 
-        // After mount, count should be initialized to 1
         await expect.element(screen.getByTestId("count")).toHaveTextContent("1");
 
-        // Verify we're in real browser environment
         expect(typeof window).toBe("object");
         expect(typeof localStorage).toBe("object");
     });
@@ -76,10 +71,8 @@ describe("BaseViewModel", () => {
 
         const { unmount } = await render(<TestComponent viewModel={viewModel} />);
 
-        // Increment to verify subscription is active
         viewModel.increment();
 
-        // Unmount should trigger willUnmount and clean up subscriptions
         await unmount();
 
         // After unmount, observable should be completed

@@ -10,7 +10,6 @@
  * @packageDocumentation
  */
 
-// Core types
 export type {
     HttpCredentialsMode,
     HttpErrorStatusCode,
@@ -20,13 +19,10 @@ export type {
     HttpStatusCode,
 } from "./contracts/types.js";
 
-// Request types
 export type { HttpRequestBody, HttpRequestConfig } from "./contracts/request.js";
 
-// Response types
 export type { HttpResponse } from "./contracts/response.js";
 
-// Error classes
 export {
     HttpAbortError,
     HttpBadRequestError,
@@ -44,7 +40,6 @@ export {
     HttpUnprocessableEntityError,
 } from "./contracts/errors.js";
 
-// Interceptor types
 export type {
     InterceptorHandle,
     RequestOnFulfilled,
@@ -53,7 +48,6 @@ export type {
     ResponseOnRejected,
 } from "./contracts/interceptors.js";
 
-// Retry configuration
 export type {
     HttpRetryCondition,
     HttpRetryConfig,
@@ -64,14 +58,12 @@ export type {
 
 export { exponentialBackoff, jitterBackoff, linearBackoff } from "./contracts/retry.js";
 
-// Deduplication types
 export type {
     DeduplicationKey,
     HttpDeduplicationConfig,
     HttpDeduplicationKeyGenerator,
 } from "./contracts/deduplication.js";
 
-// Cache types
 export type {
     CacheEntry,
     HttpCache,
@@ -80,10 +72,8 @@ export type {
     HttpCacheKeyGenerator,
 } from "./contracts/cache.js";
 
-// Client interface
 export type { HttpClient } from "./contracts/client.js";
 
-// Factory types
 export type {
     HttpClientFactory,
     HttpClientOptions,

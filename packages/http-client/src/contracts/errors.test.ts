@@ -290,32 +290,27 @@ describe("errors", () => {
 
     describe("Error prototype chain integrity", () => {
         it("should maintain prototype chain for nested inheritance", () => {
-            // Create errors at different inheritance levels
             const baseError = new HttpError("Base", {});
             const networkError = new HttpNetworkError("Network", "ENETWORK", {});
             const responseError = new HttpResponseError("Response", 400, "Bad Request", {}, {}, {});
             const notFoundError = new HttpNotFoundError("Not found", "Not Found", {}, {}, {});
 
-            // Base error checks
             expect(baseError).toBeInstanceOf(HttpError);
             expect(baseError).toBeInstanceOf(Error);
             expect(baseError).not.toBeInstanceOf(HttpNetworkError);
             expect(baseError).not.toBeInstanceOf(HttpResponseError);
 
-            // Network error checks
             expect(networkError).toBeInstanceOf(HttpNetworkError);
             expect(networkError).toBeInstanceOf(HttpError);
             expect(networkError).toBeInstanceOf(Error);
             expect(networkError).not.toBeInstanceOf(HttpResponseError);
 
-            // Response error checks
             expect(responseError).toBeInstanceOf(HttpResponseError);
             expect(responseError).toBeInstanceOf(HttpError);
             expect(responseError).toBeInstanceOf(Error);
             expect(responseError).not.toBeInstanceOf(HttpNetworkError);
             expect(responseError).not.toBeInstanceOf(HttpNotFoundError);
 
-            // Specific error checks (two levels of inheritance)
             expect(notFoundError).toBeInstanceOf(HttpNotFoundError);
             expect(notFoundError).toBeInstanceOf(HttpResponseError);
             expect(notFoundError).toBeInstanceOf(HttpError);

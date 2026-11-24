@@ -118,7 +118,6 @@ describe("client", () => {
 
             const client = {} as HttpClient;
 
-            // Type inference without explicit type parameters
             const getUserById = (id: number) => client.get<User>(`/users/${id}`);
 
             const result = getUserById(1);

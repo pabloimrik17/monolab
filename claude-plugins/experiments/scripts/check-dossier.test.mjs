@@ -166,10 +166,9 @@ describe("check-dossier", () => {
     });
 
     test("verbatim H2 headings inside changelog bodies do not truncate ## Changelogs", () => {
-        // Regression: dry-run 2026-07-12 — bodies with their own `## …` headings
-        // (semver `## [7.6.0]`, zod `## v4.18.0`, pnpm `## Commits`) made
-        // h2Sections end the Changelogs section early, flagging every LATER
-        // package block as missing.
+        // Regression (dry-run 2026-07-12): bodies with their own `## …` headings made
+        // h2Sections end the Changelogs section early, flagging every later package
+        // block as missing.
         const root = seededRoot();
         const semver = packageCacheDir("semver", root);
         ensurePackageMeta(semver, {
@@ -227,8 +226,6 @@ describe("check-dossier", () => {
     });
 
     test("genuinely missing block still fails when bodies carry H2 headings", () => {
-        // The fix must not weaken detection: zod block absent, semver block
-        // present with H2-bearing body → zod still flagged.
         const content = compliantDossier().replace(
             /### zod[\s\S]*$/,
             [
@@ -350,7 +347,6 @@ describe("check-dossier", () => {
     });
 
     test("engines dossier with wrong bump-set heading fails", () => {
-        // Level-derived heading: a patch-style heading fails an engines check.
         const content = compliantEnginesDossier().replace(
             "## Engines bump set",
             "## Patch bump set",

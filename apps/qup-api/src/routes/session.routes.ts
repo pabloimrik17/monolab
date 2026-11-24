@@ -19,7 +19,6 @@ import type { Container } from "inversify";
 export function sessionRoutes(container: Container) {
     const app = new Hono();
 
-    // POST /sessions (admin)
     app.post("/", adminOnly(), async (c) => {
         const body = await c.req.json<CreateSessionRequest>();
         const uc = container.get<CreateSessionUseCase>(TOKENS.CreateSessionUseCase);
@@ -32,7 +31,6 @@ export function sessionRoutes(container: Container) {
         );
     });
 
-    // GET /sessions?status=OPEN (admin)
     app.get("/", adminOnly(), async (c) => {
         const status = c.req.query("status");
         if (status === "OPEN") {
@@ -49,7 +47,6 @@ export function sessionRoutes(container: Container) {
         );
     });
 
-    // GET /sessions/code/:code
     app.get("/code/:code", async (c) => {
         const code = c.req.param("code");
         const uc = container.get<GetSessionByCodeUseCase>(TOKENS.GetSessionByCodeUseCase);
@@ -62,7 +59,6 @@ export function sessionRoutes(container: Container) {
         );
     });
 
-    // GET /sessions/code/:code/board (guest, no PIN)
     app.get("/code/:code/board", async (c) => {
         const code = c.req.param("code");
         const uc = container.get<GetPublicOrderBoardUseCase>(TOKENS.GetPublicOrderBoardUseCase);
@@ -75,7 +71,6 @@ export function sessionRoutes(container: Container) {
         );
     });
 
-    // GET /sessions/code/:code/orders?guest=Y
     app.get("/code/:code/orders", async (c) => {
         // `guest` is a filter, not authentication — but it is required, so the route
         // can never degrade into "every order in the session".
@@ -108,7 +103,6 @@ export function sessionRoutes(container: Container) {
         );
     });
 
-    // GET /sessions/:id/orders (admin)
     app.get("/:id/orders", adminOnly(), async (c) => {
         const sessionId = c.req.param("id")!;
         const uc = container.get<GetSessionOrdersUseCase>(TOKENS.GetSessionOrdersUseCase);
@@ -120,7 +114,6 @@ export function sessionRoutes(container: Container) {
         );
     });
 
-    // GET /sessions/:id (admin)
     app.get("/:id", adminOnly(), async (c) => {
         const id = c.req.param("id")!;
         const uc = container.get<GetSessionByIdUseCase>(TOKENS.GetSessionByIdUseCase);
@@ -133,7 +126,6 @@ export function sessionRoutes(container: Container) {
         );
     });
 
-    // PATCH /sessions/:id/close (admin)
     app.patch("/:id/close", adminOnly(), async (c) => {
         const id = c.req.param("id")!;
         // fallow-ignore-next-line code-duplication -- uniform use-case handler shell after errorJson extraction, handler factory not warranted

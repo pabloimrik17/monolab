@@ -455,8 +455,7 @@ const scopedPolicy = ({ root }: LayoutProject, policy: LayoutPolicy) => {
           };
 };
 
-// Package-specifier bans. The folder bans join every group, because each file keeps the options of the last group
-// that matches it.
+// The folder bans join every group, because each file keeps the options of the last group that matches it.
 const parentFolder = ban(
     "(^|/)\\.\\.(/|$)",
     "import another folder through its # alias, never through ../",
@@ -808,7 +807,6 @@ export default tseslint.config(
         files: ["**/*.cjs"],
         rules: { "@typescript-eslint/no-require-imports": "off" },
     },
-    // Type-aware linting (project service; excludes out-of-project config files).
     {
         files: ["**/*.{ts,tsx,mts,cts}"],
         ignores: [
@@ -827,8 +825,7 @@ export default tseslint.config(
             "@typescript-eslint/no-unnecessary-type-assertion": "warn",
         },
     },
-    // Files not covered by a build tsconfig (JS, configs, tests, setup, type-tests):
-    // disable the type-checked project service so they don't trip the parser.
+    // No build tsconfig covers these files, so the type-checked project service cannot parse them.
     {
         files: [
             "**/*.{js,cjs,mjs}",

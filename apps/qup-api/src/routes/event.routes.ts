@@ -68,12 +68,10 @@ async function keepAlive(stream: SSEStreamingApi): Promise<void> {
     }
 }
 
-// Both streams are the same machine — resolve the session by code, subscribe to its events,
-// release on disconnect — and differ only in the frame they put on the wire.
 function sessionStream(container: Container, events: readonly string[], toFrame: ToFrame) {
     return async (c: Context): Promise<Response> => {
         const getSession = container.get<GetSessionByCodeUseCase>(TOKENS.GetSessionByCodeUseCase);
-        // The route pattern guarantees the param; matches how the other routes read theirs.
+        // The route pattern guarantees the param.
         const sessionResult = await getSession.execute(c.req.param("code")!);
 
         if (sessionResult.isErr()) {
@@ -101,10 +99,8 @@ function sessionStream(container: Container, events: readonly string[], toFrame:
 export function eventRoutes(container: Container) {
     const app = new Hono();
 
-    // GET /events/sessions/:code — SSE filtered by session. No PIN, so nothing private may
-    // ride on it: every payload the bus carries for these events is already a flat signal
-    // record (see the interfaces in `@m0n0lab/qup-shared`), no entity is ever emitted, and
-    // this route has no serializer to turn one into a DTO even if one were.
+    // No PIN and no serializer: payloads go out verbatim, so the bus must only carry flat
+    // signal records for these events (see `@m0n0lab/qup-shared`), never entities.
     app.get(
         "/sessions/:code",
         sessionStream(container, SESSION_STREAM_EVENTS, (event, data) => ({
@@ -113,14 +109,11 @@ export function eventRoutes(container: Container) {
         })),
     );
 
-    // GET /events/sessions/:code/board — payload-free signals for the public board.
-    // No PIN: the session code is the only key, and 422/404/409 come from the same
-    // code-scoped state machine every other public endpoint uses.
+    // No PIN: the session code is the only key.
     app.get(
         "/sessions/:code/board",
         sessionStream(container, [...BOARD_SIGNALS.keys()], (event) => {
-            // Empty by construction: a stream that never builds a payload cannot leak one,
-            // whatever the event that triggered it carried.
+            // Empty by construction: a stream that never builds a payload cannot leak one.
             const signal = BOARD_SIGNALS.get(event);
             return signal ? { event: signal, data: "" } : null;
         }),

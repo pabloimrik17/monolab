@@ -43,12 +43,10 @@ export type HttpHeaders = Record<string, string | string[]>;
  * @public
  */
 export type HttpStatusCode =
-    // Informational (100-199)
     | 100 // Continue
     | 101 // Switching Protocols
     | 102 // Processing
     | 103 // Early Hints
-    // Success (200-299)
     | 200 // OK
     | 201 // Created
     | 202 // Accepted
@@ -59,7 +57,6 @@ export type HttpStatusCode =
     | 207 // Multi-Status
     | 208 // Already Reported
     | 226 // IM Used
-    // Redirection (300-399)
     | 300 // Multiple Choices
     | 301 // Moved Permanently
     | 302 // Found
@@ -68,7 +65,6 @@ export type HttpStatusCode =
     | 305 // Use Proxy
     | 307 // Temporary Redirect
     | 308 // Permanent Redirect
-    // Client Error (400-499)
     | 400 // Bad Request
     | 401 // Unauthorized
     | 402 // Payment Required
@@ -98,7 +94,6 @@ export type HttpStatusCode =
     | 429 // Too Many Requests
     | 431 // Request Header Fields Too Large
     | 451 // Unavailable For Legal Reasons
-    // Server Error (500-599)
     | 500 // Internal Server Error
     | 501 // Not Implemented
     | 502 // Bad Gateway
@@ -118,7 +113,6 @@ export type HttpStatusCode =
  * @public
  */
 export type HttpErrorStatusCode =
-    // Client Error (400-499)
     | 400 // Bad Request
     | 401 // Unauthorized
     | 402 // Payment Required
@@ -148,7 +142,6 @@ export type HttpErrorStatusCode =
     | 429 // Too Many Requests
     | 431 // Request Header Fields Too Large
     | 451 // Unavailable For Legal Reasons
-    // Server Error (500-599)
     | 500 // Internal Server Error
     | 501 // Not Implemented
     | 502 // Bad Gateway

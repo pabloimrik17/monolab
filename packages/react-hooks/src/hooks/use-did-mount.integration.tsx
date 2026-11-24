@@ -4,7 +4,6 @@ import { render } from "vitest-browser-react";
 import { useDidMount } from "./use-did-mount.hook.ts";
 
 describe("useDidMount", () => {
-    // Verify browser environment is properly configured
     beforeAll(() => {
         expect(typeof window).toBe("object");
         expect(typeof document).toBe("object");
@@ -14,7 +13,6 @@ describe("useDidMount", () => {
         onMount: () => void;
     }
 
-    // Component using useDidMount hook
     const TestComponent: FC<TestComponentProps> = ({ onMount }) => {
         const [mounted, setMounted] = useState(false);
 
@@ -34,7 +32,6 @@ describe("useDidMount", () => {
 
         const screen = await render(<TestComponent onMount={onMount} />);
 
-        // In a real browser environment we assert against the live DOM via locators
         await expect.element(screen.getByTestId("status")).toHaveTextContent("mounted");
         expect(callCount).toBe(1);
     });
@@ -48,7 +45,6 @@ describe("useDidMount", () => {
 
         const screen = await render(<TestComponent onMount={asyncOnMount} />);
 
-        // Wait for the async callback to complete
         await vi.waitFor(
             () => {
                 expect(resolved).toBe(true);
@@ -56,7 +52,6 @@ describe("useDidMount", () => {
             { timeout: 100 },
         );
 
-        // Verify the component mounted
         await expect.element(screen.getByTestId("status")).toHaveTextContent("mounted");
     });
 });
