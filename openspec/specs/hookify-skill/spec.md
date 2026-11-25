@@ -8,7 +8,7 @@ Analyze CLAUDE.md/AGENTS.md for deterministic instructions convertible to Claude
 
 ### Requirement: Skill file exists
 
-The hookify skill SHALL exist at `claude-plugins/experiments/skills/hookify/SKILL.md` with valid frontmatter including name, description, and version.
+The hookify skill SHALL exist at `claude-plugins/experiments/skills/hookify/SKILL.md` with valid frontmatter including name and description. The skill carries no version of its own: it ships with the version of the experiments plugin.
 
 #### Scenario: Skill file location
 
@@ -128,8 +128,13 @@ Gain factors:
 
 #### Scenario: Nothing hookifiable
 
-- **WHEN** analysis finds no hookifiable instructions (all managed or conceptual)
+- **WHEN** the user explicitly invokes the skill and analysis finds no hookifiable instructions (all managed or conceptual)
 - **THEN** the skill SHALL report that everything looks good and no hooks needed
+
+#### Scenario: Nothing hookifiable on an autonomous trigger
+
+- **WHEN** the skill auto-triggers and analysis finds no hookifiable instructions
+- **THEN** the skill SHALL stay silent and not interrupt the user
 
 ---
 
