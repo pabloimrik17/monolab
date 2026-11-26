@@ -15,7 +15,7 @@ The `@m0n0lab/ts-types` package SHALL provide a standard library structure for s
 - **WHEN** the package is created
 - **THEN** it SHALL have directory structure: `packages/ts-types/src/` for source code
 - **AND** it SHALL have `packages/ts-types/dist/` for compiled output
-- **AND** it SHALL include `project.json` for Nx integration without Nx plugins
+- **AND** it SHALL include `project.json` for Nx integration
 
 #### Scenario: Source organization
 
@@ -59,7 +59,7 @@ The package SHALL use TypeScript with strict compilation settings following mono
 #### Scenario: Type checking
 
 - **WHEN** running type checks
-- **THEN** the package SHALL validate all TypeScript code with `tsc --noEmit`
+- **THEN** the package SHALL validate all TypeScript code with `tsc --build --emitDeclarationOnly`
 - **AND** it SHALL enforce strict mode rules
 
 ### Requirement: ESM Export Configuration
@@ -96,7 +96,7 @@ The package SHALL provide automated build and validation scripts.
 #### Scenario: Development workflow
 
 - **WHEN** developing the package
-- **THEN** `pnpm run typecheck` SHALL validate types without emitting files
+- **THEN** the Nx `typecheck` target SHALL validate types without emitting JavaScript
 - **AND** standard lint scripts SHALL be available (eslint, knip)
 - **AND** standard test scripts SHALL be available (vitest)
 
@@ -114,7 +114,7 @@ The package SHALL include proper versioning, authoring, and publishing configura
 #### Scenario: Publishing configuration
 
 - **WHEN** preparing for publication
-- **THEN** `engines` field SHALL require Node `^20.18.0 || >=22.0.0` and pnpm 12.14.0
+- **THEN** `engines` field SHALL require Node `>=22.0.0` and pnpm 12.14.0
 - **AND** `packageManager` SHALL specify pnpm 12.14.0
 - **AND** `publishConfig` SHALL set `access: "public"`
 - **AND** `publishConfig` SHALL use npm registry URL
@@ -179,7 +179,7 @@ The package SHALL be integrated with Codecov for coverage tracking using the `ts
 - **GIVEN** new code is added to the types package
 - **THEN** `codecov.yaml` SHALL define a `coverage.status.patch.ts-types` section
 - **AND** it SHALL reference the flag `ts-types`
-- **AND** it SHALL set `target: 50%` and `threshold: 10%`
+- **AND** it SHALL set `target: 80%` and `threshold: 0%`
 
 #### Scenario: Codecov flag definition
 

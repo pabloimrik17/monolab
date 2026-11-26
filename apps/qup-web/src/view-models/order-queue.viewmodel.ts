@@ -4,14 +4,9 @@ import { BaseViewModel } from "@m0n0lab/solid-clean";
 import { getSession, getSessionOrders } from "../server/host-data.ts";
 import { cancelOrder, updateOrderStatus } from "../server/mutations.ts";
 import { createCoalescingRefetch } from "../services/coalescing-refetch.ts";
-import { sessionEventsUrl } from "../services/sse-url.ts";
+import { SESSION_ORDER_EVENTS, sessionEventsUrl } from "../services/sse-url.ts";
 import type { CoalescingRefetch } from "../services/coalescing-refetch.ts";
 import type { OrderDto, SessionDto, UpdateOrderStatusRequest } from "@m0n0lab/qup-shared";
-
-// The stream is public and carries no order data, so every name on it means the same thing
-// to the queue: refetch the protected snapshot, which is the only place the notes and
-// customizations this screen shows still exist.
-const ORDER_EVENTS = ["order:created", "order:status", "order:cancelled"] as const;
 
 @injectable()
 export class OrderQueueViewModel extends BaseViewModel {
@@ -98,8 +93,10 @@ export class OrderQueueViewModel extends BaseViewModel {
     private connectSSE(sessionCode: string): void {
         const es = new EventSource(sessionEventsUrl(sessionCode));
 
-        // The API sends named SSE events, which never reach `onmessage`.
-        for (const event of ORDER_EVENTS) {
+        // The API sends named SSE events, which never reach `onmessage`. The refetch reads the
+        // protected snapshot: the stream is public, so the notes and customizations this
+        // screen shows exist only there.
+        for (const event of SESSION_ORDER_EVENTS) {
             es.addEventListener(event, () => void this._refetch?.trigger());
         }
 
