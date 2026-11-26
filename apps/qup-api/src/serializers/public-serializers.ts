@@ -14,10 +14,8 @@ export function toPublicOrderSummary(order: Order): PublicOrderSummaryDto {
         id: order.id,
         guestName: order.guestName,
         status: order.status.value as PublicOrderSummaryDto["status"],
-        // Sorted by product name: storage does not preserve the order's own item
-        // order, so name ordering is what makes the truncation to 3 deterministic.
-        // The spread is load-bearing — Order freezes its items, so an in-place
-        // sort would typecheck and then throw on the first request.
+        // Storage does not preserve item order, so sorting by name makes the truncation
+        // deterministic. Order freezes its items: an in-place sort would throw at runtime.
         items: [...order.items]
             .sort((a, b) => a.menuItemName.localeCompare(b.menuItemName))
             .slice(0, MAX_VISIBLE_ITEM_LINES)

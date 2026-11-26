@@ -166,7 +166,6 @@ export function checkDossier({ content, bumpSet, level, mode, cacheRoot }) {
     const sections = h2Sections(content, expected);
     const titles = sections.map((s) => s.title);
 
-    // 3. Required headings present, in order.
     let lastIndex = -1;
     for (const heading of expected) {
         const idx = titles.indexOf(heading);
@@ -201,11 +200,10 @@ export function checkDossier({ content, bumpSet, level, mode, cacheRoot }) {
 
     const byTitle = new Map();
     for (const s of sections) {
-        if (!byTitle.has(s.title)) byTitle.set(s.title, s); // first wins
+        if (!byTitle.has(s.title)) byTitle.set(s.title, s);
     }
     const changelogs = byTitle.get("Changelogs");
 
-    // 2. Chronology block per bump-set package.
     for (const pkg of bumpSet) {
         const blockRe = new RegExp(
             `^### ${pkg.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} \\(`,
@@ -220,7 +218,6 @@ export function checkDossier({ content, bumpSet, level, mode, cacheRoot }) {
         }
     }
 
-    // 1. Cache coverage: entry (or recorded error) per bump-set package.
     for (const pkg of bumpSet) {
         const cacheDir = packageCacheDir(pkg.name, cacheRoot);
         const cached = listCachedVersions(cacheDir);
@@ -252,7 +249,6 @@ export function checkDossier({ content, bumpSet, level, mode, cacheRoot }) {
         }
     }
 
-    // 4. Sentinels on empty sections.
     const sentinelChecks = [
         [expected.find((h) => h.startsWith("Improvements")), SENTINELS.improvements],
         ["Workarounds resolved", SENTINELS.workarounds],

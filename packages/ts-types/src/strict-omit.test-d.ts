@@ -37,7 +37,6 @@ describe("StrictOmit", () => {
 
     it("should work with all properties omitted", () => {
         type EmptyUser = StrictOmit<User, "id" | "name" | "email" | "age">;
-        // When all properties are omitted, we get an empty object type
         expectTypeOf<EmptyUser>().toEqualTypeOf<Record<never, never>>();
     });
 
@@ -45,7 +44,6 @@ describe("StrictOmit", () => {
         // This should cause a TypeScript error if uncommented:
         // type Invalid = StrictOmit<User, 'nonExistentKey'>;
 
-        // Verify the key constraint works
         type ValidKeys = keyof User;
         expectTypeOf<ValidKeys>().toEqualTypeOf<"id" | "name" | "email" | "age">();
     });

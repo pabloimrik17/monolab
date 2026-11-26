@@ -1,10 +1,6 @@
-// Every screen fed by a payload-free signal stream has the same problem: a burst of signals
-// must not become a burst of snapshot requests. This keeps one request in flight, collapses
-// everything that arrives during it into a single trailing refetch, and drops any response
-// that is no longer the newest one issued.
-//
-// Shared by the board, the guest status screen and the admin queue — it knows nothing about
-// what it is fetching.
+// A burst of payload-free signals must not become a burst of snapshot requests. This keeps one
+// request in flight, collapses everything that arrives during it into a single trailing
+// refetch, and drops any response that is no longer the newest one issued.
 export interface CoalescingRefetch {
     /** Ask for a refetch. Resolves once the cycle covering this request has settled. */
     trigger(): Promise<void>;
@@ -27,7 +23,6 @@ export function createCoalescingRefetch<T>(
     let stopped = false;
     let latest = 0;
 
-    // A response is worth applying only if it is still the newest one asked for.
     const isCurrent = (id: number): boolean => !stopped && id === latest;
 
     const runOnce = async (): Promise<void> => {

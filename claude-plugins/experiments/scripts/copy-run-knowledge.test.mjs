@@ -245,7 +245,7 @@ describe("copy-run-knowledge", () => {
         const nxHub = readFileSync(join(root, "packages", "@nx__js.md"), "utf8");
         assert.match(nxHub, /## 23\.0\.2 → 23\.1\.0/);
         assert.match(nxHub, /## 23\.1\.0 → 23\.2\.0/);
-        assert.match(nxHub, /ranges: \["21\.1\.0\.\.21\.2\.1"\]|ranges: /); // sanity: ranges list present
+        assert.match(nxHub, /ranges: \["21\.1\.0\.\.21\.2\.1"\]|ranges: /);
         assert.match(nxHub, /latest: 23\.2\.0/);
     });
 

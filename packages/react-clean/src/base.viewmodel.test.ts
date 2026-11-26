@@ -29,11 +29,9 @@ describe("BaseViewModel", () => {
 
         viewModel.addSub(sub1, sub2);
 
-        // Verify subscriptions are not yet unsubscribed
         expect(unsubscribeFn1).not.toHaveBeenCalled();
         expect(unsubscribeFn2).not.toHaveBeenCalled();
 
-        // Cleanup should unsubscribe all
         viewModel.willUnmount();
 
         expect(unsubscribeFn1).toHaveBeenCalledTimes(1);
@@ -60,14 +58,11 @@ describe("BaseViewModel", () => {
         viewModel.addSub(sub1);
         viewModel.willUnmount();
 
-        // Add new subscription after unmount
         const sub2 = new Subscription(unsubscribeFn2);
         viewModel.addSub(sub2);
         viewModel.willUnmount();
 
-        // First subscription should not be called again
         expect(unsubscribeFn1).toHaveBeenCalledTimes(1);
-        // Second subscription should be called
         expect(unsubscribeFn2).toHaveBeenCalledTimes(1);
     });
 });

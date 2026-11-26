@@ -16,7 +16,6 @@ import type { Container } from "inversify";
 export function menuRoutes(container: Container) {
     const app = new Hono();
 
-    // GET /menu
     app.get("/", async (c) => {
         const available = c.req.query("available");
         const uc = container.get<GetMenuUseCase>(TOKENS.GetMenuUseCase);
@@ -28,7 +27,6 @@ export function menuRoutes(container: Container) {
         );
     });
 
-    // POST /menu (admin)
     app.post("/", adminOnly(), async (c) => {
         const body = await c.req.json<CreateMenuItemRequest>();
         const uc = container.get<CreateMenuItemUseCase>(TOKENS.CreateMenuItemUseCase);
@@ -46,7 +44,6 @@ export function menuRoutes(container: Container) {
         );
     });
 
-    // PATCH /menu/:id (admin)
     app.patch("/:id", adminOnly(), async (c) => {
         const id = c.req.param("id")!;
         const body = await c.req.json<UpdateMenuItemRequest>();
@@ -68,7 +65,6 @@ export function menuRoutes(container: Container) {
         );
     });
 
-    // DELETE /menu/:id (admin)
     app.delete("/:id", adminOnly(), async (c) => {
         const id = c.req.param("id")!;
         const uc = container.get<DeleteMenuItemUseCase>(TOKENS.DeleteMenuItemUseCase);

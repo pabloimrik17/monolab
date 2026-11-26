@@ -50,7 +50,7 @@ export async function login(pin: string): Promise<{ success: boolean }> {
         secure: getRequestProtocol() === "https",
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 60 * 8, // 8 hours
+        maxAge: 60 * 60 * 8,
     });
 
     return { success: true };

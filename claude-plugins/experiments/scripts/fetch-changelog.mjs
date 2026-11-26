@@ -177,7 +177,6 @@ async function strategyA(ctx, fetchVersions) {
         }
     }
 
-    // Split-archive handling for still-unresolved versions.
     if (remaining.size > 0) {
         const majorsMinors = new Set([...remaining].map((v) => v.split(".").slice(0, 2).join(".")));
         const archivePaths = [
@@ -264,7 +263,7 @@ async function strategyB(ctx, versions, tagTemplatesOverride) {
                 break;
             }
         }
-        if (!hit) emptyBody.push(version); // all probes 404 → try Strategy C
+        if (!hit) emptyBody.push(version);
     }
     return { resolved, strategyCVersions: emptyBody, errored };
 }

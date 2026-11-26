@@ -14,10 +14,9 @@ export default defineConfig({
             plugins: [["@babel/plugin-syntax-decorators", { version: "legacy" }]],
         },
     },
-    // Codecov bundle analysis runs only on the client router; the server bundle
-    // is not user-shipped so its size delta isn't useful to track here.
+    // Codecov bundle analysis runs only on the client router: the server bundle is not user-shipped.
     // `router` typed inline: SolidStart's vite option type collapses to `any`
-    // (it imports types vinxi 0.5 no longer ships), so it can't be inferred.
+    // (it imports types vinxi 0.5 no longer ships).
     vite: ({ router }: { router: "server" | "client" | "server-function" }) => ({
         plugins:
             router === "client"

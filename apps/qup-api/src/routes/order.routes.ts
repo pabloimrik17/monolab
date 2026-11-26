@@ -15,11 +15,9 @@ import type { Container } from "inversify";
 export function orderRoutes(container: Container) {
     const app = new Hono();
 
-    // POST /orders
     app.post("/", async (c) => {
         const body = await c.req.json<CreateOrderRequest>();
 
-        // Resolve session by code first
         const getSession = container.get<GetSessionByCodeUseCase>(TOKENS.GetSessionByCodeUseCase);
         const sessionResult = await getSession.execute(body.sessionCode);
 
@@ -41,7 +39,6 @@ export function orderRoutes(container: Container) {
         );
     });
 
-    // PATCH /orders/:id/status (admin)
     app.patch("/:id/status", adminOnly(), async (c) => {
         const id = c.req.param("id")!;
         const body = await c.req.json<UpdateOrderStatusRequest>();
@@ -64,7 +61,6 @@ export function orderRoutes(container: Container) {
         );
     });
 
-    // DELETE /orders/:id (admin)
     app.delete("/:id", adminOnly(), async (c) => {
         const id = c.req.param("id")!;
         const uc = container.get<CancelOrderUseCase>(TOKENS.CancelOrderUseCase);
