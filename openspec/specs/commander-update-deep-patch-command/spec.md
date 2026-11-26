@@ -65,7 +65,7 @@ The command SHALL inherit and preserve every hard rule from `commander-update-or
 - Modify any file when the user selects `cancel` at the orchestrator's confirmation gate.
 - Apply any improvement edit after the user rejects a project's changeset at the gate at apply time (bumps already applied in Step 10a are preserved — no rollback).
 - Mutate `<HOME>/.claude/commander/projects.json` — the registry is read-only on this path. The on-disk file SHALL be byte-identical before and after every run (verifiable via `shasum`).
-- Mutate any consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
+- Mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file for those (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun).
 - Auto-execute an override command without the user selecting `run-override` explicitly for that entry.
 - Run `ncu --upgrade` as a fallback after an override command fails.
 
