@@ -20,7 +20,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@hono/node-server": "2.0.10",
+        "@hono/node-server": "2.1.6",
         "@m0n0lab/qup-data": "workspace:*",
         "@m0n0lab/qup-domain": "workspace:*",
         "@m0n0lab/qup-shared": "workspace:*",
