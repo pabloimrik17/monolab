@@ -26,3 +26,4 @@ rules:
   delta-spec:
     - Specify peer dep changes explicitly
     - Note if new package or modification to existing
+skillsScope: project
