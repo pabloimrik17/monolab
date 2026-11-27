@@ -48,7 +48,8 @@ CI SHALL use Nx Cloud as a remote task cache and SHALL NOT distribute tasks to N
 #### Scenario: CI run with quota available
 
 - **WHEN** CI runs while the Nx Cloud workspace is enabled
-- **THEN** tasks read and write the Nx Cloud remote cache
+- **THEN** tasks read the Nx Cloud remote cache
+- **AND** only runs for pushes to `develop` or `main` write to it; pull requests and other branches read it without writing
 - **AND** no `nx-cloud start-ci-run` step runs and no agent is requested
 
 #### Scenario: CI run with quota exhausted
@@ -63,7 +64,7 @@ CI SHALL use Nx Cloud as a remote task cache and SHALL NOT distribute tasks to N
 
 ### Requirement: GitHub Actions keeps the local Nx cache
 
-Every CI job that runs Nx tasks SHALL restore the `.nx` directory from the GitHub Actions cache before its first Nx command and save it after its last one, whatever the state of Nx Cloud. The cache key SHALL change per commit and per job, so every run can save.
+Every CI job that runs Nx tasks SHALL restore the `.nx` directory from the GitHub Actions cache before its first Nx command and save it after its last one, whatever the state of Nx Cloud. The cache key SHALL change per commit and per job, so every run can save. The release job is the exception: it builds every package it publishes to npm from the commit's source, without reading any cache.
 
 #### Scenario: Restore on a branch with no cache yet
 
@@ -79,6 +80,11 @@ Every CI job that runs Nx tasks SHALL restore the `.nx` directory from the GitHu
 
 - **WHEN** Nx Cloud is disabled and a run touches only one project
 - **THEN** the tasks of untouched projects are read from the restored `.nx` cache instead of executed
+
+#### Scenario: Package release
+
+- **WHEN** the release workflow builds a package to publish it to npm
+- **THEN** the build runs from source and reads neither the `.nx` cache nor Nx Cloud
 
 ### Requirement: Anonymous access to the remote cache is closed
 
