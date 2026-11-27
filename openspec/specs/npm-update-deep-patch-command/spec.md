@@ -104,7 +104,7 @@ When the workflow finishes phase 4 (dossier synthesis) successfully, the command
 
 The command SHALL show the prompt exactly once per invocation. The command SHALL NOT auto-apply any dossier item without an explicit option selection.
 
-If the workflow returns an early-exit signal before phase 4 completes (stale-cleanup `cancel` or integrity-verification `abort`), the command SHALL NOT call `AskUserQuestion` for the execution prompt. The command SHALL exit immediately without applying any dossier items and SHALL emit a short summary indicating the early-exit reason (e.g. `Cancelled by stale-cleanup. No files modified.` or `Aborted on integrity check. No files modified.`) before delegating to the workflow's cleanup prompt.
+If the workflow returns an early-exit signal before phase 4 completes (stale-cleanup `cancel`, hard-wall `abort`, or integrity-verification `abort`), the command SHALL NOT call `AskUserQuestion` for the execution prompt and SHALL NOT apply any dossier item. On stale-cleanup `cancel` it SHALL print `Cancelled by stale-cleanup. No files modified.` and exit; no plan dir exists yet, so no cleanup prompt follows. On either `abort` it SHALL print the reason (`Aborted at hard-wall. No files modified.` or `Aborted on integrity check. No files modified.`), fire the workflow's cleanup prompt once, and render the abort summary.
 
 #### Scenario: Prompt order
 
@@ -118,12 +118,28 @@ If the workflow returns an early-exit signal before phase 4 completes (stale-cle
 
 #### Scenario: Early-exit skips the execution prompt
 
-- **WHEN** the workflow returns an early-exit signal from stale-cleanup `cancel` or integrity-verification `abort` before phase 4 completes
-- **THEN** the command does NOT call `AskUserQuestion` for the execution prompt, applies no dossier items, and prints a short summary identifying the early-exit reason before the workflow's cleanup prompt fires
+- **WHEN** the workflow returns an early-exit signal from stale-cleanup `cancel`, hard-wall `abort`, or integrity-verification `abort` before phase 4 completes
+- **THEN** the command does NOT call `AskUserQuestion` for the execution prompt, applies no dossier items, and prints a short message identifying the early-exit reason
+- **AND** the cleanup prompt fires once after an `abort`, and not at all after a stale-cleanup `cancel`
+
+### Requirement: Optional isolation before apply
+
+When the user picks an `apply-*` option, the command SHALL ask once more, via `AskUserQuestion`, where to apply: `none` (the current tree, the default), `worktree`, or `branch`, with the branch named `deps/patch-<YYYY-MM-DD>`. On `worktree` or `branch` the command SHALL create the workspace through the `update-isolation` skill and apply every bump and improvement there. Isolation SHALL only create the branch or worktree: it SHALL NOT commit, push, or open a pull request.
+
+#### Scenario: Isolation asked only on an apply path
+
+- **WHEN** the user selects `apply-bumps-only`
+- **THEN** the command asks for the isolation mode exactly once, before the first manifest write
+- **AND** when the user selects `cancel` instead, no isolation question is asked
+
+#### Scenario: Isolated apply
+
+- **WHEN** the user picks `worktree` or `branch`
+- **THEN** the bumps and improvements are applied in the new workspace, nothing is committed, and the summary's `Isolation:` line names that workspace
 
 ### Requirement: Bump application reuses existing infrastructure
 
-For `apply-all`, `apply-bumps-only`, and `pick-subset` (when bumps are included), the command SHALL apply patch-level bumps by invoking the `npm-update-apply` skill (the single source of truth for the single-project apply mechanism) with `target: "patch"`. The command SHALL build the resolved apply spec from the accepted set — `package.json` manifests as `manifestBumps` (with `includeFilter` set when the accepted set for a file is a strict subset, i.e. `pick-subset` partial inclusion) and `pnpm-workspace.yaml#catalog` entries as `catalogEdits` — and SHALL pass an empty `overrideCommands` set: the deep path consults NO override registry (the override flow remains the shallow `/experiments:npm-update-patch` path's responsibility). The skill runs `npm-check-updates@21.0.2` per manifest, performs the in-memory catalog edits, and runs exactly one install at the end; the command SHALL NOT restate that recipe inline.
+For `apply-all`, `apply-bumps-only`, and `pick-subset` (when bumps are included), the command SHALL apply patch-level bumps by invoking the `npm-update-apply` skill (the single source of truth for the single-project apply mechanism) with `target: "patch"`. The command SHALL build the resolved apply spec from the accepted set — `package.json` manifests as `manifestBumps` (with `includeFilter` set when the accepted set for a file is a strict subset, i.e. `pick-subset` partial inclusion) and catalog entries (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun) as `catalogEdits` — and SHALL pass an empty `overrideCommands` set: the deep path consults NO override registry (the override flow remains the shallow `/experiments:npm-update-patch` path's responsibility). The skill runs `npm-check-updates@21.0.2` per manifest, performs the in-memory catalog edits, and runs exactly one install at the end; the command SHALL NOT restate that recipe inline.
 
 #### Scenario: Bumps delegated to npm-update-apply
 
@@ -133,8 +149,8 @@ For `apply-all`, `apply-bumps-only`, and `pick-subset` (when bumps are included)
 
 #### Scenario: Catalog entries handled in-memory via the apply spec
 
-- **WHEN** an update has `sourceFile: "pnpm-workspace.yaml"`
-- **THEN** the command passes it as a `catalogEdits` entry to `npm-update-apply`, which edits the `catalog:` block in place and does NOT invoke `npm-check-updates` for that file
+- **WHEN** an update comes from a catalog (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun)
+- **THEN** the command passes it as a `catalogEdits` entry to `npm-update-apply`, which edits the catalog entry in place and does NOT invoke `npm-check-updates` for it
 
 #### Scenario: Deep path passes no overrides
 
@@ -192,9 +208,10 @@ After execution (or after `cancel`), the command SHALL print a markdown summary 
 - `Applied improvements ({N}):` — one line per improvement bullet successfully applied.
 - `Skipped improvements ({N}):` — one line per improvement bullet declined under `pick-subset` or rejected at the changeset gate.
 - `Skipped or unavailable groups ({N}):` — sourced from `dossier.md`'s corresponding section.
-- `Install:` — `<pm> install executed` if any bump was applied, otherwise `skipped (no bumps applied)`.
+- `Isolation:` — on every `apply-*` path: `none (applied in current tree)`, or the isolation mode and the workspace it created.
+- `Install:` — `<pm> install executed` if any bump was applied, `skipped (isolation already ran install)` when creating the isolated workspace already installed dependencies, otherwise `skipped (no bumps applied)`.
 - `Knowledge:` — the one-line digest returned by `persist-run-knowledge` at Step 7.5, reproduced verbatim: `Knowledge: persisted <runId> → <root> (<p> packages, <h> hubs, <d> distilled, status <ok|draft>)` when the run was persisted, or `Knowledge: not persisted (<reason>)` when it was not.
-- `Suggested next steps (not executed):` — bullets reading `Run your test suite.`, `Run lint / typecheck.`, `Review changes (\`git diff\`) and commit.`
+- `Suggested next steps (not executed):` — bullets reading `Run your test suite.`, `Run lint / typecheck.`, `Review changes (\`git diff\`) and commit — any isolation branch may not pass repo commit hooks, so run lint/build before committing.`
 
 The `Knowledge:` line SHALL render immediately after `Install:` and before `Suggested next steps`.
 
@@ -225,8 +242,8 @@ The command SHALL preserve every hard rule of `/experiments:npm-update-patch`:
 
 - The command SHALL NOT create commits, push, or open pull requests autonomously; it stops for human-in-the-loop review before any such outward/VCS action.
 - The command SHALL NOT modify any file when the user selects `cancel`.
-- The command SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only `pnpm-workspace.yaml` for those.
-- The command SHALL write to the knowledge root only on the `apply-*` paths — `apply-all`, `apply-bumps-only`, and `pick-subset`, that is every execution-prompt option other than `cancel` — and only through the `persist-run-knowledge` skill invoked at Step 7.5. On `cancel` and on every `abort` (stale-cleanup `cancel`, integrity-verification `abort`), the command SHALL NOT invoke `persist-run-knowledge`, SHALL NOT create the knowledge root, and SHALL NOT write any file under it.
+- The command SHALL NOT mutate any consumer `package.json` entry that is a `catalog:` reference — only the catalog source file (`pnpm-workspace.yaml` for pnpm, the root `package.json` for Bun) for those.
+- The command SHALL write to the knowledge root only on the `apply-*` paths — `apply-all`, `apply-bumps-only`, and `pick-subset`, that is every execution-prompt option other than `cancel` — and only through the `persist-run-knowledge` skill invoked at Step 7.5. On `cancel` and on every early exit (stale-cleanup `cancel`, hard-wall `abort`, integrity-verification `abort`), the command SHALL NOT invoke `persist-run-knowledge`, SHALL NOT create the knowledge root, and SHALL NOT write any file under it.
 
 #### Scenario: Cancel touches no files
 
@@ -281,7 +298,7 @@ At Step 7.5 — after the Step 7 final-summary data is computed and before the S
 2. Invoke `persist-run-knowledge` with `{ runDir, outcome }`; the skill stamps `recordedAt` and writes `<run-dir>/outcome.json` — the command SHALL NOT write it.
 3. Surface the skill's one-line digest and carry it verbatim into the summary's `Knowledge:` line.
 
-The command SHALL skip persistence — emitting `Knowledge: not persisted (<reason>)` and nothing else — when the user selected `cancel`, when the run ended in any `abort`, or when the run-level `outcome` derived from the assembled outcome object is `failed`. A run whose changeset reconnaissance reported `Applicable (0)` SHALL be persisted: its run-level `outcome` is `applied`, and the fact that nothing was applicable at this range is itself reusable.
+The command SHALL skip persistence — emitting `Knowledge: not persisted (<reason>)` and nothing else — when the user selected `cancel`, when the run ended in any `abort`, when the run-level `outcome` derived from the assembled outcome object is `failed`, or when no apply round reached either the bumps or the changeset gate (`Knowledge: not persisted (nothing applied)`). A run whose changeset reconnaissance reported `Applicable (0)` SHALL be persisted: its run-level `outcome` is `applied`, and the fact that nothing was applicable at this range is itself reusable.
 
 Persistence SHALL NOT alter any part of the final summary other than the `Knowledge:` line. A failure inside `persist-run-knowledge` SHALL surface as `Knowledge: not persisted (<reason>)`, SHALL NOT abort the run, and SHALL NOT prevent the Step 8 cleanup prompt from firing.
 
